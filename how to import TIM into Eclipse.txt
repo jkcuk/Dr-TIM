@@ -1,0 +1,20 @@
+EGit tutorial: https://eclipsesource.com/blogs/tutorials/egit-tutorial/
+
+How to import TIM from the repository into Eclipse
+
+If a new user wants to do this, I need to have given them access to the source code at https://sourceforge.net/p/timray/admin/groups/ .
+Eclipse needs to have the subversion plugin installed (Eclipse subversion plugin:  http://www.eclipse.org/subversive/ ; install in Eclipse by selecting "Install New Software�" in the "Help" menu; select one of the standard Eclipse software servers, ...)
+
+Anyone who has the right permissions on sourceforge can then do the following:
+
+*  Right click somewhere in the project explorer and click �Import�
+*  Select the �SVN� folder then �Project from SVN�.
+*  Click Next.
+*  Click �create a new repository location�.
+*  Enter the URL as �https://svn.code.sf.net/p/timray/code'
+*  Enter your username and password in the authentication panel below
+*  Click Next.
+*  If all goes well, you�ll see a page with �Head Revision� selected � leave it as that and click Finish.
+*  Eclipse will download some project information and then show you a �Check Out As� window. It should have detected the Eclipse .project file on the SVN server and won�t let you �check out as a project configured using the New Project Wizard�. The only radio buttons you should be able to select are �Check out as a folder into existing project� and �Check out as a project with the name specified:�. You should choose the latter, and enter the project name as �TIM�. Leave the revision as the �Head� revision and click Finish.
+*  Eclipse will then download the project files and place them in a new project in the project explorer.
+*  Voila, the project is now (hopefully) set up properly.

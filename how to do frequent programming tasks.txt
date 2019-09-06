@@ -1,0 +1,5 @@
+How to...
+
+* ...add a new scene-object type to the fully interactive version of TIM:  add a new type to the optics.raytrace.GUI.core.SceneObjectType class.
+* ...add a new studio-initialisation type to the fully interactive version of TIM:  add a new type to the optics.raytrace.GUI.core.StudioInitialisationType class.
+* ...write a (semi)interactive, standalone, class: extend the optics.raytrace.NonInteractiveTIMEngine class (see optics.raytrace.NonInteractiveTIM as an example).
