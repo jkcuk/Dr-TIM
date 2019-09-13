@@ -120,7 +120,7 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 	{
 			// return new ColourFilter();	// either colour the mirror surfaces...
 			// return Transparent.PERFECT;
-			return new Reflective(0.96, true);	// ... or make it a mirror
+			return new Reflective(0.96, false);	// ... or make it a mirror
 	}
 	private SurfaceProperty getNegativeRefractingSurfaceProperty()
 	{
@@ -721,6 +721,7 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 
 			// make the leg surfaces teleport to each other...
 			legSurface1.setSurfaceProperty(
+					// SurfaceColour.BLUE_MATT
 					new Teleporting(
 							legSurface2,	// destinationObject
 							surfaceTransmissionCoefficient,	// teleportationCoefficient
@@ -730,6 +731,7 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 				);
 
 			legSurface2.setSurfaceProperty(
+					// SurfaceColour.GREEN_MATT
 					new Teleporting(
 							legSurface1,	// destinationObject
 							surfaceTransmissionCoefficient,	// teleportationCoefficient

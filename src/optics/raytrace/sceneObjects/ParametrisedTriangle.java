@@ -266,13 +266,35 @@ public class ParametrisedTriangle extends SceneObjectPrimitive implements One2On
 	@Override
 	public Vector2D getSurfaceCoordinates(Vector3D p)
 	{
-		Vector3D
-			v = Vector3D.difference(p, vertex1);
+//		System.out.println(
+//				"ParametrisedTriangle::getSurfaceCoordinates: vertex1="+vertex1+
+//				", uUnitVector="+uUnitVector+
+//				", vUnitVector="+vUnitVector
+//			);
 		
-		return new Vector2D(
-				Vector3D.scalarProduct(v, uUnitVector) / uUnitVector.getModSquared(),
-				Vector3D.scalarProduct(v, vUnitVector) / vUnitVector.getModSquared()
-			);
+		return p.getDifferenceWith(vertex1).calculateDecomposition(uUnitVector, vUnitVector);
+
+
+//		Vector3D
+//			vertex12p = Vector3D.difference(p, vertex1);
+//		
+//		double
+//		u = Vector3D.scalarProduct(vertex12p, uUnitVector),
+//		v = Vector3D.scalarProduct(vertex12p, vUnitVector);
+//		
+////		System.out.println(
+////				"ParametrisedTriangle::getSurfaceCoordinates: p="+p+
+////				", (u,v)=("+u+", "+v+
+////				"), getPointForSurfaceCoordinates(u,v)="+getPointForSurfaceCoordinates(u,v)
+////			);
+//		
+////		Vector3D n = Vector3D.crossProduct(uUnitVector, vUnitVector).getNormalised();
+////		System.out.println("ParametrisedTriangle::getSurfaceCoordinates: normal component ="+Vector3D.scalarProduct(vertex12p, n));
+//
+//		return new Vector2D(u, v);
+////				Vector3D.scalarProduct(vertex12p, uUnitVector),
+////				Vector3D.scalarProduct(vertex12p, vUnitVector)
+////			);
 	}
 
 	@Override
@@ -287,6 +309,14 @@ public class ParametrisedTriangle extends SceneObjectPrimitive implements One2On
 	@Override
 	public Vector3D getPointForSurfaceCoordinates(double u, double v)
 	{
+//		System.out.println(
+//				"ParametrisedTriangle::getPointForSurfaceCoordinates: vertex1="+vertex1+
+//				", uUnitVector="+uUnitVector+
+//				", vUnitVector="+vUnitVector+
+//				", u="+u+
+//				", v="+v
+//			);
+
 		return Vector3D.sum(
 				vertex1,
 				uUnitVector.getProductWith(u),

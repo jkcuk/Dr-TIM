@@ -34,32 +34,32 @@ implements Serializable
 
 	/**
 	 * list of the visible positive scene-object primitives
-	 * (for a point to lie inside the combined scene object, it has to lie inside every single positive scene-object primitive)
+	 * (for a point to lie inside the combined scene object, it has to lie inside every single (visible or invisible) positive scene-object primitive)
 	 */
 	protected ArrayList<SceneObjectPrimitive> positiveSceneObjectPrimitives;
 
 	/**
 	 * list of the visible negative scene-object primitives
-	 * (for a point to lie inside the combined scene object, it has to lie outside every single negative scene-object primitive)
+	 * (for a point to lie inside the combined scene object, it has to lie outside every single (visible or invisible) negative scene-object primitive)
 	 */
 	protected ArrayList<SceneObjectPrimitive> negativeSceneObjectPrimitives;
 
 	/**
 	 * list of the invisible positive scene-object primitives
-	 * (for a point to lie inside the combined scene object, it has to lie inside every single positive scene-object primitive)
+	 * (for a point to lie inside the combined scene object, it has to lie inside every single (visible or invisible) positive scene-object primitive)
 	 */
 	protected ArrayList<SceneObjectPrimitive> invisiblePositiveSceneObjectPrimitives;
 
 	/**
 	 * list of the invisible negative scene-object primitives
-	 * (for a point to lie inside the combined scene object, it has to lie outside every single negative scene-object primitive)
+	 * (for a point to lie inside the combined scene object, it has to lie outside every single (visible or invisible) negative scene-object primitive)
 	 */
 	protected ArrayList<SceneObjectPrimitive> invisibleNegativeSceneObjectPrimitives;
 
 	/**
-	 * list of scene-object primitives that are cut such by the other scene-object primitives, but which do not themselves cut the other scene-object primitives
+	 * list of scene-object primitives that are clipped by the (visible or invisible) positive and negative scene-object primitives, but which do not themselves clip the other scene-object primitives
 	 */
-	protected ArrayList<SceneObjectPrimitive> cutSceneObjectPrimitives;
+	protected ArrayList<SceneObjectPrimitive> clippedSceneObjectPrimitives;
 
 	/**
 	 * Constructor that sets all internal parameters
@@ -68,7 +68,7 @@ implements Serializable
 	 * @param negativeSceneObjectPrimitives
 	 * @param invisiblePositiveSceneObjectPrimitives
 	 * @param invisibleNegativeSceneObjectPrimitives
-	 * @param cutSceneObjectPrimitives
+	 * @param clippedSceneObjectPrimitives
 	 * @param parent
 	 * @param studio
 	 */
@@ -78,7 +78,7 @@ implements Serializable
 			ArrayList<SceneObjectPrimitive> negativeSceneObjectPrimitives,
 			ArrayList<SceneObjectPrimitive> invisiblePositiveSceneObjectPrimitives,
 			ArrayList<SceneObjectPrimitive> invisibleNegativeSceneObjectPrimitives,
-			ArrayList<SceneObjectPrimitive> cutSceneObjectPrimitives,
+			ArrayList<SceneObjectPrimitive> clippedSceneObjectPrimitives,
 			SceneObject parent,
 			Studio studio
 		)
@@ -89,7 +89,7 @@ implements Serializable
 		this.negativeSceneObjectPrimitives = negativeSceneObjectPrimitives;
 		this.invisiblePositiveSceneObjectPrimitives = invisiblePositiveSceneObjectPrimitives;
 		this.invisibleNegativeSceneObjectPrimitives = invisibleNegativeSceneObjectPrimitives;
-		this.cutSceneObjectPrimitives = cutSceneObjectPrimitives;
+		this.clippedSceneObjectPrimitives = clippedSceneObjectPrimitives;
 		
 		// initialise the lists of positive and negative scene-object primitives
 //		this.positiveSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>();
@@ -149,7 +149,7 @@ implements Serializable
 				original.getNegativeSceneObjectPrimitives(),
 				original.getInvisiblePositiveSceneObjectPrimitives(),
 				original.getInvisibleNegativeSceneObjectPrimitives(),
-				original.getCutSceneObjectPrimitives(),
+				original.getClippedSceneObjectPrimitives(),
 				original.getParent(),
 				original.getStudio()
 			);
@@ -329,42 +329,42 @@ implements Serializable
 	}
 
 	/**
-	 * @return	the list of cut scene-object primitives
+	 * @return	the list of clipped scene-object primitives
 	 */
-	public ArrayList<SceneObjectPrimitive> getCutSceneObjectPrimitives() {
-		return cutSceneObjectPrimitives;
+	public ArrayList<SceneObjectPrimitive> getClippedSceneObjectPrimitives() {
+		return clippedSceneObjectPrimitives;
 	}
 
 	/**
-	 * Add the SceneObjectPrimitives in <sceneObjectPrimitives> to the list of cut scene-object primitives.
+	 * Add the SceneObjectPrimitives in <sceneObjectPrimitives> to the list of clipped scene-object primitives.
 	 * 
 	 * @param sceneObjectPrimitives
 	 */
-	public void addCutSceneObjectPrimitives(ArrayList<SceneObjectPrimitive> sceneObjectPrimitives)
+	public void addClippedSceneObjectPrimitives(ArrayList<SceneObjectPrimitive> sceneObjectPrimitives)
 	{
 		for(SceneObjectPrimitive sceneObjectPrimitive: sceneObjectPrimitives)
 		{
-			addCutSceneObjectPrimitive(sceneObjectPrimitive);
+			addClippedSceneObjectPrimitive(sceneObjectPrimitive);
 		}
 	}
 	
 	/**
-	 * Add <sceneObjectPrimitive> to the list of cut scene-object primitives.
+	 * Add <sceneObjectPrimitive> to the list of clipped scene-object primitives.
 	 * 
 	 * @param sceneObjectPrimitive
 	 */
-	public void addCutSceneObjectPrimitive(SceneObjectPrimitive sceneObjectPrimitive)
+	public void addClippedSceneObjectPrimitive(SceneObjectPrimitive sceneObjectPrimitive)
 	{
-		// if necessary, initialise cutSceneObjectPrimitives
-		if(cutSceneObjectPrimitives == null) cutSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>();
+		// if necessary, initialise clippedSceneObjectPrimitives
+		if(clippedSceneObjectPrimitives == null) clippedSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>();
 			
 		// make sure the scene object has this as parent...
 		sceneObjectPrimitive.setParent(this);
 		// ... and this's studio as studio
 		sceneObjectPrimitive.setStudio(getStudio());
 
-		// add it to the list of cut scene-object primitives
-		cutSceneObjectPrimitives.add(sceneObjectPrimitive);
+		// add it to the list of clipped scene-object primitives
+		clippedSceneObjectPrimitives.add(sceneObjectPrimitive);
 	}
 
 	/**
@@ -376,7 +376,7 @@ implements Serializable
 		negativeSceneObjectPrimitives = null;
 		invisiblePositiveSceneObjectPrimitives = null;
 		invisibleNegativeSceneObjectPrimitives = null;
-		cutSceneObjectPrimitives = null;
+		clippedSceneObjectPrimitives = null;
 	}
 
 	
@@ -490,36 +490,30 @@ implements Serializable
 		RaySceneObjectIntersection intersection = sceneObjectPrimitive.getClosestRayIntersectionAvoidingOrigin(ray, excludeObject);
 
 		// is there an intersection point?
-		while(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
+		if(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
 		{
 			// yes
 
-			// check that the intersection point is on the surface, i.e. inside all positive scene-object primitives other than the
-			// one involved in the intersection and outside all negative scene-object primitives other then the one involved in the
-			// intersection
-			if(insideAllPositiveSceneObjectPrimitives(intersection) && outsideAllNegativeSceneObjectPrimitives(intersection))
+			// calculate the distance (squared) to the intersection point
+			double distance2 = Vector3D.getDistance2(intersection.p, ray.getP());	// intersection.p.getDifferenceWith(ray.getP()).getModSquared();
+			
+			// is the distance to this intersection point smaller than the smallest one so far?
+			if(distance2 < currentlyBestIntersection.distance2)
 			{
 				// yes
 
-				// calculate the distance (squared) to the intersection point
-				double distance2 = Vector3D.getDistance2(intersection.p, ray.getP());	// intersection.p.getDifferenceWith(ray.getP()).getModSquared();
-				
-				// is the distance to this intersection point smaller than the smallest one so far?
-				if(distance2 < currentlyBestIntersection.distance2)
+				// check that the intersection point is on the surface, i.e. inside all positive scene-object primitives other than the
+				// one involved in the intersection and outside all negative scene-object primitives other then the one involved in the
+				// intersection
+				if(insideAllPositiveSceneObjectPrimitives(intersection) && outsideAllNegativeSceneObjectPrimitives(intersection))
 				{
 					// yes, so make the new intersection point the closest one so far
 					currentlyBestIntersection.distance2 = distance2;
 					currentlyBestIntersection.intersection = intersection;
+					
+					return;
 				}
-				
-				// don't look for further intersections with this object
-				break;	// intersection = RaySceneObjectIntersection.NO_INTERSECTION;
 			}
-//			else
-//			{
-				// try the next intersection with the same object
-				intersection = sceneObjectPrimitive.getNextClosestRayIntersectionAvoidingOrigin(ray, excludeObject, intersection);
-// 			}
 		}
 	}
 	
@@ -547,9 +541,9 @@ implements Serializable
 					excludeObject
 				);
 
-		// ... and cut scene-object primitives
-		if(cutSceneObjectPrimitives != null)
-		for(SceneObjectPrimitive sceneObjectPrimitive:cutSceneObjectPrimitives) 
+		// ... and clipped scene-object primitives
+		if(clippedSceneObjectPrimitives != null)
+		for(SceneObjectPrimitive sceneObjectPrimitive:clippedSceneObjectPrimitives) 
 			lookForBetterIntersection(closestIntersectionAndDistance, sceneObjectPrimitive, ray, excludeObject);
 
 		return closestIntersectionAndDistance.intersection;    
@@ -581,9 +575,9 @@ implements Serializable
 						excludeObject
 					);
 
-		// ... and the shadow-throwing cut scene-object primitives
-		if(cutSceneObjectPrimitives != null)
-		for(SceneObjectPrimitive sceneObjectPrimitive:cutSceneObjectPrimitives) 
+		// ... and the shadow-throwing clipped scene-object primitives
+		if(clippedSceneObjectPrimitives != null)
+		for(SceneObjectPrimitive sceneObjectPrimitive:clippedSceneObjectPrimitives) 
 			if(sceneObjectPrimitive.isShadowThrowing())
 				lookForBetterIntersection(closestIntersectionAndDistance, sceneObjectPrimitive, ray, excludeObject);
 
@@ -618,10 +612,10 @@ implements Serializable
 		for(SceneObjectPrimitive sceneObjectPrimitive:invisibleNegativeSceneObjectPrimitives)
 			addInvisibleNegativeSceneObjectPrimitive(sceneObjectPrimitive.transform(t));
 
-		// add the transformed cut scene-object primitives
-		if(cutSceneObjectPrimitives != null)
-		for(SceneObjectPrimitive sceneObjectPrimitive:cutSceneObjectPrimitives)
-			addCutSceneObjectPrimitive(sceneObjectPrimitive.transform(t));
+		// add the transformed clipped scene-object primitives
+		if(clippedSceneObjectPrimitives != null)
+		for(SceneObjectPrimitive sceneObjectPrimitive:clippedSceneObjectPrimitives)
+			addClippedSceneObjectPrimitive(sceneObjectPrimitive.transform(t));
 		
 		return transformed;
 	}
@@ -665,7 +659,7 @@ implements Serializable
 		if(negativeSceneObjectPrimitives != null) SOPs.addAll(negativeSceneObjectPrimitives);	// TODO add the SceneObjectPrimitiveInverse of each of these
 		// SOPs.addAll(invisiblePositiveSceneObjectPrimitives);
 		// SOPs.addAll(invisibleNegativeSceneObjectPrimitives);
-		if(cutSceneObjectPrimitives != null) SOPs.addAll(cutSceneObjectPrimitives);
+		if(clippedSceneObjectPrimitives != null) SOPs.addAll(clippedSceneObjectPrimitives);
 
 		return SOPs;
 	}

@@ -144,14 +144,18 @@ public class Teleporting extends SurfacePropertyPrimitive
 		}
 		// ... and then calculate the parameters
 		Vector2D uv = ((ParametrisedObject)i.o).getSurfaceCoordinates(i.p);
+		// System.out.println("Teleporting::getColour: intersection point "+i.p+" has surface coordinates "+uv);	// TODO
 		
 		// this is where the commonality between the different types of teleporting surfaces ends;
 		// calculate the new starting point, the new ray direction, and the intensity factor according to the different teleportation type
 		Vector3D newStartingPoint, newRayDirection;
 		double intensityFactor;
 		
-		if(teleportationType == TeleportationType.HOLOGRAPHIC)
+		Vector3D n1, n2;
+		
+		switch(teleportationType)
 		{
+		case HOLOGRAPHIC:
 			// Both surfaces are phase holograms with a phase gradient such that light that is normally incident on the
 			// first surface gets re-directed such that it intersects the second surface precisely at the corresponding
 			// point (i.e. the point with the same local coordinate values).
@@ -166,9 +170,8 @@ public class Teleporting extends SurfacePropertyPrimitive
 				directionPoint2CorrespondingPoint = Vector3D.difference(correspondingPoint, i.p).getNormalised();
 			
 			// We also need the surface normals.
-			Vector3D
-				n1 = i.getNormalisedOutwardsSurfaceNormal(),
-				n2 = getDestinationObject().getNormalisedOutwardsSurfaceNormal(correspondingPoint);
+			n1 = i.getNormalisedOutwardsSurfaceNormal();
+			n2 = getDestinationObject().getNormalisedOutwardsSurfaceNormal(correspondingPoint);
 
 			// Now calculate the light-ray direction behind the first surface.
 			Vector3D intermediateRayDirection = PhaseHologram.getOutgoingNormalisedRayDirection(
@@ -212,9 +215,10 @@ public class Teleporting extends SurfacePropertyPrimitive
 					n2,	// normalisedOutwardsSurfaceNormal,
 					false	// reflecting
 				);
-		}
-		else // if(teleportationType == PERFECT_TELEPORTATION)
-		{			
+			
+			break;
+		case PERFECT:
+		default:
 			// default option is perfect teleportation
 			// now calculate the direction in the coordinate system defined by
 			// the intersected surface and the way it's parametrised
@@ -226,7 +230,7 @@ public class Teleporting extends SurfacePropertyPrimitive
 			v1 = u1v1.get(1),
 			// ... their normalised versions, ...
 			u1Normalised = u1.getNormalised(),
-			v1Normalised = v1.getNormalised(),
+			v1Normalised = v1.getNormalised();
 			n1 = i.getNormalisedOutwardsSurfaceNormal();
 
 			// calculate a 2D vector (du, dv) such that the light-ray direction d is
@@ -238,6 +242,7 @@ public class Teleporting extends SurfacePropertyPrimitive
 			// in the other object's local coordinate system; this is the new ray's
 			// new starting point
 			newStartingPoint = getDestinationObject().getPointForSurfaceCoordinates(uv.x, uv.y);
+			// System.out.println("Teleporting::getColour: ... teleported to position "+newStartingPoint+" with surface coordinates "+getDestinationObject().getSurfaceCoordinates(newStartingPoint));	// TODO
 
 			// now calculate the new direction in the coordinate system defined by
 			// the other object's surface and the way it's parametrised
@@ -248,7 +253,7 @@ public class Teleporting extends SurfacePropertyPrimitive
 			v2 = u2v2.get(1),
 			// ... their normalised versions, ...
 			u2Normalised = u2.getNormalised(),
-			v2Normalised = v2.getNormalised(),
+			v2Normalised = v2.getNormalised();
 			// ... and n2, the (normalised) surface normal
 			n2 = getDestinationObject().getNormalisedOutwardsSurfaceNormal(newStartingPoint);
 

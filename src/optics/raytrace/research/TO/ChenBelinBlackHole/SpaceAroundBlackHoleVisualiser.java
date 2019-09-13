@@ -40,7 +40,7 @@ import optics.raytrace.GUI.sceneObjects.SphericallySymmetricRefractiveIndexDistr
  * The main method renders the image defined by createStudio(), saves it to a file
  * (whose name is given by the constant FILENAME), and displays it in a new window.
  * 
- * @author  E Orife, based on example by Johannes Courtial
+ * @author  Johannes Courtial
  */
 public class SpaceAroundBlackHoleVisualiser extends NonInteractiveTIMEngine
 {
