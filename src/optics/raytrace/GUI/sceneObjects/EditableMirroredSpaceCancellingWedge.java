@@ -22,7 +22,6 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.research.curvedSpaceSimulation.GluingType;
-import optics.raytrace.sceneObjects.ConeTop;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
 import optics.raytrace.surfaces.ColourFilter;
 import optics.raytrace.surfaces.RayRotating;
@@ -30,6 +29,7 @@ import optics.raytrace.surfaces.Reflective;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.Teleporting;
 import optics.raytrace.surfaces.Teleporting.TeleportationType;
+import optics.raytrace.surfaces.Transparent;
 
 /**
  * A space-cancelling wedge, that is, a wedge of space that looks like it isn't there.
@@ -113,10 +113,25 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 	private GluingType gluingType;
 	
 	// for debugging
-	private boolean showBisector = true;
-	private boolean colourMirrorSurfaces =  true;
-	private boolean colourNegativeRefractingSurfaces = true;
-
+	private boolean showBisector = false;
+//	private boolean colourMirrorSurfaces =  true;
+//	private boolean colourNegativeRefractingSurfaces = true;
+	private SurfaceProperty getMirrorSurfaceProperty()
+	{
+			// return new ColourFilter();	// either colour the mirror surfaces...
+			// return Transparent.PERFECT;
+			return new Reflective(0.96, true);	// ... or make it a mirror
+	}
+	private SurfaceProperty getNegativeRefractingSurfaceProperty()
+	{
+			// return new ColourFilter();	// either colour the mirror surfaces...
+			return new RayRotating(
+					Math.PI,	// rotation angle
+					surfaceTransmissionCoefficient,	// transmissionCoefficient
+					false	// shadowThrowing
+					);	// ... or make it 180° ray rotator, which is the same as an interface where  the refractive index changes sign
+	}
+	
 
 	//
 	// constructors
@@ -361,79 +376,106 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 	}
 	
 	
-	private ConeTop getConeForEdge(
-			String description,
-			Vector3D edgeVertexOnApexEdge,	// edgeVertexOnApexEdge,
-			Vector3D otherEdgeVertex	// otherEdgeVertex
-		)
-	{
-		// the apex etc. of each mirrored cone is calculated from points which lie on straight lines through principal points of the leg surfaces,
-		// extended by a small length, delta
-		// see J's lab book 16/5/19
-		double delta = 0.01*apexEdgeLength;	// TODO this should be small, but positive
-
-		Vector3D coneApex = Vector3D.sum(edgeVertexOnApexEdge, Vector3D.difference(edgeVertexOnApexEdge, otherEdgeVertex).getWithLength(delta));
-		Vector3D apexEdgeCentreToConeAxis = Vector3D.sum(
-				Vector3D.difference(apexEdgeCentre, otherEdgeVertex).getNormalised(),
-				b
-			).getWithLength(delta);
-		Vector3D pointOnConeAxis = Vector3D.sum(
-				apexEdgeCentre,
-				apexEdgeCentreToConeAxis
-			);
-		Vector3D coneAxisDirection = Vector3D.difference(pointOnConeAxis, coneApex).getNormalised();
-		
-		return new ConeTop(
-				description,	// description
-				coneApex,	// apex
-				coneAxisDirection,	// axis
-				Math.acos(Vector3D.scalarProduct(
-						coneAxisDirection,
-						Vector3D.difference(otherEdgeVertex, coneApex).getNormalised()
-						)),	// theta (cone angle)
-				1,	// -1,	// height -- infinite
-				colourMirrorSurfaces?
-				SurfaceColour.getRandom():	// TODO
-				// new ColourFilter(),	// TODO for debugging
-				// SurfaceColourLightSourceIndependent.getRandom(),	// TODO for debugging
-				Reflective.PERFECT_MIRROR,	// surfaceProperty
-				surfaces,	// parent
-				getStudio()	// studio
-			);
-	}
+//	/**
+//	 * @param description
+//	 * @param vertex1
+//	 * @param vertex2
+//	 * @param vertex3
+//	 * @return	a triangle that represents one of the "leg surfaces", oriented such that the bisector direction, b, points inwards
+//	 */
+//	private EditableParametrisedTriangle createTriangleWithCorrectNormalDirection1(String description, Vector3D vertex1, Vector3D vertex2, Vector3D vertex3)
+//	{
+//		EditableParametrisedTriangle t = EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
+//					description,
+//					vertex1,
+//					vertex2,
+//					vertex3,
+//					null,	// surfaceProperty -- set later
+//					null,	// parent -- set later
+//					getStudio()
+//				);
+//		
+//		// does b point inwards?
+//		if(Vector3D.scalarProduct(
+//				t.getNormalisedOutwardsSurfaceNormal(vertex1),
+//				b
+//				) > 0)
+//		{
+//			// no, b points outwards; create a triangle with the reverse order of the vertices
+//			t = EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
+//					description,
+//					vertex3,
+//					vertex2,
+//					vertex1,
+//					null,	// surfaceProperty -- set later
+//					null,	// parent -- set later
+//					getStudio()
+//					);
+//			// now b should point inwards
+////
+////			// does b point inwards?
+////			if(Vector3D.scalarProduct(
+////					t.getNormalisedOutwardsSurfaceNormal(vertex1),
+////					b
+////					) > 0)
+////			{
+////				// b still points outwards; panic!
+////				new RayTraceException("EditableMirroredSpaceCancellingWedge::createTriangleWithCorrectNormalDirection: Can't create triangle with correct normal direction").printStackTrace();
+////				System.exit(-1);
+////			}
+//		}
+//
+//		return t;
+//	}
 	
-	private EditableParametrisedTriangle createTriangleWithCorrectNormalDirection(String description, Vector3D vertex1, Vector3D vertex2, Vector3D vertex3)
+	/**
+	 * @param description
+	 * @param pointOnPlane
+	 * @param normal
+	 * @return	a plane that represents one of the mirror planes, oriented such that the apex-edge centre lies on the "inside" side of the plane
+	 */
+	private EditableParametrisedPlane createMirrorPlaneWithCorrectNormalDirection(String description, Vector3D pointOnPlane, Vector3D normal)
 	{
-		EditableParametrisedTriangle t = EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
-					description,
-					vertex1,
-					vertex2,
-					vertex3,
-					null,	// surfaceProperty -- set later
-					null,	// parent -- set later
-					getStudio()
-				);
+		EditableParametrisedPlane p = new EditableParametrisedPlane(
+			description,
+			pointOnPlane,
+			normal,
+			getMirrorSurfaceProperty(),	// surfaceProperty
+			null,	// parent -- set later
+			getStudio()	// studio
+		);
 		
-		if(Vector3D.scalarProduct(
-				t.getNormalisedOutwardsSurfaceNormal(vertex1),
-				b
-			) < 0) return t;
-		else return EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
-				description,
-				vertex3,
-				vertex2,
-				vertex1,
-				null,	// surfaceProperty -- set later
-				null,	// parent -- set later
-				getStudio()
-			);
+		// does the apex-edge centre lie inside the plane?
+		if(p.insideObject(apexEdgeCentre))
+		{
+			// yes, the apex-edge centre lies inside the plane
+			return p;
+		}
+		else
+		{
+			// no, the apex-edge centre lies outside the plane;  return a plane with the opposite normal direction
+			return new EditableParametrisedPlane(
+					description,
+					pointOnPlane,
+					normal.getReverse(),
+					getMirrorSurfaceProperty(),	// surfaceProperty
+					null,	// parent -- set later
+					getStudio()	// studio
+				);
+		}
 	}
+
 
 	/**
 	 * 
 	 */
 	private void populateCollections()
 	{
+		// reminder of coordinate  system:
+		// a = unit vector in the direction of the apex edge
+		// b = unit vector in the direction of the wedge bisector
+		// c = unit vector perpendicular to both a and b, pointing into the same half space as leg surface 1
+
 		// first, calculate the vertices of the leg surfaces, which are...
 		// ... the ends of the apex edge...
 		Vector3D apexEdgeBottom = Vector3D.sum(apexEdgeCentre, a.getProductWith(-0.5*apexEdgeLength));
@@ -549,141 +591,134 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 						getStudio()
 					)
 			);
-
-		// add the leg surfaces
-		EditableParametrisedTriangle legSurface1 = createTriangleWithCorrectNormalDirection(
-				"Leg surface 1",	// description
-				apexEdgeBottom,	// vertex1
-				apexEdgeTop,	// vertex2
-				legSurface1Vertex3	// vertex3
-			);
-		EditableParametrisedTriangle legSurface2 = createTriangleWithCorrectNormalDirection(
-				"Leg surface 2",	// description
-				apexEdgeBottom,	// vertex1
-				apexEdgeTop,	// vertex2
-				legSurface2Vertex3	// vertex3
-			);
 		
-//		addSceneObject(
-//				new EditableArrow(
-//						"Leg surface 1 outwards normal",	// description
-//						legSurface1Vertex3,	// startPoint
-//						Vector3D.sum(legSurface1Vertex3, legSurface1.getNormalisedOutwardsSurfaceNormal(legSurface1Vertex3)),	// endPoint,
-//						0.01,	// shaftRadius
-//						0.04,	// tipLength
-//						MyMath.deg2rad(30),	// tipAngle
-//						SurfaceColour.GREEN_MATT,	// surfaceProperty,
-//						this,	// parent 
-//						getStudio()	// studio
-//					)
-//			);
-//
-//		addSceneObject(
-//				new EditableArrow(
-//						"Leg surface 2 outwards normal",	// description
-//						legSurface2Vertex3,	// startPoint
-//						Vector3D.sum(legSurface2Vertex3, legSurface2.getNormalisedOutwardsSurfaceNormal(legSurface2Vertex3)),	// endPoint,
-//						0.01,	// shaftRadius
-//						0.04,	// tipLength
-//						MyMath.deg2rad(30),	// tipAngle
-//						SurfaceColour.BLUE_SHINY,	// surfaceProperty,
-//						this,	// parent 
-//						getStudio()	// studio
-//					)
-//			);
-
+		EditableParametrisedTriangle legSurface1, legSurface2;
 
 		switch(gluingType)
 		{
 		case NEGATIVE_SPACE_WEDGES:
 		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
 		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
-			SceneObjectPrimitiveIntersection legSurfaceAndMirrors1 = new SceneObjectPrimitiveIntersection(
-					"Leg surface 1 & corresponding mirrors",	// description,
+			// suitable for wedges with deficit angles <180°
+			// see Johannes's lab book 10/9/19
+					
+			SceneObjectPrimitiveIntersection legSurface1AndMirrors = new SceneObjectPrimitiveIntersection(
+					"Leg surface 1 & associated mirrors",	// description,
 					this,	// parent
 					getStudio()	// studio
 				);
-			SceneObjectPrimitiveIntersection legSurfaceAndMirrors2 = new SceneObjectPrimitiveIntersection(
-					"Leg surface 2 & corresponding mirrors",	// description,
+			SceneObjectPrimitiveIntersection legSurface2AndMirrors = new SceneObjectPrimitiveIntersection(
+					"Leg surface 2 & associated mirrors",	// description,
 					this,	// parent
 					getStudio()	// studio
 				);
-
-			// leg surface 1 is the one that is a +n/-n interface
-			legSurface1.setSurfaceProperty(
-					colourNegativeRefractingSurfaces?new ColourFilter():	// TODO for debugging
-					new RayRotating(
-						Math.PI,	// rotation angle
-						surfaceTransmissionCoefficient,	// transmissionCoefficient
-						false	// shadowThrowing
-					)
-				);
-			legSurfaceAndMirrors1.addNegativeSceneObjectPrimitive(legSurface1);
 			
+			// add the leg surfaces
+			legSurface1 = EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
+					"Leg surface 1 (180° ray  rotating)",	// description
+					apexEdgeBottom,	// vertex1
+					apexEdgeTop,	// vertex2
+					legSurface1Vertex3,	// vertex3
+					Vector3D.sum(apexEdgeCentre, b.getReverse()),	// outsidePosition
+					a,	// uUnitVector
+					Vector3D.difference(legSurface1Vertex3, apexEdgeBottom),	// vUnitVector
+					getNegativeRefractingSurfaceProperty(),	// surfaceProperty
+					legSurface1AndMirrors,	// parent
+					getStudio()	// studio
+				);
+			legSurface1AndMirrors.addPositiveSceneObjectPrimitive(legSurface1);	// I  don't  understand this; it should really be added as a positive scene-object  primitive,  but that doesn't work
+
+			legSurface2 = EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
+					"Leg surface 2",	// description
+					apexEdgeBottom,	// vertex1
+					apexEdgeTop,	// vertex2
+					legSurface2Vertex3,	// vertex3
+					Vector3D.sum(apexEdgeCentre, b.getReverse()),	// outsidePosition
+					a,	// uUnitVector
+					Vector3D.difference(legSurface2Vertex3, apexEdgeBottom),	// vUnitVector
+					SurfaceColour.YELLOW_SHINY,	// surfaceProperty; this surface is added as an invisible scene-object primitive, so the surface property shouldn't matter
+					legSurface1AndMirrors,	// parent
+					getStudio()	// studio
+				);			
 			// leg surface 2 does not refract; it is used only to cut the mirrors to size
-			legSurface2.setSurfaceProperty(new ColourFilter());	// this shoudn't show up
-			legSurfaceAndMirrors2.addCutSceneObjectPrimitive(legSurface2);	// .addNegativeSceneObjectPrimitive(legSurface2);
+			legSurface2AndMirrors.addInvisiblePositiveSceneObjectPrimitive(legSurface2);	// I  don't understand this;it should really be added as an invisible positive scene-object  primitive,  but that doesn't work
 			
 			// the central n=+1/n=-1 surface
 			EditableParametrisedPlane bisectorSurface = new EditableParametrisedPlane(
 					"n=+1/n=-1 surface in bisector plane",	// description
 					apexEdgeCentre,	// pointOnPlane
-					c,	// normal
-					colourNegativeRefractingSurfaces?new ColourFilter():	// TODO for debugging
-					// SurfaceColour.getRandom(),
-					new RayRotating(
-							Math.PI,	// rotation angle
-							surfaceTransmissionCoefficient,	// transmissionCoefficient
-							false	// shadowThrowing
-					),	// surface property
+					c.getReverse(),	// normal
+					getNegativeRefractingSurfaceProperty(),	// surface property
 					surfaces,	// parent; I am planning to add this object to both leg-surface-and-mirrors collections... not sure if this will cause trouble?
 					getStudio()	// studio
 				);
 
-			legSurfaceAndMirrors1.addNegativeSceneObjectPrimitive(bisectorSurface);
-			legSurfaceAndMirrors2.addPositiveSceneObjectPrimitive(bisectorSurface);
+			legSurface1AndMirrors.addPositiveSceneObjectPrimitive(bisectorSurface);
+			
+			EditableParametrisedPlane bisectorSurfaceTwin = new EditableParametrisedPlane(bisectorSurface);
+			bisectorSurfaceTwin.setNormal(c);
+			legSurface2AndMirrors.addInvisiblePositiveSceneObjectPrimitive(bisectorSurfaceTwin);
 
-			// the mirrored cones
-						
-			legSurfaceAndMirrors1.addPositiveSceneObjectPrimitive(
-			// addSceneObject(	// TODO
-					getConeForEdge(
-							"Conical mirror for top side edge of leg surface 1",	// description
-							apexEdgeTop,	// edgeVertexOnApexEdge,
-							legSurface1Vertex3	// otherEdgeVertex	// otherEdgeVertex
-						));
+			// the mirror planes
+			
+			legSurface1AndMirrors.addPositiveSceneObjectPrimitive(
+					createMirrorPlaneWithCorrectNormalDirection(
+							"Leg surface 1, mirror 1",	// description
+							legSurface1Vertex3,	// pointOnPlane
+							a.getPartPerpendicularTo(Vector3D.difference(legSurface1Vertex3, apexEdgeBottom))	// normal
+						)
+				);
 
-			legSurfaceAndMirrors1.addPositiveSceneObjectPrimitive(
-			// addSceneObject(	// TODO
-					getConeForEdge(
-							"Conical mirror for bottom side edge of leg surface 1",	// description
-							apexEdgeBottom,	// edgeVertexOnApexEdge,
-							legSurface1Vertex3	// otherEdgeVertex	// otherEdgeVertex
-						));
+			legSurface1AndMirrors.addPositiveSceneObjectPrimitive(
+					createMirrorPlaneWithCorrectNormalDirection(
+							"Leg surface 1, mirror 2",	// description
+							legSurface1Vertex3,	// pointOnPlane
+							a.getPartPerpendicularTo(Vector3D.difference(legSurface1Vertex3, apexEdgeTop))	// normal
+						)
+				);
 
-			legSurfaceAndMirrors2.addPositiveSceneObjectPrimitive(
-			// addSceneObject(	// TODO
-					getConeForEdge(
-							"Conical mirror for top side edge of leg surface 2",	// description
-							apexEdgeTop,	// edgeVertexOnApexEdge,
-							legSurface2Vertex3	// otherEdgeVertex	// otherEdgeVertex
-						));
+			legSurface2AndMirrors.addPositiveSceneObjectPrimitive(
+					createMirrorPlaneWithCorrectNormalDirection(
+							"Leg surface 2, mirror 1",	// description
+							legSurface2Vertex3,	// pointOnPlane
+							a.getPartPerpendicularTo(Vector3D.difference(legSurface2Vertex3, apexEdgeBottom))	// normal
+						)
+				);
 
-			legSurfaceAndMirrors2.addPositiveSceneObjectPrimitive(
-			// addSceneObject(	// TODO
-					getConeForEdge(
-							"Conical mirror for bottom side edge of leg surface 2",	// description
-							apexEdgeBottom,	// edgeVertexOnApexEdge,
-							legSurface2Vertex3	// otherEdgeVertex	// otherEdgeVertex
-						));
+			legSurface2AndMirrors.addPositiveSceneObjectPrimitive(
+					createMirrorPlaneWithCorrectNormalDirection(
+							"Leg surface 2, mirror 2",	// description
+							legSurface2Vertex3,	// pointOnPlane
+							a.getPartPerpendicularTo(Vector3D.difference(legSurface2Vertex3, apexEdgeTop))	// normal
+						)
+				);
 
 			// ... and add them to the surfaces
-			// surfaces.addSceneObject(legSurfaceAndMirrors1);	// TODO
-			surfaces.addSceneObject(legSurfaceAndMirrors2);
+			surfaces.addSceneObject(legSurface1AndMirrors);
+			surfaces.addSceneObject(legSurface2AndMirrors);
 			
 			break;
 		case PERFECT:
 		default:
+			legSurface1 = EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
+					"Leg surface 1 (teleporting to Leg surface 2)",	// description
+					apexEdgeBottom,	// vertex1
+					apexEdgeTop,	// vertex2
+					legSurface1Vertex3,	// vertex3
+					null,	// surfaceProperty -- set in a minute
+					surfaces,	// parent
+					getStudio()	// studio
+				);
+			legSurface2 = EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
+					"Leg surface 2 (teleporting to Leg surface 1)",	// description
+					apexEdgeBottom,	// vertex1
+					apexEdgeTop,	// vertex2
+					legSurface2Vertex3,	// vertex3
+					null,	// surfaceProperty -- set in a minute
+					surfaces,	// parent
+					getStudio()	// studio
+				);			
+
 			// make the leg surfaces teleport to each other...
 			legSurface1.setSurfaceProperty(
 					new Teleporting(

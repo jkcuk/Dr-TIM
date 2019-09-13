@@ -75,7 +75,68 @@ implements IPanelComponent
 		return new EditableParametrisedTriangle(this);
 	}
 	
-	
+	/**
+	 * @param description
+	 * @param vertex1
+	 * @param vertex2
+	 * @param vertex3
+	 * @param outsidePosition
+	 * @param uUnitVector
+	 * @param vUnitVector
+	 * @param surfaceProperty
+	 * @param parent
+	 * @param studio
+	 * @return	an EditableParametrisedTriangle with the given vertices and parametrisation given by  uUnitVector and vUnitVector, and with outwardsSurfaceNormal such that insidePosition lies on the outside side
+	 */
+	public static EditableParametrisedTriangle makeEditableParametrisedTriangleFromVertices(
+			String description,
+			Vector3D vertex1,
+			Vector3D vertex2,
+			Vector3D vertex3,
+			Vector3D outsidePosition,
+			Vector3D uUnitVector,
+			Vector3D vUnitVector,
+			SurfaceProperty surfaceProperty,
+			SceneObject parent,
+			Studio studio
+		)
+	{
+		EditableParametrisedTriangle t = new EditableParametrisedTriangle(
+				description,
+				vertex1,
+				Vector3D.difference(vertex2, vertex1),	// vertex1ToVertex2,
+				Vector3D.difference(vertex3, vertex1),	// vertex1ToVertex3,
+				false,	// not semiInfinite,
+				uUnitVector,
+				vUnitVector,
+				surfaceProperty,
+				parent,
+				studio
+			);
+		
+		// is outsidePosition actually on  the outside?
+		if(t.insideObject(outsidePosition))
+		{
+			// no, it isn't
+			// the outwards-facing normal is the wrong way round;
+			// switch vertices 2 and 3 to reverse it
+			t = new EditableParametrisedTriangle(
+					description,
+					vertex1,
+					Vector3D.difference(vertex3, vertex1),	// vertex1ToVertex3,
+					Vector3D.difference(vertex2, vertex1),	// vertex1ToVertex2,
+					false,	// not semiInfinite,
+					uUnitVector,
+					vUnitVector,
+					surfaceProperty,
+					parent,
+					studio
+				);
+		}
+		
+		return t;
+	}
+
 	/**
 	 * make an EditableParametrisedTriangle from three vertex positions
 	 * @param description

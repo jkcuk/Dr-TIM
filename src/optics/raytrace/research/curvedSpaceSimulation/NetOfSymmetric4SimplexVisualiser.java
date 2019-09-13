@@ -16,9 +16,6 @@ import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
 import optics.raytrace.exceptions.InconsistencyException;
 import optics.raytrace.exceptions.SceneException;
-import optics.raytrace.lights.AmbientLight;
-import optics.raytrace.lights.LightSourceContainer;
-import optics.raytrace.lights.PhongLightSource;
 import optics.DoubleColour;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
@@ -32,7 +29,6 @@ import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableNetOfSymmetric4Simplex;
 import optics.raytrace.GUI.sceneObjects.EditableRayTrajectory;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedSphere;
-import optics.raytrace.core.LightSource;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 
@@ -56,7 +52,12 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	 * show edges of the simplicial complex that forms the net of the 4-simplex
 	 */
 	private boolean showNetEdges;
-	
+
+	/**
+	 * show faces of the simplicial complex that forms the net of the 4-simplex
+	 */
+	private boolean showNetFaces;
+
 	/**
 	 * show edges of the null-space wedges, i.e. the vertices and edges of the sheets forming the null-space wedges
 	 */
@@ -112,9 +113,9 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	 */
 	private double sphereRadius;
 	
-	/**
-	 * for debugging; if this variable takes a positive value, show only null-space wedge #showOnlyNullSpaceWedgeNo
-	 */
+//	/**
+//	 * for debugging; if this variable takes a positive value, show only null-space wedge #showOnlyNullSpaceWedgeNo
+//	 */
 	private int setShowOnlyNullSpaceWedgeNo;	// TODO for debugging
 	
 
@@ -135,8 +136,9 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 
 		showNullSpaceWedges = false;
 		showNetEdges = true;
+		showNetFaces = true;
 		showNullSpaceWedgeEdges = false;
-		setShowOnlyNullSpaceWedgeNo =  -1;	// TODO for debugging
+ 		setShowOnlyNullSpaceWedgeNo =  -1;	// TODO for debugging
 		
 		// the parameters for the net of the symmetric 4-simplex are held in the EditableNetOfRegular4Simplex net; create this and set the parameters
 		net = new EditableNetOfSymmetric4Simplex(
@@ -153,6 +155,7 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 				curvedSpaceSimulationType,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
 				showNetEdges,	// showNetStructure
+				showNetFaces,
 				showNullSpaceWedgeEdges,	// showNullSpaceWedgesStructure
 				SurfaceColour.GREEN_SHINY,	// netStructureSurfaceProperty
 				ColourFilter.LIGHT_CYAN_GLASS,	// netFaceSurfaceProperty
@@ -224,6 +227,7 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		printStream.println("showNullSpaceWedges = "+showNullSpaceWedges);
 		printStream.println("curvedSpaceSimulationType = "+curvedSpaceSimulationType);
 		printStream.println("showNetEdges = "+showNetEdges);
+		printStream.println("showNetFaces = "+showNetFaces);
 		printStream.println("showNullSpaceWedgeEdges = "+showNullSpaceWedgeEdges);
 		
 		printStream.println("showSphere = "+showSphere);
@@ -272,20 +276,21 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 			);
 		
 		//  make it a bit brighter
-		LightSourceContainer lights = new LightSourceContainer("lights");
-		lights.add(new AmbientLight("background light", DoubleColour.GREY60));
-		lights.add(new PhongLightSource("point light souce", new Vector3D(100,300,-500), DoubleColour.WHITE, DoubleColour.WHITE, 40.));
-		lights.add(new PhongLightSource("red point light souce", new Vector3D(100,300,500), DoubleColour.RED, DoubleColour.RED, 40.));
-		lights.add(new PhongLightSource("blue point light souce", new Vector3D(-500,300,00), DoubleColour.BLUE, DoubleColour.BLUE, 40.));
-		studio.setLights(lights);
+//		LightSourceContainer lights = new LightSourceContainer("lights");
+//		lights.add(new AmbientLight("background light", DoubleColour.GREY60));
+//		lights.add(new PhongLightSource("point light souce", new Vector3D(100,300,-500), DoubleColour.WHITE, DoubleColour.WHITE, 40.));
+//		lights.add(new PhongLightSource("red point light souce", new Vector3D(100,300,500), DoubleColour.RED, DoubleColour.RED, 40.));
+//		lights.add(new PhongLightSource("blue point light souce", new Vector3D(-500,300,00), DoubleColour.BLUE, DoubleColour.BLUE, 40.));
+//		studio.setLights(lights);
 
 
 		// the net: set its parent to <i>scene</i>...
 		net.setParent(scene);
 		net.setGluingType(curvedSpaceSimulationType);	// (curvedSpaceSimulationType==GluingType.NEGATIVE_SPACE_WEDGES?GluingType.NEGATIVE_SPACE_WEDGES:GluingType.PERFECT));
 		net.setShowNetEdges(false);
+		net.setShowNetFaces(false);
 		net.setShowNullSpaceWedgeEdges(false);
-		net.setShowOnlyNullSpaceWedgeNo(setShowOnlyNullSpaceWedgeNo);
+ 		net.setShowOnlyNullSpaceWedgeNo(setShowOnlyNullSpaceWedgeNo);
 		// ... and get it prepared for light-ray-trajectory tracing
 		switch(curvedSpaceSimulationType)
 		{
@@ -351,6 +356,7 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		
 		// prepare the net for standard ray tracing...
 		net.setShowNetEdges(showNetEdges);
+		net.setShowNetFaces(showNetFaces);
 		switch(curvedSpaceSimulationType)
 		{
 		case NEGATIVE_SPACE_WEDGES:
@@ -388,7 +394,7 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	private LabelledIntPanel numberOfNegativeSpaceWedgesPanel, setShowOnlyNullSpaceWedgeNoPanel;	// TODO for debugging
 //	private JComboBox<GluingType> gluingTypeComboBox;
 	private JComboBox<GluingType> curvedSpaceSimulationTypeComboBox;
-	private JCheckBox showNullSpaceWedgesCheckBox, showNetEdgesCheckBox, showNullSpaceWedgesEdgesCheckBox;
+	private JCheckBox showNullSpaceWedgesCheckBox, showNetEdgesCheckBox, showNetFacesCheckBox, showNullSpaceWedgesEdgesCheckBox;
 	
 	// trajectory
 	private JCheckBox showTrajectoryCheckBox;
@@ -495,10 +501,15 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		structureVisualisationPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Show structure"));
 		structureVisualisationPanel.setLayout(new MigLayout("insets 0"));
 		
-		showNetEdgesCheckBox = new JCheckBox("Show structure (edges and faces) of net of 4-simplex");
+		showNetEdgesCheckBox = new JCheckBox("Show edges of net of 4-simplex");
 		showNetEdgesCheckBox.setSelected(showNetEdges);
 		showNetEdgesCheckBox.addActionListener(this);
 		structureVisualisationPanel.add(showNetEdgesCheckBox, "wrap");
+
+		showNetFacesCheckBox = new JCheckBox("Show faces of net of 4-simplex");
+		showNetFacesCheckBox.setSelected(showNetFaces);
+		showNetFacesCheckBox.addActionListener(this);
+		structureVisualisationPanel.add(showNetFacesCheckBox, "wrap");
 
 		showNullSpaceWedgesEdgesCheckBox = new JCheckBox("Show edges of null-space wedges");
 		showNullSpaceWedgesEdgesCheckBox.setSelected(showNullSpaceWedgeEdges);
@@ -636,8 +647,9 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		curvedSpaceSimulationType = (GluingType)curvedSpaceSimulationTypeComboBox.getSelectedItem();
 		net.setEdgeRadius(edgeRadiusPanel.getNumber());
 		showNetEdges = showNetEdgesCheckBox.isSelected();
+		showNetFaces = showNetFacesCheckBox.isSelected();
 		showNullSpaceWedgeEdges = showNullSpaceWedgesEdgesCheckBox.isSelected();
-		setShowOnlyNullSpaceWedgeNo = setShowOnlyNullSpaceWedgeNoPanel.getNumber();
+ 		setShowOnlyNullSpaceWedgeNo = setShowOnlyNullSpaceWedgeNoPanel.getNumber();
 		
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		showSphere = showSphereCheckBox.isSelected();
@@ -684,17 +696,15 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	{
 		super.actionPerformed(e);
 		
-		if(e.getSource().equals(showNullSpaceWedgesCheckBox))
-		{
-			acceptValuesInInteractiveControlPanel();
-			showOrHideControlPanels();
-		}
-		else if(e.getSource().equals(showNetEdgesCheckBox))
-		{
-			acceptValuesInInteractiveControlPanel();
-			showOrHideControlPanels();
-		}
-		else if(e.getSource().equals(showNullSpaceWedgesEdgesCheckBox))
+		if(
+				e.getSource().equals(showNullSpaceWedgesCheckBox) ||
+				e.getSource().equals(showNetEdgesCheckBox) ||
+				e.getSource().equals(showNetFacesCheckBox) ||
+				e.getSource().equals(showNullSpaceWedgesEdgesCheckBox) ||
+				e.getSource().equals(showSphereCheckBox) ||
+				e.getSource().equals(showTrajectoryCheckBox) ||
+				e.getSource().equals(cameraApertureSizeComboBox)
+			)
 		{
 			acceptValuesInInteractiveControlPanel();
 			showOrHideControlPanels();
@@ -707,21 +717,6 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		if(e.getSource().equals(curvedSpaceSimulationTypeComboBox))
 		{
 			curvedSpaceSimulationType = (GluingType)(curvedSpaceSimulationTypeComboBox.getSelectedItem());
-			showOrHideControlPanels();
-		}
-		else if(e.getSource().equals(showSphereCheckBox))
-		{
-			acceptValuesInInteractiveControlPanel();
-			showOrHideControlPanels();
-		}
-		else if(e.getSource().equals(showTrajectoryCheckBox))
-		{
-			acceptValuesInInteractiveControlPanel();
-			showOrHideControlPanels();
-		}
-		else if(e.getSource().equals(cameraApertureSizeComboBox))
-		{
-			acceptValuesInInteractiveControlPanel();
 			showOrHideControlPanels();
 		}
 	}

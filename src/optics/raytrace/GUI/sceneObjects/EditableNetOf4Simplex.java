@@ -95,6 +95,11 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	protected boolean showNetEdges;
 	
 	/**
+	 * show faces of the simplicial complex that forms the net of the 4-simplex
+	 */
+	protected boolean showNetFaces;
+	
+	/**
 	 * show edges of the null-space wedges, i.e. the vertices and edges of the sheets forming the null-space wedges
 	 */
 	protected boolean showNullSpaceWedgeEdges;
@@ -119,9 +124,9 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	 */
 	protected double edgeRadius;
 	
-	/**
-	 * for debugging; if this variable takes a positive value, show only null-space wedge #showOnlyNullSpaceWedgeNo
-	 */
+//	/**
+//	 * for debugging; if this variable takes a positive value, show only null-space wedge #showOnlyNullSpaceWedgeNo
+//	 */
 	protected int showOnlyNullSpaceWedgeNo;	// TODO for debugging
 	
 	
@@ -176,6 +181,7 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 			GluingType gluingType,
 			int numberOfNegativeSpaceWedges,
 			boolean showNetEdges,
+			boolean showNetFaces,
 			boolean showNullSpaceWedgeEdges,
 			SurfaceProperty netEdgeSurfaceProperty,
 			SurfaceProperty netFaceSurfaceProperty,
@@ -194,13 +200,14 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 		this.gluingType = gluingType;
 		this.numberOfNegativeSpaceWedges = numberOfNegativeSpaceWedges;
 		this.showNetEdges = showNetEdges;
+		this.showNetFaces = showNetFaces;
 		this.showNullSpaceWedgeEdges = showNullSpaceWedgeEdges;
 		this.netEdgeSurfaceProperty = netEdgeSurfaceProperty;
 		this.netFaceSurfaceProperty = netFaceSurfaceProperty;
 		this.nullSpaceWedgeEdgeSurfaceProperty = nullSpaceWedgeEdgeSurfaceProperty;
 		this.edgeRadius = structureTubeRadius;
 		
-		showOnlyNullSpaceWedgeNo = -1;	//  by default, show all null-space wedges
+//		showOnlyNullSpaceWedgeNo = -1;	//  by default, show all null-space wedges
 		
 		if((vertices != null) && (edges != null))
 		{
@@ -229,6 +236,7 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 			original.getGluingType(),
 			original.getNumberOfNegativeSpaceWedges(),
 			original.isShowNetEdges(),
+			original.isShowNetFaces(),
 			original.isShowNullSpaceWedgeEdges(),
 			original.getNetEdgeSurfaceProperty(),
 			original.getNetFaceSurfaceProperty(),
@@ -329,6 +337,14 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 		this.showNetEdges = showNetEdges;
 	}
 
+
+	public boolean isShowNetFaces() {
+		return showNetFaces;
+	}
+
+	public void setShowNetFaces(boolean showNetFaces) {
+		this.showNetFaces = showNetFaces;
+	}
 
 	public boolean isShowNullSpaceWedgeEdges() {
 		return showNullSpaceWedgeEdges;
@@ -433,18 +449,17 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 			addSceneObject(
 					simplicialComplex.getEditableSceneObjectCollection(
 							"Structure of net of 4-simplex",	// description
-							true,	// showVertices
+							showNetEdges,	// showVertices only if edges are shown
 							netEdgeSurfaceProperty,	// vertexSurfaceProperty
 							edgeRadius+MyMath.TINY,	// vertexRadius; add MyMath.TINY so that these cylinders are larger than the edges of the null-space-wedge frames
-							true,	// showEdges
+							showNetEdges,	// showEdges
 							netEdgeSurfaceProperty,	// edgeSurfaceProperty
 							edgeRadius,	// edgeRadius
-							true,	// showFaces
+							showNetFaces,	// showFaces
 							netFaceSurfaceProperty,	// faceSurfaceProperty
 							this,	// parent
 							getStudio()
-							),
-					showNetEdges
+							)
 					);
 			
 			// identify the central tetrahedron

@@ -107,6 +107,7 @@ extends EditableNetOf4Simplex
 				gluingType,
 				numberOfNegativeSpaceWedges,
 				showNetEdges,
+				false,	//  showNetFaces
 				showNullSpaceWedgeEdges,
 				netEdgeSurfaceProperty,
 				netFaceSurfaceProperty,

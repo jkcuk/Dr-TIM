@@ -99,6 +99,7 @@ extends EditableNetOf4Simplex
 			GluingType gluingType,
 			int numberOfNegativeSpaceWedges,
 			boolean showNetEdges,
+			boolean showNetFaces,
 			boolean showNullSpaceWedgeEdges,
 			SurfaceProperty netEdgeSurfaceProperty,
 			SurfaceProperty netFaceSurfaceProperty,
@@ -118,6 +119,7 @@ extends EditableNetOf4Simplex
 				gluingType,
 				numberOfNegativeSpaceWedges,
 				showNetEdges,
+				showNetFaces,
 				showNullSpaceWedgeEdges,
 				netEdgeSurfaceProperty,
 				netFaceSurfaceProperty,
@@ -157,7 +159,8 @@ extends EditableNetOf4Simplex
 				0.96,	// refractingSurfaceTransmissionCoefficient
 				GluingType.PERFECT,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
-				false,	// showNetStructure
+				false,	// showNetEdges
+				false,	// showNetFaces
 				false,	// showNullSpaceWedgesStructure
 				SurfaceColour.BLUE_SHINY,	// netStructureSurfaceProperty
 				ColourFilter.CYAN_GLASS,	// netFaceSurfaceProperty
@@ -184,6 +187,7 @@ extends EditableNetOf4Simplex
 				original.getGluingType(),
 				original.getNumberOfNegativeSpaceWedges(),
 				original.isShowNetEdges(),
+				original.isShowNetFaces(),
 				original.isShowNullSpaceWedgeEdges(),
 				original.getNetEdgeSurfaceProperty(),
 				original.getNetFaceSurfaceProperty(),
@@ -288,6 +292,7 @@ extends EditableNetOf4Simplex
 	public void populateSceneObjectCollection()
 	throws InconsistencyException
 	{
+		clear();
 		// create a physical-space simplicial complex
 		
 		// create a new array of vertices
@@ -342,6 +347,7 @@ extends EditableNetOf4Simplex
 		edges.add(createNamedEdge(3, 1, vertices));	// 5
 
 		// create a simplicial complex that corresponds to the inner tetrahedron
+		@SuppressWarnings("unchecked")
 		SimplicialComplex innerTetrahedron = SimplicialComplex.getSimplicialComplexFromVerticesAndEdges((ArrayList<Vector3D>)(vertices.clone()), (ArrayList<Edge>)(edges.clone()));
 		
 		// in the net of the 4-simplex, there is an additional vertex for each of the faces of the inner tetrahedron

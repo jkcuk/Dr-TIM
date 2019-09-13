@@ -451,7 +451,13 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		// System.out.println("ThreeSkewLensRotation::populateStudio: rotation angle ="+MyMath.rad2deg(rotationAngle)+"°");
 		
 		NumberFormat nf = NumberFormat.getInstance();
-		infoTextField.setText("f_2 = "+nf.format(f2)+", n_3 = "+n3+", p_3 = "+p3+", f_3 = "+nf.format(f3));
+		infoTextField.setText(
+				"f_1 = "+nf.format(f1)
+				+ ", f_2 = "+nf.format(f2)
+//				+", n_3 = "+n3
+//				+", p_3 = "+p3
+				+", f_3 = "+nf.format(f3)
+			);
 		/*
 		if(lens3InPrincipalPlane)
 		{
