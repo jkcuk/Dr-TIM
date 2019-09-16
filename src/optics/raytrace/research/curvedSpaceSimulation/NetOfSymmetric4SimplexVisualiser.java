@@ -676,7 +676,7 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		showNullSpaceWedgesCheckBox.setEnabled(curvedSpaceSimulationType != GluingType.MIRROR_APPROXIMATION);
 		nullSpaceWedgeLegLengthFactorPanel.setEnabled((curvedSpaceSimulationType == GluingType.NEGATIVE_SPACE_WEDGES) && (showNullSpaceWedges || showNullSpaceWedgeEdges));
 		nullSpaceWedgeSurfaceTransmissionCoefficientPanel.setEnabled(showNullSpaceWedges);
-		numberOfNegativeSpaceWedgesPanel.setEnabled((curvedSpaceSimulationType == GluingType.NEGATIVE_SPACE_WEDGES) && (showNullSpaceWedges || showNullSpaceWedgeEdges));
+		numberOfNegativeSpaceWedgesPanel.setEnabled((curvedSpaceSimulationType != GluingType.MIRROR_APPROXIMATION) && (showNullSpaceWedges || showNullSpaceWedgeEdges));
 		// gluingTypeComboBox.setEnabled(showNullSpaceWedges || showNullSpaceWedgeEdges);
 		edgeRadiusPanel.setEnabled(showNullSpaceWedgeEdges || showNetEdges);
 		

@@ -21,6 +21,7 @@ import optics.raytrace.GUI.surfaces.SurfacePropertyPanel;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
+import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.research.curvedSpaceSimulation.GluingType;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
 import optics.raytrace.surfaces.RayRotating;
@@ -393,58 +394,6 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 	}
 	
 	
-//	/**
-//	 * @param description
-//	 * @param vertex1
-//	 * @param vertex2
-//	 * @param vertex3
-//	 * @return	a triangle that represents one of the "leg surfaces", oriented such that the bisector direction, b, points inwards
-//	 */
-//	private EditableParametrisedTriangle createTriangleWithCorrectNormalDirection1(String description, Vector3D vertex1, Vector3D vertex2, Vector3D vertex3)
-//	{
-//		EditableParametrisedTriangle t = EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
-//					description,
-//					vertex1,
-//					vertex2,
-//					vertex3,
-//					null,	// surfaceProperty -- set later
-//					null,	// parent -- set later
-//					getStudio()
-//				);
-//		
-//		// does b point inwards?
-//		if(Vector3D.scalarProduct(
-//				t.getNormalisedOutwardsSurfaceNormal(vertex1),
-//				b
-//				) > 0)
-//		{
-//			// no, b points outwards; create a triangle with the reverse order of the vertices
-//			t = EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
-//					description,
-//					vertex3,
-//					vertex2,
-//					vertex1,
-//					null,	// surfaceProperty -- set later
-//					null,	// parent -- set later
-//					getStudio()
-//					);
-//			// now b should point inwards
-////
-////			// does b point inwards?
-////			if(Vector3D.scalarProduct(
-////					t.getNormalisedOutwardsSurfaceNormal(vertex1),
-////					b
-////					) > 0)
-////			{
-////				// b still points outwards; panic!
-////				new RayTraceException("EditableMirroredSpaceCancellingWedge::createTriangleWithCorrectNormalDirection: Can't create triangle with correct normal direction").printStackTrace();
-////				System.exit(-1);
-////			}
-//		}
-//
-//		return t;
-//	}
-	
 	/**
 	 * @param description
 	 * @param pointOnPlane
@@ -543,9 +492,10 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 			// cw = unit vector perpendicular to both a and b, pointing into the same half space as leg surface 1
 
 			double apexAngleW = apexAngle/numberOfNegativeSpaceWedges;
+			double bWAngle = -0.5*apexAngle+(w+0.5-(gluingType==GluingType.NEGATIVE_SPACE_WEDGES_SYMMETRIC?0.25:0))*apexAngleW;
 			Vector3D bw = Vector3D.sum(
-					b.getProductWith(Math.cos(-0.5*apexAngle+(w+0.5)*apexAngleW)),
-					c.getProductWith(Math.sin(-0.5*apexAngle+(w+0.5)*apexAngleW))
+					b.getProductWith(Math.cos(bWAngle)),
+					c.getProductWith(Math.sin(bWAngle))
 					);
 			Vector3D cw = Vector3D.crossProduct(bw, a);
 			
@@ -557,83 +507,97 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 					bw.getProductWith(legLength*Math.cos( 0.5*apexAngleW)),
 					cw.getProductWith(legLength*Math.sin( 0.5*apexAngleW))
 					);
+
+				// leg surface 1 is used by all (supported) gluing types
+				if(gluingType != GluingType.MIRROR_APPROXIMATION)
+				{
+					edges.addSceneObject(
+							new EditableScaledParametrisedSphere(
+									nameW+"Leg surface 1, vertex 3",	// description
+									legSurface1Vertex3,	// centre
+									edgeRadius,	// radius
+									edgeSurfaceProperty,	// surfaceProperty
+									edges,	// parent
+									getStudio()	// studio
+									)
+							);
+					// the edges
+					edges.addSceneObject(
+							new EditableParametrisedCylinder(
+									nameW+"Leg surface 1, apex edge top to vertex 3",	// description
+									apexEdgeTop,	// start point
+									legSurface1Vertex3,	// end point
+									edgeRadius,	// radius
+									edgeSurfaceProperty,	// surfaceProperty
+									edges,
+									getStudio()
+									)
+							);
+					edges.addSceneObject(
+							new EditableParametrisedCylinder(
+									nameW+"Leg surface 1, apex edge bottom to vertex 3",	// description
+									apexEdgeBottom,	// start point
+									legSurface1Vertex3,	// end point
+									edgeRadius,	// radius
+									edgeSurfaceProperty,	// surfaceProperty
+									edges,
+									getStudio()
+									)
+							);
+				}
+
+			// the leg surface 2 is only required by the PERFECT and NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS gluing types
 			Vector3D legSurface2Vertex3 = Vector3D.sum(
 					apexEdgeCentre,
 					bw.getProductWith(legLength*Math.cos(-0.5*apexAngleW)),
 					cw.getProductWith(legLength*Math.sin(-0.5*apexAngleW))
 					);
+			// add the edges for these gluing types
+			if((gluingType == GluingType.PERFECT) || (gluingType == GluingType.NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS))
+			{
+				edges.addSceneObject(
+						new EditableScaledParametrisedSphere(
+								nameW+"Leg surface 2, vertex 3",	// description
+								legSurface2Vertex3,	// centre
+								edgeRadius,	// radius
+								edgeSurfaceProperty,	// surfaceProperty
+								edges,	// parent
+								getStudio()	// studio
+								)
+						);
 
-			edges.addSceneObject(
-					new EditableScaledParametrisedSphere(
-							nameW+"Leg surface 1, vertex 3",	// description
-							legSurface1Vertex3,	// centre
-							edgeRadius,	// radius
-							edgeSurfaceProperty,	// surfaceProperty
-							edges,	// parent
-							getStudio()	// studio
-							)
-					);
-			edges.addSceneObject(
-					new EditableScaledParametrisedSphere(
-							nameW+"Leg surface 2, vertex 3",	// description
-							legSurface2Vertex3,	// centre
-							edgeRadius,	// radius
-							edgeSurfaceProperty,	// surfaceProperty
-							edges,	// parent
-							getStudio()	// studio
-							)
-					);
-
-			// the edges
-			edges.addSceneObject(
-					new EditableParametrisedCylinder(
-							nameW+"Leg surface 1, apex edge top to vertex 3",	// description
-							apexEdgeTop,	// start point
-							legSurface1Vertex3,	// end point
-							edgeRadius,	// radius
-							edgeSurfaceProperty,	// surfaceProperty
-							edges,
-							getStudio()
-							)
-					);
-			edges.addSceneObject(
-					new EditableParametrisedCylinder(
-							nameW+"Leg surface 1, apex edge bottom to vertex 3",	// description
-							apexEdgeBottom,	// start point
-							legSurface1Vertex3,	// end point
-							edgeRadius,	// radius
-							edgeSurfaceProperty,	// surfaceProperty
-							edges,
-							getStudio()
-							)
-					);
-			edges.addSceneObject(
-					new EditableParametrisedCylinder(
-							nameW+"Leg surface 2, apex edge top to vertex 3",	// description
-							apexEdgeTop,	// start point
-							legSurface2Vertex3,	// end point
-							edgeRadius,	// radius
-							edgeSurfaceProperty,	// surfaceProperty
-							edges,
-							getStudio()
-							)
-					);
-			edges.addSceneObject(
-					new EditableParametrisedCylinder(
-							nameW+"Leg surface 2, apex edge bottom to vertex 3",	// description
-							apexEdgeBottom,	// start point
-							legSurface2Vertex3,	// end point
-							edgeRadius,	// radius
-							edgeSurfaceProperty,	// surfaceProperty
-							edges,
-							getStudio()
-							)
-					);
+				edges.addSceneObject(
+						new EditableParametrisedCylinder(
+								nameW+"Leg surface 2, apex edge top to vertex 3",	// description
+								apexEdgeTop,	// start point
+								legSurface2Vertex3,	// end point
+								edgeRadius,	// radius
+								edgeSurfaceProperty,	// surfaceProperty
+								edges,
+								getStudio()
+								)
+						);
+				edges.addSceneObject(
+						new EditableParametrisedCylinder(
+								nameW+"Leg surface 2, apex edge bottom to vertex 3",	// description
+								apexEdgeBottom,	// start point
+								legSurface2Vertex3,	// end point
+								edgeRadius,	// radius
+								edgeSurfaceProperty,	// surfaceProperty
+								edges,
+								getStudio()
+								)
+						);
+			}
 
 			EditableParametrisedTriangle legSurface1, legSurface2;
 
 			switch(gluingType)
 			{
+			case MIRROR_APPROXIMATION:
+				(new RayTraceException("Gluing type MIRROR_APPROXIMATION not supported.")).printStackTrace();	
+				break;
+			case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
 			case NEGATIVE_SPACE_WEDGES:
 				// add the leg surfaces
 				surfaces.addSceneObject(EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
@@ -666,13 +630,47 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 						surfaces,	// parent
 						getStudio()	// studio
 						));
+				
+				// also add the edges of the bisector surface
+				edges.addSceneObject(
+						new EditableScaledParametrisedSphere(
+								nameW+"Bisector surface, vertex 3",	// description
+								bisectorVertex3,	// centre
+								edgeRadius,	// radius
+								edgeSurfaceProperty,	// surfaceProperty
+								edges,	// parent
+								getStudio()	// studio
+								)
+						);
+
+				edges.addSceneObject(
+						new EditableParametrisedCylinder(
+								nameW+"Bisector surface, apex edge top to vertex 3",	// description
+								apexEdgeTop,	// start point
+								bisectorVertex3,	// end point
+								edgeRadius,	// radius
+								edgeSurfaceProperty,	// surfaceProperty
+								edges,
+								getStudio()
+								)
+						);
+				edges.addSceneObject(
+						new EditableParametrisedCylinder(
+								nameW+"Bisector surface, apex edge bottom to vertex 3",	// description
+								apexEdgeBottom,	// start point
+								bisectorVertex3,	// end point
+								edgeRadius,	// radius
+								edgeSurfaceProperty,	// surfaceProperty
+								edges,
+								getStudio()
+								)
+						);
 
 				break;
-			case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
 			case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
 				// suitable for wedges with deficit angles <180°
 				// see Johannes's lab book 10/9/19
-
+				
 				SceneObjectPrimitiveIntersection legSurface1AndMirrors = new SceneObjectPrimitiveIntersection(
 						nameW+"Leg surface 1 & associated mirrors",	// description,
 						this,	// parent
@@ -770,7 +768,6 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 
 				break;
 			case PERFECT:
-			default:
 				legSurface1 = EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
 						nameW+"Leg surface 1 (teleporting to Leg surface 2)",	// description
 						apexEdgeBottom,	// vertex1
