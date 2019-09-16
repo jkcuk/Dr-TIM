@@ -266,35 +266,7 @@ public class ParametrisedTriangle extends SceneObjectPrimitive implements One2On
 	@Override
 	public Vector2D getSurfaceCoordinates(Vector3D p)
 	{
-//		System.out.println(
-//				"ParametrisedTriangle::getSurfaceCoordinates: vertex1="+vertex1+
-//				", uUnitVector="+uUnitVector+
-//				", vUnitVector="+vUnitVector
-//			);
-		
 		return p.getDifferenceWith(vertex1).calculateDecomposition(uUnitVector, vUnitVector);
-
-
-//		Vector3D
-//			vertex12p = Vector3D.difference(p, vertex1);
-//		
-//		double
-//		u = Vector3D.scalarProduct(vertex12p, uUnitVector),
-//		v = Vector3D.scalarProduct(vertex12p, vUnitVector);
-//		
-////		System.out.println(
-////				"ParametrisedTriangle::getSurfaceCoordinates: p="+p+
-////				", (u,v)=("+u+", "+v+
-////				"), getPointForSurfaceCoordinates(u,v)="+getPointForSurfaceCoordinates(u,v)
-////			);
-//		
-////		Vector3D n = Vector3D.crossProduct(uUnitVector, vUnitVector).getNormalised();
-////		System.out.println("ParametrisedTriangle::getSurfaceCoordinates: normal component ="+Vector3D.scalarProduct(vertex12p, n));
-//
-//		return new Vector2D(u, v);
-////				Vector3D.scalarProduct(vertex12p, uUnitVector),
-////				Vector3D.scalarProduct(vertex12p, vUnitVector)
-////			);
 	}
 
 	@Override

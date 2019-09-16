@@ -507,7 +507,7 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 				// the midpoint of the edge
 				Vector3D m = Vector3D.sum(v1, v2).getProductWith(0.5);
 				
-				System.out.println("EditableNetOf4Simplex::populateSceneObjectCollection: v1="+v1+", v2="+v2+", m="+m+", c="+c);
+				// System.out.println("EditableNetOf4Simplex::populateSceneObjectCollection: v1="+v1+", v2="+v2+", m="+m+", c="+c);
 
 				// find the third vertex of the outside faces that share the current edge;
 				// calculate the distance from the current edge to those vertices (which should be the same);
@@ -558,7 +558,7 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 								edgeRadius-MyMath.TINY,	// edgeRadius
 								nullSpaceWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty
 								gluingType,	// gluingTypoe
-								// numberOfNegativeSpaceWedges,	// numberOfNegativeSpaceWedges,
+								numberOfNegativeSpaceWedges,	// numberOfNegativeSpaceWedges,
 								this,	// parent, 
 								getStudio()
 								)
