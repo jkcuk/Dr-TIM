@@ -44,9 +44,9 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	private EditableNetOfSymmetric4Simplex net;
 	
 	/**
-	 * show the null-space wedges
+	 * show the space-cancelling wedges
 	 */
-	private boolean showNullSpaceWedges;
+	private boolean showSpaceCancellingWedges;
 
 	/**
 	 * show edges of the simplicial complex that forms the net of the 4-simplex
@@ -59,9 +59,9 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	private boolean showNetFaces;
 
 	/**
-	 * show edges of the null-space wedges, i.e. the vertices and edges of the sheets forming the null-space wedges
+	 * show edges of the space-cancelling wedges, i.e. the vertices and edges of the sheets forming the space-cancelling wedges
 	 */
-	private boolean showNullSpaceWedgeEdges;
+	private boolean showSpaceCancellingWedgeEdges;
 
 	/**
 	 * Curved-space-simulation type, which describes the way the simulation is performed
@@ -114,9 +114,9 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	private double sphereRadius;
 	
 //	/**
-//	 * for debugging; if this variable takes a positive value, show only null-space wedge #showOnlyNullSpaceWedgeNo
+//	 * for debugging; if this variable takes a positive value, show only space-cancelling wedge #showOnlySpaceCancellingWedgeNo
 //	 */
-	private int setShowOnlyNullSpaceWedgeNo;	// TODO for debugging
+	private int setShowOnlySpaceCancellingWedgeNo;	// TODO for debugging
 	
 
 	/**
@@ -132,13 +132,13 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 
 		// set all parameters
 		
-		curvedSpaceSimulationType = GluingType.NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS;
+		curvedSpaceSimulationType = GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS;
 
-		showNullSpaceWedges = false;
+		showSpaceCancellingWedges = false;
 		showNetEdges = true;
 		showNetFaces = true;
-		showNullSpaceWedgeEdges = false;
- 		setShowOnlyNullSpaceWedgeNo =  -1;	// TODO for debugging
+		showSpaceCancellingWedgeEdges = false;
+ 		setShowOnlySpaceCancellingWedgeNo =  -1;	// TODO for debugging
 		
 		// the parameters for the net of the symmetric 4-simplex are held in the EditableNetOfRegular4Simplex net; create this and set the parameters
 		net = new EditableNetOfSymmetric4Simplex(
@@ -149,17 +149,17 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 				new Vector3D(1, 0, 0),	// normal to face 1 of enclosing cube
 				new Vector3D(0, 1, 0),	// normal to face 1 of enclosing cube
 				new Vector3D(0, 0, 1),	// normal to face 1 of enclosing cube
-				showNullSpaceWedges,	// showNullSpaceWedges
-				1,	// nullSpaceWedgeLegLengthFactor
+				showSpaceCancellingWedges,	// showSpaceCancellingWedges
+				1,	// spaceCancellingWedgeLegLengthFactor
 				1,	// refractingSurfaceTransmissionCoefficient
 				curvedSpaceSimulationType,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
 				showNetEdges,	// showNetStructure
 				showNetFaces,
-				showNullSpaceWedgeEdges,	// showNullSpaceWedgesStructure
-				SurfaceColour.GREEN_SHINY,	// netStructureSurfaceProperty
+				showSpaceCancellingWedgeEdges,	// showSpaceCancellingWedgesStructure
+				SurfaceColour.GREY20_SHINY,	// netStructureSurfaceProperty
 				ColourFilter.LIGHT_CYAN_GLASS,	// netFaceSurfaceProperty
-				SurfaceColour.RED_SHINY,	// nullSpaceWedgesStructureSurfaceProperty
+				SurfaceColour.RED_SHINY,	// spaceCancellingWedgesStructureSurfaceProperty
 				0.02,	// structureTubeRadius
 				null,	// parent
 				null	// studio
@@ -221,28 +221,59 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	public void writeParameters(PrintStream printStream)
 	{
 		// write any parameters not defined in NonInteractiveTIMEngine
-		printStream.println("Scene initialisation");
+		printStream.println("Net");
 		printStream.println();
-		
-		printStream.println("showNullSpaceWedges = "+showNullSpaceWedges);
-		printStream.println("curvedSpaceSimulationType = "+curvedSpaceSimulationType);
-		printStream.println("showNetEdges = "+showNetEdges);
-		printStream.println("showNetFaces = "+showNetFaces);
-		printStream.println("showNullSpaceWedgeEdges = "+showNullSpaceWedgeEdges);
-		
-		printStream.println("showSphere = "+showSphere);
-		if(showSphere)
-		{		
-			printStream.println("sphereCentre = "+sphereCentre);
-			printStream.println("sphereRadius = "+sphereRadius);
-		}
-		
-		printStream.println("studioInitialisation = "+studioInitialisation);
 
+		printStream.println("Centroid = "+net.getCentroid());
+		printStream.println("Edge length of central tetrahedron = "+net.getEdgeLength());
+		printStream.println("(Height of outer tetrahedra)/(height of central tetrahedron) = "+net.getOuterTetrahedronHeightFactor());
+		printStream.println("Normal to face 1 of enclosing cube = "+net.getNormal2enclosingCube1());
+		printStream.println("Normal to face 2 of enclosing cube = "+net.getNormal2enclosingCube2());
+		printStream.println("Normal to face 3 of enclosing cube = "+net.getNormal2enclosingCube3());
+		printStream.println("Show space-cancelling wedges = "+showSpaceCancellingWedges);
+		printStream.println("Leg length factor = "+net.getSpaceCancellingWedgeLegLengthFactor());
+		printStream.println("Simulation type = "+curvedSpaceSimulationType);
+		printStream.println("Transmission coefficient of space-cancelling-wedge surfaces = "+net.getSpaceCancellingWedgeSurfaceTransmissionCoefficient());
+		printStream.println("Number of space-cancelling wedges in fan of space-cancelling wedge = "+net.getNumberOfNegativeSpaceWedges());
+		printStream.println("Show structure > Show edges of net of 4-simplex = "+showNetEdges);
+		printStream.println("Show structure > Show faces of net of 4-simplex = "+showNetFaces);
+		printStream.println("Show structure > Show edges of space-cancelling wedges = "+showSpaceCancellingWedgeEdges);
+		printStream.println("Show structure > Tube radius = "+net.getEdgeRadius());
+		
 		printStream.println();
+		printStream.println("Stuff");
+		printStream.println();
+
+		printStream.println("Initialise backdrop to = "+studioInitialisation);
+		printStream.println("White sphere > Show = "+showSphere);
+		printStream.println("White sphere > Centre = "+sphereCentre);
+		printStream.println("White sphere > Radius = "+sphereRadius);
+		
+		printStream.println();
+		printStream.println("Trajectory");
+		printStream.println();
+
+		
+		printStream.println("Show trajectory = "+showTrajectory);
+		printStream.println("Start point = "+trajectoryStartPoint);
+		printStream.println("Initial direction = "+trajectoryStartDirection);
+		printStream.println("Radius = "+trajectoryRadius);
+		printStream.println("Max. trace level = "+trajectoryMaxTraceLevel);
+		
+		printStream.println();
+		printStream.println("Camera");
+		printStream.println();
+
+		printStream.println("Aperture centre = "+Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)));
+		printStream.println("Centre of view = "+cameraViewCentre);
+		printStream.println("Horizontal FOV = "+cameraHorizontalFOVDeg+"°");
+		printStream.println("Aperture size = "+cameraApertureSize);
+		printStream.println("Focussing distance = "+cameraFocussingDistance);
+		printStream.println("Max. trace level = "+cameraMaxTraceLevel);
+
 
 		// write all parameters defined in NonInteractiveTIMEngine
-		super.writeParameters(printStream);		
+		// super.writeParameters(printStream);		
 	}
 
 	
@@ -289,20 +320,20 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		net.setGluingType(curvedSpaceSimulationType);	// (curvedSpaceSimulationType==GluingType.NEGATIVE_SPACE_WEDGES?GluingType.NEGATIVE_SPACE_WEDGES:GluingType.PERFECT));
 		net.setShowNetEdges(false);
 		net.setShowNetFaces(false);
-		net.setShowNullSpaceWedgeEdges(false);
- 		net.setShowOnlyNullSpaceWedgeNo(setShowOnlyNullSpaceWedgeNo);
+		net.setShowSpaceCancellingWedgeEdges(false);
+ 		net.setShowOnlySpaceCancellingWedgeNo(setShowOnlySpaceCancellingWedgeNo);
 		// ... and get it prepared for light-ray-trajectory tracing
 		switch(curvedSpaceSimulationType)
 		{
-		case NEGATIVE_SPACE_WEDGES:
-		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case SPACE_CANCELLING_WEDGES:
+		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 		case PERFECT:
-			// showing the null-space wedges but hiding all edges
-			net.setShowNullSpaceWedges(true);
+			// showing the space-cancelling wedges but hiding all edges
+			net.setShowSpaceCancellingWedges(true);
 			break;
 		case MIRROR_APPROXIMATION:
-			net.setShowNullSpaceWedges(false);
+			net.setShowSpaceCancellingWedges(false);
 			addMirrors();
 		}
 
@@ -359,16 +390,16 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		net.setShowNetFaces(showNetFaces);
 		switch(curvedSpaceSimulationType)
 		{
-		case NEGATIVE_SPACE_WEDGES:
-		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case SPACE_CANCELLING_WEDGES:
+		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 		case PERFECT:
-			net.setShowNullSpaceWedges(showNullSpaceWedges);
-			net.setShowNullSpaceWedgeEdges(showNullSpaceWedgeEdges);
+			net.setShowSpaceCancellingWedges(showSpaceCancellingWedges);
+			net.setShowSpaceCancellingWedgeEdges(showSpaceCancellingWedgeEdges);
 			break;
 		case MIRROR_APPROXIMATION:
-			net.setShowNullSpaceWedges(false);
-			net.setShowNullSpaceWedgeEdges(false);
+			net.setShowSpaceCancellingWedges(false);
+			net.setShowSpaceCancellingWedgeEdges(false);
 			addMirrors();
 		}
 
@@ -390,11 +421,11 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	
 	// GUI panels
 	private LabelledVector3DPanel centroidPanel, normal2enclosingCube1Panel, normal2enclosingCube2Panel, normal2enclosingCube3Panel;
-	private LabelledDoublePanel edgeLengthPanel, outerTetrahedronHeightFactorPanel, edgeRadiusPanel, nullSpaceWedgeLegLengthFactorPanel, nullSpaceWedgeSurfaceTransmissionCoefficientPanel;
-	private LabelledIntPanel numberOfNegativeSpaceWedgesPanel, setShowOnlyNullSpaceWedgeNoPanel;	// TODO for debugging
+	private LabelledDoublePanel edgeLengthPanel, outerTetrahedronHeightFactorPanel, edgeRadiusPanel, spaceCancellingWedgeLegLengthFactorPanel, spaceCancellingWedgeSurfaceTransmissionCoefficientPanel;
+	private LabelledIntPanel numberOfNegativeSpaceWedgesPanel;	// , setShowOnlySpaceCancellingWedgeNoPanel;	// TODO for debugging
 //	private JComboBox<GluingType> gluingTypeComboBox;
 	private JComboBox<GluingType> curvedSpaceSimulationTypeComboBox;
-	private JCheckBox showNullSpaceWedgesCheckBox, showNetEdgesCheckBox, showNetFacesCheckBox, showNullSpaceWedgesEdgesCheckBox;
+	private JCheckBox showSpaceCancellingWedgesCheckBox, showNetEdgesCheckBox, showNetFacesCheckBox, showSpaceCancellingWedgesEdgesCheckBox;
 	
 	// trajectory
 	private JCheckBox showTrajectoryCheckBox;
@@ -464,18 +495,18 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		normal2enclosingCube3Panel.setVector3D(net.getNormal2enclosingCube3());
 		netPanel.add(normal2enclosingCube3Panel, "wrap");
 		
-		showNullSpaceWedgesCheckBox = new JCheckBox("Show null-space wedges");
-		showNullSpaceWedgesCheckBox.setSelected(showNullSpaceWedges);
-		showNullSpaceWedgesCheckBox.addActionListener(this);
-		netPanel.add(showNullSpaceWedgesCheckBox, "wrap");
+		showSpaceCancellingWedgesCheckBox = new JCheckBox("Show space-cancelling wedges");
+		showSpaceCancellingWedgesCheckBox.setSelected(showSpaceCancellingWedges);
+		showSpaceCancellingWedgesCheckBox.addActionListener(this);
+		netPanel.add(showSpaceCancellingWedgesCheckBox, "wrap");
 		
-		setShowOnlyNullSpaceWedgeNoPanel = new LabelledIntPanel("Show only null-space wedge (-1 = all) #");	// TODO for debugging
-		setShowOnlyNullSpaceWedgeNoPanel.setNumber(setShowOnlyNullSpaceWedgeNo);
-		netPanel.add(setShowOnlyNullSpaceWedgeNoPanel, "wrap");
+//		setShowOnlySpaceCancellingWedgeNoPanel = new LabelledIntPanel("Show only space-cancelling wedge (-1 = all) #");	// TODO for debugging
+//		setShowOnlySpaceCancellingWedgeNoPanel.setNumber(setShowOnlySpaceCancellingWedgeNo);
+//		netPanel.add(setShowOnlySpaceCancellingWedgeNoPanel, "wrap");
 		
-		nullSpaceWedgeLegLengthFactorPanel = new LabelledDoublePanel("Leg length factor");
-		nullSpaceWedgeLegLengthFactorPanel.setNumber(net.getNullSpaceWedgeLegLengthFactor());
-		netPanel.add(nullSpaceWedgeLegLengthFactorPanel, "wrap");
+		spaceCancellingWedgeLegLengthFactorPanel = new LabelledDoublePanel("Leg length factor");
+		spaceCancellingWedgeLegLengthFactorPanel.setNumber(net.getSpaceCancellingWedgeLegLengthFactor());
+		netPanel.add(spaceCancellingWedgeLegLengthFactorPanel, "wrap");
 		
 //		gluingTypeComboBox = new JComboBox<GluingType>(GluingType.values());
 //		gluingTypeComboBox.setSelectedItem(net.getGluingType());
@@ -488,11 +519,11 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		curvedSpaceSimulationTypeComboBox.addActionListener(this);
 		netPanel.add(GUIBitsAndBobs.makeRow("Simulation type", curvedSpaceSimulationTypeComboBox), "wrap");
 		
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient of null-space-wedge surfaces");
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel.setNumber(net.getNullSpaceWedgeSurfaceTransmissionCoefficient());
-		netPanel.add(nullSpaceWedgeSurfaceTransmissionCoefficientPanel, "wrap");
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient of space-cancelling-wedge surfaces");
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.setNumber(net.getSpaceCancellingWedgeSurfaceTransmissionCoefficient());
+		netPanel.add(spaceCancellingWedgeSurfaceTransmissionCoefficientPanel, "wrap");
 		
-		numberOfNegativeSpaceWedgesPanel = new LabelledIntPanel("Number of negative-space wedges per null-space wedge");
+		numberOfNegativeSpaceWedgesPanel = new LabelledIntPanel("Number of space-cancelling wedges in fan of space-cancelling wedge");
 		numberOfNegativeSpaceWedgesPanel.setNumber(net.getNumberOfNegativeSpaceWedges());
 		netPanel.add(numberOfNegativeSpaceWedgesPanel, "wrap");
 		
@@ -511,10 +542,10 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		showNetFacesCheckBox.addActionListener(this);
 		structureVisualisationPanel.add(showNetFacesCheckBox, "wrap");
 
-		showNullSpaceWedgesEdgesCheckBox = new JCheckBox("Show edges of null-space wedges");
-		showNullSpaceWedgesEdgesCheckBox.setSelected(showNullSpaceWedgeEdges);
-		showNullSpaceWedgesEdgesCheckBox.addActionListener(this);
-		structureVisualisationPanel.add(showNullSpaceWedgesEdgesCheckBox, "wrap");
+		showSpaceCancellingWedgesEdgesCheckBox = new JCheckBox("Show edges of space-cancelling wedges");
+		showSpaceCancellingWedgesEdgesCheckBox.setSelected(showSpaceCancellingWedgeEdges);
+		showSpaceCancellingWedgesEdgesCheckBox.addActionListener(this);
+		structureVisualisationPanel.add(showSpaceCancellingWedgesEdgesCheckBox, "wrap");
 
 		edgeRadiusPanel = new LabelledDoublePanel("Tube radius");
 		edgeRadiusPanel.setNumber(net.getEdgeRadius());
@@ -639,17 +670,17 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		net.setEdgeLength(edgeLengthPanel.getNumber());
 		net.setOuterTetrahedronHeightFactor(outerTetrahedronHeightFactorPanel.getNumber());
 		net.setDirections(normal2enclosingCube1Panel.getVector3D(), normal2enclosingCube2Panel.getVector3D(), normal2enclosingCube3Panel.getVector3D());
-		showNullSpaceWedges = showNullSpaceWedgesCheckBox.isSelected();
-		net.setNullSpaceWedgeLegLengthFactor(nullSpaceWedgeLegLengthFactorPanel.getNumber());
-		net.setNullSpaceWedgeSurfaceTransmissionCoefficient(nullSpaceWedgeSurfaceTransmissionCoefficientPanel.getNumber());
+		showSpaceCancellingWedges = showSpaceCancellingWedgesCheckBox.isSelected();
+		net.setSpaceCancellingWedgeLegLengthFactor(spaceCancellingWedgeLegLengthFactorPanel.getNumber());
+		net.setSpaceCancellingWedgeSurfaceTransmissionCoefficient(spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.getNumber());
 		net.setNumberOfNegativeSpaceWedges(numberOfNegativeSpaceWedgesPanel.getNumber());
 		// net.setGluingType((GluingType)gluingTypeComboBox.getSelectedItem());
 		curvedSpaceSimulationType = (GluingType)curvedSpaceSimulationTypeComboBox.getSelectedItem();
 		net.setEdgeRadius(edgeRadiusPanel.getNumber());
 		showNetEdges = showNetEdgesCheckBox.isSelected();
 		showNetFaces = showNetFacesCheckBox.isSelected();
-		showNullSpaceWedgeEdges = showNullSpaceWedgesEdgesCheckBox.isSelected();
- 		setShowOnlyNullSpaceWedgeNo = setShowOnlyNullSpaceWedgeNoPanel.getNumber();
+		showSpaceCancellingWedgeEdges = showSpaceCancellingWedgesEdgesCheckBox.isSelected();
+ 		// setShowOnlySpaceCancellingWedgeNo = setShowOnlySpaceCancellingWedgeNoPanel.getNumber();
 		
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		showSphere = showSphereCheckBox.isSelected();
@@ -673,12 +704,12 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	
 	private void showOrHideControlPanels()
 	{
-		showNullSpaceWedgesCheckBox.setEnabled(curvedSpaceSimulationType != GluingType.MIRROR_APPROXIMATION);
-		nullSpaceWedgeLegLengthFactorPanel.setEnabled((curvedSpaceSimulationType == GluingType.NEGATIVE_SPACE_WEDGES) && (showNullSpaceWedges || showNullSpaceWedgeEdges));
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel.setEnabled(showNullSpaceWedges);
-		numberOfNegativeSpaceWedgesPanel.setEnabled((curvedSpaceSimulationType != GluingType.MIRROR_APPROXIMATION) && (showNullSpaceWedges || showNullSpaceWedgeEdges));
-		// gluingTypeComboBox.setEnabled(showNullSpaceWedges || showNullSpaceWedgeEdges);
-		edgeRadiusPanel.setEnabled(showNullSpaceWedgeEdges || showNetEdges);
+		showSpaceCancellingWedgesCheckBox.setEnabled(curvedSpaceSimulationType != GluingType.MIRROR_APPROXIMATION);
+		spaceCancellingWedgeLegLengthFactorPanel.setEnabled((curvedSpaceSimulationType == GluingType.SPACE_CANCELLING_WEDGES) && (showSpaceCancellingWedges || showSpaceCancellingWedgeEdges));
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.setEnabled(showSpaceCancellingWedges);
+		numberOfNegativeSpaceWedgesPanel.setEnabled((curvedSpaceSimulationType != GluingType.MIRROR_APPROXIMATION) && (showSpaceCancellingWedges || showSpaceCancellingWedgeEdges));
+		// gluingTypeComboBox.setEnabled(showSpaceCancellingWedges || showSpaceCancellingWedgeEdges);
+		edgeRadiusPanel.setEnabled(showSpaceCancellingWedgeEdges || showNetEdges);
 		
 		sphereCentrePanel.setEnabled(showSphere);
 		sphereRadiusPanel.setEnabled(showSphere);
@@ -697,10 +728,10 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		super.actionPerformed(e);
 		
 		if(
-				e.getSource().equals(showNullSpaceWedgesCheckBox) ||
+				e.getSource().equals(showSpaceCancellingWedgesCheckBox) ||
 				e.getSource().equals(showNetEdgesCheckBox) ||
 				e.getSource().equals(showNetFacesCheckBox) ||
-				e.getSource().equals(showNullSpaceWedgesEdgesCheckBox) ||
+				e.getSource().equals(showSpaceCancellingWedgesEdgesCheckBox) ||
 				e.getSource().equals(showSphereCheckBox) ||
 				e.getSource().equals(showTrajectoryCheckBox) ||
 				e.getSource().equals(cameraApertureSizeComboBox)

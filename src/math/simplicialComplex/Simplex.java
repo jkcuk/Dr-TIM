@@ -251,7 +251,7 @@ implements Serializable
 	public int inferOuterFaceIndex()
 	{
 		// go through all faces whose number of faces to the outside has been set and return the one with the lowest number
-		int smallestNoOfFacesToOutside = -1;
+		int smallestNoOfFacesToOutside = 1000000;	// TODO was -1, which doesn't make any sense!?
 		int outerFaceIndex1 = IndexArray.NONE;
 		for(int i=0; i<4; i++)
 		{

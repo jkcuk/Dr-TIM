@@ -46,9 +46,9 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 	private EditableNetOfRegular4Simplex net;
 	
 	/**
-	 * show the null-space wedges
+	 * show the space-cancelling wedges
 	 */
-	private boolean showNullSpaceWedges;
+	private boolean showSpaceCancellingWedges;
 
 	/**
 	 * show edges of the simplicial complex that forms the net of the 4-simplex
@@ -56,9 +56,9 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 	private boolean showNetEdges;
 	
 	/**
-	 * show edges of the null-space wedges, i.e. the vertices and edges of the sheets forming the null-space wedges
+	 * show edges of the space-cancelling wedges, i.e. the vertices and edges of the sheets forming the space-cancelling wedges
 	 */
-	private boolean showNullSpaceWedgeEdges;
+	private boolean showSpaceCancellingWedgeEdges;
 
 	/**
 	 * show trajectory
@@ -126,24 +126,24 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 				1,	// edgeLength,
 				new Vector3D(0, 1, 0),	// directionToVertex0, previously (0, 0, 1)
 				new Vector3D(1, 0, 0),	// directionVertex1ToVertex2
-				true,	// showNullSpaceWedges
-				1,	// nullSpaceWedgeLegLengthFactor
+				true,	// showSpaceCancellingWedges
+				1,	// spaceCancellingWedgeLegLengthFactor
 				0.96,	// refractingSurfaceTransmissionCoefficient
 				GluingType.PERFECT,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
 				false,	// showNetStructure
-				false,	// showNullSpaceWedgesStructure
+				false,	// showSpaceCancellingWedgesStructure
 				SurfaceColour.BLUE_SHINY,	// netStructureSurfaceProperty
 				ColourFilter.CYAN_GLASS,	// netFaceSurfaceProperty
-				SurfaceColour.RED_SHINY,	// nullSpaceWedgesStructureSurfaceProperty
+				SurfaceColour.RED_SHINY,	// spaceCancellingWedgesStructureSurfaceProperty
 				0.02,	// structureTubeRadius
 				null,	// parent
 				null	// studio
 			);
 		
-		showNullSpaceWedges = true;
+		showSpaceCancellingWedges = true;
 		showNetEdges = false;
-		showNullSpaceWedgeEdges = false;
+		showSpaceCancellingWedgeEdges = false;
 		
 		// trajectory
 		showTrajectory = false;
@@ -219,10 +219,10 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 
 		// the net: set its parent to <i>scene</i>...
 		net.setParent(scene);
-		// ... and get it prepared for light-ray-trajectory tracing, i.e. showing the null-space wedges but hiding all edges
-		net.setShowNullSpaceWedges(true);
+		// ... and get it prepared for light-ray-trajectory tracing, i.e. showing the space-cancelling wedges but hiding all edges
+		net.setShowSpaceCancellingWedges(true);
 		net.setShowNetEdges(false);
-		net.setShowNullSpaceWedgeEdges(false);
+		net.setShowSpaceCancellingWedgeEdges(false);
 
 		// now add the scene objects to the net...
 		try {
@@ -273,9 +273,9 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 
 		
 		// prepare the net for standard ray tracing...
-		net.setShowNullSpaceWedges(showNullSpaceWedges);
+		net.setShowSpaceCancellingWedges(showSpaceCancellingWedges);
 		net.setShowNetEdges(showNetEdges);
-		net.setShowNullSpaceWedgeEdges(showNullSpaceWedgeEdges);
+		net.setShowSpaceCancellingWedgeEdges(showSpaceCancellingWedgeEdges);
 
 		// ... and add the scene objects to the net
 		try {
@@ -295,10 +295,10 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 	
 	// GUI panels
 	private LabelledVector3DPanel centroidPanel, directionToVertex0Panel, directionVertex1ToVertex2Panel;
-	private LabelledDoublePanel edgeLengthPanel, edgeRadiusPanel, nullSpaceWedgeLegLengthFactorPanel, nullSpaceWedgeSurfaceTransmissionCoefficientPanel;
+	private LabelledDoublePanel edgeLengthPanel, edgeRadiusPanel, spaceCancellingWedgeLegLengthFactorPanel, spaceCancellingWedgeSurfaceTransmissionCoefficientPanel;
 	private LabelledIntPanel numberOfNegativeSpaceWedgesPanel;
 	private JComboBox<GluingType> gluingTypeComboBox;
-	private JCheckBox showNullSpaceWedgesCheckBox, showNetEdgesCheckBox, showNullSpaceWedgesEdgesCheckBox;
+	private JCheckBox showSpaceCancellingWedgesCheckBox, showNetEdgesCheckBox, showSpaceCancellingWedgesEdgesCheckBox;
 	
 	// trajectory
 	private JCheckBox showTrajectoryCheckBox;
@@ -360,14 +360,14 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 		directionVertex1ToVertex2Panel.setVector3D(net.getDirectionVertex1ToVertex2());
 		netPanel.add(directionVertex1ToVertex2Panel, "wrap");
 		
-		showNullSpaceWedgesCheckBox = new JCheckBox("Show null-space wedges");
-		showNullSpaceWedgesCheckBox.setSelected(showNullSpaceWedges);
-		showNullSpaceWedgesCheckBox.addActionListener(this);
-		netPanel.add(showNullSpaceWedgesCheckBox, "wrap");
+		showSpaceCancellingWedgesCheckBox = new JCheckBox("Show space-cancelling wedges");
+		showSpaceCancellingWedgesCheckBox.setSelected(showSpaceCancellingWedges);
+		showSpaceCancellingWedgesCheckBox.addActionListener(this);
+		netPanel.add(showSpaceCancellingWedgesCheckBox, "wrap");
 		
-		nullSpaceWedgeLegLengthFactorPanel = new LabelledDoublePanel("Leg length factor");
-		nullSpaceWedgeLegLengthFactorPanel.setNumber(net.getNullSpaceWedgeLegLengthFactor());
-		netPanel.add(nullSpaceWedgeLegLengthFactorPanel, "wrap");
+		spaceCancellingWedgeLegLengthFactorPanel = new LabelledDoublePanel("Leg length factor");
+		spaceCancellingWedgeLegLengthFactorPanel.setNumber(net.getSpaceCancellingWedgeLegLengthFactor());
+		netPanel.add(spaceCancellingWedgeLegLengthFactorPanel, "wrap");
 		
 		gluingTypeComboBox = new JComboBox<GluingType>(GluingType.values());
 		gluingTypeComboBox.setSelectedItem(net.getGluingType());
@@ -375,11 +375,11 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 		// netPanel.add(gluingTypeComboBox, "wrap");
 		netPanel.add(GUIBitsAndBobs.makeRow("Null-space-wedge type", gluingTypeComboBox), "wrap");
 		
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient of null-space-wedge surfaces");
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel.setNumber(net.getNullSpaceWedgeSurfaceTransmissionCoefficient());
-		netPanel.add(nullSpaceWedgeSurfaceTransmissionCoefficientPanel, "wrap");
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient of space-cancelling-wedge surfaces");
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.setNumber(net.getSpaceCancellingWedgeSurfaceTransmissionCoefficient());
+		netPanel.add(spaceCancellingWedgeSurfaceTransmissionCoefficientPanel, "wrap");
 		
-		numberOfNegativeSpaceWedgesPanel = new LabelledIntPanel("Number of negative-space wedges per null-space wedge");
+		numberOfNegativeSpaceWedgesPanel = new LabelledIntPanel("Number of negative-space wedges per space-cancelling wedge");
 		numberOfNegativeSpaceWedgesPanel.setNumber(net.getNumberOfNegativeSpaceWedges());
 		netPanel.add(numberOfNegativeSpaceWedgesPanel, "wrap");
 		
@@ -393,10 +393,10 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 		showNetEdgesCheckBox.addActionListener(this);
 		structureVisualisationPanel.add(showNetEdgesCheckBox, "wrap");
 
-		showNullSpaceWedgesEdgesCheckBox = new JCheckBox("Show edges of null-space wedges");
-		showNullSpaceWedgesEdgesCheckBox.setSelected(showNullSpaceWedgeEdges);
-		showNullSpaceWedgesEdgesCheckBox.addActionListener(this);
-		structureVisualisationPanel.add(showNullSpaceWedgesEdgesCheckBox, "wrap");
+		showSpaceCancellingWedgesEdgesCheckBox = new JCheckBox("Show edges of space-cancelling wedges");
+		showSpaceCancellingWedgesEdgesCheckBox.setSelected(showSpaceCancellingWedgeEdges);
+		showSpaceCancellingWedgesEdgesCheckBox.addActionListener(this);
+		structureVisualisationPanel.add(showSpaceCancellingWedgesEdgesCheckBox, "wrap");
 
 		edgeRadiusPanel = new LabelledDoublePanel("Tube radius");
 		edgeRadiusPanel.setNumber(net.getEdgeRadius());
@@ -520,14 +520,14 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 		net.setCentroid(centroidPanel.getVector3D());
 		net.setEdgeLength(edgeLengthPanel.getNumber());
 		net.setDirections(directionToVertex0Panel.getVector3D(), directionVertex1ToVertex2Panel.getVector3D());
-		showNullSpaceWedges = showNullSpaceWedgesCheckBox.isSelected();
-		net.setNullSpaceWedgeLegLengthFactor(nullSpaceWedgeLegLengthFactorPanel.getNumber());
-		net.setNullSpaceWedgeSurfaceTransmissionCoefficient(nullSpaceWedgeSurfaceTransmissionCoefficientPanel.getNumber());
+		showSpaceCancellingWedges = showSpaceCancellingWedgesCheckBox.isSelected();
+		net.setSpaceCancellingWedgeLegLengthFactor(spaceCancellingWedgeLegLengthFactorPanel.getNumber());
+		net.setSpaceCancellingWedgeSurfaceTransmissionCoefficient(spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.getNumber());
 		net.setNumberOfNegativeSpaceWedges(numberOfNegativeSpaceWedgesPanel.getNumber());
 		net.setGluingType((GluingType)gluingTypeComboBox.getSelectedItem());
 		net.setEdgeRadius(edgeRadiusPanel.getNumber());
 		showNetEdges = showNetEdgesCheckBox.isSelected();
-		showNullSpaceWedgeEdges = showNullSpaceWedgesEdgesCheckBox.isSelected();
+		showSpaceCancellingWedgeEdges = showSpaceCancellingWedgesEdgesCheckBox.isSelected();
 		
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		showSphere = showSphereCheckBox.isSelected();
@@ -551,11 +551,11 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 	
 	private void showOrHideControlPanels()
 	{
-		nullSpaceWedgeLegLengthFactorPanel.setEnabled(showNullSpaceWedges || showNullSpaceWedgeEdges);
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel.setEnabled(showNullSpaceWedges);
-		numberOfNegativeSpaceWedgesPanel.setEnabled((showNullSpaceWedges || showNullSpaceWedgeEdges) && (net.getGluingType() == GluingType.NEGATIVE_SPACE_WEDGES));
-		gluingTypeComboBox.setEnabled(showNullSpaceWedges || showNullSpaceWedgeEdges);
-		edgeRadiusPanel.setEnabled(showNullSpaceWedgeEdges || showNetEdges);
+		spaceCancellingWedgeLegLengthFactorPanel.setEnabled(showSpaceCancellingWedges || showSpaceCancellingWedgeEdges);
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.setEnabled(showSpaceCancellingWedges);
+		numberOfNegativeSpaceWedgesPanel.setEnabled((showSpaceCancellingWedges || showSpaceCancellingWedgeEdges) && (net.getGluingType() == GluingType.SPACE_CANCELLING_WEDGES));
+		gluingTypeComboBox.setEnabled(showSpaceCancellingWedges || showSpaceCancellingWedgeEdges);
+		edgeRadiusPanel.setEnabled(showSpaceCancellingWedgeEdges || showNetEdges);
 		
 		sphereCentrePanel.setEnabled(showSphere);
 		sphereRadiusPanel.setEnabled(showSphere);
@@ -573,7 +573,7 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 	{
 		super.actionPerformed(e);
 		
-		if(e.getSource().equals(showNullSpaceWedgesCheckBox))
+		if(e.getSource().equals(showSpaceCancellingWedgesCheckBox))
 		{
 			acceptValuesInInteractiveControlPanel();
 			showOrHideControlPanels();
@@ -583,7 +583,7 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 			acceptValuesInInteractiveControlPanel();
 			showOrHideControlPanels();
 		}
-		else if(e.getSource().equals(showNullSpaceWedgesEdgesCheckBox))
+		else if(e.getSource().equals(showSpaceCancellingWedgesEdgesCheckBox))
 		{
 			acceptValuesInInteractiveControlPanel();
 			showOrHideControlPanels();

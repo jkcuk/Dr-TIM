@@ -50,6 +50,8 @@ public class EditableHomogeneousPlanarImagingSurfaceSimplicialComplex extends Ed
 	 * show the imaging elements of the simplicial complex representing physical space
 	 */
 	protected boolean showImagingElements;
+	
+	protected double imagingElementTransmissionCoefficient;
 
 	/**
 	 * show spheres representing the vertices in physical space
@@ -138,7 +140,7 @@ public class EditableHomogeneousPlanarImagingSurfaceSimplicialComplex extends Ed
 	//
 	
 	// GUI panels
-	protected LabelledDoublePanel vertexRadiusPanel, vertexRadiusVPanel, edgeRadiusPanel, edgeRadiusVPanel;
+	protected LabelledDoublePanel imagingElementTransmissionCoefficientPanel, vertexRadiusPanel, vertexRadiusVPanel, edgeRadiusPanel, edgeRadiusVPanel;
 	protected JCheckBox showImagingElementsCheckBox, showVerticesCheckBox, showVerticesVCheckBox, showEdgesCheckBox, showEdgesVCheckBox, showFacesCheckBox, showFacesVCheckBox;
 	protected SurfacePropertyPanel vertexSurfacePropertyPanel, vertexSurfacePropertyVPanel, edgeSurfacePropertyPanel, edgeSurfacePropertyVPanel, faceSurfacePropertyPanel, faceSurfacePropertyVPanel;
 	protected JButton convertButton;
@@ -245,6 +247,7 @@ public class EditableHomogeneousPlanarImagingSurfaceSimplicialComplex extends Ed
 		}
 
 		this.showImagingElements = true;
+		this.imagingElementTransmissionCoefficient = SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT;
 		this.showVertices = true;
 		this.showVerticesV = true;
 		this.vertexSurfaceProperty = SurfaceColour.DARK_BLUE_SHINY;
@@ -314,6 +317,7 @@ public class EditableHomogeneousPlanarImagingSurfaceSimplicialComplex extends Ed
 		)
 	{
 		super(description, false, parent, studio);
+		this.imagingElementTransmissionCoefficient = SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT;
 		this.homogeneousPlanarImagingElementSimplicialComplex = homogeneousPlanarImagingElementSimplicialComplex;
 		this.showImagingElements = showImagingElements;
 		this.showVertices = showVertices;
@@ -333,7 +337,7 @@ public class EditableHomogeneousPlanarImagingSurfaceSimplicialComplex extends Ed
 		this.faceSurfaceProperty = faceSurfaceProperty;
 		this.faceSurfacePropertyV = faceSurfacePropertyV;
 		
-		populateSceneObjectCollection();
+		if(homogeneousPlanarImagingElementSimplicialComplex != null) populateSceneObjectCollection();
 	}
 
 	/**
@@ -393,6 +397,16 @@ public class EditableHomogeneousPlanarImagingSurfaceSimplicialComplex extends Ed
 
 	public void setShowImagingElements(boolean showImagingElements) {
 		this.showImagingElements = showImagingElements;
+	}
+
+
+	public double getImagingElementTransmissionCoefficient() {
+		return imagingElementTransmissionCoefficient;
+	}
+
+
+	public void setImagingElementTransmissionCoefficient(double imagingElementTransmissionCoefficient) {
+		this.imagingElementTransmissionCoefficient = imagingElementTransmissionCoefficient;
 	}
 
 
@@ -544,7 +558,7 @@ public class EditableHomogeneousPlanarImagingSurfaceSimplicialComplex extends Ed
 		if(homogeneousPlanarImagingElementSimplicialComplex != null)
 		homogeneousPlanarImagingElementSimplicialComplex.populateEditableSceneObjectCollection(
 				this,
-				SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// imagingSurfaceTransmissionCoefficient
+				imagingElementTransmissionCoefficient,	// imagingSurfaceTransmissionCoefficient
 				false,	// imagingSurfaceShadowThrowing
 				showVertices,
 				vertexSurfaceProperty,
@@ -602,6 +616,9 @@ public class EditableHomogeneousPlanarImagingSurfaceSimplicialComplex extends Ed
 		
 		showImagingElementsCheckBox = new JCheckBox("Show imaging elements");
 		imagingElementsPanel.add(showImagingElementsCheckBox, "wrap");
+		
+		imagingElementTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient");
+		imagingElementsPanel.add(imagingElementTransmissionCoefficientPanel, "wrap");
 
 		tabbedPane.addTab("Imaging elements", imagingElementsPanel);
 
@@ -705,6 +722,7 @@ public class EditableHomogeneousPlanarImagingSurfaceSimplicialComplex extends Ed
 		descriptionPanel.setString(getDescription());
 		
 		showImagingElementsCheckBox.setSelected(showImagingElements);
+		imagingElementTransmissionCoefficientPanel.setNumber(imagingElementTransmissionCoefficient);
 		
 		showVerticesCheckBox.setSelected(showVertices);
 		vertexSurfacePropertyPanel.setSurfaceProperty(vertexSurfaceProperty);
@@ -734,6 +752,7 @@ public class EditableHomogeneousPlanarImagingSurfaceSimplicialComplex extends Ed
 		setDescription(descriptionPanel.getString());
 		
 		setShowImagingElements(showImagingElementsCheckBox.isSelected());
+		setImagingElementTransmissionCoefficient(imagingElementTransmissionCoefficientPanel.getNumber());
 
 		setShowVertices(showVerticesCheckBox.isSelected());
 		setVertexSurfaceProperty(vertexSurfacePropertyPanel.getSurfaceProperty());

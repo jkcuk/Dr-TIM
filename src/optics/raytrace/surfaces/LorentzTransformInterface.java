@@ -117,21 +117,32 @@ public class LorentzTransformInterface extends SurfacePropertyPrimitive
 				break;
 			}
 
-			if(1-betaXYZ.getModSquared() < 0)
+			double beta2 = betaXYZ.getModSquared();
+			if(1-beta2 < 0)
 			{
 				// System.err.println("LorentzTransformInterface::getColour: gamma is complex!?");
 				throw new RayTraceException("Gamma is complex!?");
 			}
 
-			double gamma = 1/Math.sqrt(1-betaXYZ.getModSquared());
+			// double beta = Math.sqrt(beta2);
+			double gamma = 1/Math.sqrt(1-beta2);
 
-			// d + (gamma - 1) (beta.d) beta / beta^2 + gamma beta |d|
-			newRayDirection =
-				Vector3D.sum(
-						d,
-						betaXYZ.getProductWith((gamma-1)*Vector3D.scalarProduct(betaXYZ, d)/betaXYZ.getModSquared()),
-						betaXYZ.getProductWith(gamma*d.getLength())
-				);
+//			// d + (gamma - 1) (beta.d) beta / beta^2 + gamma beta |d|
+//			newRayDirection =
+//				Vector3D.sum(
+//						d,
+//						betaXYZ.getProductWith((gamma-1)*Vector3D.scalarProduct(betaXYZ, d)/betaXYZ.getModSquared()),
+//						betaXYZ.getProductWith(gamma*d.getLength())
+//				);
+			
+			// double dBeta = Vector3D.scalarProduct(d,betaXYZ);
+			
+			// split d (which is normalised, by the way) up into its components parallel to beta and perpendicular to it
+			Vector3D dParallel = d.getPartParallelTo(betaXYZ);
+			Vector3D dPerpendicular = d.getPartPerpendicularTo(betaXYZ);
+			
+			// the new ray direction is then the old one, but with the perpendicular component scaled by 1/gamma and beta added
+			newRayDirection = Vector3D.sum(dPerpendicular.getProductWith(1/gamma), dParallel, betaXYZ);
 		}
 		
 		// System.out.println("New ray direction = " + newRayDirection);

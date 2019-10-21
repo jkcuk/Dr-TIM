@@ -226,47 +226,52 @@ public class Test
 //				2	// R
 //			);
 		
-		Vector3D centre = new Vector3D(0, 0, 0);
-		double radius = 1;
-		double innerRadius = 0.5;
-		double deltaX = 1;
-		int maxSteps = 1000;
-		IntegrationType integrationType = IntegrationType.RK4;
-		double deltaTau = 0.001;
-		double deltaXMax = 0.25*innerRadius;
-
-		SurfaceOfTOXShifter s = new SurfaceOfTOXShifter(
-				centre,
-				radius,
-				innerRadius,
-				deltaX,
-				deltaTau,
-				deltaXMax,
-				maxSteps,
-				integrationType,
-				0.96,	// transmissionCoefficient,
-				false	// shadowThrowing
-			);
-
-		Vector3D x = new Vector3D(0.4, 0.5, 0.6);
-		Vector3D d = new Vector3D(1, 2, 3);
-		Vector3D k = s.calculateK(x, d);
-		System.out.println("k = "+k);
+//		Vector3D centre = new Vector3D(0, 0, 0);
+//		double radius = 1;
+//		double innerRadius = 0.5;
+//		double deltaX = 1;
+//		int maxSteps = 1000;
+//		IntegrationType integrationType = IntegrationType.RK4;
+//		double deltaTau = 0.001;
+//		double deltaXMax = 0.25*innerRadius;
+//
+//		SurfaceOfTOXShifter s = new SurfaceOfTOXShifter(
+//				centre,
+//				radius,
+//				innerRadius,
+//				deltaX,
+//				deltaTau,
+//				deltaXMax,
+//				maxSteps,
+//				integrationType,
+//				0.96,	// transmissionCoefficient,
+//				false	// shadowThrowing
+//			);
+//
+//		Vector3D x = new Vector3D(0.4, 0.5, 0.6);
+//		Vector3D d = new Vector3D(1, 2, 3);
+//		Vector3D k = s.calculateK(x, d);
+//		System.out.println("k = "+k);
+//		
+//		Matrix n = s.calculateEpsilonMuTensor(x);
+//		System.out.println("n = ");
+//		for(int r = 0; r < n.getRowDimension(); r++)
+//		{
+//			for(int c = 0; c < n.getColumnDimension(); c++)
+//			{
+//				System.out.print("\t "+n.get(r,c));
+//			}
+//			System.out.println(" ");
+//		}
+//		
+//		System.out.println("H(k,n) = "+s.calculateHamiltonian(k, n));
+//
+//		System.out.println("dx/dtau = "+s.dXdTau(x, k));
+//		System.out.println("dk/dtau = "+s.dKdTau(x, k));
 		
-		Matrix n = s.calculateEpsilonMuTensor(x);
-		System.out.println("n = ");
-		for(int r = 0; r < n.getRowDimension(); r++)
+		for(int j=0; j<4; j++)
 		{
-			for(int c = 0; c < n.getColumnDimension(); c++)
-			{
-				System.out.print("\t "+n.get(r,c));
-			}
-			System.out.println(" ");
+			System.out.println("(j+1) % 4 = " + ((j+1) % 4));
 		}
-		
-		System.out.println("H(k,n) = "+s.calculateHamiltonian(k, n));
-
-		System.out.println("dx/dtau = "+s.dXdTau(x, k));
-		System.out.println("dk/dtau = "+s.dKdTau(x, k));
 	}
 }

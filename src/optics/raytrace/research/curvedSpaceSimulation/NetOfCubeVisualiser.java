@@ -217,7 +217,7 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		nullSpaceWedgeHeight = 1;
 		nullSpaceWedgeLegLengthFactor = 1.0;
 		nullSpaceWedgeSurfaceTransmissionCoefficient = 0.96;
-		gluingType = GluingType.NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS;
+		gluingType = GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS;
 		numberOfNegativeSpaceWedges = 2;
 		netEdgeSurfaceProperty = // SurfaceColour.BLUE_SHINY;
 			ColourFilter.CYAN_GLASS;
@@ -421,9 +421,9 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 			
 			switch(gluingType)
 			{
-			case NEGATIVE_SPACE_WEDGES:
-			case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-			case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+			case SPACE_CANCELLING_WEDGES:
+			case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+			case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 				Vector3D
 					v1 = Vector3D.sum(centre, w.getProductWith(-0.5), radialDirection.getProductWith(r1)),
 					v2 = Vector3D.sum(centre, w.getProductWith(-0.5), radialDirection.getProductWith(r2));
@@ -580,9 +580,9 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 			
 			switch(gluingType)
 			{
-			case NEGATIVE_SPACE_WEDGES:
-			case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-			case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+			case SPACE_CANCELLING_WEDGES:
+			case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+			case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 				Vector3D
 					v1 = Vector3D.sum(centre, w.getProductWith(-0.5), radialDirection.getProductWith(r1)),
 					v2 = Vector3D.sum(centre, w.getProductWith(-0.5), radialDirection.getProductWith(r2));
@@ -1220,9 +1220,9 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		// show or hide additional parameters as appropriate
 		switch(gluingType)
 		{
-		case NEGATIVE_SPACE_WEDGES:
-		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case SPACE_CANCELLING_WEDGES:
+		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
 			break;
 		case PERFECT:

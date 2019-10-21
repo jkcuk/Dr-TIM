@@ -215,6 +215,8 @@ extends MappingSimplicialComplex
 
 					
 					// and replace the face with the <i>ImagingFace</i> that includes that imagingElement
+					// System.out.println("ImagingSimplicialComplex::setImagingPropertiesOfFaces: setting imaging properties of face #"+faces.indexOf(face)+"; noOfFacesToOutside="+noOfFacesToOutside);
+
 					faces.set(faces.indexOf(face), 
 							getImagingFace(face, imagingElement)
 						);

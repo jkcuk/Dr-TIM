@@ -217,7 +217,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		nullSpaceWedgeHeight = 1;
 		nullSpaceWedgeLegLengthFactor = 1.0;
 		nullSpaceWedgeSurfaceTransmissionCoefficient = 0.96;
-		curvedSpaceSimulationType = GluingType.NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS;
+		curvedSpaceSimulationType = GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS;
 		numberOfNegativeSpaceWedges = 2;
 		netEdgeSurfaceProperty = // SurfaceColour.BLUE_SHINY;
 			ColourFilter.CYAN_GLASS;
@@ -412,9 +412,9 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		
 		switch(curvedSpaceSimulationType)
 		{
-		case NEGATIVE_SPACE_WEDGES:
-		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case SPACE_CANCELLING_WEDGES:
+		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 		case PERFECT:
 			// calculate the centres of the three null-space wedges
 			for(int i=0; i<3; i++)
@@ -605,9 +605,9 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		// ... and add what needs to be added now, i.e. everything with the correct visibility
 		switch(curvedSpaceSimulationType)
 		{
-		case NEGATIVE_SPACE_WEDGES:
-		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case SPACE_CANCELLING_WEDGES:
+		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 		case PERFECT:
 			for(int i=0; i<3; i++)
 			{
@@ -1154,7 +1154,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		// show or hide additional parameters as appropriate
 		switch(curvedSpaceSimulationType)
 		{
-		case NEGATIVE_SPACE_WEDGES:
+		case SPACE_CANCELLING_WEDGES:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
 			break;
 		case PERFECT:

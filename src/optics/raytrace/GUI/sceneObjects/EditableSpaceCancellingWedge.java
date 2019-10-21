@@ -47,7 +47,7 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 	//
 	
 	/**
-	 * Apex angle of the null-space wedge, &nu;, in radians
+	 * Apex angle of the space-cancelling wedge, &nu;, in radians
 	 */
 	private double apexAngle;
 	
@@ -63,7 +63,7 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 	private Vector3D apexEdgeDirection;
 	
 	/**
-	 * Direction of the null-space-wedge bisector, i.e. the line through the centre of the wedge that is perpendicular to the edge direction.
+	 * Direction of the space-cancelling-wedge bisector, i.e. the line through the centre of the wedge that is perpendicular to the edge direction.
 	 * Together with the edge direction, this determines the orientation of the wedge.
 	 */
 	private Vector3D bisectorDirection;
@@ -113,12 +113,12 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 	private SurfaceProperty edgeSurfaceProperty;
 	
 	/**
-	 * Null-space-wedge type, which describes the way this null-space wedge is realised
+	 * Space-cancelling-wedge type, which describes the way this space-cancelling wedge is realised
 	 */
 	private GluingType gluingType;
 	
 	/**
-	 * Number of negative-space wedges, <i>N</i>, in the null-space wedge
+	 * Number of negative-space wedges, <i>N</i>, in the space-cancelling wedge
 	 */
 	private int numberOfNegativeSpaceWedges;
 	
@@ -189,14 +189,14 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 	}
 
 	/**
-	 * Create a default null-space wedge
+	 * Create a default space-cancelling wedge
 	 * @param parent
 	 * @param studio
 	 */
 	public EditableSpaceCancellingWedge(SceneObject parent, Studio studio)
 	{
 		this(
-				"Null-space wedge",	// description
+				"Space-cancelling wedge",	// description
 				MyMath.deg2rad(90),	// apexAngle
 				new Vector3D(0, 0, 10),	// apexEdgeCentre
 				new Vector3D(0, 1, 0),	// apexEdgeDirection
@@ -209,7 +209,7 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 				false,	// showEdges
 				0.01,	// edgeRadius
 				SurfaceColour.RED_SHINY,	// edgeSurfaceProperty
-				GluingType.NEGATIVE_SPACE_WEDGES,	// gluingType
+				GluingType.SPACE_CANCELLING_WEDGES,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
 				parent,
 				studio
@@ -754,9 +754,9 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 	{
 		switch(gluingType)
 		{
-		case NEGATIVE_SPACE_WEDGES:
-		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case SPACE_CANCELLING_WEDGES:
+		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 			// calculate the angle of each wedge
 			// each wedge needs to rotate by <wedgeAngle> / <numberOfNegativeSpaceWedges>, which it does by
 			// having a wedge angle that is half of that (in radians)
@@ -771,7 +771,7 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 
 				// first calculate the angle in the (a, b) plane and with respect to the b axis
 				double angleWithBisector =
-						(gluingType==GluingType.NEGATIVE_SPACE_WEDGES_SYMMETRIC)
+						(gluingType==GluingType.SPACE_CANCELLING_WEDGES_SYMMETRIC)
 						?(-(apexAngle-delta)/2 + i*delta)
 						:(-apexAngle/2 + i*delta);
 
@@ -779,12 +779,12 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 				addNegativeSpaceWedgeLegSurface(
 						"Surface #"+i+" (angle with bisector="+MyMath.rad2deg(angleWithBisector)+"°)",	// description
 						angleWithBisector,	// azimuthalAngle
-						(gluingType==GluingType.NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS) && (i%2 == 1)
+						(gluingType==GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS) && (i%2 == 1)
 					);
 			
 				if(i%2 == 1)
 				{
-					if(gluingType==GluingType.NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS)
+					if(gluingType==GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS)
 					{
 						// add mirrors
 						addMirrors(
@@ -877,7 +877,7 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 		this.iPanel = iPanel;
 		
 		editPanel = new JPanel();
-		editPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Null-space wedge"));
+		editPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Space-cancelling wedge"));
 		editPanel.setLayout(new MigLayout("insets 0"));
 		
 		JTabbedPane tabbedPane = new JTabbedPane();
@@ -1036,9 +1036,9 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 		// show or hide additional parameters as appropriate
 		switch(gluingType)
 		{
-		case NEGATIVE_SPACE_WEDGES:
-		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case SPACE_CANCELLING_WEDGES:
+		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
 			break;
 		case PERFECT:
@@ -1054,7 +1054,7 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 		{
 			acceptValuesInEditPanel();	// accept any changes
 			EditableSceneObjectCollection container = new EditableSceneObjectCollection(this);
-			iPanel.replaceFrontComponent(container, "Edit ex-null-space wedge");
+			iPanel.replaceFrontComponent(container, "Edit ex-space-cancelling wedge");
 			container.setValuesInEditPanel();
 		}
 		else if(e.getSource() == gluingTypeComboBox)

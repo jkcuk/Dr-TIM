@@ -201,7 +201,7 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 				false,	// showEdges
 				0.01,	// edgeRadius
 				SurfaceColour.RED_SHINY,	// edgeSurfaceProperty
-				GluingType.NEGATIVE_SPACE_WEDGES,	// gluingType
+				GluingType.SPACE_CANCELLING_WEDGES,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
 				parent,
 				studio
@@ -492,7 +492,7 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 			// cw = unit vector perpendicular to both a and b, pointing into the same half space as leg surface 1
 
 			double apexAngleW = apexAngle/numberOfNegativeSpaceWedges;
-			double bWAngle = -0.5*apexAngle+(w+0.5-(gluingType==GluingType.NEGATIVE_SPACE_WEDGES_SYMMETRIC?0.25:0))*apexAngleW;
+			double bWAngle = -0.5*apexAngle+(w+0.5-(gluingType==GluingType.SPACE_CANCELLING_WEDGES_SYMMETRIC?0.25:0))*apexAngleW;
 			Vector3D bw = Vector3D.sum(
 					b.getProductWith(Math.cos(bWAngle)),
 					c.getProductWith(Math.sin(bWAngle))
@@ -553,7 +553,7 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 					cw.getProductWith(legLength*Math.sin(-0.5*apexAngleW))
 					);
 			// add the edges for these gluing types
-			if((gluingType == GluingType.PERFECT) || (gluingType == GluingType.NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS))
+			if((gluingType == GluingType.PERFECT) || (gluingType == GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS))
 			{
 				edges.addSceneObject(
 						new EditableScaledParametrisedSphere(
@@ -597,8 +597,8 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 			case MIRROR_APPROXIMATION:
 				(new RayTraceException("Gluing type MIRROR_APPROXIMATION not supported.")).printStackTrace();	
 				break;
-			case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-			case NEGATIVE_SPACE_WEDGES:
+			case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+			case SPACE_CANCELLING_WEDGES:
 				// add the leg surfaces
 				surfaces.addSceneObject(EditableParametrisedTriangle.makeEditableParametrisedTriangleFromVertices(
 						nameW+"Leg surface 1 (180° ray  rotating)",	// description
@@ -667,7 +667,7 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 						);
 
 				break;
-			case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+			case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 				// suitable for wedges with deficit angles <180°
 				// see Johannes's lab book 10/9/19
 				
@@ -1036,9 +1036,9 @@ public class EditableMirroredSpaceCancellingWedge extends EditableSceneObjectCol
 		// show or hide additional parameters as appropriate
 		switch(gluingType)
 		{
-		case NEGATIVE_SPACE_WEDGES:
-		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case SPACE_CANCELLING_WEDGES:
+		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 			break;
 		case PERFECT:
 		default:

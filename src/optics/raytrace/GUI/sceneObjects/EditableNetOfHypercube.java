@@ -61,27 +61,27 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 	protected double sideLength;
 	
 	/**
-	 * show the null-space wedges
+	 * show the space-cancelling wedges
 	 */
-	protected boolean showNullSpaceWedges;
+	protected boolean showSpaceCancellingWedges;
 
 	/**
-	 * Factor by which the minimum leg length of each null-space wedge is multiplied.
+	 * Factor by which the minimum leg length of each space-cancelling wedge is multiplied.
 	 */
-	protected double nullSpaceWedgeLegLengthFactor;
+	protected double spaceCancellingWedgeLegLengthFactor;
 	
 	/**
-	 * Transmission coefficient of each null-space-wedge surface
+	 * Transmission coefficient of each space-cancelling-wedge surface
 	 */
-	protected double nullSpaceWedgeSurfaceTransmissionCoefficient;
+	protected double spaceCancellingWedgeSurfaceTransmissionCoefficient;
 		
 	/**
-	 * Null-space-wedge type, which describes the way this null-space wedge is realised
+	 * Space-cancelling-wedge type, which describes the way this space-cancelling wedge is realised
 	 */
 	protected GluingType gluingType;
 	
 	/**
-	 * Number of negative-space wedges, <i>N</i>, in the null-space wedge
+	 * Number of negative-space wedges, <i>N</i>, in the space-cancelling wedge
 	 */
 	protected int numberOfNegativeSpaceWedges;
 
@@ -91,9 +91,9 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 	protected boolean showNetEdgesAndFaces;
 	
 	/**
-	 * show edges of the null-space wedges, i.e. the vertices and edges of the sheets forming the null-space wedges
+	 * show edges of the space-cancelling wedges, i.e. the vertices and edges of the sheets forming the space-cancelling wedges
 	 */
-	protected boolean showNullSpaceWedgeEdges;
+	protected boolean showSpaceCancellingWedgeEdges;
 
 	/**
 	 * surface property of the spheres and cylinders representing vertices and edges of the net
@@ -108,7 +108,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 	/**
 	 * surface property of the spheres and cylinders representing vertices and edges of the net
 	 */
-	protected SurfaceProperty nullSpaceWedgeEdgeSurfaceProperty;
+	protected SurfaceProperty spaceCancellingWedgeEdgeSurfaceProperty;
 
 	/**
 	 * radius of the spheres and cylinders representing the vertices and edges
@@ -138,16 +138,16 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 	 * @param topDirection
 	 * @param sideLength
 	 * @param edges
-	 * @param showNullSpaceWedges
-	 * @param nullSpaceWedgeLegLengthFactor
-	 * @param nullSpaceWedgeSurfaceTransmissionCoefficient
+	 * @param showSpaceCancellingWedges
+	 * @param spaceCancellingWedgeLegLengthFactor
+	 * @param spaceCancellingWedgeSurfaceTransmissionCoefficient
 	 * @param gluingType
 	 * @param numberOfNegativeSpaceWedges
 	 * @param showNetEdges
-	 * @param showNullSpaceWedgeEdges
+	 * @param showSpaceCancellingWedgeEdges
 	 * @param netEdgeSurfaceProperty
 	 * @param netFaceSurfaceProperty
-	 * @param nullSpaceWedgeEdgeSurfaceProperty
+	 * @param spaceCancellingWedgeEdgeSurfaceProperty
 	 * @param structureTubeRadius
 	 * @param parent
 	 * @param studio
@@ -158,16 +158,16 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 			Vector3D rightDirection,
 			Vector3D upDirection,
 			double sideLength,
-			boolean showNullSpaceWedges,
-			double nullSpaceWedgeLegLengthFactor,
-			double nullSpaceWedgeSurfaceTransmissionCoefficient,
+			boolean showSpaceCancellingWedges,
+			double spaceCancellingWedgeLegLengthFactor,
+			double spaceCancellingWedgeSurfaceTransmissionCoefficient,
 			GluingType gluingType,
 			int numberOfNegativeSpaceWedges,
 			boolean showNetEdges,
-			boolean showNullSpaceWedgeEdges,
+			boolean showSpaceCancellingWedgeEdges,
 			SurfaceProperty netEdgeSurfaceProperty,
 			SurfaceProperty netFaceSurfaceProperty,
-			SurfaceProperty nullSpaceWedgeEdgeSurfaceProperty,
+			SurfaceProperty spaceCancellingWedgeEdgeSurfaceProperty,
 			double structureTubeRadius,
 			SceneObject parent,
 			Studio studio
@@ -178,16 +178,16 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		setRightDirection(rightDirection);
 		setUpDirection(upDirection);
 		setSideLength(sideLength);
-		this.showNullSpaceWedges = showNullSpaceWedges;
-		this.nullSpaceWedgeLegLengthFactor = nullSpaceWedgeLegLengthFactor;
-		this.nullSpaceWedgeSurfaceTransmissionCoefficient = nullSpaceWedgeSurfaceTransmissionCoefficient;
+		this.showSpaceCancellingWedges = showSpaceCancellingWedges;
+		this.spaceCancellingWedgeLegLengthFactor = spaceCancellingWedgeLegLengthFactor;
+		this.spaceCancellingWedgeSurfaceTransmissionCoefficient = spaceCancellingWedgeSurfaceTransmissionCoefficient;
 		this.gluingType = gluingType;
 		this.numberOfNegativeSpaceWedges = numberOfNegativeSpaceWedges;
 		this.showNetEdgesAndFaces = showNetEdges;
-		this.showNullSpaceWedgeEdges = showNullSpaceWedgeEdges;
+		this.showSpaceCancellingWedgeEdges = showSpaceCancellingWedgeEdges;
 		this.netEdgeSurfaceProperty = netEdgeSurfaceProperty;
 		this.netFaceSurfaceProperty = netFaceSurfaceProperty;
-		this.nullSpaceWedgeEdgeSurfaceProperty = nullSpaceWedgeEdgeSurfaceProperty;
+		this.spaceCancellingWedgeEdgeSurfaceProperty = spaceCancellingWedgeEdgeSurfaceProperty;
 		this.edgeRadius = structureTubeRadius;
 		
 		try {
@@ -209,16 +209,16 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 			original.getRightDirection(),
 			original.getUpDirection(),
 			original.getSideLength(),
-			original.isShowNullSpaceWedges(),
-			original.getNullSpaceWedgeLegLengthFactor(),
-			original.getNullSpaceWedgeSurfaceTransmissionCoefficient(),
+			original.isShowSpaceCancellingWedges(),
+			original.getSpaceCancellingWedgeLegLengthFactor(),
+			original.getSpaceCancellingWedgeSurfaceTransmissionCoefficient(),
 			original.getGluingType(),
 			original.getNumberOfNegativeSpaceWedges(),
 			original.isShowNetEdges(),
-			original.isShowNullSpaceWedgeEdges(),
+			original.isShowSpaceCancellingWedgeEdges(),
 			original.getNetEdgeSurfaceProperty(),
 			original.getNetFaceSurfaceProperty(),
-			original.getNullSpaceWedgeEdgeSurfaceProperty(),
+			original.getSpaceCancellingWedgeEdgeSurfaceProperty(),
 			original.getEdgeRadius(),
 			original.getParent(),
 			original.getStudio()
@@ -233,16 +233,16 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 				new Vector3D(1, 0, 0),	// rightDirection
 				new Vector3D(0, 1, 0),	// upDirection
 				1,	// sideLength,
-				true,	// showNullSpaceWedges
-				1,	// nullSpaceWedgeLegLengthFactor
+				true,	// showSpaceCancellingWedges
+				1,	// spaceCancellingWedgeLegLengthFactor
 				0.96,	// refractingSurfaceTransmissionCoefficient
 				GluingType.PERFECT,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
 				false,	// showNetStructure
-				false,	// showNullSpaceWedgesStructure
+				false,	// showSpaceCancellingWedgesStructure
 				SurfaceColour.BLUE_SHINY,	// netStructureSurfaceProperty
 				ColourFilter.CYAN_GLASS,	// netFaceSurfaceProperty
-				SurfaceColour.RED_SHINY,	// nullSpaceWedgesStructureSurfaceProperty
+				SurfaceColour.RED_SHINY,	// spaceCancellingWedgesStructureSurfaceProperty
 				0.02,	// structureTubeRadius
 				parent,
 				studio
@@ -294,33 +294,33 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		this.sideLength = sideLength;
 	}
 
-	public boolean isShowNullSpaceWedges() {
-		return showNullSpaceWedges;
+	public boolean isShowSpaceCancellingWedges() {
+		return showSpaceCancellingWedges;
 	}
 
 
-	public void setShowNullSpaceWedges(boolean showNullSpaceWedges) {
-		this.showNullSpaceWedges = showNullSpaceWedges;
+	public void setShowSpaceCancellingWedges(boolean showSpaceCancellingWedges) {
+		this.showSpaceCancellingWedges = showSpaceCancellingWedges;
 	}
 
 
-	public double getNullSpaceWedgeLegLengthFactor() {
-		return nullSpaceWedgeLegLengthFactor;
+	public double getSpaceCancellingWedgeLegLengthFactor() {
+		return spaceCancellingWedgeLegLengthFactor;
 	}
 
 
-	public void setNullSpaceWedgeLegLengthFactor(double nullSpaceWedgeLegLengthFactor) {
-		this.nullSpaceWedgeLegLengthFactor = nullSpaceWedgeLegLengthFactor;
+	public void setSpaceCancellingWedgeLegLengthFactor(double spaceCancellingWedgeLegLengthFactor) {
+		this.spaceCancellingWedgeLegLengthFactor = spaceCancellingWedgeLegLengthFactor;
 	}
 
 
-	public double getNullSpaceWedgeSurfaceTransmissionCoefficient() {
-		return nullSpaceWedgeSurfaceTransmissionCoefficient;
+	public double getSpaceCancellingWedgeSurfaceTransmissionCoefficient() {
+		return spaceCancellingWedgeSurfaceTransmissionCoefficient;
 	}
 
 
-	public void setNullSpaceWedgeSurfaceTransmissionCoefficient(double nullSpaceWedgeSurfaceTransmissionCoefficient) {
-		this.nullSpaceWedgeSurfaceTransmissionCoefficient = nullSpaceWedgeSurfaceTransmissionCoefficient;
+	public void setSpaceCancellingWedgeSurfaceTransmissionCoefficient(double spaceCancellingWedgeSurfaceTransmissionCoefficient) {
+		this.spaceCancellingWedgeSurfaceTransmissionCoefficient = spaceCancellingWedgeSurfaceTransmissionCoefficient;
 	}
 
 
@@ -354,13 +354,13 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 	}
 
 
-	public boolean isShowNullSpaceWedgeEdges() {
-		return showNullSpaceWedgeEdges;
+	public boolean isShowSpaceCancellingWedgeEdges() {
+		return showSpaceCancellingWedgeEdges;
 	}
 
 
-	public void setShowNullSpaceWedgeEdges(boolean showNullSpaceWedgeEdges) {
-		this.showNullSpaceWedgeEdges = showNullSpaceWedgeEdges;
+	public void setShowSpaceCancellingWedgeEdges(boolean showSpaceCancellingWedgeEdges) {
+		this.showSpaceCancellingWedgeEdges = showSpaceCancellingWedgeEdges;
 	}
 
 
@@ -384,13 +384,13 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 	}
 
 
-	public SurfaceProperty getNullSpaceWedgeEdgeSurfaceProperty() {
-		return nullSpaceWedgeEdgeSurfaceProperty;
+	public SurfaceProperty getSpaceCancellingWedgeEdgeSurfaceProperty() {
+		return spaceCancellingWedgeEdgeSurfaceProperty;
 	}
 
 
-	public void setNullSpaceWedgeEdgeSurfaceProperty(SurfaceProperty nullSpaceWedgeEdgeSurfaceProperty) {
-		this.nullSpaceWedgeEdgeSurfaceProperty = nullSpaceWedgeEdgeSurfaceProperty;
+	public void setSpaceCancellingWedgeEdgeSurfaceProperty(SurfaceProperty spaceCancellingWedgeEdgeSurfaceProperty) {
+		this.spaceCancellingWedgeEdgeSurfaceProperty = spaceCancellingWedgeEdgeSurfaceProperty;
 	}
 
 
@@ -434,21 +434,21 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		EditableSceneObjectCollection netEdges = new EditableSceneObjectCollection("Net edges", false, this, getStudio());
 		addSceneObject(netEdges, showNetEdgesAndFaces);
 
-		// ... and another one for the null-space wedges
-		EditableSceneObjectCollection nullSpaceWedges = new EditableSceneObjectCollection("Null-space wedges", false, this, getStudio());
-		addSceneObject(nullSpaceWedges);
+		// ... and another one for the space-cancelling wedges
+		EditableSceneObjectCollection spaceCancellingWedges = new EditableSceneObjectCollection("Space-cancelling wedges", false, this, getStudio());
+		addSceneObject(spaceCancellingWedges);
 		
 		// ... and one for the faces
 		EditableSceneObjectCollection faces = new EditableSceneObjectCollection("Faces", false, this, getStudio());
 		addSceneObject(faces, showNetEdgesAndFaces);
 
 		// the net structure has a 6-fold symmetry, as the cube at its centre has 6 sides
-		addSceneObjectsForSide(right, up, front, netEdges, nullSpaceWedges, faces);
-		addSceneObjectsForSide(right.getReverse(), up, front.getReverse(), netEdges, nullSpaceWedges, faces);
-		addSceneObjectsForSide(up, front, right, netEdges, nullSpaceWedges, faces);
-		addSceneObjectsForSide(up.getReverse(), front, right.getReverse(), netEdges, nullSpaceWedges, faces);
-		addSceneObjectsForSide(front, right, up, netEdges, nullSpaceWedges, faces);
-		addSceneObjectsForSide(front.getReverse(), right, up.getReverse(), netEdges, nullSpaceWedges, faces);
+		addSceneObjectsForSide(right, up, front, netEdges, spaceCancellingWedges, faces);
+		addSceneObjectsForSide(right.getReverse(), up, front.getReverse(), netEdges, spaceCancellingWedges, faces);
+		addSceneObjectsForSide(up, front, right, netEdges, spaceCancellingWedges, faces);
+		addSceneObjectsForSide(up.getReverse(), front, right.getReverse(), netEdges, spaceCancellingWedges, faces);
+		addSceneObjectsForSide(front, right, up, netEdges, spaceCancellingWedges, faces);
+		addSceneObjectsForSide(front.getReverse(), right, up.getReverse(), netEdges, spaceCancellingWedges, faces);
 	}
 	
 	
@@ -466,7 +466,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 			NamedDirection m,
 			NamedDirection o,
 			EditableSceneObjectCollection netEdges,
-			EditableSceneObjectCollection nullSpaceWedges,
+			EditableSceneObjectCollection spaceCancellingWedges,
 			EditableSceneObjectCollection faces
 		)
 	{
@@ -501,13 +501,13 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 				"Inner cube's "+n.getName()+", "+o.getName()+" edge",	// name,
 				noMInnerCorner,	// startPoint
 				nomInnerCorner,	// endPoint,
-				netEdges, nullSpaceWedges	// collections
+				netEdges, spaceCancellingWedges	// collections
 			);
 		addSceneObjectsForInnerEdge(
 				"Inner cube's "+n.getName()+", "+o.getBackwardsName()+" edge",	// description
 				nOMInnerCorner,	// startPoint
 				nOmInnerCorner,	// endPoint,
-				netEdges, nullSpaceWedges	// collections
+				netEdges, spaceCancellingWedges	// collections
 			);
 		
 		// add the edges of the outer cube;
@@ -519,7 +519,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 				nomOuterCorner,	// endPoint,
 				n,	// normal direction
 				o,	// other direction
-				netEdges, nullSpaceWedges	// collections
+				netEdges, spaceCancellingWedges	// collections
 			);
 		addSceneObjectsForOuterEdge(
 				n.getName()+" "+"outer cube's outer "+o.getBackwardsName()+" edge",	// description
@@ -527,7 +527,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 				nOmOuterCorner,	// endPoint,
 				n,	// normal direction
 				o.getReverse(),	// other direction
-				netEdges, nullSpaceWedges	// collections
+				netEdges, spaceCancellingWedges	// collections
 			);
 		addSceneObjectsForOuterEdge(
 				n.getName()+" "+"outer cube's outer "+m.getName()+" edge",	// name,
@@ -535,7 +535,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 				nOmOuterCorner,	// endPoint,
 				n,	// normal direction
 				m,	// other direction
-				netEdges, nullSpaceWedges	// collections
+				netEdges, spaceCancellingWedges	// collections
 			);
 		addSceneObjectsForOuterEdge(
 				n.getName()+" "+"outer cube's outer "+m.getBackwardsName()+" edge",	// description
@@ -543,7 +543,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 				nOMOuterCorner,	// endPoint,
 				n,	// normal direction
 				m.getReverse(),	// other direction
-				netEdges, nullSpaceWedges	// collections
+				netEdges, spaceCancellingWedges	// collections
 			);
 		// ..., then those linking them to the corners of the inner square, ...
 		addCylinder(
@@ -700,47 +700,47 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 	}
 	
 	/**
-	 * For each edge of the inner cube, add a cylinder (for visualising the net structure) and a 90-degree null-space wedge
+	 * For each edge of the inner cube, add a cylinder (for visualising the net structure) and a 90-degree space-cancelling wedge
 	 * @param edgeName
 	 * @param startPoint
 	 * @param endPoint
 	 * @param netEdges
-	 * @param nullSpaceWedges
+	 * @param spaceCancellingWedges
 	 */
-	private void addSceneObjectsForInnerEdge(String edgeName, Vector3D startPoint, Vector3D endPoint, EditableSceneObjectCollection netEdges, EditableSceneObjectCollection nullSpaceWedges)
+	private void addSceneObjectsForInnerEdge(String edgeName, Vector3D startPoint, Vector3D endPoint, EditableSceneObjectCollection netEdges, EditableSceneObjectCollection spaceCancellingWedges)
 	{
 		// add a cylinder that represents the edge in the net, ...
 		addCylinder(edgeName, startPoint, endPoint, netEdges);
 		
-		// ... a 90 degree null-space wedge, ...
+		// ... a 90 degree space-cancelling wedge, ...
 		Vector3D apexEdgeCentre = Vector3D.sum(startPoint, endPoint).getProductWith(0.5);
-		nullSpaceWedges.addSceneObject(
+		spaceCancellingWedges.addSceneObject(
 				new EditableSpaceCancellingWedge(
-						"Null-space wedge at "+edgeName,	// description
+						"Space-cancelling wedge at "+edgeName,	// description
 						0.5*Math.PI,	// wedgeAngle
 						apexEdgeCentre,	// apexEdgeCentre,
 						Vector3D.difference(endPoint, startPoint),	// apexEdgeDirection
 						Vector3D.difference(apexEdgeCentre, centre),	// bisectorDirection
-						/* (1+Math.sqrt(2*0.5*0.5))* */sideLength*nullSpaceWedgeLegLengthFactor,	// legLength
+						/* (1+Math.sqrt(2*0.5*0.5))* */sideLength*spaceCancellingWedgeLegLengthFactor,	// legLength
 						sideLength,	// apexEdgeLength
 						//  SCWedgeLegFaceShape.RECTANGULAR,
-						showNullSpaceWedges,	// showSheets
+						showSpaceCancellingWedges,	// showSheets
 						MyMath.deg2rad(91),	// containmentMirrorsAngleWithSides
-						nullSpaceWedgeSurfaceTransmissionCoefficient,	// sheetTransmissionCoefficient
-						showNullSpaceWedgeEdges,	// showEdges
+						spaceCancellingWedgeSurfaceTransmissionCoefficient,	// sheetTransmissionCoefficient
+						showSpaceCancellingWedgeEdges,	// showEdges
 						edgeRadius-MyMath.TINY,	// edgeRadius
-						nullSpaceWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty
+						spaceCancellingWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty
 						gluingType,	// gluingType
 						numberOfNegativeSpaceWedges,	// numberOfNegativeSpaceWedges,
-						nullSpaceWedges,	// parent, 
+						spaceCancellingWedges,	// parent, 
 						getStudio()
 						)
 				);
 
-		// ... and a 180 degree null-space wedge
-		nullSpaceWedges.addSceneObject(
+		// ... and a 180 degree space-cancelling wedge
+		spaceCancellingWedges.addSceneObject(
 				new EditableSpaceCancellingWedge(
-						"Null-space wedge at "+edgeName,	// description
+						"Space-cancelling wedge at "+edgeName,	// description
 						Math.PI,	// wedgeAngle
 						Vector3D.sum(
 								centre,
@@ -748,68 +748,68 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 							),	// apexEdgeCentre,
 						Vector3D.difference(endPoint, startPoint),	// apexEdgeDirection
 						Vector3D.difference(apexEdgeCentre, centre),	// bisectorDirection
-						2.*Math.sqrt(2*0.5*0.5)*sideLength*nullSpaceWedgeLegLengthFactor,	// legLength
+						2.*Math.sqrt(2*0.5*0.5)*sideLength*spaceCancellingWedgeLegLengthFactor,	// legLength
 						sideLength,	// apexEdgeLength
 						// SCWedgeLegFaceShape.RECTANGULAR,
-						showNullSpaceWedges,	// showSheets
+						showSpaceCancellingWedges,	// showSheets
 						MyMath.deg2rad(91),	// containmentMirrorsAngleWithSides
-						nullSpaceWedgeSurfaceTransmissionCoefficient,	// sheetTransmissionCoefficient
-						showNullSpaceWedgeEdges,	// showEdges
+						spaceCancellingWedgeSurfaceTransmissionCoefficient,	// sheetTransmissionCoefficient
+						showSpaceCancellingWedgeEdges,	// showEdges
 						edgeRadius-MyMath.TINY,	// edgeRadius
-						nullSpaceWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty
+						spaceCancellingWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty
 						gluingType,	// gluingType
 						numberOfNegativeSpaceWedges,	// numberOfNegativeSpaceWedges,
-						nullSpaceWedges,	// parent, 
+						spaceCancellingWedges,	// parent, 
 						getStudio()
 						)
 				);
 }
 
 	/**
-	 * For each outer edge of the outer cubes, add a cylinder (for visualising the net structure) and a 45-degree null-space wedge
+	 * For each outer edge of the outer cubes, add a cylinder (for visualising the net structure) and a 45-degree space-cancelling wedge
 	 * @param edgeName
 	 * @param startPoint
 	 * @param n	normal direction
 	 * @param otherDirection	other direction
 	 * @param endPoint
 	 * @param netEdges
-	 * @param nullSpaceWedges
+	 * @param spaceCancellingWedges
 	 */
 	private void addSceneObjectsForOuterEdge(
 			String edgeName,
 			Vector3D startPoint, Vector3D endPoint,
 			Vector3D n,	// normal direction
 			Vector3D otherDirection,	// other direction
-			EditableSceneObjectCollection netEdges, EditableSceneObjectCollection nullSpaceWedges
+			EditableSceneObjectCollection netEdges, EditableSceneObjectCollection spaceCancellingWedges
 		)
 	{
 		// add a cylinder that represents the edge in the net...
 		addCylinder(edgeName, startPoint, endPoint, netEdges);
 		
-//		// ... and a 45 degree null-space wedge
+//		// ... and a 45 degree space-cancelling wedge
 //		Vector3D apexEdgeCentre = Vector3D.sum(startPoint, endPoint).getProductWith(0.5);
 //		// calculate the bisector direction
 //		Vector3D bisectorDirection = Vector3D.sum(
 //				n.getWithLength(Math.cos(Math.PI/8.)),
 //				otherDirection.getWithLength(-Math.sin(Math.PI/8.))	// "-" because <i>otherDirection</i> is pointing outwards
 //			);
-//		nullSpaceWedges.addSceneObject(
-//				new EditableNullSpaceWedge(
-//						"Null-space wedge at "+edgeName,	// description
+//		spaceCancellingWedges.addSceneObject(
+//				new EditableSpaceCancellingWedge(
+//						"Space-cancelling wedge at "+edgeName,	// description
 //						Math.PI/4.,	// wedgeAngle
 //						apexEdgeCentre,	// apexEdgeCentre,
 //						Vector3D.difference(endPoint, startPoint),	// apexEdgeDirection
 //						bisectorDirection,	// bisectorDirection
-//						Math.sqrt(2*0.5*0.5)*sideLength*nullSpaceWedgeLegLengthFactor,	// legLength
+//						Math.sqrt(2*0.5*0.5)*sideLength*spaceCancellingWedgeLegLengthFactor,	// legLength
 //						sideLength,	// apexEdgeLength
-//						showNullSpaceWedges,	// showSheets
-//						nullSpaceWedgeSurfaceTransmissionCoefficient,	// sheetTransmissionCoefficient
-//						showNullSpaceWedgeEdges,	// showEdges
+//						showSpaceCancellingWedges,	// showSheets
+//						spaceCancellingWedgeSurfaceTransmissionCoefficient,	// sheetTransmissionCoefficient
+//						showSpaceCancellingWedgeEdges,	// showEdges
 //						edgeRadius-MyMath.TINY,	// edgeRadius
-//						nullSpaceWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty
+//						spaceCancellingWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty
 //						gluingType,	// gluingType
 //						numberOfNegativeSpaceWedges,	// numberOfNegativeSpaceWedges,
-//						nullSpaceWedges,	// parent, 
+//						spaceCancellingWedges,	// parent, 
 //						getStudio()
 //						)
 //				);
@@ -822,11 +822,11 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 	
 	// GUI panels
 	private LabelledVector3DPanel centrePanel, rightDirectionPanel, upDirectionPanel;
-	private LabelledDoublePanel sideLengthPanel, edgeRadiusPanel, nullSpaceWedgeLegLengthFactorPanel, nullSpaceWedgeSurfaceTransmissionCoefficientPanel;
+	private LabelledDoublePanel sideLengthPanel, edgeRadiusPanel, spaceCancellingWedgeLegLengthFactorPanel, spaceCancellingWedgeSurfaceTransmissionCoefficientPanel;
 	private LabelledIntPanel numberOfNegativeSpaceWedgesPanel;
 	private JComboBox<GluingType> gluingTypeComboBox;
-	private JCheckBox showNullSpaceWedgesCheckBox, showNetEdgesCheckBox, showNullSpaceWedgesEdgesCheckBox;
-	private SurfacePropertyPanel netStructureSurfacePropertyPanel, netFaceSurfacePropertyPanel, nullSpaceWedgeEdgesSurfacePropertyPanel;
+	private JCheckBox showSpaceCancellingWedgesCheckBox, showNetEdgesCheckBox, showSpaceCancellingWedgesEdgesCheckBox;
+	private SurfacePropertyPanel netStructureSurfacePropertyPanel, netFaceSurfacePropertyPanel, spaceCancellingWedgeEdgesSurfacePropertyPanel;
 	private JButton convertButton;
 
 	/**
@@ -870,20 +870,20 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		sideLengthPanel = new LabelledDoublePanel("Side length");
 		mainParametersPanel.add(sideLengthPanel, "wrap");
 
-		showNullSpaceWedgesCheckBox = new JCheckBox("Show null-space wedges");
-		mainParametersPanel.add(showNullSpaceWedgesCheckBox, "wrap");
+		showSpaceCancellingWedgesCheckBox = new JCheckBox("Show space-cancelling wedges");
+		mainParametersPanel.add(showSpaceCancellingWedgesCheckBox, "wrap");
 		
-		nullSpaceWedgeLegLengthFactorPanel = new LabelledDoublePanel("Leg-length factor");
-		mainParametersPanel.add(nullSpaceWedgeLegLengthFactorPanel, "wrap");
+		spaceCancellingWedgeLegLengthFactorPanel = new LabelledDoublePanel("Leg-length factor");
+		mainParametersPanel.add(spaceCancellingWedgeLegLengthFactorPanel, "wrap");
 		
 		gluingTypeComboBox = new JComboBox<GluingType>(GluingType.values());
 		gluingTypeComboBox.addActionListener(this);
 		mainParametersPanel.add(gluingTypeComboBox, "wrap");
 		
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient of null-space-wedge surfaces");
-		mainParametersPanel.add(nullSpaceWedgeSurfaceTransmissionCoefficientPanel, "wrap");
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient of space-cancelling-wedge surfaces");
+		mainParametersPanel.add(spaceCancellingWedgeSurfaceTransmissionCoefficientPanel, "wrap");
 		
-		numberOfNegativeSpaceWedgesPanel = new LabelledIntPanel("Number of negative-space wedges per null-space wedge");
+		numberOfNegativeSpaceWedgesPanel = new LabelledIntPanel("Number of negative-space wedges per space-cancelling wedge");
 		mainParametersPanel.add(numberOfNegativeSpaceWedgesPanel, "wrap");
 		
 		tabbedPane.addTab("Main parameters", mainParametersPanel);
@@ -898,8 +898,8 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		showNetEdgesCheckBox = new JCheckBox("Show structure (edges and faces) of net of 4-simplex");
 		structureVisualisationPanel.add(showNetEdgesCheckBox, "wrap");
 
-		showNullSpaceWedgesEdgesCheckBox = new JCheckBox("Show edges of null-space wedges");
-		structureVisualisationPanel.add(showNullSpaceWedgesEdgesCheckBox, "wrap");
+		showSpaceCancellingWedgesEdgesCheckBox = new JCheckBox("Show edges of space-cancelling wedges");
+		structureVisualisationPanel.add(showSpaceCancellingWedgesEdgesCheckBox, "wrap");
 
 		edgeRadiusPanel = new LabelledDoublePanel("Tube radius");
 		structureVisualisationPanel.add(edgeRadiusPanel, "wrap");
@@ -914,10 +914,10 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		structureVisualisationPanel.add(netFaceSurfacePropertyPanel, "wrap");
 		netFaceSurfacePropertyPanel.setIPanel(iPanel);
 		
-		nullSpaceWedgeEdgesSurfacePropertyPanel = new SurfacePropertyPanel("Surface of null-space-wedge edges", getStudio().getScene());
+		spaceCancellingWedgeEdgesSurfacePropertyPanel = new SurfacePropertyPanel("Surface of space-cancelling-wedge edges", getStudio().getScene());
 		// frameSurfacePropertyPanel.addButtonsActionListener(new SurfacePropertyPanelListener(frameSurfacePropertyPanel));
-		structureVisualisationPanel.add(nullSpaceWedgeEdgesSurfacePropertyPanel, "wrap");
-		nullSpaceWedgeEdgesSurfacePropertyPanel.setIPanel(iPanel);
+		structureVisualisationPanel.add(spaceCancellingWedgeEdgesSurfacePropertyPanel, "wrap");
+		spaceCancellingWedgeEdgesSurfacePropertyPanel.setIPanel(iPanel);
 
 		tabbedPane.addTab("Structure-visualisation details", structureVisualisationPanel);
 
@@ -943,17 +943,17 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		rightDirectionPanel.setVector3D(rightDirection);
 		upDirectionPanel.setVector3D(upDirection);
 		sideLengthPanel.setNumber(sideLength);
-		showNullSpaceWedgesCheckBox.setSelected(showNullSpaceWedges);
-		nullSpaceWedgeLegLengthFactorPanel.setNumber(nullSpaceWedgeLegLengthFactor);
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel.setNumber(nullSpaceWedgeSurfaceTransmissionCoefficient);
+		showSpaceCancellingWedgesCheckBox.setSelected(showSpaceCancellingWedges);
+		spaceCancellingWedgeLegLengthFactorPanel.setNumber(spaceCancellingWedgeLegLengthFactor);
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.setNumber(spaceCancellingWedgeSurfaceTransmissionCoefficient);
 		numberOfNegativeSpaceWedgesPanel.setNumber(numberOfNegativeSpaceWedges);
 		gluingTypeComboBox.setSelectedItem(gluingType);
 		edgeRadiusPanel.setNumber(edgeRadius);
 		showNetEdgesCheckBox.setSelected(showNetEdgesAndFaces);
-		showNullSpaceWedgesEdgesCheckBox.setSelected(showNullSpaceWedgeEdges);
+		showSpaceCancellingWedgesEdgesCheckBox.setSelected(showSpaceCancellingWedgeEdges);
 		netStructureSurfacePropertyPanel.setSurfaceProperty(netEdgeSurfaceProperty);
 		netFaceSurfacePropertyPanel.setSurfaceProperty(netFaceSurfaceProperty);
-		nullSpaceWedgeEdgesSurfacePropertyPanel.setSurfaceProperty(nullSpaceWedgeEdgeSurfaceProperty);
+		spaceCancellingWedgeEdgesSurfacePropertyPanel.setSurfaceProperty(spaceCancellingWedgeEdgeSurfaceProperty);
 		enableOrDisableAdditionalWedgeTypeControlPanels();
 	}
 
@@ -968,17 +968,17 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		rightDirection = rightDirectionPanel.getVector3D();
 		upDirection = upDirectionPanel.getVector3D();
 		sideLength = sideLengthPanel.getNumber();
-		showNullSpaceWedges = showNullSpaceWedgesCheckBox.isSelected();
-		nullSpaceWedgeLegLengthFactor = nullSpaceWedgeLegLengthFactorPanel.getNumber();
-		nullSpaceWedgeSurfaceTransmissionCoefficient = nullSpaceWedgeSurfaceTransmissionCoefficientPanel.getNumber();
+		showSpaceCancellingWedges = showSpaceCancellingWedgesCheckBox.isSelected();
+		spaceCancellingWedgeLegLengthFactor = spaceCancellingWedgeLegLengthFactorPanel.getNumber();
+		spaceCancellingWedgeSurfaceTransmissionCoefficient = spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.getNumber();
 		numberOfNegativeSpaceWedges = numberOfNegativeSpaceWedgesPanel.getNumber();
 		gluingType = (GluingType)gluingTypeComboBox.getSelectedItem();
 		edgeRadius = edgeRadiusPanel.getNumber();
 		showNetEdgesAndFaces = showNetEdgesCheckBox.isSelected();
-		showNullSpaceWedgeEdges = showNullSpaceWedgesEdgesCheckBox.isSelected();
+		showSpaceCancellingWedgeEdges = showSpaceCancellingWedgesEdgesCheckBox.isSelected();
 		netEdgeSurfaceProperty = netStructureSurfacePropertyPanel.getSurfaceProperty();
 		netFaceSurfaceProperty = netFaceSurfacePropertyPanel.getSurfaceProperty();
-		nullSpaceWedgeEdgeSurfaceProperty = nullSpaceWedgeEdgesSurfacePropertyPanel.getSurfaceProperty();
+		spaceCancellingWedgeEdgeSurfaceProperty = spaceCancellingWedgeEdgesSurfacePropertyPanel.getSurfaceProperty();
 
 		// add the objects
 		try {
@@ -1000,7 +1000,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		// show or hide additional parameters as appropriate
 		switch(gluingType)
 		{
-		case NEGATIVE_SPACE_WEDGES:
+		case SPACE_CANCELLING_WEDGES:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
 			break;
 		case PERFECT:
@@ -1041,11 +1041,11 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 				netFaceSurfaceProperty = (SurfaceProperty)edited;
 				netFaceSurfacePropertyPanel.setSurfaceProperty(netFaceSurfaceProperty);
 			}
-			else if(edited == nullSpaceWedgeEdgesSurfacePropertyPanel)
+			else if(edited == spaceCancellingWedgeEdgesSurfacePropertyPanel)
 			{
-				// null-space-wedges-structure surface property has been edited
-				nullSpaceWedgeEdgeSurfaceProperty = (SurfaceProperty)edited;
-				nullSpaceWedgeEdgesSurfacePropertyPanel.setSurfaceProperty(nullSpaceWedgeEdgeSurfaceProperty);
+				// space-cancelling-wedges-structure surface property has been edited
+				spaceCancellingWedgeEdgeSurfaceProperty = (SurfaceProperty)edited;
+				spaceCancellingWedgeEdgesSurfacePropertyPanel.setSurfaceProperty(spaceCancellingWedgeEdgeSurfaceProperty);
 			}
 	}
 }

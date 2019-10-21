@@ -204,6 +204,23 @@ implements Serializable
 	public void setNoOfFacesToOutside(int noOfFacesToOutside) {
 		this.noOfFacesToOutside = noOfFacesToOutside;
 	}
+	
+	/**
+	 * @param vertexIndex
+	 * @return	true if the vertex with index <vertexIndex> is one of the vertices of this face, false otherwise
+	 */
+	public boolean containsVertexIndex(int vertexIndex)
+	{
+		//  go through all the vertices...
+		for(int i=0; i<3; i++)
+		{
+			// ... and if one of them is the given vertexIndex, return true
+			if(vertexIndices[i] == vertexIndex) return true;
+		}
+		
+		// if none of the vertex indices equal vertexIndex, then this face doesn't include vertexIndex
+		return false;
+	}
 
 	/**
 	 * @param oneVertexIndex	index of one of the three vertices of this face

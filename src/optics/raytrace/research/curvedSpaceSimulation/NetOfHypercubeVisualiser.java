@@ -44,9 +44,9 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 	private EditableNetOfHypercube net;
 	
 	/**
-	 * show the null-space wedges
+	 * show the space-cancelling wedges
 	 */
-	private boolean showNullSpaceWedges;
+	private boolean showSpaceCancellingWedges;
 
 	/**
 	 * show edges of the net of the hypercube
@@ -54,9 +54,9 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 	private boolean showNetEdges;
 	
 	/**
-	 * show edges of the null-space wedges, i.e. the vertices and edges of the sheets forming the null-space wedges
+	 * show edges of the space-cancelling wedges, i.e. the vertices and edges of the sheets forming the space-cancelling wedges
 	 */
-	private boolean showNullSpaceWedgeEdges;
+	private boolean showSpaceCancellingWedgeEdges;
 
 	/**
 	 * show trajectory
@@ -124,31 +124,24 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 				new Vector3D(1, 0, 0),	// rightDirection,
 				new Vector3D(0, 1, 0),	// upDirection
 				1,	// sideLength,
-				false,	// showNullSpaceWedges
-				1,	// nullSpaceWedgeLegLengthFactor
+				false,	// showSpaceCancellingWedges
+				1,	// spaceCancellingWedgeLegLengthFactor
 				0.96,	// refractingSurfaceTransmissionCoefficient
 				GluingType.PERFECT,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
 				true,	// showNetStructure
-				false,	// showNullSpaceWedgesStructure
-				SurfaceColour.BLACK_SHINY,	// netStructureSurfaceProperty
+				false,	// showSpaceCancellingWedgesStructure
+				SurfaceColour.GREY20_SHINY,	// netStructureSurfaceProperty
 				ColourFilter.LIGHT_CYAN_GLASS,	// netFaceSurfaceProperty
-				SurfaceColour.RED_SHINY,	// nullSpaceWedgesStructureSurfaceProperty
-				0.02,	// structureTubeRadius
+				SurfaceColour.RED_SHINY,	// spaceCancellingWedgesStructureSurfaceProperty
+				0.002,	// structureTubeRadius
 				null,	// parent
 				null	// studio
 			);
 		
-		showNullSpaceWedges = false;
+		showSpaceCancellingWedges = false;
 		showNetEdges = true;
-		showNullSpaceWedgeEdges = false;
-		
-		// trajectory
-		showTrajectory = false;
-		trajectoryStartPoint = new Vector3D(0, 0, 0);
-		trajectoryStartDirection = new Vector3D(.1, 1, 0);
-		trajectoryRadius = 0.002;
-		trajectoryMaxTraceLevel = 100;
+		showSpaceCancellingWedgeEdges = false;
 		
 		// stuff
 		studioInitialisation = StudioInitialisationType.HEAVEN;	// the backdrop
@@ -156,11 +149,18 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		sphereCentre = new Vector3D(0.2, 0.31415, 0.25);
 		sphereRadius = 0.1;
 
+		// trajectory
+		showTrajectory = false;
+		trajectoryStartPoint = new Vector3D(0, 0, 0);
+		trajectoryStartDirection = new Vector3D(.1, 1, 0);
+		trajectoryRadius = 0.001;
+		trajectoryMaxTraceLevel = 100;
+		
 		// camera
-		cameraViewDirection = new Vector3D(3, -2, 5);
-		cameraViewCentre = new Vector3D(0, 0, 0);
-		cameraDistance = 10;
-		cameraFocussingDistance = 10;
+		cameraViewDirection = new Vector3D(2, -3.4, 7);
+		cameraViewCentre = new Vector3D(0, 0.1, 0);
+		cameraDistance = cameraViewDirection.getLength();
+		cameraFocussingDistance = cameraDistance;
 		cameraHorizontalFOVDeg = 40;
 		cameraMaxTraceLevel = 1000;
 		cameraPixelsX = 640;
@@ -196,35 +196,56 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 	public void writeParameters(PrintStream printStream)
 	{
 		// write any parameters not defined in NonInteractiveTIMEngine
-		printStream.println("Scene initialisation");
+		
+		printStream.println("Net");
 		printStream.println();
-		
-		printStream.println("showNullSpaceWedges = "+showNullSpaceWedges);
-		printStream.println("showNetEdges = "+showNetEdges);
-		printStream.println("showNullSpaceWedgeEdges = "+showNullSpaceWedgeEdges);
-		
-		printStream.println("showTrajectory = "+showTrajectory);
-		if(showTrajectory)
-		{
-			printStream.println("trajectoryStartPoint = "+trajectoryStartPoint);
-			printStream.println("trajectoryStartDirection = "+trajectoryStartDirection);
-			printStream.println("trajectoryRadius = "+trajectoryRadius);
-			printStream.println("trajectoryMaxTraceLevel = "+trajectoryMaxTraceLevel);
-		}
-		
-		printStream.println("showSphere = "+showSphere);
-		if(showSphere)
-		{		
-			printStream.println("sphereCentre = "+sphereCentre);
-			printStream.println("sphereRadius = "+sphereRadius);
-		}
 
-		printStream.println("studioInitialisation = "+studioInitialisation);
-
+		printStream.println("Centre = "+net.getCentre());
+		printStream.println("Edge length of central cube = "+net.getSideLength());
+		printStream.println("Rightwards direction = "+net.getRightDirection());
+		printStream.println("Upwards direction = "+net.getUpDirection());
+		printStream.println("Show space-cancelling wedges = "+showSpaceCancellingWedges);
+		printStream.println("Leg length factor = "+net.getSpaceCancellingWedgeLegLengthFactor());
+		printStream.println("Simulation type = "+net.getGluingType());
+		printStream.println("Transmission coefficient of space-cancelling-wedge surfaces = "+net.getSpaceCancellingWedgeSurfaceTransmissionCoefficient());
+		printStream.println("Number of space-cancelling wedges in fan of space-cancelling wedge = "+net.getNumberOfNegativeSpaceWedges());
+		printStream.println("Show structure > Show edges and faces of net of hypercube = "+showNetEdges);
+		printStream.println("Show structure > Show edges of space-cancelling wedges = "+showSpaceCancellingWedgeEdges);
+		printStream.println("Show structure > Tube radius = "+net.getEdgeRadius());
+		
 		printStream.println();
+		printStream.println("Stuff");
+		printStream.println();
+
+		printStream.println("Initialise backdrop to = "+studioInitialisation);
+		printStream.println("White sphere > Show = "+showSphere);
+		printStream.println("White sphere > Centre = "+sphereCentre);
+		printStream.println("White sphere > Radius = "+sphereRadius);
+		
+		printStream.println();
+		printStream.println("Trajectory");
+		printStream.println();
+
+		printStream.println("Show trajectory = "+showTrajectory);
+		printStream.println("Start point = "+trajectoryStartPoint);
+		printStream.println("Initial direction = "+trajectoryStartDirection);
+		printStream.println("Radius = "+trajectoryRadius);
+		printStream.println("Max. trace level = "+trajectoryMaxTraceLevel);
+		
+		printStream.println();
+		printStream.println("Camera");
+		printStream.println();
+
+		printStream.println("Aperture centre = "+Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)));
+		printStream.println("Centre of view = "+cameraViewCentre);
+		printStream.println("Horizontal FOV = "+cameraHorizontalFOVDeg+"°");
+		printStream.println("Aperture size = "+cameraApertureSize);
+		printStream.println("Focussing distance = "+cameraFocussingDistance);
+		printStream.println("Max. trace level = "+cameraMaxTraceLevel);
+		
 
 		// write all parameters defined in NonInteractiveTIMEngine
-		super.writeParameters(printStream);
+		// super.writeParameters(printStream);
 	}
 	
 	/* (non-Javadoc)
@@ -262,10 +283,10 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 
 		// the net: set its parent to <i>scene</i>...
 		net.setParent(scene);
-		// ... and get it prepared for light-ray-trajectory tracing, i.e. showing the null-space wedges but hiding all edges
-		net.setShowNullSpaceWedges(true);
+		// ... and get it prepared for light-ray-trajectory tracing, i.e. showing the space-cancelling wedges but hiding all edges
+		net.setShowSpaceCancellingWedges(true);
 		net.setShowNetEdges(false);
-		net.setShowNullSpaceWedgeEdges(false);
+		net.setShowSpaceCancellingWedgeEdges(false);
 
 		// now add the scene objects to the net...
 		try {
@@ -316,9 +337,9 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 
 		
 		// prepare the net for standard ray tracing...
-		net.setShowNullSpaceWedges(showNullSpaceWedges);
+		net.setShowSpaceCancellingWedges(showSpaceCancellingWedges);
 		net.setShowNetEdges(showNetEdges);
-		net.setShowNullSpaceWedgeEdges(showNullSpaceWedgeEdges);
+		net.setShowSpaceCancellingWedgeEdges(showSpaceCancellingWedgeEdges);
 
 		// ... and add the scene objects to the net
 		try {
@@ -336,10 +357,10 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 	
 	// GUI panels
 	private LabelledVector3DPanel centrePanel, rightDirectionPanel, upDirectionPanel;
-	private LabelledDoublePanel sideLengthPanel, edgeRadiusPanel, nullSpaceWedgeLegLengthFactorPanel, nullSpaceWedgeSurfaceTransmissionCoefficientPanel;
+	private LabelledDoublePanel sideLengthPanel, edgeRadiusPanel, spaceCancellingWedgeLegLengthFactorPanel, spaceCancellingWedgeSurfaceTransmissionCoefficientPanel;
 	private LabelledIntPanel numberOfNegativeSpaceWedgesPanel;
 	private JComboBox<GluingType> gluingTypeComboBox;
-	private JCheckBox showNullSpaceWedgesCheckBox, showNetEdgesCheckBox, showNullSpaceWedgesEdgesCheckBox;
+	private JCheckBox showSpaceCancellingWedgesCheckBox, showNetEdgesCheckBox, showSpaceCancellingWedgesEdgesCheckBox;
 	
 	// trajectory
 	private JCheckBox showTrajectoryCheckBox;
@@ -388,11 +409,10 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		centrePanel.setVector3D(net.getCentre());
 		netPanel.add(centrePanel, "wrap");
 		
-		sideLengthPanel = new LabelledDoublePanel("Side length");
+		sideLengthPanel = new LabelledDoublePanel("Side length of central cube");
 		sideLengthPanel.setNumber(net.getSideLength());
 		netPanel.add(sideLengthPanel, "wrap");
 		
-
 		rightDirectionPanel = new LabelledVector3DPanel("Rightwards direction");
 		rightDirectionPanel.setVector3D(net.getRightDirection());
 		netPanel.add(rightDirectionPanel, "wrap");
@@ -401,24 +421,24 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		upDirectionPanel.setVector3D(net.getUpDirection());
 		netPanel.add(upDirectionPanel, "wrap");
 		
-		showNullSpaceWedgesCheckBox = new JCheckBox("Show null-space wedges");
-		showNullSpaceWedgesCheckBox.setSelected(showNullSpaceWedges);
-		netPanel.add(showNullSpaceWedgesCheckBox, "wrap");
+		showSpaceCancellingWedgesCheckBox = new JCheckBox("Show space-cancelling wedges");
+		showSpaceCancellingWedgesCheckBox.setSelected(showSpaceCancellingWedges);
+		netPanel.add(showSpaceCancellingWedgesCheckBox, "wrap");
 		
-		nullSpaceWedgeLegLengthFactorPanel = new LabelledDoublePanel("Leg length factor");
-		nullSpaceWedgeLegLengthFactorPanel.setNumber(net.getNullSpaceWedgeLegLengthFactor());
-		netPanel.add(nullSpaceWedgeLegLengthFactorPanel, "wrap");
+		spaceCancellingWedgeLegLengthFactorPanel = new LabelledDoublePanel("Leg length factor");
+		spaceCancellingWedgeLegLengthFactorPanel.setNumber(net.getSpaceCancellingWedgeLegLengthFactor());
+		netPanel.add(spaceCancellingWedgeLegLengthFactorPanel, "wrap");
 		
 		gluingTypeComboBox = new JComboBox<GluingType>(GluingType.values());
 		gluingTypeComboBox.setSelectedItem(net.getGluingType());
 		gluingTypeComboBox.addActionListener(this);
-		netPanel.add(gluingTypeComboBox, "wrap");
+		netPanel.add(GUIBitsAndBobs.makeRow("Simulation type", gluingTypeComboBox), "wrap");
 		
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient of null-space-wedge surfaces");
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel.setNumber(net.getNullSpaceWedgeSurfaceTransmissionCoefficient());
-		netPanel.add(nullSpaceWedgeSurfaceTransmissionCoefficientPanel, "wrap");
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient of space-cancelling-wedge surfaces");
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.setNumber(net.getSpaceCancellingWedgeSurfaceTransmissionCoefficient());
+		netPanel.add(spaceCancellingWedgeSurfaceTransmissionCoefficientPanel, "wrap");
 		
-		numberOfNegativeSpaceWedgesPanel = new LabelledIntPanel("Number of negative-space wedges per null-space wedge");
+		numberOfNegativeSpaceWedgesPanel = new LabelledIntPanel("Number of space-cancelling wedges in fan of space-cancelling wedge");
 		numberOfNegativeSpaceWedgesPanel.setNumber(net.getNumberOfNegativeSpaceWedges());
 		netPanel.add(numberOfNegativeSpaceWedgesPanel, "wrap");
 		
@@ -427,13 +447,13 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		structureVisualisationPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Show structure"));
 		structureVisualisationPanel.setLayout(new MigLayout("insets 0"));
 		
-		showNetEdgesCheckBox = new JCheckBox("Show structure (edges and faces) of net of hypercube");
+		showNetEdgesCheckBox = new JCheckBox("Show edges and faces of net of hypercube");
 		showNetEdgesCheckBox.setSelected(showNetEdges);
 		structureVisualisationPanel.add(showNetEdgesCheckBox, "wrap");
 
-		showNullSpaceWedgesEdgesCheckBox = new JCheckBox("Show edges of null-space wedges");
-		showNullSpaceWedgesEdgesCheckBox.setSelected(showNullSpaceWedgeEdges);
-		structureVisualisationPanel.add(showNullSpaceWedgesEdgesCheckBox, "wrap");
+		showSpaceCancellingWedgesEdgesCheckBox = new JCheckBox("Show edges of space-cancelling wedges");
+		showSpaceCancellingWedgesEdgesCheckBox.setSelected(showSpaceCancellingWedgeEdges);
+		structureVisualisationPanel.add(showSpaceCancellingWedgesEdgesCheckBox, "wrap");
 
 		edgeRadiusPanel = new LabelledDoublePanel("Tube radius");
 		edgeRadiusPanel.setNumber(net.getEdgeRadius());
@@ -515,7 +535,7 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		JPanel cameraPanel = new JPanel();
 		cameraPanel.setLayout(new MigLayout("insets 0"));
 
-		cameraPositionPanel = new LabelledVector3DPanel("Camera position");
+		cameraPositionPanel = new LabelledVector3DPanel("Aperture centre");
 		cameraPositionPanel.setVector3D(Vector3D.difference(cameraViewCentre, cameraViewDirection.getWithLength(cameraDistance)));
 		cameraPanel.add(cameraPositionPanel, "span");
 
@@ -529,7 +549,7 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		
 		cameraApertureSizeComboBox = new JComboBox<ApertureSizeType>(ApertureSizeType.values());
 		cameraApertureSizeComboBox.setSelectedItem(cameraApertureSize);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera aperture", cameraApertureSizeComboBox), "span");		
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Aperture size", cameraApertureSizeComboBox), "span");		
 		
 		cameraFocussingDistancePanel = new LabelledDoublePanel("Focussing distance");
 		cameraFocussingDistancePanel.setNumber(cameraFocussingDistance);
@@ -557,14 +577,14 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		net.setSideLength(sideLengthPanel.getNumber());
 		net.setRightDirection(rightDirectionPanel.getVector3D());
 		net.setUpDirection(upDirectionPanel.getVector3D());
-		showNullSpaceWedges = showNullSpaceWedgesCheckBox.isSelected();
-		net.setNullSpaceWedgeLegLengthFactor(nullSpaceWedgeLegLengthFactorPanel.getNumber());
-		net.setNullSpaceWedgeSurfaceTransmissionCoefficient(nullSpaceWedgeSurfaceTransmissionCoefficientPanel.getNumber());
+		showSpaceCancellingWedges = showSpaceCancellingWedgesCheckBox.isSelected();
+		net.setSpaceCancellingWedgeLegLengthFactor(spaceCancellingWedgeLegLengthFactorPanel.getNumber());
+		net.setSpaceCancellingWedgeSurfaceTransmissionCoefficient(spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.getNumber());
 		net.setNumberOfNegativeSpaceWedges(numberOfNegativeSpaceWedgesPanel.getNumber());
 		net.setGluingType((GluingType)gluingTypeComboBox.getSelectedItem());
 		net.setEdgeRadius(edgeRadiusPanel.getNumber());
 		showNetEdges = showNetEdgesCheckBox.isSelected();
-		showNullSpaceWedgeEdges = showNullSpaceWedgesEdgesCheckBox.isSelected();
+		showSpaceCancellingWedgeEdges = showSpaceCancellingWedgesEdgesCheckBox.isSelected();
 		
 		showTrajectory = showTrajectoryCheckBox.isSelected();
 		trajectoryStartPoint = trajectoryStartPointPanel.getVector3D();
@@ -591,9 +611,9 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		// show or hide additional parameters as appropriate
 		switch(net.getGluingType())
 		{
-		case NEGATIVE_SPACE_WEDGES:
-		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
-		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case SPACE_CANCELLING_WEDGES:
+		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
+		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
 			break;
 		case PERFECT:

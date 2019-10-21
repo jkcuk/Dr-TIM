@@ -105,9 +105,15 @@ implements Serializable
 		
 		s.inferFacesFromEdges();
 		// System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: faces="+s.getFaces());
+		System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: no of faces="+s.getFaces().size());
+		for(int f=0; f<s.getFaces().size(); f++)
+			System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: face #"+f+"="+s.getFaces().get(f));
 		
 		s.inferSimplicesFromFaces();
 		// System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: simplices="+s.getSimplices());
+		System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: no of simplices="+s.getSimplices().size());
+		for(int f=0; f<s.getSimplices().size(); f++)
+			System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: simplex #"+f+"="+s.getSimplices().get(f));
 		
 		return s;
 	}
@@ -493,6 +499,41 @@ implements Serializable
 				}
 		}
 	}
+	
+	public boolean listOfSimplicesDoesNotContainSimplex(ArrayList<Simplex> simplices, Simplex simplex)
+	{
+		// go through all the simplices in the list of simplices, and see if there is one with the same vertex indices;
+		// if there is one, return false
+		
+		// go through all the simplices in the list...
+		for(Simplex s:simplices)
+		{
+			// ... and get the list of vertex indices in the current simplex
+			int[] vertices = s.getVertexIndices();
+			
+			// go through all these vertex indices...
+			int v = 0;
+			while(v<4)
+			{
+				// is the vth vertex of the current simplex not a vertex of <simplex>?
+				if(!simplex.isVertex(vertices[v]))
+				{
+					// one of the vertex indices is not a vertex index of <simplex>
+					break;
+				}
+				
+				v++;
+			}
+			
+			if(v == 4)
+			{
+				// all vertex indices of s are also in simplex, so the list of simplices *does* contain simplex
+				return false;
+			}
+		}
+		
+		return true;
+	}
 
 	/**
 	 * populate <simplices> from <faces>
@@ -510,8 +551,9 @@ implements Serializable
 		// go through all vertices
 		for(int v=0; v<vertices.size(); v++)
 		{
-			// first find all faces with vertex #v and other vertices #v1 and #v2, where v1, v2 > v
-			// (if v1, v2 < v, then the simplices we are finding will already have been found earlier)...
+			// first find all faces with vertex #v
+//			// and other vertices #v1 and #v2, where v1, v2 > v
+//			// (if v1, v2 < v, then the simplices we are finding will already have been found earlier)...
 			
 			// ... by creating an array that will hold the face indices...
 			ArrayList<Integer> indicesOfFacesAtVertex = new ArrayList<Integer>();
@@ -519,12 +561,12 @@ implements Serializable
 			// ... and populating it by going through all the faces
 			for(int f=0; f<faces.size(); f++)
 			{
-				// is vertex #v one of the vertices of face #f, and if so are the indices of the other vertex >v?
-				if(faces.get(f).getSmallerOtherVertexIndex(v) > v)
+//				// is vertex #v one of the vertices of face #f, and if so are the indices of the other vertex >v?
+//				if(faces.get(f).getSmallerOtherVertexIndex(v) > v)
+				// is vertex #v one of the vertices of face #f?
+				if(faces.get(f).containsVertexIndex(v))
 				{
-					// yes
-					
-					// add it to the list of faces that meet at this vertex
+					// yes, add the face to the list of faces that meet at this vertex
 					indicesOfFacesAtVertex.add(f);
 				}
 			}
@@ -565,8 +607,8 @@ implements Serializable
 							
 //							System.out.println("SimplicialComplex::inferSimplicesFromFaces: simplex.getFaceIndices()=" + simplex.getFaceIndices());
 
-							// ... and if all other vertices lie outside the new simplex, ...
-							if(allOtherVerticesLieOutside(simplex))
+							// ... and if all other vertices lie outside the new simplex and this simplex isn't already in the list, ...
+							if(allOtherVerticesLieOutside(simplex) && listOfSimplicesDoesNotContainSimplex(simplices, simplex))
 								// ... and if it is, add the simplex to the list of simplices
 								simplices.add(simplex);
 						} catch (InconsistencyException e)

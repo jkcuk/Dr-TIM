@@ -61,23 +61,23 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	/**
 	 * show the null-space wedges
 	 */
-	protected boolean showNullSpaceWedges;
+	protected boolean showSpaceCancellingWedges;
 
 	/**
 	 * Leg length of each null-space wedge.
 	 * Each of the wedges is an extruded isoceles triangle of leg length <i>legLength</i>.
 	 */
-	// protected double nullSpaceWedgeLegLength;
+	// protected double spaceCancellingWedgeLegLength;
 	
 	/**
 	 * Factor by which the minimum leg length of each null-space wedge is multiplied.
 	 */
-	protected double nullSpaceWedgeLegLengthFactor;
+	protected double spaceCancellingWedgeLegLengthFactor;
 
 	/**
 	 * Transmission coefficient of each null-space-wedge surface
 	 */
-	protected double nullSpaceWedgeSurfaceTransmissionCoefficient;
+	protected double spaceCancellingWedgeSurfaceTransmissionCoefficient;
 		
 	/**
 	 * Null-space-wedge type, which describes the way this null-space wedge is realised
@@ -102,7 +102,7 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	/**
 	 * show edges of the null-space wedges, i.e. the vertices and edges of the sheets forming the null-space wedges
 	 */
-	protected boolean showNullSpaceWedgeEdges;
+	protected boolean showSpaceCancellingWedgeEdges;
 
 	/**
 	 * surface property of the spheres and cylinders representing vertices and edges of the net
@@ -117,7 +117,7 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	/**
 	 * surface property of the spheres and cylinders representing vertices and edges of the net
 	 */
-	protected SurfaceProperty nullSpaceWedgeEdgeSurfaceProperty;
+	protected SurfaceProperty spaceCancellingWedgeEdgeSurfaceProperty;
 
 	/**
 	 * radius of the spheres and cylinders representing the vertices and edges
@@ -125,9 +125,9 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	protected double edgeRadius;
 	
 //	/**
-//	 * for debugging; if this variable takes a positive value, show only null-space wedge #showOnlyNullSpaceWedgeNo
+//	 * for debugging; if this variable takes a positive value, show only null-space wedge #showOnlySpaceCancellingWedgeNo
 //	 */
-	protected int showOnlyNullSpaceWedgeNo;	// TODO for debugging
+	protected int showOnlySpaceCancellingWedgeNo;	// TODO for debugging
 	
 	
 	
@@ -156,17 +156,17 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	 * @param description
 	 * @param vertices	all vertices in the net
 	 * @param edges	the edges in the net
-	 * @param showNullSpaceWedges
-	 * @param nullSpaceWedgeLegLengthFactor
-	 * @param nullSpaceWedgeHeight
+	 * @param showSpaceCancellingWedges
+	 * @param spaceCancellingWedgeLegLengthFactor
+	 * @param spaceCancellingWedgeHeight
 	 * @param refractingSurfaceTransmissionCoefficient
-	 * @param nullSpaceWedgeType
+	 * @param spaceCancellingWedgeType
 	 * @param numberOfNegativeSpaceWedges
 	 * @param showNetEdges
-	 * @param showNullSpaceWedgeEdges
+	 * @param showSpaceCancellingWedgeEdges
 	 * @param netEdgeSurfaceProperty
 	 * @param netFaceSurfaceProperty
-	 * @param nullSpaceWedgeEdgeSurfaceProperty
+	 * @param spaceCancellingWedgeEdgeSurfaceProperty
 	 * @param structureTubeRadius
 	 * @param parent
 	 * @param studio
@@ -175,17 +175,17 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 			String description,
 			ArrayList<NamedVector3D> vertices,
 			ArrayList<NamedEdge> edges,
-			boolean showNullSpaceWedges,
-			double nullSpaceWedgeLegLengthFactor,
-			double nullSpaceWedgeSurfaceTransmissionCoefficient,
+			boolean showSpaceCancellingWedges,
+			double spaceCancellingWedgeLegLengthFactor,
+			double spaceCancellingWedgeSurfaceTransmissionCoefficient,
 			GluingType gluingType,
 			int numberOfNegativeSpaceWedges,
 			boolean showNetEdges,
 			boolean showNetFaces,
-			boolean showNullSpaceWedgeEdges,
+			boolean showSpaceCancellingWedgeEdges,
 			SurfaceProperty netEdgeSurfaceProperty,
 			SurfaceProperty netFaceSurfaceProperty,
-			SurfaceProperty nullSpaceWedgeEdgeSurfaceProperty,
+			SurfaceProperty spaceCancellingWedgeEdgeSurfaceProperty,
 			double structureTubeRadius,
 			SceneObject parent,
 			Studio studio
@@ -194,20 +194,20 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 		super(description, false, parent, studio);
 		this.vertices = vertices;
 		this.edges = edges;
-		this.showNullSpaceWedges = showNullSpaceWedges;
-		this.nullSpaceWedgeLegLengthFactor = nullSpaceWedgeLegLengthFactor;
-		this.nullSpaceWedgeSurfaceTransmissionCoefficient = nullSpaceWedgeSurfaceTransmissionCoefficient;
+		this.showSpaceCancellingWedges = showSpaceCancellingWedges;
+		this.spaceCancellingWedgeLegLengthFactor = spaceCancellingWedgeLegLengthFactor;
+		this.spaceCancellingWedgeSurfaceTransmissionCoefficient = spaceCancellingWedgeSurfaceTransmissionCoefficient;
 		this.gluingType = gluingType;
 		this.numberOfNegativeSpaceWedges = numberOfNegativeSpaceWedges;
 		this.showNetEdges = showNetEdges;
 		this.showNetFaces = showNetFaces;
-		this.showNullSpaceWedgeEdges = showNullSpaceWedgeEdges;
+		this.showSpaceCancellingWedgeEdges = showSpaceCancellingWedgeEdges;
 		this.netEdgeSurfaceProperty = netEdgeSurfaceProperty;
 		this.netFaceSurfaceProperty = netFaceSurfaceProperty;
-		this.nullSpaceWedgeEdgeSurfaceProperty = nullSpaceWedgeEdgeSurfaceProperty;
+		this.spaceCancellingWedgeEdgeSurfaceProperty = spaceCancellingWedgeEdgeSurfaceProperty;
 		this.edgeRadius = structureTubeRadius;
 		
-//		showOnlyNullSpaceWedgeNo = -1;	//  by default, show all null-space wedges
+//		showOnlySpaceCancellingWedgeNo = -1;	//  by default, show all null-space wedges
 		
 		if((vertices != null) && (edges != null))
 		{
@@ -230,17 +230,17 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 			original.getDescription(),
 			original.getVertices(),
 			original.getEdges(),
-			original.isShowNullSpaceWedges(),
-			original.getNullSpaceWedgeLegLengthFactor(),
-			original.getNullSpaceWedgeSurfaceTransmissionCoefficient(),
+			original.isShowSpaceCancellingWedges(),
+			original.getSpaceCancellingWedgeLegLengthFactor(),
+			original.getSpaceCancellingWedgeSurfaceTransmissionCoefficient(),
 			original.getGluingType(),
 			original.getNumberOfNegativeSpaceWedges(),
 			original.isShowNetEdges(),
 			original.isShowNetFaces(),
-			original.isShowNullSpaceWedgeEdges(),
+			original.isShowSpaceCancellingWedgeEdges(),
 			original.getNetEdgeSurfaceProperty(),
 			original.getNetFaceSurfaceProperty(),
-			original.getNullSpaceWedgeEdgeSurfaceProperty(),
+			original.getSpaceCancellingWedgeEdgeSurfaceProperty(),
 			original.getEdgeRadius(),
 			original.getParent(),
 			original.getStudio()
@@ -278,33 +278,33 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	}
 
 
-	public boolean isShowNullSpaceWedges() {
-		return showNullSpaceWedges;
+	public boolean isShowSpaceCancellingWedges() {
+		return showSpaceCancellingWedges;
 	}
 
 
-	public void setShowNullSpaceWedges(boolean showNullSpaceWedges) {
-		this.showNullSpaceWedges = showNullSpaceWedges;
+	public void setShowSpaceCancellingWedges(boolean showSpaceCancellingWedges) {
+		this.showSpaceCancellingWedges = showSpaceCancellingWedges;
 	}
 
 
-	public double getNullSpaceWedgeLegLengthFactor() {
-		return nullSpaceWedgeLegLengthFactor;
+	public double getSpaceCancellingWedgeLegLengthFactor() {
+		return spaceCancellingWedgeLegLengthFactor;
 	}
 
 
-	public void setNullSpaceWedgeLegLengthFactor(double nullSpaceWedgeLegLengthFactor) {
-		this.nullSpaceWedgeLegLengthFactor = nullSpaceWedgeLegLengthFactor;
+	public void setSpaceCancellingWedgeLegLengthFactor(double spaceCancellingWedgeLegLengthFactor) {
+		this.spaceCancellingWedgeLegLengthFactor = spaceCancellingWedgeLegLengthFactor;
 	}
 
 
-	public double getNullSpaceWedgeSurfaceTransmissionCoefficient() {
-		return nullSpaceWedgeSurfaceTransmissionCoefficient;
+	public double getSpaceCancellingWedgeSurfaceTransmissionCoefficient() {
+		return spaceCancellingWedgeSurfaceTransmissionCoefficient;
 	}
 
 
-	public void setNullSpaceWedgeSurfaceTransmissionCoefficient(double nullSpaceWedgeSurfaceTransmissionCoefficient) {
-		this.nullSpaceWedgeSurfaceTransmissionCoefficient = nullSpaceWedgeSurfaceTransmissionCoefficient;
+	public void setSpaceCancellingWedgeSurfaceTransmissionCoefficient(double spaceCancellingWedgeSurfaceTransmissionCoefficient) {
+		this.spaceCancellingWedgeSurfaceTransmissionCoefficient = spaceCancellingWedgeSurfaceTransmissionCoefficient;
 	}
 
 
@@ -346,13 +346,13 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 		this.showNetFaces = showNetFaces;
 	}
 
-	public boolean isShowNullSpaceWedgeEdges() {
-		return showNullSpaceWedgeEdges;
+	public boolean isShowSpaceCancellingWedgeEdges() {
+		return showSpaceCancellingWedgeEdges;
 	}
 
 
-	public void setShowNullSpaceWedgeEdges(boolean showNullSpaceWedgeEdges) {
-		this.showNullSpaceWedgeEdges = showNullSpaceWedgeEdges;
+	public void setShowSpaceCancellingWedgeEdges(boolean showSpaceCancellingWedgeEdges) {
+		this.showSpaceCancellingWedgeEdges = showSpaceCancellingWedgeEdges;
 	}
 
 
@@ -376,13 +376,13 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	}
 
 
-	public SurfaceProperty getNullSpaceWedgeEdgeSurfaceProperty() {
-		return nullSpaceWedgeEdgeSurfaceProperty;
+	public SurfaceProperty getSpaceCancellingWedgeEdgeSurfaceProperty() {
+		return spaceCancellingWedgeEdgeSurfaceProperty;
 	}
 
 
-	public void setNullSpaceWedgeEdgeSurfaceProperty(SurfaceProperty nullSpaceWedgeEdgeSurfaceProperty) {
-		this.nullSpaceWedgeEdgeSurfaceProperty = nullSpaceWedgeEdgeSurfaceProperty;
+	public void setSpaceCancellingWedgeEdgeSurfaceProperty(SurfaceProperty spaceCancellingWedgeEdgeSurfaceProperty) {
+		this.spaceCancellingWedgeEdgeSurfaceProperty = spaceCancellingWedgeEdgeSurfaceProperty;
 	}
 
 
@@ -395,12 +395,12 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 		this.edgeRadius = edgeRadius;
 	}
 
-	public int getShowOnlyNullSpaceWedgeNo() {
-		return showOnlyNullSpaceWedgeNo;
+	public int getShowOnlySpaceCancellingWedgeNo() {
+		return showOnlySpaceCancellingWedgeNo;
 	}
 
-	public void setShowOnlyNullSpaceWedgeNo(int showOnlyNullSpaceWedgeNo) {
-		this.showOnlyNullSpaceWedgeNo = showOnlyNullSpaceWedgeNo;
+	public void setShowOnlySpaceCancellingWedgeNo(int showOnlySpaceCancellingWedgeNo) {
+		this.showOnlySpaceCancellingWedgeNo = showOnlySpaceCancellingWedgeNo;
 	}
 
 	
@@ -485,13 +485,13 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 
 			for(int ei=0; ei<centralTetrahedron.getEdges().size(); ei++)
 			{
-				if((showOnlyNullSpaceWedgeNo >= 0) && (ei != showOnlyNullSpaceWedgeNo)) continue;	// TODO for debugging
+				if((showOnlySpaceCancellingWedgeNo >= 0) && (ei != showOnlySpaceCancellingWedgeNo)) continue;	// TODO for debugging
 				
 				Edge e = centralTetrahedron.getEdges().get(ei);
 //			for(Edge e:centralTetrahedron.getEdges())
 //			{
 				int[] vs = e.getVertexIndices();
-				//			// for each edge of the central tetrahedron, add a corresponding EditableNullSpaceWedge
+				//			// for each edge of the central tetrahedron, add a corresponding EditableSpaceCancellingWedge
 				//			for(int e = 0; e<simplicialComplex.getEdges().size(); e++)
 				//			{
 				//				// do 4 faces intersect at the current edge?
@@ -511,7 +511,7 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 
 				// find the third vertex of the outside faces that share the current edge;
 				// calculate the distance from the current edge to those vertices (which should be the same);
-				// this distance is then the leg length (before multiplication by <i>nullSpaceWedgeLengthFactor</i>)
+				// this distance is then the leg length (before multiplication by <i>spaceCancellingWedgeLengthFactor</i>)
 
 				Vector3D otherVertex = null;
 				// go through all the outside faces, ...
@@ -532,7 +532,7 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 					}
 				}
 
-				double nullSpaceWedgeLegLength = Geometry.linePointDistance(
+				double spaceCancellingWedgeLegLength = Geometry.linePointDistance(
 						v1,	// pointOnLine
 						Vector3D.difference(v2, v1),	// directionOfLine
 						otherVertex	// point
@@ -548,15 +548,15 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 								m,	// apexEdgeCentre,
 								Vector3D.difference(v2, v1),	// apexEdgeDirection
 								Vector3D.difference(m, c),	// bisectorDirection
-								nullSpaceWedgeLegLength * nullSpaceWedgeLegLengthFactor,	// legLength
+								spaceCancellingWedgeLegLength * spaceCancellingWedgeLegLengthFactor,	// legLength
 								Vector3D.difference(v2, v1).getLength(),	// apexEdgeLength
 								// SCWedgeLegFaceShape.RECTANGULAR,
-								showNullSpaceWedges,	// showSheets
+								showSpaceCancellingWedges,	// showSheets
 								// MyMath.deg2rad(91),	// containmentMirrorsAngleWithSides
-								nullSpaceWedgeSurfaceTransmissionCoefficient,	// sheetTransmissionCoefficient
-								showNullSpaceWedgeEdges,	// showEdges
+								spaceCancellingWedgeSurfaceTransmissionCoefficient,	// sheetTransmissionCoefficient
+								showSpaceCancellingWedgeEdges,	// showEdges
 								edgeRadius-MyMath.TINY,	// edgeRadius
-								nullSpaceWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty
+								spaceCancellingWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty
 								gluingType,	// gluingTypoe
 								numberOfNegativeSpaceWedges,	// numberOfNegativeSpaceWedges,
 								this,	// parent, 
@@ -581,11 +581,11 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	//
 	
 	// GUI panels
-	private LabelledDoublePanel edgeRadiusPanel, nullSpaceWedgeLegLengthFactorPanel, nullSpaceWedgeSurfaceTransmissionCoefficientPanel;
+	private LabelledDoublePanel edgeRadiusPanel, spaceCancellingWedgeLegLengthFactorPanel, spaceCancellingWedgeSurfaceTransmissionCoefficientPanel;
 	private LabelledIntPanel numberOfNegativeSpaceWedgesPanel;
 	private JComboBox<GluingType> gluingTypeComboBox;
-	private JCheckBox showNullSpaceWedgesCheckBox, showNetEdgesCheckBox, showNullSpaceWedgesEdgesCheckBox;
-	private SurfacePropertyPanel netStructureSurfacePropertyPanel, netFaceSurfacePropertyPanel, nullSpaceWedgeEdgesSurfacePropertyPanel;
+	private JCheckBox showSpaceCancellingWedgesCheckBox, showNetEdgesCheckBox, showSpaceCancellingWedgesEdgesCheckBox;
+	private SurfacePropertyPanel netStructureSurfacePropertyPanel, netFaceSurfacePropertyPanel, spaceCancellingWedgeEdgesSurfacePropertyPanel;
 	private JButton convertButton;
 
 	/**
@@ -617,18 +617,18 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 		JPanel mainParametersPanel = new JPanel();
 		mainParametersPanel.setLayout(new MigLayout("insets 0"));
 		
-		showNullSpaceWedgesCheckBox = new JCheckBox("Show null-space wedges");
-		mainParametersPanel.add(showNullSpaceWedgesCheckBox, "wrap");
+		showSpaceCancellingWedgesCheckBox = new JCheckBox("Show null-space wedges");
+		mainParametersPanel.add(showSpaceCancellingWedgesCheckBox, "wrap");
 		
-		nullSpaceWedgeLegLengthFactorPanel = new LabelledDoublePanel("Leg length factor");
-		mainParametersPanel.add(nullSpaceWedgeLegLengthFactorPanel, "wrap");
+		spaceCancellingWedgeLegLengthFactorPanel = new LabelledDoublePanel("Leg length factor");
+		mainParametersPanel.add(spaceCancellingWedgeLegLengthFactorPanel, "wrap");
 		
 		gluingTypeComboBox = new JComboBox<GluingType>(GluingType.values());
 		gluingTypeComboBox.addActionListener(this);
 		mainParametersPanel.add(gluingTypeComboBox, "wrap");
 		
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient of null-space-wedge surfaces");
-		mainParametersPanel.add(nullSpaceWedgeSurfaceTransmissionCoefficientPanel, "wrap");
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient of null-space-wedge surfaces");
+		mainParametersPanel.add(spaceCancellingWedgeSurfaceTransmissionCoefficientPanel, "wrap");
 		
 		numberOfNegativeSpaceWedgesPanel = new LabelledIntPanel("Number of negative-space wedges per null-space wedge");
 		mainParametersPanel.add(numberOfNegativeSpaceWedgesPanel, "wrap");
@@ -645,8 +645,8 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 		showNetEdgesCheckBox = new JCheckBox("Show structure (edges and faces) of net of 4-simplex");
 		structureVisualisationPanel.add(showNetEdgesCheckBox, "wrap");
 
-		showNullSpaceWedgesEdgesCheckBox = new JCheckBox("Show edges of null-space wedges");
-		structureVisualisationPanel.add(showNullSpaceWedgesEdgesCheckBox, "wrap");
+		showSpaceCancellingWedgesEdgesCheckBox = new JCheckBox("Show edges of null-space wedges");
+		structureVisualisationPanel.add(showSpaceCancellingWedgesEdgesCheckBox, "wrap");
 
 		edgeRadiusPanel = new LabelledDoublePanel("Tube radius");
 		structureVisualisationPanel.add(edgeRadiusPanel, "wrap");
@@ -661,10 +661,10 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 		structureVisualisationPanel.add(netFaceSurfacePropertyPanel, "wrap");
 		netFaceSurfacePropertyPanel.setIPanel(iPanel);
 		
-		nullSpaceWedgeEdgesSurfacePropertyPanel = new SurfacePropertyPanel("Surface of null-space-wedge edges", getStudio().getScene());
+		spaceCancellingWedgeEdgesSurfacePropertyPanel = new SurfacePropertyPanel("Surface of null-space-wedge edges", getStudio().getScene());
 		// frameSurfacePropertyPanel.addButtonsActionListener(new SurfacePropertyPanelListener(frameSurfacePropertyPanel));
-		structureVisualisationPanel.add(nullSpaceWedgeEdgesSurfacePropertyPanel, "wrap");
-		nullSpaceWedgeEdgesSurfacePropertyPanel.setIPanel(iPanel);
+		structureVisualisationPanel.add(spaceCancellingWedgeEdgesSurfacePropertyPanel, "wrap");
+		spaceCancellingWedgeEdgesSurfacePropertyPanel.setIPanel(iPanel);
 
 		tabbedPane.addTab("Structure-visualisation details", structureVisualisationPanel);
 
@@ -686,17 +686,17 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	{
 		// initialize any fields
 		descriptionPanel.setString(getDescription());
-		showNullSpaceWedgesCheckBox.setSelected(showNullSpaceWedges);
-		nullSpaceWedgeLegLengthFactorPanel.setNumber(nullSpaceWedgeLegLengthFactor);
-		nullSpaceWedgeSurfaceTransmissionCoefficientPanel.setNumber(nullSpaceWedgeSurfaceTransmissionCoefficient);
+		showSpaceCancellingWedgesCheckBox.setSelected(showSpaceCancellingWedges);
+		spaceCancellingWedgeLegLengthFactorPanel.setNumber(spaceCancellingWedgeLegLengthFactor);
+		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.setNumber(spaceCancellingWedgeSurfaceTransmissionCoefficient);
 		numberOfNegativeSpaceWedgesPanel.setNumber(numberOfNegativeSpaceWedges);
 		gluingTypeComboBox.setSelectedItem(gluingType);
 		edgeRadiusPanel.setNumber(edgeRadius);
 		showNetEdgesCheckBox.setSelected(showNetEdges);
-		showNullSpaceWedgesEdgesCheckBox.setSelected(showNullSpaceWedgeEdges);
+		showSpaceCancellingWedgesEdgesCheckBox.setSelected(showSpaceCancellingWedgeEdges);
 		netStructureSurfacePropertyPanel.setSurfaceProperty(netEdgeSurfaceProperty);
 		netFaceSurfacePropertyPanel.setSurfaceProperty(netFaceSurfaceProperty);
-		nullSpaceWedgeEdgesSurfacePropertyPanel.setSurfaceProperty(nullSpaceWedgeEdgeSurfaceProperty);
+		spaceCancellingWedgeEdgesSurfacePropertyPanel.setSurfaceProperty(spaceCancellingWedgeEdgeSurfaceProperty);
 		enableOrDisableAdditionalWedgeTypeControlPanels();
 	}
 
@@ -707,17 +707,17 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	public EditableNetOf4Simplex acceptValuesInEditPanel()
 	{
 		setDescription(descriptionPanel.getString());
-		showNullSpaceWedges = showNullSpaceWedgesCheckBox.isSelected();
-		nullSpaceWedgeLegLengthFactor = nullSpaceWedgeLegLengthFactorPanel.getNumber();
-		nullSpaceWedgeSurfaceTransmissionCoefficient = nullSpaceWedgeSurfaceTransmissionCoefficientPanel.getNumber();
+		showSpaceCancellingWedges = showSpaceCancellingWedgesCheckBox.isSelected();
+		spaceCancellingWedgeLegLengthFactor = spaceCancellingWedgeLegLengthFactorPanel.getNumber();
+		spaceCancellingWedgeSurfaceTransmissionCoefficient = spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.getNumber();
 		numberOfNegativeSpaceWedges = numberOfNegativeSpaceWedgesPanel.getNumber();
 		gluingType = (GluingType)gluingTypeComboBox.getSelectedItem();
 		edgeRadius = edgeRadiusPanel.getNumber();
 		showNetEdges = showNetEdgesCheckBox.isSelected();
-		showNullSpaceWedgeEdges = showNullSpaceWedgesEdgesCheckBox.isSelected();
+		showSpaceCancellingWedgeEdges = showSpaceCancellingWedgesEdgesCheckBox.isSelected();
 		netEdgeSurfaceProperty = netStructureSurfacePropertyPanel.getSurfaceProperty();
 		netFaceSurfaceProperty = netFaceSurfacePropertyPanel.getSurfaceProperty();
-		nullSpaceWedgeEdgeSurfaceProperty = nullSpaceWedgeEdgesSurfacePropertyPanel.getSurfaceProperty();
+		spaceCancellingWedgeEdgeSurfaceProperty = spaceCancellingWedgeEdgesSurfacePropertyPanel.getSurfaceProperty();
 
 		// add the objects
 		try {
@@ -732,14 +732,14 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 	}
 
 	/**
-	 * depending on the value of <i>nullSpaceWedgeType</i>, enable or disable the control panels for additional parameters
+	 * depending on the value of <i>spaceCancellingWedgeType</i>, enable or disable the control panels for additional parameters
 	 */
 	private void enableOrDisableAdditionalWedgeTypeControlPanels()
 	{
 		// show or hide additional parameters as appropriate
 		switch(gluingType)
 		{
-		case NEGATIVE_SPACE_WEDGES:
+		case SPACE_CANCELLING_WEDGES:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
 			break;
 		case PERFECT:
@@ -780,11 +780,11 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 				netFaceSurfaceProperty = (SurfaceProperty)edited;
 				netFaceSurfacePropertyPanel.setSurfaceProperty(netFaceSurfaceProperty);
 			}
-			else if(edited == nullSpaceWedgeEdgesSurfacePropertyPanel)
+			else if(edited == spaceCancellingWedgeEdgesSurfacePropertyPanel)
 			{
 				// null-space-wedges-structure surface property has been edited
-				nullSpaceWedgeEdgeSurfaceProperty = (SurfaceProperty)edited;
-				nullSpaceWedgeEdgesSurfacePropertyPanel.setSurfaceProperty(nullSpaceWedgeEdgeSurfaceProperty);
+				spaceCancellingWedgeEdgeSurfaceProperty = (SurfaceProperty)edited;
+				spaceCancellingWedgeEdgesSurfacePropertyPanel.setSurfaceProperty(spaceCancellingWedgeEdgeSurfaceProperty);
 			}
 	}
 }
