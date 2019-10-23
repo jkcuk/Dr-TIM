@@ -702,8 +702,340 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 				);
 
 		
-		// add "diagonal" faces
+		// add "diagonal" faces, each connecting one edge of the inner cube with a cvorresponding edge of the outer cube
 		
+		Vector3D outwardsNormal;
+		
+		// diagonals parallel to the u direction
+		
+		outwardsNormal = Vector3D.difference(vHat, wHat);
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in +w,+v direction",	// description
+						vertexuVWI,	// vertex1
+						vertexUVWI,	// vertex2
+						vertexUVW,	// vertex3
+						vertexuVW,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexuVW,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexuvWI,	// insideSpacePosition
+								hV.getImagePosition(
+										Vector3D.sum(vertexuvWI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
+		outwardsNormal = Vector3D.sum(wHat, vHat);
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in +w,-v direction",	// description
+						vertexuvWI,	// vertex1
+						vertexUvWI,	// vertex2
+						vertexUvW,	// vertex3
+						vertexuvW,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexuvW,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexuvwI,	// insideSpacePosition
+								hW.getImagePosition(
+										Vector3D.sum(vertexuvwI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
+		outwardsNormal = Vector3D.difference(wHat, vHat);
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in -w,-v direction",	// description
+						vertexuvwI,	// vertex1
+						vertexUvwI,	// vertex2
+						vertexUvw,	// vertex3
+						vertexuvw,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexuvw,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexuVwI,	// insideSpacePosition
+								hv.getImagePosition(
+										Vector3D.sum(vertexuVwI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
+		outwardsNormal = Vector3D.sum(wHat, vHat).getReverse();
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in -w,+v direction",	// description
+						vertexuVwI,	// vertex1
+						vertexUVwI,	// vertex2
+						vertexUVw,	// vertex3
+						vertexuVw,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexuVw,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexuVWI,	// insideSpacePosition
+								hw.getImagePosition(
+										Vector3D.sum(vertexuVWI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
+		// diagonals parallel to the v direction
+		
+		outwardsNormal = Vector3D.difference(wHat, uHat);
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in +u,+w direction",	// description
+						vertexUvWI,	// vertex1
+						vertexUVWI,	// vertex2
+						vertexUVW,	// vertex3
+						vertexUvW,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexUvW,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexUvwI,	// insideSpacePosition
+								hW.getImagePosition(
+										Vector3D.sum(vertexUvwI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
+		outwardsNormal = Vector3D.sum(uHat, wHat);
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in +u,-w direction",	// description
+						vertexUvwI,	// vertex1
+						vertexUVwI,	// vertex2
+						vertexUVw,	// vertex3
+						vertexUvw,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexUvw,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexuvwI,	// insideSpacePosition
+								hU.getImagePosition(
+										Vector3D.sum(vertexuvwI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
+		outwardsNormal = Vector3D.difference(uHat, wHat);
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in -u,-w direction",	// description
+						vertexuvwI,	// vertex1
+						vertexuVwI,	// vertex2
+						vertexuVw,	// vertex3
+						vertexuvw,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexuvw,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexuvWI,	// insideSpacePosition
+								hw.getImagePosition(
+										Vector3D.sum(vertexuvWI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
+		outwardsNormal = Vector3D.sum(uHat, wHat).getReverse();
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in -u,+w direction",	// description
+						vertexuvWI,	// vertex1
+						vertexuVWI,	// vertex2
+						vertexuVW,	// vertex3
+						vertexuvW,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexuvW,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexUvWI,	// insideSpacePosition
+								hu.getImagePosition(
+										Vector3D.sum(vertexUvWI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
+		// diagonals parallel to the w direction
+		
+		outwardsNormal = Vector3D.difference(vHat, uHat);
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in +u,+v direction",	// description
+						vertexUVwI,	// vertex1
+						vertexUVWI,	// vertex2
+						vertexUVW,	// vertex3
+						vertexUVw,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexUVw,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexUvwI,	// insideSpacePosition
+								hV.getImagePosition(
+										Vector3D.sum(vertexUvwI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
+		outwardsNormal = Vector3D.sum(uHat, vHat);
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in +u,-v direction",	// description
+						vertexUvwI,	// vertex1
+						vertexUvWI,	// vertex2
+						vertexUvW,	// vertex3
+						vertexUvw,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexUvw,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexuvwI,	// insideSpacePosition
+								hU.getImagePosition(
+										Vector3D.sum(vertexuvwI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
+		outwardsNormal = Vector3D.difference(uHat, vHat);
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in -u,-v direction",	// description
+						vertexuvwI,	// vertex1
+						vertexuvWI,	// vertex2
+						vertexuvW,	// vertex3
+						vertexuvw,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexuvw,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexuVwI,	// insideSpacePosition
+								hv.getImagePosition(
+										Vector3D.sum(vertexuVwI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
+		outwardsNormal = Vector3D.sum(uHat, vHat).getReverse();
+		gCLAs.addSceneObject(
+				getTrapeziumWindow(
+						"Diagonal face in -u,+v direction",	// description
+						vertexuVwI,	// vertex1
+						vertexuVWI,	// vertex2
+						vertexuVW,	// vertex3
+						vertexuVw,	// vertex4
+						outwardsNormal,	// outwardsDirection,
+						new HomogeneousPlanarImagingSurface(
+								vertexuVw,	// pointOnPlane
+								outwardsNormal,	// a
+								vertexUVwI,	// insideSpacePosition
+								hu.getImagePosition(
+										Vector3D.sum(vertexUVwI, delta),	// objectPosition
+										Orientation.INWARDS
+									) // outsideSpacePosition
+							).toGCLAs(
+									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
+									false	// shadowThrowing
+								),	// surfaceProperty
+						gCLAs,	// parent
+						getStudio()	// studio
+					)
+				);
+
 		// TODO
 	}
 	

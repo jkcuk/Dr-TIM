@@ -21,7 +21,7 @@ import optics.raytrace.GUI.sceneObjects.EditableFramedGCLAMappingGoggles;
 import optics.raytrace.GUI.sceneObjects.EditableFramedUSAFTestChart;
 import optics.raytrace.GUI.sceneObjects.EditableFramedRectangle;
 import optics.raytrace.GUI.sceneObjects.EditableFresnelLens;
-import optics.raytrace.GUI.sceneObjects.EditableGCLAsShiftyCloak;
+import optics.raytrace.GUI.sceneObjects.EditableGCLAsTetrahedralShiftyCloak;
 import optics.raytrace.GUI.sceneObjects.EditableGCLAsTardisWindow;
 import optics.raytrace.GUI.sceneObjects.EditableGGRINLens;
 import optics.raytrace.GUI.sceneObjects.EditableGlens;
@@ -335,7 +335,7 @@ public enum SceneObjectType
 		case FRESNEL_LENS:
 			return(new EditableFresnelLens(parent, studio));
 		case GCLAS_SHIFTY_CLOAK:
-			return new EditableGCLAsShiftyCloak(parent, studio);
+			return new EditableGCLAsTetrahedralShiftyCloak(parent, studio);
 		case GCLAS_TO_SIMPLICIAL_COMPLEX:
 			return(new EditableHomogeneousPlanarImagingSurfaceSimplicialComplex(
 					"GCLAs TO simplicial complex",	// description

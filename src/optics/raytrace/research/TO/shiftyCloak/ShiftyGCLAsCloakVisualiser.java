@@ -11,6 +11,7 @@ import math.*;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.*;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.surfaces.Striped;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
 import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
@@ -27,13 +28,29 @@ import optics.raytrace.GUI.lowLevel.LabelledDoubleColourPanel;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
-import optics.raytrace.GUI.sceneObjects.EditableGCLAsShiftyCloak;
+import optics.raytrace.GUI.sceneObjects.EditableGCLAsCubicShiftyCloak;
+import optics.raytrace.GUI.sceneObjects.EditableGCLAsTetrahedralShiftyCloak;
 
 
 public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 {
 	// outer cloak / inner cloak
-	private boolean showShiftyCloakO, showShiftyCloakI, showShiftyCloakGCLAsO, showShiftyCloakGCLAsI, asymmetricConfiguration;
+	
+	public enum ShiftyGCLAsCloakType
+	{
+		CUBIC("Cubic"),
+		TETRAHEDRAL("Tetrahedral"),
+		TETRAHEDRAL_ASYMMETRIC("Tetrahedral (asymmetric)");
+
+		private String description;
+
+		private ShiftyGCLAsCloakType(String description) {this.description = description;}	
+		@Override
+		public String toString() {return description;}
+	}
+
+	private ShiftyGCLAsCloakType shiftyGCLAsCloakType;
+	private boolean showShiftyCloakO, showShiftyCloakI, showShiftyCloakGCLAsO, showShiftyCloakGCLAsI, showShiftyCloakIImage;
 	private Vector3D centre;
 	private double outsideCubeSideLengthO, insideCubeSideLengthO, outsideCubeSideLengthI, insideCubeSideLengthI;
 	private Vector3D deltaO, deltaI;
@@ -100,6 +117,16 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 	 * the visibilities of spheres that can be placed in the scene
 	 */
 	private boolean[] sphereVisibilities;
+	
+	/**
+	 * the colours of images of the spheres
+	 */
+	private DoubleColour[] sphereImageColours;
+	
+	/**
+	 * visibilities of the images due to both cloaks of the spheres
+	 */
+	private boolean[] sphereImageVisibilities;
 
 	
 	//
@@ -144,24 +171,26 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 //		private boolean showFramesO, showFramesI;
 
 		// the shifty cloaks
+		shiftyGCLAsCloakType = ShiftyGCLAsCloakType.CUBIC;
+		
 		centre = new Vector3D(0, 0, 0);
-		asymmetricConfiguration = true;
 
 		// Outer shifty cloak
 		showShiftyCloakO = true;
 		showShiftyCloakGCLAsO = false;
 		outsideCubeSideLengthO = 1;
-		insideCubeSideLengthO = 0.31;
-		deltaO = new Vector3D(0, 1, 0);
+		insideCubeSideLengthO = 0.8;
+		deltaO = new Vector3D(0, .2, 0);
 		showFramesO = true;
 
 		// Inner shifty cloak
-		showShiftyCloakI = true;
+		showShiftyCloakI = false;
 		showShiftyCloakGCLAsI = false;
-		outsideCubeSideLengthI = 0.3;
-		insideCubeSideLengthI = 0.09;
-		deltaI = new Vector3D(1, 0, 0);
+		outsideCubeSideLengthI = 0.7;
+		insideCubeSideLengthI = 0.5;
+		deltaI = new Vector3D(0.2, 0, 0);
 		showFramesI = true;
+		showShiftyCloakIImage = false;
 
 
 		// trajectories
@@ -187,21 +216,29 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 		sphereRadii = new double[3];
 		sphereColours = new DoubleColour[3];
 		sphereVisibilities = new boolean[3];
+		sphereImageColours = new DoubleColour[3];
+		sphereImageVisibilities = new boolean[3];
 		
-		sphereCentres[0] = new Vector3D(-0.03, 0, 0);
-		sphereRadii[0] = 0.01;
+		sphereCentres[0] = new Vector3D(-0.15, 0, 0);
+		sphereRadii[0] = 0.05;
 		sphereColours[0] = new DoubleColour(1, 0, 0);
 		sphereVisibilities[0] = true;
+		sphereImageColours[0] = new DoubleColour(1, 0.4, 0.4);
+		sphereImageVisibilities[0] = true;
 
 		sphereCentres[1] = new Vector3D(0, 0, 0);
-		sphereRadii[1] = 0.01;
+		sphereRadii[1] = 0.05;
 		sphereColours[1] = new DoubleColour(0, 1, 0);
 		sphereVisibilities[1] = true;
+		sphereImageColours[1] = new DoubleColour(0.4, 1, 0.4);
+		sphereImageVisibilities[1] = true;
 
-		sphereCentres[2] = new Vector3D(.03, 0, 0);
-		sphereRadii[2] = 0.01;
+		sphereCentres[2] = new Vector3D(.15, 0, 0);
+		sphereRadii[2] = 0.05;
 		sphereColours[2] = new DoubleColour(0, 0, 1);
 		sphereVisibilities[2] = true;
+		sphereImageColours[2] = new DoubleColour(0.4, 0.4, 1);
+		sphereImageVisibilities[2] = true;
 
 		
 		windowTitle = "Dr TIM's shifty-GCLAs-cloak visualiser";
@@ -226,8 +263,8 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 		
 		// the shifty cloaks
 		
+		printStream.println("shiftyGCLAsCloakType = "+shiftyGCLAsCloakType);
 		printStream.println("centre = "+centre);
-		printStream.println("asymmetricConfiguration = "+asymmetricConfiguration);
 		printStream.println("showShiftyCloakO = "+showShiftyCloakO);
 		printStream.println("showShiftyCloakGCLAsO = "+showShiftyCloakGCLAsO);
 		printStream.println("outsideCubeSideLengthO = "+outsideCubeSideLengthO);
@@ -240,6 +277,7 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 		printStream.println("insideCubeSideLengthI = "+insideCubeSideLengthI);
 		printStream.println("deltaI = "+deltaI);
 		printStream.println("showFramesI = "+showFramesI);
+		printStream.println("showShiftyCloakIImage = "+showShiftyCloakIImage);
 
 
 		// trajectories
@@ -282,6 +320,8 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 			printStream.println("sphereRadii["+i+"] = "+sphereRadii[i]);
 			printStream.println("sphereColours["+i+"] = "+sphereColours[i]);
 			printStream.println("sphereVisibilities["+i+"] = "+sphereVisibilities[i]);
+			printStream.println("sphereImageColours["+i+"] = "+sphereImageColours[i]);
+			printStream.println("sphereImageVisibilities["+i+"] = "+sphereImageVisibilities[i]);
 		}
 
 		printStream.println();
@@ -296,7 +336,7 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 	}
 
 	
-	private EditableGCLAsShiftyCloak cloakO, cloakI;
+	private SceneObject cloakO, cloakI;
 	private Vector3D frame0CameraViewDirection;
 
 	/**
@@ -322,8 +362,9 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 
 		// add any other scene objects
 		
-		// first the coloured spheres that can be added to the scene
+		// first the coloured spheres and their images
 		for(int i=0; i<3; i++)
+		{
 			scene.addSceneObject(
 					new Sphere(
 							"Coloured sphere #"+i,	// description
@@ -335,47 +376,213 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 						),
 					sphereVisibilities[i]
 				);
+			scene.addSceneObject(
+					new ParametrisedSphere(
+							"Image of coloured sphere #"+i,	// description
+							Vector3D.sum(sphereCentres[i], deltaI, deltaO),	// centre
+							sphereRadii[i],	// radius
+							new Vector3D(0, 1, 0),	// pole
+							new Vector3D(1, 0, 0),	// phi0Direction
+							new Striped(
+									new SurfaceColour(sphereImageColours[i], DoubleColour.WHITE, false),
+									new SurfaceColour(DoubleColour.WHITE, DoubleColour.WHITE, false),
+									Math.PI/6.
+							),	// surface property: sphereColours[i], made shiny; don't throw shadow
+							scene,
+							studio
+						),
+					sphereImageVisibilities[i]
+				);
+		}
 		
 		double frameRadius = 0.01*outsideCubeSideLengthO;
 		
-		// add outer shifty cloak
-		cloakO = new EditableGCLAsShiftyCloak(
-				"Outer shifty GCLAs cloak",	// description
-				centre,
-				new Vector3D(1, 0, 0),	// u
-				new Vector3D(0, 1, 0),	// v
-				new Vector3D(0, 0, 1),	// w
-				asymmetricConfiguration,	// asymmetricConfiguration
-				outsideCubeSideLengthO,	// sideLength
-				insideCubeSideLengthO,	// sideLengthI
-				deltaO,	// delta
-				true,	// showGCLAs
-				0.96,	// gCLAsTransmissionCoefficient
-				false,	// showFrames
-				frameRadius,	// frameRadius
-				SurfaceColour.GREEN_SHINY,	// frameSurfaceProperty		
-				scene, studio
-			);
-		scene.addSceneObject(cloakO, showShiftyCloakO);
+		// create non-shadow-throwing surface properties
+		SurfaceProperty frameSurfacePropertyO = new SurfaceColour(DoubleColour.GREY80, DoubleColour.WHITE, false);
+		SurfaceProperty frameSurfacePropertyI = new SurfaceColour(DoubleColour.GREY40, DoubleColour.WHITE, false);
+		SurfaceProperty frameSurfacePropertyIImage = 
+				new Striped(
+						frameSurfacePropertyI,
+						new SurfaceColour(DoubleColour.WHITE, DoubleColour.WHITE, false),
+						0.025
+				);
 
-		// add inner shifty cloak
-		cloakI = new EditableGCLAsShiftyCloak(
-				"Inner shifty GCLAs cloak",	// description
-				centre,
-				new Vector3D(1, 0, 0),	// u
-				new Vector3D(0, 1, 0),	// v
-				new Vector3D(0, 0, asymmetricConfiguration?1:-1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
-				asymmetricConfiguration,	// asymmetricConfiguration
-				outsideCubeSideLengthI,	// sideLength
-				insideCubeSideLengthI,	// sideLengthI
-				deltaI,	// delta
-				true,	// showGCLAs
-				0.96,	// gCLAsTransmissionCoefficient
-				false,	// showFrames
-				frameRadius,	// frameRadius
-				SurfaceColour.BLUE_SHINY,	// frameSurfaceProperty		
-				scene, studio
-			);
+		
+		// add shifty cloaks
+		switch(shiftyGCLAsCloakType)
+		{
+		case TETRAHEDRAL:
+			cloakO = new EditableGCLAsTetrahedralShiftyCloak(
+					"Outer shifty GCLAs cloak",	// description
+					centre,
+					new Vector3D(1, 0, 0),	// u
+					new Vector3D(0, 1, 0),	// v
+					new Vector3D(0, 0, 1),	// w
+					false,	// asymmetricConfiguration
+					outsideCubeSideLengthO,	// sideLength
+					insideCubeSideLengthO,	// sideLengthI
+					deltaO,	// delta
+					true,	// showGCLAs
+					0.96,	// gCLAsTransmissionCoefficient
+					false,	// showFrames
+					frameRadius,	// frameRadius
+					frameSurfacePropertyO,	// frameSurfaceProperty		
+					scene, studio
+					);
+
+			cloakI = new EditableGCLAsTetrahedralShiftyCloak(
+					"Inner shifty GCLAs cloak",	// description
+					centre,
+					new Vector3D(1, 0, 0),	// u
+					new Vector3D(0, 1, 0),	// v
+					new Vector3D(0, 0, -1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
+					false,	// asymmetricConfiguration
+					outsideCubeSideLengthI,	// sideLength
+					insideCubeSideLengthI,	// sideLengthI
+					deltaI,	// delta
+					true,	// showGCLAs
+					0.96,	// gCLAsTransmissionCoefficient
+					false,	// showFrames
+					frameRadius,	// frameRadius
+					frameSurfacePropertyI,	// frameSurfaceProperty		
+					scene, studio
+					);
+
+			//  also add the image of the inner cloak due to the outer cloak
+			scene.addSceneObject(new EditableGCLAsTetrahedralShiftyCloak(
+					"Image of inner shifty cloak due to outer cloak",	// description
+					Vector3D.sum(centre, deltaO),
+					new Vector3D(1, 0, 0),	// u
+					new Vector3D(0, 1, 0),	// v
+					new Vector3D(0, 0, -1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
+					false,	// asymmetricConfiguration
+					outsideCubeSideLengthI,	// sideLength
+					insideCubeSideLengthI,	// sideLengthI
+					deltaI,	// delta
+					false,	// showGCLAs
+					1,	// gCLAsTransmissionCoefficient
+					true,	// showFrames
+					0.99*frameRadius,	// frameRadius
+					frameSurfacePropertyIImage,	// frameSurfaceProperty		
+					scene, studio
+					),
+					showShiftyCloakIImage
+					);
+			break;
+		case TETRAHEDRAL_ASYMMETRIC:
+			cloakO = new EditableGCLAsTetrahedralShiftyCloak(
+					"Outer shifty GCLAs cloak",	// description
+					centre,
+					new Vector3D(1, 0, 0),	// u
+					new Vector3D(0, 1, 0),	// v
+					new Vector3D(0, 0, 1),	// w
+					true,	// asymmetricConfiguration
+					outsideCubeSideLengthO,	// sideLength
+					insideCubeSideLengthO,	// sideLengthI
+					deltaO,	// delta
+					true,	// showGCLAs
+					0.96,	// gCLAsTransmissionCoefficient
+					false,	// showFrames
+					frameRadius,	// frameRadius
+					frameSurfacePropertyO,	// frameSurfaceProperty		
+					scene, studio
+					);
+
+			cloakI = new EditableGCLAsTetrahedralShiftyCloak(
+					"Inner shifty GCLAs cloak",	// description
+					centre,
+					new Vector3D(1, 0, 0),	// u
+					new Vector3D(0, 1, 0),	// v
+					new Vector3D(0, 0, 1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
+					true,	// asymmetricConfiguration
+					outsideCubeSideLengthI,	// sideLength
+					insideCubeSideLengthI,	// sideLengthI
+					deltaI,	// delta
+					true,	// showGCLAs
+					0.96,	// gCLAsTransmissionCoefficient
+					false,	// showFrames
+					frameRadius,	// frameRadius
+					frameSurfacePropertyI,	// frameSurfaceProperty		
+					scene, studio
+					);
+
+			//  also add the image of the inner cloak due to the outer cloak
+			scene.addSceneObject(new EditableGCLAsTetrahedralShiftyCloak(
+					"Image of inner shifty cloak due to outer cloak",	// description
+					Vector3D.sum(centre, deltaO),
+					new Vector3D(1, 0, 0),	// u
+					new Vector3D(0, 1, 0),	// v
+					new Vector3D(0, 0, -1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
+					true,	// asymmetricConfiguration
+					outsideCubeSideLengthI,	// sideLength
+					insideCubeSideLengthI,	// sideLengthI
+					deltaI,	// delta
+					false,	// showGCLAs
+					1,	// gCLAsTransmissionCoefficient
+					true,	// showFrames
+					0.99*frameRadius,	// frameRadius
+					frameSurfacePropertyIImage,	// frameSurfaceProperty		
+					scene, studio
+					),
+					showShiftyCloakIImage
+					);
+			break;
+		case CUBIC:
+		default:
+			cloakO = new EditableGCLAsCubicShiftyCloak(
+					"Outer shifty GCLAs cloak",	// description
+					centre,
+					new Vector3D(1, 0, 0),	// uDirection
+					new Vector3D(0, 1, 0),	// vDirection
+					outsideCubeSideLengthO,	// sideLengthOutside
+					insideCubeSideLengthO,	// sideLengthInside
+					deltaO,	// delta
+					true,	// showGCLAs
+					0.96,	// gCLAsTransmissionCoefficient
+					false,	// showFrames
+					frameRadius,	// frameRadius
+					frameSurfacePropertyO,	// frameSurfaceProperty		
+					scene, studio
+					);
+
+			cloakI = new EditableGCLAsCubicShiftyCloak(
+					"Inner shifty GCLAs cloak",	// description
+					centre,
+					new Vector3D(1, 0, 0),	// uDirection
+					new Vector3D(0, 1, 0),	// vDirection
+					outsideCubeSideLengthI,	// sideLength
+					insideCubeSideLengthI,	// sideLengthI
+					deltaI,	// delta
+					true,	// showGCLAs
+					0.96,	// gCLAsTransmissionCoefficient
+					false,	// showFrames
+					frameRadius,	// frameRadius
+					frameSurfacePropertyI,	// frameSurfaceProperty		
+					scene, studio
+					);
+
+			//  also add the image of the inner cloak due to the outer cloak
+			scene.addSceneObject(new EditableGCLAsCubicShiftyCloak(
+					"Image of inner shifty cloak due to outer cloak",	// description
+					Vector3D.sum(centre, deltaO),
+					new Vector3D(1, 0, 0),	// uDirection
+					new Vector3D(0, 1, 0),	// vDirection
+					outsideCubeSideLengthI,	// sideLength
+					insideCubeSideLengthI,	// sideLengthI
+					deltaI,	// delta
+					false,	// showGCLAs
+					1,	// gCLAsTransmissionCoefficient
+					true,	// showFrames
+					0.99*frameRadius,	// frameRadius
+					frameSurfacePropertyIImage,	// frameSurfaceProperty		
+					scene, studio
+					),
+					showShiftyCloakIImage
+					);
+			break;
+		}
+
+		scene.addSceneObject(cloakO, showShiftyCloakO);
 		scene.addSceneObject(cloakI, showShiftyCloakI);
 		
 		// trace the ray trajectories
@@ -429,46 +636,123 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 		// trace the rays with trajectory through the scene
 		studio.traceRaysWithTrajectory();
 	
-		// remove outer shifty cloak and add it again
+		// remove the shifty cloaks...
 		scene.removeSceneObject(cloakO);
-		cloakO = new EditableGCLAsShiftyCloak(
+		scene.removeSceneObject(cloakI);
+		
+		// ... and add them again, this time showing GCLAs and frames as requires
+		switch(shiftyGCLAsCloakType)
+		{
+		case TETRAHEDRAL:
+		cloakO = new EditableGCLAsTetrahedralShiftyCloak(
 				"Outer shifty GCLAs cloak",	// description
 				centre,
 				new Vector3D(1, 0, 0),	// u
 				new Vector3D(0, 1, 0),	// v
 				new Vector3D(0, 0, 1),	// w
-				asymmetricConfiguration,	// asymmetricConfiguration
+				false,	// asymmetricConfiguration
 				outsideCubeSideLengthO,	// sideLength
 				insideCubeSideLengthO,	// sideLengthI
-				(showShiftyCloakGCLAsO?deltaO:new Vector3D(0, 0, 0)),	// delta
+				deltaO,	// delta
 				showShiftyCloakGCLAsO,	// showGCLAs
-				(showShiftyCloakGCLAsO?0.96:1),	// gCLAsTransmissionCoefficient
+				0.96,	// gCLAsTransmissionCoefficient
 				showFramesO,	// showFrames
 				frameRadius,	// frameRadius
-				SurfaceColour.GREY40_SHINY,	// frameSurfaceProperty		
+				frameSurfacePropertyO,	// frameSurfaceProperty		
 				scene, studio
 			);
-		scene.addSceneObject(cloakO, showShiftyCloakO);
-
-		// remove inner shifty cloak and add it again
-		scene.removeSceneObject(cloakI);
-		cloakI = new EditableGCLAsShiftyCloak(
+		
+		cloakI = new EditableGCLAsTetrahedralShiftyCloak(
 				"Inner shifty GCLAs cloak",	// description
 				centre,
 				new Vector3D(1, 0, 0),	// u
 				new Vector3D(0, 1, 0),	// v
-				new Vector3D(0, 0, asymmetricConfiguration?1:-1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
-				asymmetricConfiguration,	// asymmetricConfiguration
+				new Vector3D(0, 0, -1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
+				false,	// asymmetricConfiguration
 				outsideCubeSideLengthI,	// sideLength
 				insideCubeSideLengthI,	// sideLengthI
-				(showShiftyCloakGCLAsI?deltaI:new Vector3D(0, 0, 0)),	// delta
+				deltaI,	// delta
 				showShiftyCloakGCLAsI,	// showGCLAs
-				(showShiftyCloakGCLAsI?0.96:1),	// gCLAsTransmissionCoefficient
+				0.96,	// gCLAsTransmissionCoefficient
 				showFramesI,	// showFrames
 				frameRadius,	// frameRadius
-				SurfaceColour.GREY80_SHINY,	// frameSurfaceProperty		
+				frameSurfacePropertyI,	// frameSurfaceProperty		
 				scene, studio
 			);
+		break;
+		case TETRAHEDRAL_ASYMMETRIC:
+		cloakO = new EditableGCLAsTetrahedralShiftyCloak(
+				"Outer shifty GCLAs cloak",	// description
+				centre,
+				new Vector3D(1, 0, 0),	// u
+				new Vector3D(0, 1, 0),	// v
+				new Vector3D(0, 0, 1),	// w
+				true,	// asymmetricConfiguration
+				outsideCubeSideLengthO,	// sideLength
+				insideCubeSideLengthO,	// sideLengthI
+				deltaO,	// delta
+				showShiftyCloakGCLAsO,	// showGCLAs
+				0.96,	// gCLAsTransmissionCoefficient
+				showFramesO,	// showFrames
+				frameRadius,	// frameRadius
+				frameSurfacePropertyO,	// frameSurfaceProperty		
+				scene, studio
+			);
+		
+		cloakI = new EditableGCLAsTetrahedralShiftyCloak(
+				"Inner shifty GCLAs cloak",	// description
+				centre,
+				new Vector3D(1, 0, 0),	// u
+				new Vector3D(0, 1, 0),	// v
+				new Vector3D(0, 0, 1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
+				true,	// asymmetricConfiguration
+				outsideCubeSideLengthI,	// sideLength
+				insideCubeSideLengthI,	// sideLengthI
+				deltaI,	// delta
+				showShiftyCloakGCLAsI,	// showGCLAs
+				0.96,	// gCLAsTransmissionCoefficient
+				showFramesI,	// showFrames
+				frameRadius,	// frameRadius
+				frameSurfacePropertyI,	// frameSurfaceProperty		
+				scene, studio
+			);
+		break;
+		case CUBIC:
+		default:
+		cloakO = new EditableGCLAsCubicShiftyCloak(
+				"Outer shifty GCLAs cloak",	// description
+				centre,
+				new Vector3D(1, 0, 0),	// uDirection
+				new Vector3D(0, 1, 0),	// vDirection
+				outsideCubeSideLengthO,	// sideLengthOutside
+				insideCubeSideLengthO,	// sideLengthInside
+				deltaO,	// delta
+				showShiftyCloakGCLAsO,	// showGCLAs
+				0.96,	// gCLAsTransmissionCoefficient
+				showFramesO,	// showFrames
+				frameRadius,	// frameRadius
+				frameSurfacePropertyO,	// frameSurfaceProperty		
+				scene, studio
+			);
+		
+		cloakI = new EditableGCLAsCubicShiftyCloak(
+				"Inner shifty GCLAs cloak",	// description
+				centre,
+				new Vector3D(1, 0, 0),	// uDirection
+				new Vector3D(0, 1, 0),	// vDirection
+				outsideCubeSideLengthI,	// sideLength
+				insideCubeSideLengthI,	// sideLengthI
+				deltaI,	// delta
+				showShiftyCloakGCLAsI,	// showGCLAs
+				0.96,	// gCLAsTransmissionCoefficient
+				showFramesI,	// showFrames
+				frameRadius,	// frameRadius
+				frameSurfacePropertyI,	// frameSurfaceProperty		
+				scene, studio
+			);
+		}
+
+		scene.addSceneObject(cloakO, showShiftyCloakO);
 		scene.addSceneObject(cloakI, showShiftyCloakI);
 		
 		studio.setScene(scene);
@@ -506,8 +790,8 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 	// GUI
 	
 	// shifty cloaks
+	private JComboBox<ShiftyGCLAsCloakType> shiftyGCLAsCloakTypeComboBox;
 	private LabelledVector3DPanel centrePanel;
-	private JCheckBox asymmetricConfigurationCheckBox;
 		
 	// outer shifty device
 	private JCheckBox showShiftyCloakOCheckBox, showShiftyCloakGCLAsOCheckBox, showFramesOCheckBox;
@@ -515,7 +799,7 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 	private LabelledDoublePanel outsideCubeSideLengthOPanel, insideCubeSideLengthOPanel;
 
 	// inner shifty device
-	private JCheckBox showShiftyCloakICheckBox, showShiftyCloakGCLAsICheckBox, showFramesICheckBox;
+	private JCheckBox showShiftyCloakICheckBox, showShiftyCloakGCLAsICheckBox, showFramesICheckBox, showShiftyCloakIImageCheckBox;
 	private LabelledVector3DPanel deltaIPanel;
 	private LabelledDoublePanel outsideCubeSideLengthIPanel, insideCubeSideLengthIPanel;
 
@@ -530,8 +814,8 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 	private LabelledVector3DPanel[] sphereCentrePanels;
 	private LabelledDoublePanel[] sphereRadiusPanels;
-	private LabelledDoubleColourPanel[] sphereColourPanels;
-	private JCheckBox[] sphereVisibilityCheckBoxes;
+	private LabelledDoubleColourPanel[] sphereColourPanels, sphereImageColourPanels;
+	private JCheckBox[] sphereVisibilityCheckBoxes, sphereImageVisibilityCheckBoxes;
 
 
 	// camera
@@ -564,13 +848,13 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 		JPanel shiftyCloaksPanel = new JPanel();
 		shiftyCloaksPanel.setLayout(new MigLayout("insets 0"));
 
+		shiftyGCLAsCloakTypeComboBox = new JComboBox<ShiftyGCLAsCloakType>(ShiftyGCLAsCloakType.values());
+		shiftyGCLAsCloakTypeComboBox.setSelectedItem(shiftyGCLAsCloakType);
+		shiftyCloaksPanel.add(GUIBitsAndBobs.makeRow("Cloak geometry", shiftyGCLAsCloakTypeComboBox), "span");
+
 		centrePanel = new LabelledVector3DPanel("Centre");
 		centrePanel.setVector3D(centre);
 		shiftyCloaksPanel.add(centrePanel, "wrap");
-		
-		asymmetricConfigurationCheckBox = new JCheckBox("Asymmetric configuration");
-		asymmetricConfigurationCheckBox.setSelected(asymmetricConfiguration);
-		shiftyCloaksPanel.add(asymmetricConfigurationCheckBox, "wrap");
 		
 		// the outer shifty cloak
 		JPanel outerShiftyCloakPanel = new JPanel();
@@ -585,15 +869,15 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 		showShiftyCloakGCLAsOCheckBox.setSelected(showShiftyCloakGCLAsO);
 		outerShiftyCloakPanel.add(showShiftyCloakGCLAsOCheckBox, "wrap");
 		
-		deltaOPanel = new LabelledVector3DPanel("Delta (apparent shift of inner tetrahedron)");
+		deltaOPanel = new LabelledVector3DPanel("Apparent shift of inner cube");
 		deltaOPanel.setVector3D(deltaO);
 		outerShiftyCloakPanel.add(deltaOPanel, "wrap");
 
-		outsideCubeSideLengthOPanel = new LabelledDoublePanel("Side length of cube sharing 4 vertices with outer tetrahedron");
+		outsideCubeSideLengthOPanel = new LabelledDoublePanel("Side length of (cubic) outside");
 		outsideCubeSideLengthOPanel.setNumber(outsideCubeSideLengthO);
 		outerShiftyCloakPanel.add(outsideCubeSideLengthOPanel, "wrap");
 
-		insideCubeSideLengthOPanel = new LabelledDoublePanel("Side length of cube sharing 4 vertices with inner tetrahedron");
+		insideCubeSideLengthOPanel = new LabelledDoublePanel("Side length of inner cube");
 		insideCubeSideLengthOPanel.setNumber(insideCubeSideLengthO);
 		outerShiftyCloakPanel.add(insideCubeSideLengthOPanel, "wrap");
 
@@ -617,15 +901,15 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 		showShiftyCloakGCLAsICheckBox.setSelected(showShiftyCloakGCLAsI);
 		innerShiftyCloakPanel.add(showShiftyCloakGCLAsICheckBox, "wrap");
 		
-		deltaIPanel = new LabelledVector3DPanel("Delta (apparent shift of inner tetrahedron)");
+		deltaIPanel = new LabelledVector3DPanel("Apparent shift of inner cube");
 		deltaIPanel.setVector3D(deltaI);
 		innerShiftyCloakPanel.add(deltaIPanel, "wrap");
 
-		outsideCubeSideLengthIPanel = new LabelledDoublePanel("Side length of cube sharing 4 vertices with outer tetrahedron");
+		outsideCubeSideLengthIPanel = new LabelledDoublePanel("Side length of (cubic) outside");
 		outsideCubeSideLengthIPanel.setNumber(outsideCubeSideLengthI);
 		innerShiftyCloakPanel.add(outsideCubeSideLengthIPanel, "wrap");
 
-		insideCubeSideLengthIPanel = new LabelledDoublePanel("Side length of cube sharing 4 vertices with inner tetrahedron");
+		insideCubeSideLengthIPanel = new LabelledDoublePanel("Side length of inner cube");
 		insideCubeSideLengthIPanel.setNumber(insideCubeSideLengthI);
 		innerShiftyCloakPanel.add(insideCubeSideLengthIPanel, "wrap");
 
@@ -633,6 +917,10 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 		showFramesICheckBox.setSelected(showFramesI);
 		innerShiftyCloakPanel.add(showFramesICheckBox, "wrap");
 		
+		showShiftyCloakIImageCheckBox = new JCheckBox("Show image due to outer cloak");
+		showShiftyCloakIImageCheckBox.setSelected(showShiftyCloakIImage);
+		innerShiftyCloakPanel.add(showShiftyCloakIImageCheckBox, "wrap");
+
 		shiftyCloaksPanel.add(innerShiftyCloakPanel, "wrap");
 
 		
@@ -734,6 +1022,8 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 		sphereRadiusPanels = new LabelledDoublePanel[3];
 		sphereColourPanels = new LabelledDoubleColourPanel[3];
 		sphereVisibilityCheckBoxes = new JCheckBox[3];
+		sphereImageColourPanels = new LabelledDoubleColourPanel[3];
+		sphereImageVisibilityCheckBoxes = new JCheckBox[3];
 		for(int i=0; i<3; i++)
 		{
 			spherePanels[i] = new JPanel();
@@ -755,7 +1045,15 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 			sphereVisibilityCheckBoxes[i] = new JCheckBox("Visible");
 			sphereVisibilityCheckBoxes[i].setSelected(sphereVisibilities[i]);
 			spherePanels[i].add(sphereVisibilityCheckBoxes[i], "wrap");
-			
+
+			sphereImageColourPanels[i] = new LabelledDoubleColourPanel("Colour of image");
+			sphereImageColourPanels[i].setDoubleColour(sphereImageColours[i]);
+			spherePanels[i].add(sphereImageColourPanels[i], "wrap");
+
+			sphereImageVisibilityCheckBoxes[i] = new JCheckBox("Image visible");
+			sphereImageVisibilityCheckBoxes[i].setSelected(sphereImageVisibilities[i]);
+			spherePanels[i].add(sphereImageVisibilityCheckBoxes[i], "wrap");
+
 			restOfScenePanel.add(spherePanels[i], "wrap");
 		}
 		
@@ -829,8 +1127,8 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 		
 		// shifty cloaks
 		
+		shiftyGCLAsCloakType = (ShiftyGCLAsCloakType)(shiftyGCLAsCloakTypeComboBox.getSelectedItem());
 		centre = centrePanel.getVector3D();
-		asymmetricConfiguration = asymmetricConfigurationCheckBox.isSelected();
 		showShiftyCloakO = showShiftyCloakOCheckBox.isSelected();
 		showShiftyCloakGCLAsO = showShiftyCloakGCLAsOCheckBox.isSelected();
 		deltaO = deltaOPanel.getVector3D();
@@ -843,6 +1141,7 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 		outsideCubeSideLengthI = outsideCubeSideLengthIPanel.getNumber();
 		insideCubeSideLengthI = insideCubeSideLengthIPanel.getNumber();
 		showFramesI = showFramesICheckBox.isSelected();
+		showShiftyCloakIImage = showShiftyCloakIImageCheckBox.isSelected();
 			
 
 		// trajectories
@@ -869,6 +1168,8 @@ public class ShiftyGCLAsCloakVisualiser extends NonInteractiveTIMEngine
 			sphereRadii[i] = sphereRadiusPanels[i].getNumber();
 			sphereColours[i] = sphereColourPanels[i].getDoubleColour();
 			sphereVisibilities[i] = sphereVisibilityCheckBoxes[i].isSelected();
+			sphereImageColours[i] = sphereImageColourPanels[i].getDoubleColour();
+			sphereImageVisibilities[i] = sphereImageVisibilityCheckBoxes[i].isSelected();
 		}
 		
 		// camera

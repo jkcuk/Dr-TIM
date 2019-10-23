@@ -49,7 +49,7 @@ import optics.raytrace.surfaces.SurfaceColour;
  * @author johannes
  *
  */
-public class EditableGCLAsShiftyCloak extends EditableHomogeneousPlanarImagingSurfaceSimplicialComplex implements ActionListener
+public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlanarImagingSurfaceSimplicialComplex implements ActionListener
 {
 	private static final long serialVersionUID = 2347562642193958376L;
 
@@ -97,7 +97,7 @@ public class EditableGCLAsShiftyCloak extends EditableHomogeneousPlanarImagingSu
 	
 	// constructors
 	
-	public EditableGCLAsShiftyCloak(
+	public EditableGCLAsTetrahedralShiftyCloak(
 			String description,
 			Vector3D centre,
 			Vector3D u,
@@ -161,7 +161,7 @@ public class EditableGCLAsShiftyCloak extends EditableHomogeneousPlanarImagingSu
 	}
 
 
-	public EditableGCLAsShiftyCloak(SceneObject parent, Studio studio)
+	public EditableGCLAsTetrahedralShiftyCloak(SceneObject parent, Studio studio)
 	{
 		this(
 				"Glens shifty cloak",
@@ -187,7 +187,7 @@ public class EditableGCLAsShiftyCloak extends EditableHomogeneousPlanarImagingSu
 	 * Create a clone of original
 	 * @param original
 	 */
-	public EditableGCLAsShiftyCloak(EditableGCLAsShiftyCloak original)
+	public EditableGCLAsTetrahedralShiftyCloak(EditableGCLAsTetrahedralShiftyCloak original)
 	{
 		this(
 			original.getDescription(),
@@ -211,9 +211,9 @@ public class EditableGCLAsShiftyCloak extends EditableHomogeneousPlanarImagingSu
 	
 
 	@Override
-	public EditableGCLAsShiftyCloak clone()
+	public EditableGCLAsTetrahedralShiftyCloak clone()
 	{
-		return new EditableGCLAsShiftyCloak(this);
+		return new EditableGCLAsTetrahedralShiftyCloak(this);
 	}
 
 	
@@ -608,7 +608,7 @@ public class EditableGCLAsShiftyCloak extends EditableHomogeneousPlanarImagingSu
 	 * @see optics.raytrace.GUI.Editable#acceptValuesInEditPanel()
 	 */
 	@Override
-	public EditableGCLAsShiftyCloak acceptValuesInEditPanel()
+	public EditableGCLAsTetrahedralShiftyCloak acceptValuesInEditPanel()
 	{
 		setDescription(descriptionPanel.getString());
 
