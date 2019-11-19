@@ -36,7 +36,7 @@ import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 
 
-public class ShiftyCloakVisualiser extends NonInteractiveTIMEngine
+public class SphericalShiftyCloakVisualiser extends NonInteractiveTIMEngine
 {
 	// outer cloak / inner cloak
 	private ShiftyDeviceType shiftyDeviceTypeO, shiftyDeviceTypeI;
@@ -137,7 +137,7 @@ public class ShiftyCloakVisualiser extends NonInteractiveTIMEngine
 
 	
 	
-	public ShiftyCloakVisualiser()
+	public SphericalShiftyCloakVisualiser()
 	{
 		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
 		renderQuality = RenderQualityEnum.DRAFT;
@@ -1152,6 +1152,6 @@ public class ShiftyCloakVisualiser extends NonInteractiveTIMEngine
 
  	public static void main(final String[] args)
    	{
-  		(new ShiftyCloakVisualiser()).run();
+  		(new SphericalShiftyCloakVisualiser()).run();
   	}
  }

@@ -27,7 +27,7 @@ import optics.raytrace.GUI.lowLevel.LabelledDoubleColourPanel;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
-import optics.raytrace.GUI.sceneObjects.EditableGCLAsCubicShiftyCloak;
+import optics.raytrace.GUI.sceneObjects.EditableCubicShiftyCloak;
 
 
 public class ShiftyGCLAsCubicCloakVisualiser extends NonInteractiveTIMEngine
@@ -296,7 +296,7 @@ public class ShiftyGCLAsCubicCloakVisualiser extends NonInteractiveTIMEngine
 	}
 
 	
-	private EditableGCLAsCubicShiftyCloak cloakO, cloakI;
+	private EditableCubicShiftyCloak cloakO, cloakI;
 	private Vector3D frame0CameraViewDirection;
 
 	/**
@@ -339,7 +339,7 @@ public class ShiftyGCLAsCubicCloakVisualiser extends NonInteractiveTIMEngine
 		double frameRadius = 0.01*outsideCubeSideLengthO;
 		
 		// add outer shifty cloak
-		cloakO = new EditableGCLAsCubicShiftyCloak(
+		cloakO = new EditableCubicShiftyCloak(
 				"Outer shifty GCLAs cloak",	// description
 				centre,
 				new Vector3D(1, 0, 0),	// uDirection
@@ -357,7 +357,7 @@ public class ShiftyGCLAsCubicCloakVisualiser extends NonInteractiveTIMEngine
 		scene.addSceneObject(cloakO, showShiftyCloakO);
 
 		// add inner shifty cloak
-		cloakI = new EditableGCLAsCubicShiftyCloak(
+		cloakI = new EditableCubicShiftyCloak(
 				"Inner shifty GCLAs cloak",	// description
 				centre,
 				new Vector3D(1, 0, 0),	// uDirection
@@ -427,7 +427,7 @@ public class ShiftyGCLAsCubicCloakVisualiser extends NonInteractiveTIMEngine
 	
 		// remove outer shifty cloak and add it again
 		scene.removeSceneObject(cloakO);
-		cloakO = new EditableGCLAsCubicShiftyCloak(
+		cloakO = new EditableCubicShiftyCloak(
 				"Outer shifty GCLAs cloak",	// description
 				centre,
 				new Vector3D(1, 0, 0),	// uDirection
@@ -446,7 +446,7 @@ public class ShiftyGCLAsCubicCloakVisualiser extends NonInteractiveTIMEngine
 
 		// remove inner shifty cloak and add it again
 		scene.removeSceneObject(cloakI);
-		cloakI = new EditableGCLAsCubicShiftyCloak(
+		cloakI = new EditableCubicShiftyCloak(
 				"Inner shifty GCLAs cloak",	// description
 				centre,
 				new Vector3D(1, 0, 0),	// uDirection

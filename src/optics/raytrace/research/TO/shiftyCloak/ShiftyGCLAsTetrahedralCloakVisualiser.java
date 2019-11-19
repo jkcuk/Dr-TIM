@@ -27,7 +27,7 @@ import optics.raytrace.GUI.lowLevel.LabelledDoubleColourPanel;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
-import optics.raytrace.GUI.sceneObjects.EditableGCLAsTetrahedralShiftyCloak;
+import optics.raytrace.GUI.sceneObjects.EditableTetrahedralShiftyCloak;
 
 
 public class ShiftyGCLAsTetrahedralCloakVisualiser extends NonInteractiveTIMEngine
@@ -296,7 +296,7 @@ public class ShiftyGCLAsTetrahedralCloakVisualiser extends NonInteractiveTIMEngi
 	}
 
 	
-	private EditableGCLAsTetrahedralShiftyCloak cloakO, cloakI;
+	private EditableTetrahedralShiftyCloak cloakO, cloakI;
 	private Vector3D frame0CameraViewDirection;
 
 	/**
@@ -339,7 +339,7 @@ public class ShiftyGCLAsTetrahedralCloakVisualiser extends NonInteractiveTIMEngi
 		double frameRadius = 0.01*outsideCubeSideLengthO;
 		
 		// add outer shifty cloak
-		cloakO = new EditableGCLAsTetrahedralShiftyCloak(
+		cloakO = new EditableTetrahedralShiftyCloak(
 				"Outer shifty GCLAs cloak",	// description
 				centre,
 				new Vector3D(1, 0, 0),	// u
@@ -359,7 +359,7 @@ public class ShiftyGCLAsTetrahedralCloakVisualiser extends NonInteractiveTIMEngi
 		scene.addSceneObject(cloakO, showShiftyCloakO);
 
 		// add inner shifty cloak
-		cloakI = new EditableGCLAsTetrahedralShiftyCloak(
+		cloakI = new EditableTetrahedralShiftyCloak(
 				"Inner shifty GCLAs cloak",	// description
 				centre,
 				new Vector3D(1, 0, 0),	// u
@@ -431,7 +431,7 @@ public class ShiftyGCLAsTetrahedralCloakVisualiser extends NonInteractiveTIMEngi
 	
 		// remove outer shifty cloak and add it again
 		scene.removeSceneObject(cloakO);
-		cloakO = new EditableGCLAsTetrahedralShiftyCloak(
+		cloakO = new EditableTetrahedralShiftyCloak(
 				"Outer shifty GCLAs cloak",	// description
 				centre,
 				new Vector3D(1, 0, 0),	// u
@@ -452,7 +452,7 @@ public class ShiftyGCLAsTetrahedralCloakVisualiser extends NonInteractiveTIMEngi
 
 		// remove inner shifty cloak and add it again
 		scene.removeSceneObject(cloakI);
-		cloakI = new EditableGCLAsTetrahedralShiftyCloak(
+		cloakI = new EditableTetrahedralShiftyCloak(
 				"Inner shifty GCLAs cloak",	// description
 				centre,
 				new Vector3D(1, 0, 0),	// u

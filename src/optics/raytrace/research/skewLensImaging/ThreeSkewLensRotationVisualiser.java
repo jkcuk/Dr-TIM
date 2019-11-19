@@ -347,13 +347,15 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		
 		double f1 = 0.5*distance*(Math.cos(beta1) + Math.sin(beta1)/Math.tan(0.5*rotationAngleRad));
 
-		double f2 = (Math.cos(beta2)*(3*distance*csc(beta2) - 2*f1*csc(beta2)*sec(beta1) + 
-			       distance*cot(beta1)*sec(beta2) - 2*f1*csc(beta1)*sec(beta2) + // TODO the sign in front of the sqrt might have to change for some parameters
-			       Math.sqrt(-8*csc(beta2)*(distance*distance*cot(beta1) + distance*distance*cot(beta2) - 
-			            3*distance*f1*csc(beta1) - distance*f1*cot(beta2)*sec(beta1) + 
-			            2*f1*f1*csc(beta1)*sec(beta1))*sec(beta2) + 
-			         MyMath.square(-3*distance*csc(beta2) + 2*f1*csc(beta2)*sec(beta1) - 
-			           distance*cot(beta1)*sec(beta2) + 2*f1*csc(beta1)*sec(beta2))))*Math.sin(beta2))/4.;
+		double f2 = 
+//				(Math.cos(beta2)*(3*distance*csc(beta2) - 2*f1*csc(beta2)*sec(beta1) + 
+//			       distance*cot(beta1)*sec(beta2) - 2*f1*csc(beta1)*sec(beta2) + // TODO the sign in front of the sqrt might have to change for some parameters
+//			       Math.sqrt(-8*csc(beta2)*(distance*distance*cot(beta1) + distance*distance*cot(beta2) - 
+//			            3*distance*f1*csc(beta1) - distance*f1*cot(beta2)*sec(beta1) + 
+//			            2*f1*f1*csc(beta1)*sec(beta1))*sec(beta2) + 
+//			         MyMath.square(-3*distance*csc(beta2) + 2*f1*csc(beta2)*sec(beta1) - 
+//			           distance*cot(beta1)*sec(beta2) + 2*f1*csc(beta1)*sec(beta2))))*Math.sin(beta2))/4.;
+				0.5*Math.sin(beta2)*(distance/Math.tan(beta1)-2*f1/Math.sin(beta1))+0.5*distance*Math.cos(beta2);
 //				1/4*Math.cos(beta2)*(3*distance/Math.sin(beta2) - 2*f1/(Math.sin(beta2)*Math.cos(beta1)) + 
 //				   distance/(Math.tan(beta1)*Math.sin(beta2)) - 
 //				   2*f1/(Math.sin(beta1)*Math.cos(beta2)) +
@@ -385,8 +387,10 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		
 		g1 = f1/(Math.cos(beta1));
 		g2 = f2/(Math.cos(beta2));
-		k_o = -1./(Math.tan(beta1))*(distance- g1 - g2)/(distance- g1 - g2*((Math.tan(beta1))/(Math.tan(beta2))));
-		k_i = -1./(Math.tan(beta2))*(distance- g1 - g2)/(distance- g2 - g1*((Math.tan(beta2))/(Math.tan(beta1))));
+		k_o = -1./(Math.tan(beta1))*(distance- g1 - g2)/(distance- g2 - g1*((Math.tan(beta2))/(Math.tan(beta1))));
+			// -1./(Math.tan(beta1))*(distance- g1 - g2)/(distance- g1 - g2*((Math.tan(beta1))/(Math.tan(beta2))));
+		k_i = -1./(Math.tan(beta2))*(distance- g1 - g2)/(distance- g1 - g2*((Math.tan(beta1))/(Math.tan(beta2))));
+		// -1./(Math.tan(beta2))*(distance- g1 - g2)/(distance- g2 - g1*((Math.tan(beta2))/(Math.tan(beta1))));
 		twoLensEffectiveF = (g1*g2)/(g1 + g2 - distance);
 
 
@@ -420,13 +424,14 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		// first calculate the normal to lens 3
 		//Vector3D n3 = lenses12.getNormalToTransversePlanes2().getReverse();\Vector3D n3 
 		Vector3D n3 =
+			new Vector3D( Math.sin(0.5*rotationAngleRad), 0, Math.cos(0.5*rotationAngleRad)).getNormalised();
+			// new Vector3D( 1/(Math.sqrt(1 + k_i*k_i)), 0,-1.*k_i/(Math.sqrt(1 + k_i*k_i))).getNormalised();
 			// new Vector3D( 1/(Math.sqrt(1 + k_o*k_o)), 0,-1.*k_o/(Math.sqrt(1 + k_o*k_o))).getNormalised();
-			new Vector3D( 1/(Math.sqrt(1 + k_i*k_i)), 0,-1.*k_i/(Math.sqrt(1 + k_i*k_i))).getNormalised();
 		//Vector3D n3 = new Vector3D( 1/(Math.sqrt(1 + k_i*k_i)), 0,-1.*k_i/(Math.sqrt(1 + k_i*k_i)));
 		// System.out.println("ThreeSkewLensRotation::populateStudio: n3 = "+n3);
 		
 		yVector = Vector3D.Y;
-		zVector = n3.getReverse();
+		zVector = n3; //n3.getReverse();
 		xVector = Vector3D.crossProduct(yVector, zVector);
 				
 		// then calculate the remaining parameters, which depends on what exactly we want to do;
@@ -434,7 +439,8 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		// combination of lenses 1 and 2
 		
 //		boolean lens3InPrincipalPlane = false;
-		double f3 = -1.*twoLensEffectiveF*k_i/(Math.sqrt(1 + k_i*k_i));
+		double f3 = -1.*twoLensEffectiveF*Math.cos(0.5*rotationAngleRad);
+				// -1.*twoLensEffectiveF*k_i/(Math.sqrt(1 + k_i*k_i));
 		double px = -twoLensEffectiveF*(1/(k_o + 1/k_o) - 1/(k_i + 1/k_i)); ///////!!!!!minus
 		double pz =
 				// px/k_o + distance*twoLensEffectiveF/g2;

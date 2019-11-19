@@ -29,7 +29,7 @@ import optics.raytrace.simplicialComplex.HomogeneousPlanarImagingSurfaceSimplici
 import optics.raytrace.surfaces.SurfaceColour;
 
 /**
- * An editable shifty cloak, realised using homogeneous GCLAs (i.e. homogeneous glenses ).
+ * An editable shifty cloak, realised using either polyhedral blocks of homogeneous material or GCLAs (i.e. homogeneous glenses ).
  * 
  * This implementation is as a subclass of EditableHomogeneousPlanarImagingSurfaceSimplicialComplex. 
  * 
@@ -49,7 +49,7 @@ import optics.raytrace.surfaces.SurfaceColour;
  * @author johannes
  *
  */
-public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlanarImagingSurfaceSimplicialComplex implements ActionListener
+public class EditableTetrahedralShiftyCloak extends EditableHomogeneousPlanarImagingSurfaceSimplicialComplex implements ActionListener
 {
 	private static final long serialVersionUID = 2347562642193958376L;
 
@@ -91,13 +91,13 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 	private Vector3D delta;
 	
 	private double frameRadius;
-	private boolean asymmetricConfiguration, showGCLAs, showFrames;
+	private boolean asymmetricConfiguration, showInterfaces, showFrames;
 	private SurfaceProperty frameSurfaceProperty;
 	
 	
 	// constructors
 	
-	public EditableGCLAsTetrahedralShiftyCloak(
+	public EditableTetrahedralShiftyCloak(
 			String description,
 			Vector3D centre,
 			Vector3D u,
@@ -107,8 +107,8 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 			double sideLength,
 			double sideLengthI,
 			Vector3D delta,
-			boolean showGCLAs,
-			double gCLAsTransmissionCoefficient,
+			boolean showInterfaces,
+			double interfaceTransmissionCoefficient,
 			boolean showFrames,
 			double frameRadius,
 			SurfaceProperty frameSurfaceProperty,			
@@ -121,7 +121,7 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 		super(
 				description,
 				null,	// homogeneousPlanarImagingElementSimplicialComplex
-				showGCLAs,	// showImagingElements
+				showInterfaces,	// showImagingElements
 				showFrames,	// showVertices
 				frameSurfaceProperty,	// vertexSurfaceProperty
 				frameRadius,	// vertexRadius
@@ -149,10 +149,11 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 		setW(w);
 		setAsymmetricConfiguration(asymmetricConfiguration);
 		setSideLength(sideLength);
-		setSideLengthI(sideLengthI);
+		double sideLengthIMax = (asymmetricConfiguration?0.96*sideLength:sideLength/3.);
+		setSideLengthI((sideLengthI>sideLengthIMax)?sideLengthIMax:sideLengthI);
 		setDelta(delta);
-		setShowGCLAs(showGCLAs);
-		setImagingElementTransmissionCoefficient(gCLAsTransmissionCoefficient);
+		setShowInterfaces(showInterfaces);
+		setImagingElementTransmissionCoefficient(interfaceTransmissionCoefficient);
 		setShowFrames(showFrames);
 		setFrameRadius(frameRadius);
 		setFrameSurfaceProperty(frameSurfaceProperty);
@@ -161,7 +162,7 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 	}
 
 
-	public EditableGCLAsTetrahedralShiftyCloak(SceneObject parent, Studio studio)
+	public EditableTetrahedralShiftyCloak(SceneObject parent, Studio studio)
 	{
 		this(
 				"Glens shifty cloak",
@@ -173,8 +174,8 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 				1,	// sideLength
 				0.3,	// sideLengthInnerCube
 				new Vector3D(0, 0, 0),	// delta
-				true,	// showGCLAs
-				0.96,	// gCLAsTransmissionCoefficient
+				true,	// showInterfaces
+				0.96,	// interfaceTransmissionCoefficient
 				true,	// showFrames
 				0.01,	// frameRadius
 				SurfaceColour.GREY50_SHINY,	// frameSurfaceProperty
@@ -187,7 +188,7 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 	 * Create a clone of original
 	 * @param original
 	 */
-	public EditableGCLAsTetrahedralShiftyCloak(EditableGCLAsTetrahedralShiftyCloak original)
+	public EditableTetrahedralShiftyCloak(EditableTetrahedralShiftyCloak original)
 	{
 		this(
 			original.getDescription(),
@@ -199,7 +200,7 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 			original.getSideLength(),
 			original.getSideLengthI(),
 			original.getDelta().clone(),
-			original.isShowGCLAs(),
+			original.isShowInterfaces(),
 			original.getImagingElementTransmissionCoefficient(),
 			original.isShowFrames(),
 			original.getFrameRadius(),
@@ -211,9 +212,9 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 	
 
 	@Override
-	public EditableGCLAsTetrahedralShiftyCloak clone()
+	public EditableTetrahedralShiftyCloak clone()
 	{
-		return new EditableGCLAsTetrahedralShiftyCloak(this);
+		return new EditableTetrahedralShiftyCloak(this);
 	}
 
 	
@@ -287,12 +288,12 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 	}
 
 
-	public boolean isShowGCLAs() {
-		return showGCLAs;
+	public boolean isShowInterfaces() {
+		return showInterfaces;
 	}
 
-	public void setShowGCLAs(boolean showGCLAs) {
-		this.showGCLAs = showGCLAs;
+	public void setShowInterfaces(boolean showInterfaces) {
+		this.showInterfaces = showInterfaces;
 	}
 
 	public double getFrameRadius() {
@@ -326,8 +327,8 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 	
 	// internal variables
 	
-	// containers for the GCLAs and frames
-	EditableSceneObjectCollection gCLAs, frames;
+	// containers for the interfaces and frames
+	EditableSceneObjectCollection interfaces, frames;
 	
 	@Override
 	public void populateSceneObjectCollection()
@@ -456,13 +457,13 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 //		for(Face f:homogeneousPlanarImagingElementSimplicialComplex.getFaces())
 //		{
 //			System.out.println(
-//					"EditableGCLAsShiftyCloak::populateSceneObjectCollection: Type of face #"+homogeneousPlanarImagingElementSimplicialComplex.getFaces().indexOf(f)+
+//					"EditableTetrahedralShiftyCloak::populateSceneObjectCollection: Type of face #"+homogeneousPlanarImagingElementSimplicialComplex.getFaces().indexOf(f)+
 //					": "+f.getClass().toString()+
 //					", noOfFacesToOutside="+f.getNoOfFacesToOutside());
 //			for(int v=0; v<3; v++) System.out.println("vertex #"+v+"="+f.getVertexIndices()[v]);
 //		}
 
-		setShowImagingElements(showGCLAs);
+		setShowImagingElements(showInterfaces);
 		setShowVertices(showFrames);
 		setShowEdges(showFrames);
 		
@@ -479,9 +480,9 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 	
 	// GUI panels
 	private LabelledVector3DPanel centreLine, plusUDirectionLine, plusVDirectionLine, plusWDirectionLine, deltaLine;
-	private LabelledDoublePanel sideLengthLine, sideLengthInnerCubeLine, gCLAsTransmissionCoefficientLine, frameRadiusLine;
+	private LabelledDoublePanel sideLengthLine, sideLengthInnerCubeLine, interfaceTransmissionCoefficientLine, frameRadiusLine;
 	private JButton convertButton;
-	private JCheckBox asymmetricConfigurationCheckBox, showGCLAsCheckBox, showFramesCheckBox;
+	private JCheckBox asymmetricConfigurationCheckBox, showInterfacesCheckBox, showFramesCheckBox;
 	private SurfacePropertyPanel frameSurfacePropertyPanel;
 	
 
@@ -537,11 +538,11 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 		deltaLine = new LabelledVector3DPanel("Apparent shift of inner cube in virtual space");
 		basicParametersPanel.add(deltaLine, "wrap");
 
-		showGCLAsCheckBox = new JCheckBox("Show GCLAs");
-		basicParametersPanel.add(showGCLAsCheckBox, "wrap");
+		showInterfacesCheckBox = new JCheckBox("Show interfaces");
+		basicParametersPanel.add(showInterfacesCheckBox, "wrap");
 
-		gCLAsTransmissionCoefficientLine = new LabelledDoublePanel("Transmission coefficient of each surface");
-		basicParametersPanel.add(gCLAsTransmissionCoefficientLine, "wrap");
+		interfaceTransmissionCoefficientLine = new LabelledDoublePanel("Transmission coefficient of each surface");
+		basicParametersPanel.add(interfaceTransmissionCoefficientLine, "wrap");
 
 		tabbedPane.addTab("Basic parameters", basicParametersPanel);
 
@@ -597,8 +598,8 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 		sideLengthLine.setNumber(getSideLength());
 		sideLengthInnerCubeLine.setNumber(getSideLengthI());
 		deltaLine.setVector3D(delta);
-		showGCLAsCheckBox.setSelected(isShowGCLAs());
-		gCLAsTransmissionCoefficientLine.setNumber(getImagingElementTransmissionCoefficient());	// getGCLAsTransmissionCoefficient());
+		showInterfacesCheckBox.setSelected(isShowInterfaces());
+		interfaceTransmissionCoefficientLine.setNumber(getImagingElementTransmissionCoefficient());
 		showFramesCheckBox.setSelected(isShowFrames());
 		frameRadiusLine.setNumber(getFrameRadius());
 		frameSurfacePropertyPanel.setSurfaceProperty(frameSurfaceProperty);
@@ -608,7 +609,7 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 	 * @see optics.raytrace.GUI.Editable#acceptValuesInEditPanel()
 	 */
 	@Override
-	public EditableGCLAsTetrahedralShiftyCloak acceptValuesInEditPanel()
+	public EditableTetrahedralShiftyCloak acceptValuesInEditPanel()
 	{
 		setDescription(descriptionPanel.getString());
 
@@ -620,8 +621,8 @@ public class EditableGCLAsTetrahedralShiftyCloak extends EditableHomogeneousPlan
 		setSideLength(sideLengthLine.getNumber());
 		setSideLengthI(sideLengthInnerCubeLine.getNumber());
 		setDelta(deltaLine.getVector3D());
-		setShowGCLAs(showGCLAsCheckBox.isSelected());
-		setImagingElementTransmissionCoefficient(gCLAsTransmissionCoefficientLine.getNumber());
+		setShowInterfaces(showInterfacesCheckBox.isSelected());
+		setImagingElementTransmissionCoefficient(interfaceTransmissionCoefficientLine.getNumber());
 		setShowFrames(showFramesCheckBox.isSelected());
 		setFrameRadius(frameRadiusLine.getNumber());
 		setFrameSurfaceProperty(frameSurfacePropertyPanel.getSurfaceProperty());

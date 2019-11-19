@@ -36,7 +36,7 @@ import optics.raytrace.surfaces.GCLAsWithApertures.GCLAsTransmissionCoefficientC
  * 
  * @author Johannes
  */
-public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection implements ActionListener
+public class EditableCubicShiftyCloak extends EditableSceneObjectCollection implements ActionListener
 {
 	private static final long serialVersionUID = 2347562642193958376L;
 
@@ -73,15 +73,15 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 	private Vector3D delta;
 	
 	private double
-		gCLAsTransmissionCoefficient,
+		interfaceTransmissionCoefficient,
 		frameRadius;
-	private boolean showGCLAs, showFrames;
+	private boolean showInterfaces, showFrames;
 	private SurfaceProperty frameSurfaceProperty;
 	
 	
 	// constructors
 	
-	public EditableGCLAsCubicShiftyCloak(
+	public EditableCubicShiftyCloak(
 			String description,
 			Vector3D centre,
 			Vector3D uDirection,
@@ -89,8 +89,8 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 			double sideLengthOutside,
 			double sideLengthInside,
 			Vector3D delta,
-			boolean showGCLAs,
-			double gCLAsTransmissionCoefficient,
+			boolean showInterfaces,
+			double interfaceTransmissionCoefficient,
 			boolean showFrames,
 			double frameRadius,
 			SurfaceProperty frameSurfaceProperty,			
@@ -107,8 +107,8 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 		setSideLengthOutside(sideLengthOutside);
 		setSideLengthInside(sideLengthInside);
 		setDelta(delta);
-		setShowGCLAs(showGCLAs);
-		setGCLAsTransmissionCoefficient(gCLAsTransmissionCoefficient);
+		setShowInterfaces(showInterfaces);
+		setInterfaceTransmissionCoefficient(interfaceTransmissionCoefficient);
 		setShowFrames(showFrames);
 		setFrameRadius(frameRadius);
 		setFrameSurfaceProperty(frameSurfaceProperty);
@@ -117,7 +117,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 	}
 
 
-	public EditableGCLAsCubicShiftyCloak(SceneObject parent, Studio studio)
+	public EditableCubicShiftyCloak(SceneObject parent, Studio studio)
 	{
 		this(
 				"Glens shifty cloak",
@@ -127,8 +127,8 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 				1,	// sideLengthOutside
 				0.5,	// sideLengthInside
 				new Vector3D(1, 0, 0),	// delta
-				true,	// showGCLAs
-				0.96,	// gCLAsTransmissionCoefficient
+				true,	// showInterfaces
+				0.96,	// interfaceTransmissionCoefficient
 				true,	// showFrames
 				0.01,	// frameRadius
 				SurfaceColour.GREY50_SHINY,	// frameSurfaceProperty
@@ -141,7 +141,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 	 * Create a clone of original
 	 * @param original
 	 */
-	public EditableGCLAsCubicShiftyCloak(EditableGCLAsCubicShiftyCloak original)
+	public EditableCubicShiftyCloak(EditableCubicShiftyCloak original)
 	{
 		this(
 			original.getDescription(),
@@ -151,8 +151,8 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 			original.getSideLengthOutside(),
 			original.getSideLengthInside(),
 			original.getDelta().clone(),
-			original.isShowGCLAs(),
-			original.getGCLAsTransmissionCoefficient(),
+			original.isShowInterfaces(),
+			original.getInterfaceTransmissionCoefficient(),
 			original.isShowFrames(),
 			original.getFrameRadius(),
 			original.getFrameSurfaceProperty(),			
@@ -163,9 +163,9 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 	
 
 	@Override
-	public EditableGCLAsCubicShiftyCloak clone()
+	public EditableCubicShiftyCloak clone()
 	{
-		return new EditableGCLAsCubicShiftyCloak(this);
+		return new EditableCubicShiftyCloak(this);
 	}
 
 	
@@ -224,20 +224,20 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 		this.delta = delta;
 	}
 
-	public boolean isShowGCLAs() {
-		return showGCLAs;
+	public boolean isShowInterfaces() {
+		return showInterfaces;
 	}
 
-	public void setShowGCLAs(boolean showGCLAs) {
-		this.showGCLAs = showGCLAs;
+	public void setShowInterfaces(boolean showInterfaces) {
+		this.showInterfaces = showInterfaces;
 	}
 
-	public double getGCLAsTransmissionCoefficient() {
-		return gCLAsTransmissionCoefficient;
+	public double getInterfaceTransmissionCoefficient() {
+		return interfaceTransmissionCoefficient;
 	}
 
-	public void setGCLAsTransmissionCoefficient(double gCLAsTransmissionCoefficient) {
-		this.gCLAsTransmissionCoefficient = gCLAsTransmissionCoefficient;
+	public void setInterfaceTransmissionCoefficient(double interfaceTransmissionCoefficient) {
+		this.interfaceTransmissionCoefficient = interfaceTransmissionCoefficient;
 	}
 
 	public double getFrameRadius() {
@@ -280,8 +280,8 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 	// the vertices of the inner cube, physical space
 	protected Vector3D vertexUVWI, vertexUVwI, vertexUvWI, vertexUvwI, vertexuVWI, vertexuVwI, vertexuvWI, vertexuvwI;
 	
-	// containers for the GCLAs and frames
-	EditableSceneObjectCollection gCLAs, frames;
+	// containers for the interfaces and frames
+	EditableSceneObjectCollection interfaces, frames;
 	
 	
 	
@@ -385,10 +385,10 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 	
 
 	/**
-	 * Add all the GCLAs (without frames --- those get added separately)
+	 * Add all the interfaces (without frames --- those get added separately)
 	 * All directions and vertices have to be pre-calculated, and the EditableSceneObjectCollection "gCLAs" must exist.
 	 */
-	private void addGCLAs()
+	private void addInterfaces()
 	{
 		// the faces of the outer cube
 		
@@ -399,7 +399,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 				Vector3D.sum(vertexUvwI, delta)	// outsideSpacePosition
 			);
 
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Outer face in +u direction",	// description
 						vertexUvw,	// vertex1
@@ -408,11 +408,11 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 						vertexUVw,	// vertex4
 						uHat,	// outwardsDirection,
 						hU.toGCLAs(
-								gCLAsTransmissionCoefficient,	// transmissionCoefficient
+								interfaceTransmissionCoefficient,	// transmissionCoefficient
 								GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 								false	// shadowThrowing
 							),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
@@ -424,7 +424,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 				Vector3D.sum(vertexuvwI, delta)	// outsideSpacePosition
 			);
 
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Outer face in -u direction",	// description
 						vertexuvw,	// vertex1
@@ -433,11 +433,11 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 						vertexuVw,	// vertex4
 						uHat.getReverse(),	// outwardsDirection,
 						hu.toGCLAs(
-								gCLAsTransmissionCoefficient,	// transmissionCoefficient
+								interfaceTransmissionCoefficient,	// transmissionCoefficient
 								GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 								false	// shadowThrowing
 							),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 						)
 				);
@@ -449,7 +449,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 				Vector3D.sum(vertexuVwI, delta)	// outsideSpacePosition
 			);
 
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Outer face in +v direction",	// description
 						vertexuVw,	// vertex1
@@ -458,11 +458,11 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 						vertexUVw,	// vertex4
 						vHat,	// outwardsDirection,
 						hV.toGCLAs(
-								gCLAsTransmissionCoefficient,	// transmissionCoefficient
+								interfaceTransmissionCoefficient,	// transmissionCoefficient
 								GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 								false	// shadowThrowing
 							),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 						)
 				);
@@ -475,7 +475,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 			);
 
 
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Outer face in -v direction",	// description
 						vertexuvw,	// vertex1
@@ -484,11 +484,11 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 						vertexUvw,	// vertex4
 						vHat.getReverse(),	// outwardsDirection,
 						hv.toGCLAs(
-								gCLAsTransmissionCoefficient,	// transmissionCoefficient
+								interfaceTransmissionCoefficient,	// transmissionCoefficient
 								GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 								false	// shadowThrowing
 							),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 						)
 				);
@@ -500,7 +500,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 				Vector3D.sum(vertexuvWI, delta)	// outsideSpacePosition
 			);
 
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Outer face in +w direction",	// description
 						vertexuvW,	// vertex1
@@ -509,11 +509,11 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 						vertexUvW,	// vertex4
 						wHat,	// outwardsDirection,
 						hW.toGCLAs(
-								gCLAsTransmissionCoefficient,	// transmissionCoefficient
+								interfaceTransmissionCoefficient,	// transmissionCoefficient
 								GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 								false	// shadowThrowing
 							),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 						)
 				);
@@ -525,7 +525,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 				Vector3D.sum(vertexuvwI, delta)	// outsideSpacePosition
 			);
 
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Outer face in -w direction",	// description
 						vertexuvw,	// vertex1
@@ -534,18 +534,18 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 						vertexUvw,	// vertex4
 						wHat.getReverse(),	// outwardsDirection,
 						hw.toGCLAs(
-								gCLAsTransmissionCoefficient,	// transmissionCoefficient
+								interfaceTransmissionCoefficient,	// transmissionCoefficient
 								GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 								false	// shadowThrowing
 							),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 						)
 				);
 		
 		// the faces of the inner cube
 		
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Inner face in +u direction",	// description
 						vertexUvwI,	// vertex1
@@ -562,16 +562,16 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Inner face in -u direction",	// description
 						vertexuvwI,	// vertex1
@@ -588,16 +588,16 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Inner face in +v direction",	// description
 						vertexuVwI,	// vertex1
@@ -614,16 +614,16 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Inner face in -v direction",	// description
 						vertexuvwI,	// vertex1
@@ -640,16 +640,16 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Inner face in +w direction",	// description
 						vertexuvWI,	// vertex1
@@ -666,16 +666,16 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Inner face in -w direction",	// description
 						vertexuvwI,	// vertex1
@@ -692,11 +692,11 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
@@ -709,7 +709,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 		// diagonals parallel to the u direction
 		
 		outwardsNormal = Vector3D.difference(vHat, wHat);
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in +w,+v direction",	// description
 						vertexuVWI,	// vertex1
@@ -726,17 +726,17 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
 		outwardsNormal = Vector3D.sum(wHat, vHat);
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in +w,-v direction",	// description
 						vertexuvWI,	// vertex1
@@ -753,17 +753,17 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
 		outwardsNormal = Vector3D.difference(wHat, vHat);
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in -w,-v direction",	// description
 						vertexuvwI,	// vertex1
@@ -780,17 +780,17 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
 		outwardsNormal = Vector3D.sum(wHat, vHat).getReverse();
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in -w,+v direction",	// description
 						vertexuVwI,	// vertex1
@@ -807,11 +807,11 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
@@ -819,7 +819,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 		// diagonals parallel to the v direction
 		
 		outwardsNormal = Vector3D.difference(wHat, uHat);
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in +u,+w direction",	// description
 						vertexUvWI,	// vertex1
@@ -836,17 +836,17 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
 		outwardsNormal = Vector3D.sum(uHat, wHat);
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in +u,-w direction",	// description
 						vertexUvwI,	// vertex1
@@ -863,17 +863,17 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
 		outwardsNormal = Vector3D.difference(uHat, wHat);
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in -u,-w direction",	// description
 						vertexuvwI,	// vertex1
@@ -890,17 +890,17 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
 		outwardsNormal = Vector3D.sum(uHat, wHat).getReverse();
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in -u,+w direction",	// description
 						vertexuvWI,	// vertex1
@@ -917,11 +917,11 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
@@ -929,7 +929,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 		// diagonals parallel to the w direction
 		
 		outwardsNormal = Vector3D.difference(vHat, uHat);
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in +u,+v direction",	// description
 						vertexUVwI,	// vertex1
@@ -946,17 +946,17 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
 		outwardsNormal = Vector3D.sum(uHat, vHat);
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in +u,-v direction",	// description
 						vertexUvwI,	// vertex1
@@ -973,17 +973,17 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
 		outwardsNormal = Vector3D.difference(uHat, vHat);
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in -u,-v direction",	// description
 						vertexuvwI,	// vertex1
@@ -1000,17 +1000,17 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
 
 		outwardsNormal = Vector3D.sum(uHat, vHat).getReverse();
-		gCLAs.addSceneObject(
+		interfaces.addSceneObject(
 				getTrapeziumWindow(
 						"Diagonal face in -u,+v direction",	// description
 						vertexuVwI,	// vertex1
@@ -1027,11 +1027,11 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 										Orientation.INWARDS
 									) // outsideSpacePosition
 							).toGCLAs(
-									gCLAsTransmissionCoefficient,	// transmissionCoefficient
+									interfaceTransmissionCoefficient,	// transmissionCoefficient
 									GCLAsTransmissionCoefficientCalculationMethodType.CONSTANT,	// transmissionCoefficientMethod
 									false	// shadowThrowing
 								),	// surfaceProperty
-						gCLAs,	// parent
+						interfaces,	// parent
 						getStudio()	// studio
 					)
 				);
@@ -1166,18 +1166,18 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 		calculateUVWHats();
 		calculateVertices();		
 
-		// prepare scene-object collection objects for the GCLAs...
-		gCLAs = new EditableSceneObjectCollection("GCLAs", true, this, getStudio());
+		// prepare scene-object collection objects for the interfaces...
+		interfaces = new EditableSceneObjectCollection("Interfaces", true, this, getStudio());
 		
 		// ... and the frames
 		frames = new EditableSceneObjectCollection("Frames", true, this, getStudio());
 		
 		// now fill them
-		addGCLAs();
+		addInterfaces();
 		addFrames();
 		
 		// add the windows and the frames to this collection
-		addSceneObject(gCLAs, showGCLAs);
+		addSceneObject(interfaces, showInterfaces);
 		addSceneObject(frames, showFrames);
 	}
 
@@ -1191,9 +1191,9 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 	
 	// GUI panels
 	private LabelledVector3DPanel centreLine, plusUDirectionLine, plusVDirectionLine, plusWDirectionLine, deltaLine;
-	private LabelledDoublePanel sideLengthOutsideLine, sideLengthInsideLine, gCLAsTransmissionCoefficientLine, frameRadiusLine;
+	private LabelledDoublePanel sideLengthOutsideLine, sideLengthInsideLine, interfaceTransmissionCoefficientLine, frameRadiusLine;
 	private JButton convertButton;
-	private JCheckBox showGCLAsCheckBox, showFramesCheckBox;
+	private JCheckBox showInterfacesCheckBox, showFramesCheckBox;
 	private SurfacePropertyPanel frameSurfacePropertyPanel;
 	
 
@@ -1246,11 +1246,11 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 		deltaLine = new LabelledVector3DPanel("Apparent shift of inner cube in virtual space");
 		basicParametersPanel.add(deltaLine, "wrap");
 
-		showGCLAsCheckBox = new JCheckBox("Show GCLAs");
-		basicParametersPanel.add(showGCLAsCheckBox, "wrap");
+		showInterfacesCheckBox = new JCheckBox("Show interfaces");
+		basicParametersPanel.add(showInterfacesCheckBox, "wrap");
 
-		gCLAsTransmissionCoefficientLine = new LabelledDoublePanel("Transmission coefficient of each surface");
-		basicParametersPanel.add(gCLAsTransmissionCoefficientLine, "wrap");
+		interfaceTransmissionCoefficientLine = new LabelledDoublePanel("Transmission coefficient of each surface");
+		basicParametersPanel.add(interfaceTransmissionCoefficientLine, "wrap");
 
 		tabbedPane.addTab("Basic parameters", basicParametersPanel);
 
@@ -1304,8 +1304,8 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 		sideLengthOutsideLine.setNumber(getSideLengthOutside());
 		sideLengthInsideLine.setNumber(getSideLengthInside());
 		deltaLine.setVector3D(delta);
-		showGCLAsCheckBox.setSelected(isShowGCLAs());
-		gCLAsTransmissionCoefficientLine.setNumber(getGCLAsTransmissionCoefficient());
+		showInterfacesCheckBox.setSelected(isShowInterfaces());
+		interfaceTransmissionCoefficientLine.setNumber(getInterfaceTransmissionCoefficient());
 		showFramesCheckBox.setSelected(isShowFrames());
 		frameRadiusLine.setNumber(getFrameRadius());
 		frameSurfacePropertyPanel.setSurfaceProperty(frameSurfaceProperty);
@@ -1315,7 +1315,7 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 	 * @see optics.raytrace.GUI.Editable#acceptValuesInEditPanel()
 	 */
 	@Override
-	public EditableGCLAsCubicShiftyCloak acceptValuesInEditPanel()
+	public EditableCubicShiftyCloak acceptValuesInEditPanel()
 	{
 		setDescription(descriptionPanel.getString());
 
@@ -1324,8 +1324,8 @@ public class EditableGCLAsCubicShiftyCloak extends EditableSceneObjectCollection
 		setSideLengthOutside(sideLengthOutsideLine.getNumber());
 		setSideLengthInside(sideLengthInsideLine.getNumber());
 		setDelta(deltaLine.getVector3D());
-		setShowGCLAs(showGCLAsCheckBox.isSelected());
-		setGCLAsTransmissionCoefficient(gCLAsTransmissionCoefficientLine.getNumber());
+		setShowInterfaces(showInterfacesCheckBox.isSelected());
+		setInterfaceTransmissionCoefficient(interfaceTransmissionCoefficientLine.getNumber());
 		setShowFrames(showFramesCheckBox.isSelected());
 		setFrameRadius(frameRadiusLine.getNumber());
 		setFrameSurfaceProperty(frameSurfacePropertyPanel.getSurfaceProperty());
