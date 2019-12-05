@@ -68,7 +68,7 @@ public class SetOfEquidistantParallelPlanes extends SetOfSurfaces
 	{
 		return new Plane(
 				"Plane #"+i,	// description
-				Vector3D.sum(p, n.getWithLength(i*s)),	// point on plane
+				Vector3D.sum(p, n.getProductWith(i*s)),	// point on plane
 				n,	// normal
 				null,	// surface property
 				null,	// parent
@@ -105,7 +105,7 @@ public class SetOfEquidistantParallelPlanes extends SetOfSurfaces
 	public int getVoxelIndex(Vector3D position)
 	{
 		// System.out.println("position = "+position+", getPlaneIndex= " + getPlaneIndex(position));
-		return (int)(Math.floor(getSurfaceIndex(position)));
+		return (int)(Math.floor(getSurfaceIndex(position)+1));
 	}
 
 	

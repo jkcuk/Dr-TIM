@@ -26,19 +26,19 @@ import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
-import optics.raytrace.GUI.lowLevel.Vector2DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableParametrisedPlane;
 import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
+import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.SceneException;
 
 
 /**
- * Pixellation explorer 2.0
+ * Pixellation explorer 2.1
  * Now includes a lens that enables focussing to remove ray-offset effects.
  */
-public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
+public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 {   
 	// a few units
 	public static final double CM = 1e-2;
@@ -48,9 +48,8 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 	
 	private enum PixellatedComponentType
 	{
-		IDEALISED("Idealised"),
-		IDEAL_CLAs("Ideal CLAs"),
-		HOLO_CLAs("Holographic CLAs");
+		BLUR_ONLY("Idealised blur only"),
+		CLAs("CLAs");
 		
 		private String description;
 		private PixellatedComponentType(String description) {this.description = description;}
@@ -62,7 +61,24 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 	 * Determines the simulated component type
 	 */
 	private PixellatedComponentType pixellatedComponentType;
+
+	private enum CLALensType
+	{
+		IDEAL("Ideal lenses"),
+		HOLOGRAPHIC("Holographic lenses"),
+		NONE("None");
+		
+		private String description;
+		private CLALensType(String description) {this.description = description;}
+		@Override
+		public String toString() {return description;}
+	}
 	
+	/**
+	 * Determines the simulated component type
+	 */
+	private CLALensType claLensType;
+
 	/**
 	 * for CLAs, show the baffles?
 	 */
@@ -132,7 +148,7 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 	private enum InitType
 	{
 		STANDARD("Standard scenes"),
-		CUSTOM("Custom scene");
+		CUSTOM("Test image");
 		
 		private String description;
 		private InitType(String description) {this.description = description;}
@@ -166,7 +182,7 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 	 * Constructor.
 	 * Sets all parameters.
 	 */
-	public PixellationEffectsExplorer2_0()
+	public PixellationEffectsExplorer2_1()
 	{
 		super();
 		
@@ -175,27 +191,57 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		
 		renderQuality = RenderQualityEnum.STANDARD;
 		
+//		// experiment initialisation
+//		initType = InitType.CUSTOM;
+//		studioInitialisation = StudioInitialisationType.DISTANCE_LABELLED_PLANES_1;	// the backdrop
+//		testImage = TestImage.USAF_TEST_CHART_Thorlabs;
+//		testImageZ = 83*CM;
+//		testImageCentreX = -1.5*CM;
+//		testImageCentreY = -1.1*CM;
+//		testImageHeight = 8*CM;
+//		
+//		showPixelChannelingLens = true;
+//		pixelChannelingLensZ = 56*CM;	// MyMath.TINY;
+//		pixelChannelingLensF = testImageZ - pixelChannelingLensZ;
+//		
+//		// set all parameters
+//		pixellatedComponentType = PixellatedComponentType.CLAs;
+//		claLensType = CLALensType.IDEAL;
+//		
+//		pixelSideLengthX = .54*CM;
+//		pixelSideLengthY = .7*CM;
+//		pixellatedPlaneZ = 30*CM;
+//		simulateDiffractiveBlur = true;
+//		simulateRayOffsetBlur = true;
+//		wavelength = 633*NM;	// lambda; 564nm is the wavelength at which the human eye is most sensitive -- see http://hypertextbook.com/facts/2007/SusanZhao.shtml
+//		closerLensletArrayF = 4*CM;
+//		fartherLensletArrayF = 4*CM;
+//		showBaffles = true;
+
+		// paper initialisation
 		initType = InitType.CUSTOM;
 		studioInitialisation = StudioInitialisationType.DISTANCE_LABELLED_PLANES_1;	// the backdrop
 		testImage = TestImage.USAF_TEST_CHART_Thorlabs;
-		testImageZ = 83*CM;
-		testImageCentreX = -1.5*CM;
-		testImageCentreY = -1.1*CM;
+		testImageZ = 50*CM;
+		testImageCentreX = 0*CM;
+		testImageCentreY = 0*CM;
 		testImageHeight = 8*CM;
 		
 		showPixelChannelingLens = true;
-		pixelChannelingLensF = 27*CM;
-		pixelChannelingLensZ = 56*CM;	// MyMath.TINY;
+		pixelChannelingLensZ = 15*CM;	// MyMath.TINY;
+		pixelChannelingLensF = testImageZ - pixelChannelingLensZ;
 		
 		// set all parameters
-		pixellatedComponentType = PixellatedComponentType.IDEAL_CLAs;
-		pixelSideLengthX = .54*CM;
-		pixelSideLengthY = .7*CM;
-		pixellatedPlaneZ = 30*CM;
+		pixellatedComponentType = PixellatedComponentType.CLAs;
+		claLensType = CLALensType.IDEAL;
+		
+		pixelSideLengthX = 1*CM;
+		pixelSideLengthY = 1*CM;
+		pixellatedPlaneZ = 10*CM;
 		simulateDiffractiveBlur = true;
 		simulateRayOffsetBlur = true;
 		wavelength = 633*NM;	// lambda; 564nm is the wavelength at which the human eye is most sensitive -- see http://hypertextbook.com/facts/2007/SusanZhao.shtml
-		closerLensletArrayF = 4*CM;
+		closerLensletArrayF = -2*CM;
 		fartherLensletArrayF = 4*CM;
 		showBaffles = true;
 
@@ -227,45 +273,46 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 	{
 		String s = "PixellationEffectExplorer2";
 		
-		// the name of the pixellation component, ...
-		s += " "+pixellatedComponentType.toString();
-		
-		// ... the common parameters, ...
-		s += " pixel sidelengthX="+pixelSideLengthX/CM+"cm"
-			+" pixel sidelengthY="+pixelSideLengthY/CM+"cm"
-			+" pixellatedPlaneDistance="+pixellatedPlaneZ/CM+"cm";
-
-		// ... and the component-specific parameters
-		switch(pixellatedComponentType)
-		{
-		case IDEALISED:
-			s += " diffractive blur "+(simulateDiffractiveBlur?"on":"off")
-				+" ray-offset blur "+(simulateRayOffsetBlur?"on":"off")
-				+" wavelength="+wavelength/NM+"nm";
-			break;
-		case IDEAL_CLAs:
-		case HOLO_CLAs:
-			s += " closerLensletArrayF "+closerLensletArrayF/CM+"cm"
-				+" fartherLensletArrayF "+fartherLensletArrayF/CM+"cm"
-				+" showBaffles = "+showBaffles;
-		}
-		
-		// the offset-focussing lens
-		if(showPixelChannelingLens)
-		{
-			s += " pixelChannelingLensF="+pixelChannelingLensF/CM+"cm"
-				+" pixelChannelingLensZ="+pixelChannelingLensZ/CM+"cm";
-		}
-		
-		// and finally the background
-		switch(initType)
-		{
-		case CUSTOM:
-			s += " testImage="+testImage+"@(x,y,z)=("+testImageCentreX+","+testImageCentreY+","+testImageZ+")&height="+testImageHeight;
-			break;
-		case STANDARD:
-			s += " "+studioInitialisation.toString();
-		}
+//		// the name of the pixellation component, ...
+//		s += " "+pixellatedComponentType.toString();
+//		
+//		// ... the common parameters, ...
+//		s += " pixel sidelengthX="+pixelSideLengthX/CM+"cm"
+//			+" pixel sidelengthY="+pixelSideLengthY/CM+"cm"
+//			+" pixellatedPlaneDistance="+pixellatedPlaneZ/CM+"cm";
+//
+//		// ... and the component-specific parameters
+//		switch(pixellatedComponentType)
+//		{
+//		case IDEALISED:
+//			s += " ray-offset blur "+(simulateRayOffsetBlur?"on":"off");
+//			break;
+//		case CLAs:
+//			s += " closerLensletArrayF "+closerLensletArrayF/CM+"cm"
+//				+" fartherLensletArrayF "+fartherLensletArrayF/CM+"cm"
+//				+" CLALensType "+claLensType
+//				+" showBaffles = "+showBaffles;
+//		}
+//		s += " diffractive blur "+(simulateDiffractiveBlur?"on":"off")
+//				+" wavelength="+wavelength/NM+"nm";
+//
+//		
+//		// the offset-focussing lens
+//		if(showPixelChannelingLens)
+//		{
+//			s += " pixelChannelingLensF="+pixelChannelingLensF/CM+"cm"
+//				+" pixelChannelingLensZ="+pixelChannelingLensZ/CM+"cm";
+//		}
+//		
+//		// and finally the background
+//		switch(initType)
+//		{
+//		case CUSTOM:
+//			s += " testImage="+testImage+"@(x,y,z)=("+testImageCentreX+","+testImageCentreY+","+testImageZ+")&height="+testImageHeight;
+//			break;
+//		case STANDARD:
+//			s += " "+studioInitialisation.toString();
+//		}
 		
 		return s;
 	}
@@ -274,71 +321,72 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 	public void writeParameters(PrintStream printStream)
 	{
 		// write any parameters not defined in NonInteractiveTIMEngine
-		printStream.println("Scene initialisation");
+		printStream.println(renderQuality+" (Render quality)");
+
+		// printStream.println("*** Scene initialisation*** ");
 		printStream.println();
 		
-		printStream.println("initType = "+initType);
+		printStream.println(initType+" (Initialisation type)");
 		switch(initType)
 		{
 		case CUSTOM:
-			printStream.println("testImage = "+testImage);
-			printStream.println("testImageCentreX = "+testImageCentreX);
-			printStream.println("testImageCentreY = "+testImageCentreY);
-			printStream.println("testImageZ = "+testImageZ);
-			printStream.println("testImageHeight = "+testImageHeight);
+			printStream.println("Test image "+testImage);
+			printStream.println("Distance from camera "+testImageZ/CM+" cm");
+			printStream.println("Transverse offset ("+testImageCentreX/CM+" cm ,"+testImageCentreY/CM+" cm)");
+			printStream.println("Height = "+testImageHeight/CM+" cm");
 			break;
 		case STANDARD:
-			printStream.println("studioInitialisation = "+studioInitialisation);			
+			printStream.println("Scene "+studioInitialisation);			
 		}
 		
 		printStream.println();
-		printStream.println("Anti-offset lens");
+		printStream.println("Pixel-channeling lens");
 		printStream.println();
 
-		printStream.println("showPixelChannelingLens = "+showPixelChannelingLens);
+		printStream.println("Show "+showPixelChannelingLens);
 		if(showPixelChannelingLens)
 		{
-			printStream.println("pixelChannelingLensF = "+pixelChannelingLensF);
-			printStream.println("pixelChannelingLensZ = "+pixelChannelingLensZ);
+			printStream.println("Focal length "+pixelChannelingLensF/CM+" cm");
+			printStream.println("Distance from camera "+pixelChannelingLensZ/CM+" cm");
 		}
 		
 		printStream.println();
 		printStream.println("Pixellated component");
 		printStream.println();
 
-		printStream.println("pixellatedComponentType = "+pixellatedComponentType);
-		printStream.println("pixellatedPlaneZ = "+pixellatedPlaneZ);
+		printStream.println("Pixel size "+pixelSideLengthX/CM+" cm x"+pixelSideLengthY/CM+" cm");
+		printStream.println("Distance from camera "+pixellatedPlaneZ/CM+" cm");
+
+		printStream.println("Component type "+pixellatedComponentType);
 		switch(pixellatedComponentType)
 		{
-		case IDEALISED:
-			printStream.println("pixelSideLength = (pixelSideLengthX+pixelSideLengthY)/2 ="+0.5*(pixelSideLengthX+pixelSideLengthY));
-			printStream.println("simulateRayOffsetBlur = "+simulateRayOffsetBlur);
-			printStream.println("simulateDiffractiveBlur = "+simulateDiffractiveBlur);
-			if(simulateDiffractiveBlur)
-				printStream.println("wavelength = "+wavelength);	// +" (simulateDiffractiveBlur=true only)");
+		case BLUR_ONLY:
+			printStream.println("Simulate ray-offset blur "+simulateRayOffsetBlur);
 			break;
-		case IDEAL_CLAs:
-		case HOLO_CLAs:
-			printStream.println("pixelSideLengthX = "+pixelSideLengthX);
-			printStream.println("pixelSideLengthY = "+pixelSideLengthY);
-			printStream.println("closerLensletArrayF = "+closerLensletArrayF);
-			printStream.println("fartherLensletArrayF = "+fartherLensletArrayF);
-			printStream.println("showBaffles = "+showBaffles);
+		case CLAs:
+			printStream.println("Focal length of farther lenslet array "+fartherLensletArrayF/CM+" cm");
+			printStream.println("Focal length of closer lenslet array "+closerLensletArrayF/CM+" cm");
+			printStream.println("Lens type "+claLensType);
+			printStream.println("Show baffles "+showBaffles);
 		}
+		printStream.println("Simulate diffractive blur "+simulateDiffractiveBlur);
+		if(simulateDiffractiveBlur)
+			printStream.println("wavelength "+wavelength/NM+"nm");	// +" (simulateDiffractiveBlur=true only)");
 		
 		printStream.println();
-		printStream.println("Other");
+		printStream.println("Camera");
 		printStream.println();
 
-		printStream.println("focusObjectZ = "+focusObjectZ);
+		printStream.println("Aperture centre ("+cameraApertureCentreX/CM+" cm, "+cameraApertureCentreY/CM+" cm, 0)");
+		printStream.println("Horizontal FOV "+cameraHorizontalFOVDeg+"°");
+		printStream.println("Camera aperture "+cameraApertureSize+"*"+apertureRadiusFactor);
+		printStream.println("Focussing distance "+cameraFocussingDistance/CM+" cm");
+		printStream.println("[Focus on images due to individual telescopes] or [Focus on integral image] of plane a distance "+focusObjectZ/CM+" cm from camera");
 		
-		// camera
-		printStream.println("cameraApertureCentreX = "+cameraApertureCentreX);
-		printStream.println("cameraApertureCentreY = "+cameraApertureCentreY);
-		printStream.println("apertureRadiusFactor = "+apertureRadiusFactor);
+		printStream.println("Camera exposure compensation "+cameraExposureCompensation);
 	
 		// write all parameters defined in NonInteractiveTIMEngine
-		super.writeParameters(printStream);
+		// super.writeParameters(printStream);
 	}
 
 	
@@ -458,7 +506,7 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 
 		switch(pixellatedComponentType)
 		{
-		case IDEALISED:
+		case BLUR_ONLY:
 			scene.addSceneObject(new EditableParametrisedPlane(
 					"pixellated plane",	// description
 					new Vector3D(0, 0, pixellatedPlaneZ),	// pointOnPlane
@@ -491,20 +539,79 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 					studio
 					));
 			break;
-		case IDEAL_CLAs:
+		case CLAs:
+			SurfaceProperty fartherLASurfaceProperty, closerLASurfaceProperty;
+			
+			switch(claLensType)
+			{
+			case NONE:
+				fartherLASurfaceProperty = Transparent.PERFECT;
+				closerLASurfaceProperty = Transparent.PERFECT;
+				break;
+			case HOLOGRAPHIC:
+				Vector3D fartherLensletArrayCentre = new Vector3D(0, 0, pixellatedPlaneZ+fartherLensletArrayF);
+				fartherLASurfaceProperty = new PhaseHologramOfRectangularLensletArraySimple(
+						fartherLensletArrayCentre,	// centre
+						Vector3D.X,	// uHat
+						Vector3D.Y,	// vHat
+						fartherLensletArrayF,	// focalLength
+						pixelSideLengthX,	// uPeriod
+						pixelSideLengthY,	// vPeriod
+						0,	// uOffset
+						0,	// vOffset
+						((Math.abs(fartherLensletArrayF) > Math.abs(closerLensletArrayF))?simulateDiffractiveBlur:false),	// simulate diffractive blur here only if this is the array with the larger |f|
+						wavelength,
+						1,	// throughputCoefficient
+						false,	// reflective
+						false	// shadowThrowing
+					);
+				Vector3D closerLensletArrayCentre = new Vector3D(0, 0, pixellatedPlaneZ-closerLensletArrayF);
+				closerLASurfaceProperty = new PhaseHologramOfRectangularLensletArraySimple(
+						closerLensletArrayCentre,	// centre
+						Vector3D.X,	// uHat
+						Vector3D.Y,	// vHat
+						closerLensletArrayF,	// focalLength
+						pixelSideLengthX,	// uPeriod
+						pixelSideLengthY,	// vPeriod
+						0,	// uOffset
+						0,	// vOffset
+						((Math.abs(closerLensletArrayF) > Math.abs(fartherLensletArrayF))?simulateDiffractiveBlur:false),	// simulate diffractive blur here only if this is the array with the larger |f|
+						wavelength,
+						1,	// throughputCoefficient
+						false,	// reflective
+						false	// shadowThrowing
+					);
+				break;
+			case IDEAL:
+			default:
+				fartherLASurfaceProperty = new RectangularIdealThinLensletArray(
+						fartherLensletArrayF,	// focalLength
+						pixelSideLengthX,	// xPeriod
+						pixelSideLengthY,	// yPeriod
+						0,	// xOffset
+						0,	// yOffset
+						((Math.abs(fartherLensletArrayF) > Math.abs(closerLensletArrayF))?simulateDiffractiveBlur:false),	// simulate diffractive blur here only if this is the array with the larger |f|
+						wavelength,
+						1,	// transmissionCoefficient
+						false	// shadowThrowing
+					);
+				closerLASurfaceProperty = new RectangularIdealThinLensletArray(
+						closerLensletArrayF,	// focalLength
+						pixelSideLengthX,	// xPeriod
+						pixelSideLengthY,	// yPeriod
+						0,	// xOffset
+						0,	// yOffset
+						((Math.abs(closerLensletArrayF) > Math.abs(fartherLensletArrayF))?simulateDiffractiveBlur:false),	// simulate diffractive blur here only if this is the array with the larger |f|
+						wavelength,
+						1,	// transmissionCoefficient
+						false	// shadowThrowing
+					);
+			}
 			scene.addSceneObject(new EditableParametrisedPlane(
 					"farther lenslet array",	// description
 					new Vector3D(0, 0, pixellatedPlaneZ+fartherLensletArrayF),	// pointOnPlane
 					Vector3D.X, Vector3D.Y,	// planeNormal,	// normal
-					new RectangularIdealThinLensletArray(
-							fartherLensletArrayF,	// focalLength
-							pixelSideLengthX,	// xPeriod
-							pixelSideLengthY,	// yPeriod
-							0,	// xOffset
-							0,	// yOffset
-							1,	// transmissionCoefficient
-							false	// shadowThrowing
-						),
+					fartherLASurfaceProperty,
 					scene,
 					studio
 					));
@@ -513,66 +620,11 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 					"closer lenslet array",	// description
 					new Vector3D(0, 0, pixellatedPlaneZ-closerLensletArrayF),	// pointOnPlane
 					Vector3D.X, Vector3D.Y,	// planeNormal,	// normal
-					new RectangularIdealThinLensletArray(
-							closerLensletArrayF,	// focalLength
-							pixelSideLengthX,	// xPeriod
-							pixelSideLengthY,	// yPeriod
-							0,	// xOffset
-							0,	// yOffset
-							1,	// transmissionCoefficient
-							false	// shadowThrowing
-						),
+					closerLASurfaceProperty,
 					scene,
 					studio
 					));
 			
-			scene.addSceneObject(baffledVolume, showBaffles);
-			break;
-		case HOLO_CLAs:
-			Vector3D fartherLensletArrayCentre = new Vector3D(0, 0, pixellatedPlaneZ+fartherLensletArrayF);
-			scene.addSceneObject(new EditableParametrisedPlane(
-					"farther lenslet array",	// description
-					fartherLensletArrayCentre,	// pointOnPlane
-					Vector3D.X, Vector3D.Y,	// planeNormal,	// normal
-					new PhaseHologramOfRectangularLensletArraySimple(
-							fartherLensletArrayCentre,	// centre
-							Vector3D.X,	// uHat
-							Vector3D.Y,	// vHat
-							fartherLensletArrayF,	// focalLength
-							pixelSideLengthX,	// uPeriod
-							pixelSideLengthY,	// vPeriod
-							0,	// uOffset
-							0,	// vOffset
-							1,	// throughputCoefficient
-							false,	// reflective
-							false	// shadowThrowing
-						),
-					scene,
-					studio
-					));
-
-			Vector3D closerLensletArrayCentre = new Vector3D(0, 0, pixellatedPlaneZ-closerLensletArrayF);
-			scene.addSceneObject(new EditableParametrisedPlane(
-					"closer lenslet array",	// description
-					closerLensletArrayCentre,	// pointOnPlane
-					Vector3D.X, Vector3D.Y,	// planeNormal,	// normal
-					new PhaseHologramOfRectangularLensletArraySimple(
-							closerLensletArrayCentre,	// centre
-							Vector3D.X,	// uHat
-							Vector3D.Y,	// vHat
-							closerLensletArrayF,	// focalLength
-							pixelSideLengthX,	// uPeriod
-							pixelSideLengthY,	// vPeriod
-							0,	// uOffset
-							0,	// vOffset
-							1,	// throughputCoefficient
-							false,	// reflective
-							false	// shadowThrowing
-						),
-					scene,
-					studio
-					));
-
 			scene.addSceneObject(baffledVolume, showBaffles);
 		}
 
@@ -638,13 +690,12 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		// if the CLAs are present...
 		switch(pixellatedComponentType)
 		{
-		case HOLO_CLAs:
-		case IDEAL_CLAs:
+		case CLAs:
 			// ... the two lenses successively re-image as follows
 			z = calculateImageZ(z, pixellatedPlaneZ+fartherLensletArrayF, fartherLensletArrayF);
 			z = calculateImageZ(z, pixellatedPlaneZ-closerLensletArrayF, closerLensletArrayF);
 			break;
-		case IDEALISED:
+		case BLUR_ONLY:
 		default:
 		}
 		
@@ -671,14 +722,13 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		// if the CLAs are present...
 		switch(pixellatedComponentType)
 		{
-		case HOLO_CLAs:
-		case IDEAL_CLAs:
+		case CLAs:
 			// ... the CLAs re-image as follows
 			double objectDistance = z - (pixellatedPlaneZ+fartherLensletArrayF);
 			double imageDistance = objectDistance * closerLensletArrayF / fartherLensletArrayF;
 			z = (pixellatedPlaneZ-closerLensletArrayF) - imageDistance;
 			break;
-		case IDEALISED:
+		case BLUR_ONLY:
 		default:
 		}
 		
@@ -697,6 +747,8 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 	//
 	
 	private DoublePanel
+		testImageCentreXCMPanel,
+		testImageCentreYCMPanel,
 		pixelSideLengthXCMPanel,
 		pixelSideLengthYCMPanel,
 		closerLensletArrayFCMPanel,
@@ -708,8 +760,9 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		testImageZCMPanel,
 		testImageHeightCMPanel,
 		focusObjectZCMPanel;
-	private Vector2DPanel testImageCentreXYCMPanel;
-	private JCheckBox simulateDiffractiveBlurCheckBox, simulateRayOffsetBlurCheckBox, showPixelChannelingLensCheckBox, idealCLAsCheckBox, showBafflesCheckBox;
+	// private Vector2DPanel testImageCentreXYCMPanel;
+	private JCheckBox simulateDiffractiveBlurCheckBox, simulateRayOffsetBlurCheckBox, showPixelChannelingLensCheckBox, showBafflesCheckBox;	// , idealCLAsCheckBox;
+	private JComboBox<CLALensType> claLensTypeComboBox;
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 	private JComboBox<TestImage> testImageComboBox;
 	private JTabbedPane pixellatedComponentTabbedPane, sceneTabbedPane;
@@ -743,7 +796,7 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		standardScenesPanel.setLayout(new MigLayout("insets 0"));
 		sceneTabbedPane.addTab("Standard scenes", standardScenesPanel);
 
-		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesAndCustomForBackgrounds);
+		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
 		// studioInitialisationComboBox.addItem(StudioInitialisationType.CUSTOM);
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
 		standardScenesPanel.add(GUIBitsAndBobs.makeRow("Scene", studioInitialisationComboBox), "span");
@@ -760,15 +813,21 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 
 		testImageZCMPanel = new DoublePanel();
 		testImageZCMPanel.setNumber(testImageZ/CM);
-		customScenePanel.add(GUIBitsAndBobs.makeRow("Distance from camera", testImageZCMPanel, "cm"), "span");
+		customScenePanel.add(GUIBitsAndBobs.makeRow("Distance from camera", testImageZCMPanel, " cm"), "span");
 		
-		testImageCentreXYCMPanel = new Vector2DPanel();
-		testImageCentreXYCMPanel.setVector2D(testImageCentreX/CM, testImageCentreY/CM);
-		customScenePanel.add(GUIBitsAndBobs.makeRow("Transverse offset", testImageCentreXYCMPanel, "cm"), "span");
+		testImageCentreXCMPanel = new DoublePanel();
+		testImageCentreXCMPanel.setNumber(testImageCentreX/CM);
+		testImageCentreYCMPanel = new DoublePanel();
+		testImageCentreYCMPanel.setNumber(testImageCentreY/CM);
+		customScenePanel.add(GUIBitsAndBobs.makeRow("Transverse offset (", testImageCentreXCMPanel, " cm,", testImageCentreYCMPanel, " cm)"), "span");
+
+//		testImageCentreXYCMPanel = new Vector2DPanel();
+//		testImageCentreXYCMPanel.setVector2D(testImageCentreX/CM, testImageCentreY/CM);
+//		customScenePanel.add(GUIBitsAndBobs.makeRow("Transverse offset", testImageCentreXYCMPanel, " cm"), "span");
 
 		testImageHeightCMPanel = new DoublePanel();
 		testImageHeightCMPanel.setNumber(testImageHeight/CM);
-		customScenePanel.add(GUIBitsAndBobs.makeRow("Height", testImageHeightCMPanel, "cm"), "span");
+		customScenePanel.add(GUIBitsAndBobs.makeRow("Height", testImageHeightCMPanel, " cm"), "span");
 		
 		if(initType == InitType.STANDARD) sceneTabbedPane.setSelectedIndex(0);
 		else sceneTabbedPane.setSelectedIndex(1);
@@ -789,11 +848,11 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 
 		pixelChannelingLensFPanel = new DoublePanel();
 		pixelChannelingLensFPanel.setNumber(pixelChannelingLensF/CM);
-		pixelChannelingLensPanel.add(GUIBitsAndBobs.makeRow("Focal length", pixelChannelingLensFPanel, "cm"), "span");
+		pixelChannelingLensPanel.add(GUIBitsAndBobs.makeRow("Focal length", pixelChannelingLensFPanel, " cm"), "span");
 		
 		pixelChannelingLensZCMPanel = new DoublePanel();
 		pixelChannelingLensZCMPanel.setNumber(pixelChannelingLensZ/CM);
-		pixelChannelingLensPanel.add(GUIBitsAndBobs.makeRow("Distance from camera", pixelChannelingLensZCMPanel, "cm"), "span");
+		pixelChannelingLensPanel.add(GUIBitsAndBobs.makeRow("Distance from camera", pixelChannelingLensZCMPanel, " cm"), "span");
 
 
 		//
@@ -810,11 +869,11 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		pixelSideLengthXCMPanel.setNumber(pixelSideLengthX/CM);
 		pixelSideLengthYCMPanel = new DoublePanel();
 		pixelSideLengthYCMPanel.setNumber(pixelSideLengthY/CM);
-		pixellatedComponentPanel.add(GUIBitsAndBobs.makeRow("Pixel size ", pixelSideLengthXCMPanel, "cm x ", pixelSideLengthYCMPanel, "cm"), "span");
+		pixellatedComponentPanel.add(GUIBitsAndBobs.makeRow("Pixel size ", pixelSideLengthXCMPanel, " cm x ", pixelSideLengthYCMPanel, " cm"), "span");
 
 		pixellatedPlaneZCMPanel = new DoublePanel();
 		pixellatedPlaneZCMPanel.setNumber(pixellatedPlaneZ/CM);
-		pixellatedComponentPanel.add(GUIBitsAndBobs.makeRow("Distance from camera", pixellatedPlaneZCMPanel, "cm"), "span");
+		pixellatedComponentPanel.add(GUIBitsAndBobs.makeRow("Distance from camera", pixellatedPlaneZCMPanel, " cm"), "span");
 		
 
 		// pixellated-component tabbed pane
@@ -827,19 +886,19 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		
 		JPanel idealisedPixellatedComponentPanel = new JPanel();
 		idealisedPixellatedComponentPanel.setLayout(new MigLayout("insets 0"));
-		pixellatedComponentTabbedPane.addTab(PixellatedComponentType.IDEALISED.toString(), idealisedPixellatedComponentPanel);
+		pixellatedComponentTabbedPane.addTab(PixellatedComponentType.BLUR_ONLY.toString(), idealisedPixellatedComponentPanel);
 
-		simulateDiffractiveBlurCheckBox = new JCheckBox("Simulate diffractive blur");
-		simulateDiffractiveBlurCheckBox.setSelected(simulateDiffractiveBlur);
-		idealisedPixellatedComponentPanel.add(simulateDiffractiveBlurCheckBox, "span");
-
+//		simulateDiffractiveBlurCheckBox = new JCheckBox("Simulate diffractive blur");
+//		simulateDiffractiveBlurCheckBox.setSelected(simulateDiffractiveBlur);
+//		idealisedPixellatedComponentPanel.add(simulateDiffractiveBlurCheckBox, "span");
+//
 		simulateRayOffsetBlurCheckBox = new JCheckBox("Simulate ray-offset blur");
 		simulateRayOffsetBlurCheckBox.setSelected(simulateRayOffsetBlur);
 		idealisedPixellatedComponentPanel.add(simulateRayOffsetBlurCheckBox, "span");
 
-		wavelengthNMPanel = new DoublePanel();
-		wavelengthNMPanel.setNumber(wavelength/NM);
-		idealisedPixellatedComponentPanel.add(GUIBitsAndBobs.makeRow("Wavelength", wavelengthNMPanel, "nm"), "span");
+//		wavelengthNMPanel = new DoublePanel();
+//		wavelengthNMPanel.setNumber(wavelength/NM);
+//		idealisedPixellatedComponentPanel.add(GUIBitsAndBobs.makeRow("Wavelength", wavelengthNMPanel, "nm"), "span");
 
 		
 		//
@@ -852,15 +911,19 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 
 		fartherLensletArrayFCMPanel = new DoublePanel();
 		fartherLensletArrayFCMPanel.setNumber(fartherLensletArrayF/CM);
-		CLAsPanel.add(GUIBitsAndBobs.makeRow("Focal length of farther lenslet array", fartherLensletArrayFCMPanel, "cm"), "span");
+		CLAsPanel.add(GUIBitsAndBobs.makeRow("Focal length of farther lenslet array", fartherLensletArrayFCMPanel, " cm"), "span");
 
 		closerLensletArrayFCMPanel = new DoublePanel();
 		closerLensletArrayFCMPanel.setNumber(closerLensletArrayF/CM);
-		CLAsPanel.add(GUIBitsAndBobs.makeRow("Focal length of closer lenslet array", closerLensletArrayFCMPanel, "cm"), "span");
+		CLAsPanel.add(GUIBitsAndBobs.makeRow("Focal length of closer lenslet array", closerLensletArrayFCMPanel, " cm"), "span");
 
-		idealCLAsCheckBox = new JCheckBox("Ideal lenses? (Otherwise: holographic)");
-		idealCLAsCheckBox.setSelected(simulateRayOffsetBlur);
-		CLAsPanel.add(idealCLAsCheckBox, "span");
+		claLensTypeComboBox = new JComboBox<CLALensType>(CLALensType.values());
+		claLensTypeComboBox.setSelectedItem(claLensType);
+		CLAsPanel.add(GUIBitsAndBobs.makeRow("Lens type", claLensTypeComboBox), "span");
+
+//		idealCLAsCheckBox = new JCheckBox("Ideal lenses? (Otherwise: holographic)");
+//		idealCLAsCheckBox.setSelected(simulateRayOffsetBlur);
+//		CLAsPanel.add(idealCLAsCheckBox, "span");
 		
 		showBafflesCheckBox = new JCheckBox("Show baffles");
 		showBafflesCheckBox.setSelected(showBaffles);
@@ -870,18 +933,28 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		// set pixellated component type
 		switch(pixellatedComponentType)
 		{
-		case IDEALISED:
+		case BLUR_ONLY:
 			pixellatedComponentTabbedPane.setSelectedIndex(0);
 			break;
-		case IDEAL_CLAs:
-			pixellatedComponentTabbedPane.setSelectedIndex(1);
-			idealCLAsCheckBox.setSelected(true);
-			break;
-		case HOLO_CLAs:
+//		case IDEAL_CLAs:
+		case CLAs:
 		default:
 			pixellatedComponentTabbedPane.setSelectedIndex(1);
-			idealCLAsCheckBox.setSelected(false);
+			// idealCLAsCheckBox.setSelected(true);
+//			break;
+//		case HOLO_CLAs:
+//		default:
+//			pixellatedComponentTabbedPane.setSelectedIndex(1);
+//			idealCLAsCheckBox.setSelected(false);
 		}
+
+		simulateDiffractiveBlurCheckBox = new JCheckBox("Simulate diffractive blur,");
+		simulateDiffractiveBlurCheckBox.setSelected(simulateDiffractiveBlur);
+		// pixellatedComponentPanel.add(simulateDiffractiveBlurCheckBox, "span");
+
+		wavelengthNMPanel = new DoublePanel();
+		wavelengthNMPanel.setNumber(wavelength/NM);
+		pixellatedComponentPanel.add(GUIBitsAndBobs.makeRow(simulateDiffractiveBlurCheckBox, "wavelength", wavelengthNMPanel, "nm"), "span");
 
 		
 		// camera stuff
@@ -899,7 +972,7 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		cameraApertureCentreXPanel.setNumber(cameraApertureCentreX);
 		cameraApertureCentreYPanel = new DoublePanel();
 		cameraApertureCentreYPanel.setNumber(cameraApertureCentreY);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Aperture centre (", cameraApertureCentreXPanel, "cm,", cameraApertureCentreYPanel, "cm, 0)"), "span");
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Aperture centre (", cameraApertureCentreXPanel, " cm,", cameraApertureCentreYPanel, " cm, 0)"), "span");
 		
 		cameraHorizontalFOVDegPanel = new DoublePanel();
 		cameraHorizontalFOVDegPanel.setNumber(cameraHorizontalFOVDeg);
@@ -913,7 +986,7 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		
 		cameraFocussingDistanceCMPanel = new DoublePanel(DoublePanel.SCIENTIFIC_PATTERN);
 		cameraFocussingDistanceCMPanel.setNumber(cameraFocussingDistance/CM);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Focussing distance", cameraFocussingDistanceCMPanel, "cm"), "span");
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Focussing distance", cameraFocussingDistanceCMPanel, " cm"), "span");
 		
 		focusCameraOnIndividualTelescopeImagesButton = new JButton("Focus on images due to individual telescopes");
 		focusCameraOnIndividualTelescopeImagesButton.addActionListener(this);
@@ -923,7 +996,7 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		focusObjectZCMPanel.setNumber(focusObjectZ/CM);
 		cameraPanel.add(focusCameraOnIndividualTelescopeImagesButton, "span");
 		cameraPanel.add(GUIBitsAndBobs.makeRow("or", focusCameraOnIntegralImageButton), "span");
-		cameraPanel.add(GUIBitsAndBobs.makeRow("of plane a distance", focusObjectZCMPanel, "cm from camera"), "span");
+		cameraPanel.add(GUIBitsAndBobs.makeRow("of plane a distance", focusObjectZCMPanel, " cm from camera"), "span");
 		
 		cameraExposureCompensationComboBox = new JComboBox<ExposureCompensationType>(ExposureCompensationType.values());
 		cameraExposureCompensationComboBox.setSelectedItem(cameraExposureCompensation);
@@ -955,29 +1028,35 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		testImage = (TestImage)(testImageComboBox.getSelectedItem());
 		testImageZ = testImageZCMPanel.getNumber()*CM;
-		testImageCentreX = testImageCentreXYCMPanel.getVector2D().x*CM;
-		testImageCentreY = testImageCentreXYCMPanel.getVector2D().y*CM;
+		testImageCentreX = testImageCentreXCMPanel.getNumber()*CM;
+		testImageCentreY = testImageCentreYCMPanel.getNumber()*CM;
 		testImageHeight = testImageHeightCMPanel.getNumber()*CM;
 		closerLensletArrayF = closerLensletArrayFCMPanel.getNumber()*CM;
 		fartherLensletArrayF = fartherLensletArrayFCMPanel.getNumber()*CM;
 		pixelChannelingLensZ = pixelChannelingLensZCMPanel.getNumber()*CM;
 		
 		// set pixellated component type
-		if(pixellatedComponentTabbedPane.getSelectedIndex() == 0)
+		switch(pixellatedComponentTabbedPane.getSelectedIndex())
 		{
-			pixellatedComponentType = PixellatedComponentType.IDEALISED;
+		case 0:
+			pixellatedComponentType = PixellatedComponentType.BLUR_ONLY;
+			break;
+		case 1:
+			pixellatedComponentType = PixellatedComponentType.CLAs;
 		}
-		else
-		{
-			if(idealCLAsCheckBox.isSelected())
-			{
-				pixellatedComponentType = PixellatedComponentType.IDEAL_CLAs;
-			}
-			else
-			{
-				pixellatedComponentType = PixellatedComponentType.HOLO_CLAs;
-			}
-		}
+
+		claLensType = (CLALensType)(claLensTypeComboBox.getSelectedItem());
+//		else
+//		{
+//			if(idealCLAsCheckBox.isSelected())
+//			{
+//				pixellatedComponentType = PixellatedComponentType.IDEAL_CLAs;
+//			}
+//			else
+//			{
+//				pixellatedComponentType = PixellatedComponentType.HOLO_CLAs;
+//			}
+//		}
 		showBaffles = showBafflesCheckBox.isSelected();
 		
 		// cameraViewDirection = cameraViewDirectionPanel.getVector3D();
@@ -1033,7 +1112,7 @@ public class PixellationEffectsExplorer2_0 extends NonInteractiveTIMEngine
 	 */
 	public static void main(final String[] args)
 	{
-		(new PixellationEffectsExplorer2_0()).run();
+		(new PixellationEffectsExplorer2_1()).run();
 	}
 }
 

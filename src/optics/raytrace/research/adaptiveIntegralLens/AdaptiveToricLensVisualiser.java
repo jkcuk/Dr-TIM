@@ -299,6 +299,8 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 					period,	// vPeriod
 					0,	// uOffset
 					0,	// vOffset
+					false,	// simulateDiffractiveBlur
+					632.8e-9,	// lambda
 					SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
 					false,	// reflective
 					false	// shadowThrowing
@@ -316,6 +318,8 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 					period,	// vPeriod
 					0,	// uOffset
 					0,	// vOffset
+					false,	// simulateDiffractiveBlur
+					632.8e-9,	// lambda
 					SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
 					false,	// reflective
 					false	// shadowThrowing

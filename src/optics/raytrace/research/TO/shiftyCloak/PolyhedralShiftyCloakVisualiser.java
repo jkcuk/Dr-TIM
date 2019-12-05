@@ -41,7 +41,7 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 	{
 		CUBIC("Cubic"),
 		TETRAHEDRAL("Tetrahedral"),
-		TETRAHEDRAL_ASYMMETRIC("Tetrahedral (asymmetric)");
+		TETRAHEDRAL_SIMPLICIAL("Tetrahedral (all cells simplicial)");
 
 		private String description;
 
@@ -166,7 +166,7 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 		cameraRotationAxisDirection = new Vector3D(0, 1, 0);
 
 		// the shifty cloaks
-		shiftyPolyhedralCloakType = ShiftyPolyhedralCloakType.TETRAHEDRAL_ASYMMETRIC;
+		shiftyPolyhedralCloakType = ShiftyPolyhedralCloakType.TETRAHEDRAL;
 		
 		centre = new Vector3D(0, 0, 0);
 
@@ -404,15 +404,21 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 
 		
 		// add shifty cloaks
+
+		// calculate the directions of the edges of the cubes the regular tetrahedra share four vertices with
+		Vector3D edge1 = new Vector3D( 1/Math.sqrt(2.), 1/Math.sqrt(3.),-1/Math.sqrt(6.));
+		Vector3D edge2 = new Vector3D(-1/Math.sqrt(2.), 1/Math.sqrt(3.),-1/Math.sqrt(6.));
+		Vector3D edge3 = Vector3D.crossProduct(edge1, edge2);
+
 		switch(shiftyPolyhedralCloakType)
 		{
-		case TETRAHEDRAL:
+		case TETRAHEDRAL_SIMPLICIAL:
 			cloakO = new EditableTetrahedralShiftyCloak(
 					"Outer shifty cloak",	// description
 					centre,
-					new Vector3D(1, 0, 0),	// u
-					new Vector3D(0, 1, 0),	// v
-					new Vector3D(0, 0, 1),	// w
+					edge1,	// new Vector3D(1, 0, 0),	// u
+					edge2,	// new Vector3D(0, 1, 0),	// v
+					edge3,	// new Vector3D(0, 0, 1),	// w
 					false,	// asymmetricConfiguration
 					outsideCubeSideLengthO,	// sideLength
 					insideCubeSideLengthO,	// sideLengthI
@@ -428,9 +434,9 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 			cloakI = new EditableTetrahedralShiftyCloak(
 					"Inner shifty cloak",	// description
 					centre,
-					new Vector3D(1, 0, 0),	// u
-					new Vector3D(0, 1, 0),	// v
-					new Vector3D(0, 0, -1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
+					edge1,	// new Vector3D(1, 0, 0),	// u
+					edge2,	// new Vector3D(0, 1, 0),	// v
+					edge3.getReverse(),	// new Vector3D(0, 0, -1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
 					false,	// asymmetricConfiguration
 					outsideCubeSideLengthI,	// sideLength
 					insideCubeSideLengthI,	// sideLengthI
@@ -447,9 +453,9 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 			scene.addSceneObject(new EditableTetrahedralShiftyCloak(
 					"Image of inner shifty cloak due to outer cloak",	// description
 					Vector3D.sum(centre, deltaO),
-					new Vector3D(1, 0, 0),	// u
-					new Vector3D(0, 1, 0),	// v
-					new Vector3D(0, 0, -1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
+					edge1,	// new Vector3D(1, 0, 0),	// u
+					edge2,	// new Vector3D(0, 1, 0),	// v
+					edge3.getReverse(),	// new Vector3D(0, 0, -1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
 					false,	// asymmetricConfiguration
 					outsideCubeSideLengthI,	// sideLength
 					insideCubeSideLengthI,	// sideLengthI
@@ -465,12 +471,12 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 					);
 
 			break;
-		case TETRAHEDRAL_ASYMMETRIC:
+		case TETRAHEDRAL:
 			cloakO = new EditableSimpleTetrahedralShiftyCloak(
 					"Outer shifty cloak",	// description
 					centre,
-					new Vector3D(1, 0, 0),	// u
-					new Vector3D(0, 1, 0),	// v
+					edge1,	// new Vector3D( 1/Math.sqrt(2.), 1/Math.sqrt(3.),-1/Math.sqrt(6.)),	// new Vector3D(1, 0, 0),	// u
+					edge2,	// new Vector3D(-1/Math.sqrt(2.), 1/Math.sqrt(3.),-1/Math.sqrt(6.)),	// new Vector3D(0, 1, 0),	// v
 					outsideCubeSideLengthO,	// sideLength
 					insideCubeSideLengthO,	// sideLengthI
 					deltaO,	// delta
@@ -485,8 +491,8 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 			cloakI = new EditableSimpleTetrahedralShiftyCloak(
 					"Inner shifty cloak",	// description
 					centre,
-					new Vector3D(1, 0, 0),	// u
-					new Vector3D(0, 1, 0),	// v
+					edge1,	// new Vector3D(1, 0, 0),	// u
+					edge2,	// new Vector3D(0, 1, 0),	// v
 					outsideCubeSideLengthI,	// sideLength
 					insideCubeSideLengthI,	// sideLengthI
 					deltaI,	// delta
@@ -502,8 +508,8 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 			scene.addSceneObject(new EditableSimpleTetrahedralShiftyCloak(
 					"Image of inner shifty cloak due to outer cloak",	// description
 					Vector3D.sum(centre, deltaO),
-					new Vector3D(1, 0, 0),	// u
-					new Vector3D(0, 1, 0),	// v
+					edge1,	// new Vector3D(1, 0, 0),	// u
+					edge2,	// new Vector3D(0, 1, 0),	// v
 					outsideCubeSideLengthI,	// sideLength
 					insideCubeSideLengthI,	// sideLengthI
 					deltaI,	// delta
@@ -633,13 +639,13 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 		// ... and add them again, this time showing interfaces and frames as requires
 		switch(shiftyPolyhedralCloakType)
 		{
-		case TETRAHEDRAL:
+		case TETRAHEDRAL_SIMPLICIAL:
 		cloakO = new EditableTetrahedralShiftyCloak(
 				"Outer shifty cloak",	// description
 				centre,
-				new Vector3D(1, 0, 0),	// u
-				new Vector3D(0, 1, 0),	// v
-				new Vector3D(0, 0, 1),	// w
+				edge1,	// new Vector3D(1, 0, 0),	// u
+				edge2,	// new Vector3D(0, 1, 0),	// v
+				edge3,	// new Vector3D(0, 0, 1),	// w
 				false,	// asymmetricConfiguration
 				outsideCubeSideLengthO,	// sideLength
 				insideCubeSideLengthO,	// sideLengthI
@@ -655,9 +661,9 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 		cloakI = new EditableTetrahedralShiftyCloak(
 				"Inner shifty cloak",	// description
 				centre,
-				new Vector3D(1, 0, 0),	// u
-				new Vector3D(0, 1, 0),	// v
-				new Vector3D(0, 0, -1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
+				edge1,	// new Vector3D(1, 0, 0),	// u
+				edge2,	// new Vector3D(0, 1, 0),	// v
+				edge3.getReverse(),	// new Vector3D(0, 0, -1),	// w; invert to ensure outside of inner shifty cloak has the same orientation as inside of outer shifty cloak
 				false,	// asymmetricConfiguration
 				outsideCubeSideLengthI,	// sideLength
 				insideCubeSideLengthI,	// sideLengthI
@@ -670,12 +676,12 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 				scene, studio
 			);
 		break;
-		case TETRAHEDRAL_ASYMMETRIC:
+		case TETRAHEDRAL:
 		cloakO = new EditableSimpleTetrahedralShiftyCloak(
 				"Outer shifty cloak",	// description
 				centre,
-				new Vector3D(1, 0, 0),	// u
-				new Vector3D(0, 1, 0),	// v
+				edge1,	// new Vector3D( 1/Math.sqrt(2.), 1/Math.sqrt(3.),-1/Math.sqrt(6.)),	// new Vector3D(1, 0, 0),	// u
+				edge2,	// new Vector3D(-1/Math.sqrt(2.), 1/Math.sqrt(3.),-1/Math.sqrt(6.)),	// new Vector3D(0, 1, 0),	// v
 				outsideCubeSideLengthO,	// sideLength
 				insideCubeSideLengthO,	// sideLengthI
 				deltaO,	// delta
@@ -690,8 +696,8 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 		cloakI = new EditableSimpleTetrahedralShiftyCloak(
 				"Inner shifty cloak",	// description
 				centre,
-				new Vector3D(1, 0, 0),	// u
-				new Vector3D(0, 1, 0),	// v
+				edge1,	// new Vector3D(1, 0, 0),	// u
+				edge2,	// new Vector3D(0, 1, 0),	// v
 				outsideCubeSideLengthI,	// sideLength
 				insideCubeSideLengthI,	// sideLengthI
 				deltaI,	// delta
@@ -855,7 +861,7 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 		showShiftyCloakInterfacesOCheckBox.setSelected(showShiftyCloakInterfacesO);
 		outerShiftyCloakPanel.add(showShiftyCloakInterfacesOCheckBox, "wrap");
 		
-		deltaOPanel = new LabelledVector3DPanel("Apparent shift of inner cube");
+		deltaOPanel = new LabelledVector3DPanel("Apparent shift of inner cell");
 		deltaOPanel.setVector3D(deltaO);
 		outerShiftyCloakPanel.add(deltaOPanel, "wrap");
 
@@ -887,7 +893,7 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 		showShiftyCloakInterfacesICheckBox.setSelected(showShiftyCloakInterfacesI);
 		innerShiftyCloakPanel.add(showShiftyCloakInterfacesICheckBox, "wrap");
 		
-		deltaIPanel = new LabelledVector3DPanel("Apparent shift of inner cube");
+		deltaIPanel = new LabelledVector3DPanel("Apparent shift of inner cell");
 		deltaIPanel.setVector3D(deltaI);
 		innerShiftyCloakPanel.add(deltaIPanel, "wrap");
 

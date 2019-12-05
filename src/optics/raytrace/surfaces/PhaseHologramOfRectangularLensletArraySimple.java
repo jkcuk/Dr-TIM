@@ -3,6 +3,7 @@ package optics.raytrace.surfaces;
 import math.MyMath;
 import math.Vector3D;
 import optics.raytrace.core.Orientation;
+import optics.raytrace.utility.SingleSlitDiffraction;
 
 /**
  * A phase hologram of a rectangular array of lenslets of focal length f.
@@ -52,23 +53,21 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 	 */
 	private double vOffset;
 	
+	/**
+	 * if true, add a random angle that represents diffractive blur to the direction of the outgoing light ray
+	 */
+	private boolean simulateDiffractiveBlur;
+
+	/**
+	 * wavelength of light;
+	 * used to calculate approximate magnitude of diffractive blur
+	 */
+	private double lambda;	// wavelength of light, for diffraction purposes
+
 	//
 	// constructors etc.
 	//
 
-	/**
-	 * @param centre
-	 * @param uHat
-	 * @param vHat
-	 * @param focalLength
-	 * @param uPeriod
-	 * @param vPeriod
-	 * @param uOffset
-	 * @param vOffset
-	 * @param throughputCoefficient
-	 * @param reflective
-	 * @param shadowThrowing
-	 */
 	public PhaseHologramOfRectangularLensletArraySimple(
 			Vector3D centre,
 			Vector3D uHat,
@@ -78,6 +77,8 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 			double vPeriod,
 			double uOffset,
 			double vOffset,
+			boolean simulateDiffractiveBlur,
+			double lambda,
 			double throughputCoefficient,
 			boolean reflective,
 			boolean shadowThrowing
@@ -92,6 +93,8 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 		this.vPeriod = vPeriod;
 		this.uOffset = uOffset;
 		this.vOffset = vOffset;
+		this.simulateDiffractiveBlur = simulateDiffractiveBlur;
+		this.lambda = lambda;
 	}
 
 	/**
@@ -108,6 +111,8 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 				original.getvPeriod(),
 				original.getuOffset(),
 				original.getvOffset(),
+				original.isSimulateDiffractiveBlur(),
+				original.getLambda(),
 				original.getTransmissionCoefficient(),
 				original.isReflective(),
 				original.isShadowThrowing()
@@ -189,6 +194,22 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 		this.vOffset = vOffset;
 	}
 
+	public boolean isSimulateDiffractiveBlur() {
+		return simulateDiffractiveBlur;
+	}
+
+	public void setSimulateDiffractiveBlur(boolean simulateDiffractiveBlur) {
+		this.simulateDiffractiveBlur = simulateDiffractiveBlur;
+	}
+
+	public double getLambda() {
+		return lambda;
+	}
+
+	public void setLambda(double lambda) {
+		this.lambda = lambda;
+	}
+
 	
 	//
 	// methods that do stuff
@@ -221,7 +242,20 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 		double xDerivative = (u-uOffset)-findLensletCentreCoordinate(u, uPeriod, uOffset);
 		double yDerivative = (v-vOffset)-findLensletCentreCoordinate(v, vPeriod, vOffset);
 		
-		return Vector3D.sum(uBasisVector.getProductWith(-xDerivative/focalLength), vBasisVector.getProductWith(-yDerivative/focalLength));
+		Vector3D newRayDirection = Vector3D.sum(uBasisVector.getProductWith(-xDerivative/focalLength), vBasisVector.getProductWith(-yDerivative/focalLength));
+		
+		if(simulateDiffractiveBlur)
+		{
+				return Vector3D.sum(newRayDirection, SingleSlitDiffraction.getTangentialDirectionComponentChange(
+						lambda,
+						uPeriod,	// pixelSideLengthU
+						vPeriod,	// pixelSideLengthV
+						uBasisVector,	// uHat
+						vBasisVector	// vHat
+					));
+		}
+		
+		return newRayDirection;
 	}
 
 	@Override

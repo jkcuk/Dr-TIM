@@ -1,5 +1,7 @@
 package optics.raytrace.surfaces;
 
+import java.util.ArrayList;
+
 import math.Vector2D;
 import math.Vector3D;
 import optics.DoubleColour;
@@ -10,7 +12,9 @@ import optics.raytrace.core.RaySceneObjectIntersection;
 import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.SurfacePropertyPrimitive;
+import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
+import optics.raytrace.utility.SingleSlitDiffraction;
 
 /**
  * A rectangular array of ideal thin lenslets of focal length f.
@@ -48,6 +52,18 @@ public class RectangularIdealThinLensletArray extends SurfacePropertyPrimitive
 	 */
 	private double yOffset;
 
+	/**
+	 * if true, add a random angle that represents diffractive blur to the direction of the outgoing light ray
+	 */
+	private boolean simulateDiffractiveBlur;
+
+	/**
+	 * wavelength of light;
+	 * used to calculate approximate magnitude of diffractive blur
+	 */
+	private double lambda;	// wavelength of light, for diffraction purposes
+	
+	
 	//
 	// constructors etc.
 	//
@@ -58,7 +74,8 @@ public class RectangularIdealThinLensletArray extends SurfacePropertyPrimitive
 	 * @param yPeriod
 	 * @param xOffset
 	 * @param yOffset
-	 * @param sceneObject
+	 * @param simulateDiffractiveBlur
+	 * @param lambda
 	 * @param transmissionCoefficient
 	 * @param shadowThrowing
 	 */
@@ -68,6 +85,8 @@ public class RectangularIdealThinLensletArray extends SurfacePropertyPrimitive
 			double yPeriod,
 			double xOffset,
 			double yOffset,
+			boolean simulateDiffractiveBlur,
+			double lambda,
 			double transmissionCoefficient,
 			boolean shadowThrowing
 		)
@@ -79,6 +98,8 @@ public class RectangularIdealThinLensletArray extends SurfacePropertyPrimitive
 		setyPeriod(yPeriod);
 		setxOffset(xOffset);
 		setyOffset(yOffset);
+		setSimulateDiffractiveBlur(simulateDiffractiveBlur);
+		setLambda(lambda);
 	}
 
 	public RectangularIdealThinLensletArray(RectangularIdealThinLensletArray original)
@@ -89,6 +110,8 @@ public class RectangularIdealThinLensletArray extends SurfacePropertyPrimitive
 				original.getyPeriod(),
 				original.getxOffset(),
 				original.getyOffset(),
+				original.isSimulateDiffractiveBlur(),
+				original.getLambda(),
 				original.getTransmissionCoefficient(),
 				original.isShadowThrowing()
 			);
@@ -146,6 +169,22 @@ public class RectangularIdealThinLensletArray extends SurfacePropertyPrimitive
 		this.yOffset = yOffset;
 	}
 	
+	public boolean isSimulateDiffractiveBlur() {
+		return simulateDiffractiveBlur;
+	}
+
+	public void setSimulateDiffractiveBlur(boolean simulateDiffractiveBlur) {
+		this.simulateDiffractiveBlur = simulateDiffractiveBlur;
+	}
+
+	public double getLambda() {
+		return lambda;
+	}
+
+	public void setLambda(double lambda) {
+		this.lambda = lambda;
+	}
+
 	/**
 	 * @param u	coordinate of a point on the lenslet array
 	 * @param uPeriod	period of the array, i.e. distance between the principal points of neighbouring lenslets
@@ -192,6 +231,31 @@ public class RectangularIdealThinLensletArray extends SurfacePropertyPrimitive
 		// calculate normalised new light-ray direction
 		Vector3D newRayDirection = Vector3D.difference(Q, i.p).getNormalised().getProductWith(Math.signum(getFocalLength()));
 		
+		if(simulateDiffractiveBlur)
+		{
+			// first get the surface-coordinate axes
+			ArrayList<Vector3D> surfaceCoordinateAxes = sceneObject.getSurfaceCoordinateAxes(i.p);
+			
+			try
+			{
+				newRayDirection = SingleSlitDiffraction.getDiffractedLightRayDirection(
+						newRayDirection,	// lightRayDirectionBeforeDiffraction
+						lambda,
+						xPeriod,	// pixelSideLengthU
+						yPeriod,	// pixelSideLengthV
+						surfaceCoordinateAxes.get(0),	// uHat
+						surfaceCoordinateAxes.get(1),	// vHat
+						i.o.getNormalisedOutwardsSurfaceNormal(i.p)	// normalisedApertureNormal
+						);
+			}
+			catch(EvanescentException e)
+			{
+				// this is normal -- return the reflected ray
+				// (Don't multiply by the transmission coefficient, as this is TIR!)
+				return Reflective.getReflectedColour(ray, i, scene, l, traceLevel-1, raytraceExceptionHandler);
+			}
+		}
+
 		// launch a new ray from here
 		return scene.getColourAvoidingOrigin(
 			ray.getBranchRay(i.p, newRayDirection, i.t),

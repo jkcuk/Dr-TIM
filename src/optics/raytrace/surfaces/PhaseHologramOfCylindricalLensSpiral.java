@@ -236,7 +236,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	}
 
 	@Override
-	public Vector3D getTangentialDirectionComponentChangeTransmissive(Vector3D surfacePosition,
+	public Vector3D getTangentialDirectionComponentChangeTransmissive(
+			Vector3D surfacePosition,
 			Vector3D surfaceNormal)
 	{	
 		// calculate the x and y coordinates of the position; for this to work, the scene object must be sensibly parametrised

@@ -1,7 +1,6 @@
 package optics.raytrace.research.TO.ChenBelinBlackHole;
 
 import math.MyMath;
-import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.Sphere;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
 import optics.raytrace.surfaces.SurfaceColour;
@@ -100,14 +99,18 @@ public class SpaceAroundBlackHoleSphericalShells extends SurfaceOfVoxellatedRefr
 	 * @see optics.raytrace.surfaces.SurfaceOfVoxellatedRefractor#getRefractiveIndex(int[])
 	 */
 	@Override
-	public double getRefractiveIndex(int[] voxelIndices)
-	throws Exception
+	public double getRefractiveIndex1(int[] voxelIndices)
 	{
 		// calculate the radius of the spherical shell represented by the voxel the ray is currently in
-		double r = spheres.getRadius(voxelIndices[0]-0.5);
+		double r = spheres.getRadius1(voxelIndices[0]-0.5);
+		// if the radius calculations fails, then the refractive-index calculation also fails
+		if(r <= 0.0) return Double.NaN;
+		
 		double rPlusJH = r + jParameter*horizonRadius;
 		double rMinusH = r - horizonRadius;
-		if(rMinusH == 0.) throw new RayTraceException("SpaceAroundBlackHole::getRefractiveIndex: division by zero in calculation of refractive index!");
+		if(rMinusH == 0.)
+				return Double.NaN;
+				// throw new RayTraceException("SpaceAroundBlackHole::getRefractiveIndex: division by zero in calculation of refractive index!");
 		// System.out.println("voxel index="+voxelIndices[0]+", radius ="+r+", n="+rPlusH*rPlusH*rPlusH/(r*r*rMinusH));
 		return rPlusJH*rPlusJH*rPlusJH/(r*r*rMinusH); 
 	}

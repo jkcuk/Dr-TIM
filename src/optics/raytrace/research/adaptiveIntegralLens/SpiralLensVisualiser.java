@@ -1,26 +1,32 @@
 package optics.raytrace.research.adaptiveIntegralLens;
 
 import java.awt.event.ActionEvent;
+import java.io.PrintStream;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 
 import math.*;
 import net.miginfocom.swing.MigLayout;
+import optics.raytrace.sceneObjects.Sphere;
 import optics.raytrace.sceneObjects.ParametrisedDisc.DiscParametrisationType;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.PhaseHologramOfLens;
+import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.PhaseHologramOfCylindricalLensSpiral;
 import optics.raytrace.surfaces.PhaseHologramOfCylindricalLensSpiral.CylindricalLensSpiralType;
 import optics.raytrace.exceptions.SceneException;
+import optics.DoubleColour;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
 import optics.raytrace.GUI.cameras.RenderQualityEnum;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
+import optics.raytrace.GUI.lowLevel.LabelledDoubleColourPanel;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedDisc;
@@ -44,6 +50,11 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	 * centre position
 	 */
 	private Vector3D centre;
+	
+	/**
+	 * offset of the centre of spiral lens 2 compared to where it should be
+	 */
+	private Vector3D spiralLens2AdditionalOffset;
 	
 	/**
 	 * the "b" parameter of the spiral
@@ -89,7 +100,27 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	 * Determines how to initialise the backdrop
 	 */
 	private StudioInitialisationType studioInitialisation;
+
+	/**
+	 * the centres of spheres that can be placed in the scene
+	 */
+	private Vector3D[] sphereCentres;
 	
+	/**
+	 * the radii of spheres that can be placed in the scene
+	 */
+	private double[] sphereRadii;
+	
+	/**
+	 * the colours of spheres that can be placed in the scene
+	 */
+	private DoubleColour[] sphereColours;
+	
+	/**
+	 * the visibilities of spheres that can be placed in the scene
+	 */
+	private boolean[] sphereVisibilities;
+
 	
 	/**
 	 * Constructor.
@@ -108,6 +139,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		
 		cylindricalLensSpiralType = CylindricalLensSpiralType.LOGARITHMIC;
 		centre = new Vector3D(0, 0, 0);
+		spiralLens2AdditionalOffset = new Vector3D(0, 0, 0);
 		b = 0.01;
 		f = .1;
 		fMin = -10;
@@ -119,6 +151,27 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		comparisonLensF = 28.59792;
 		
 		studioInitialisation = StudioInitialisationType.TIM_HEAD;	// the backdrop
+		
+		sphereCentres = new Vector3D[3];
+		sphereRadii = new double[3];
+		sphereColours = new DoubleColour[3];
+		sphereVisibilities = new boolean[3];
+		
+		sphereCentres[0] = new Vector3D(-0.2, 0, 1);
+		sphereRadii[0] = 0.01;
+		sphereColours[0] = new DoubleColour(1, 0, 0);
+		sphereVisibilities[0] = false;
+
+		sphereCentres[1] = new Vector3D(0, 0, 1);
+		sphereRadii[1] = 0.01;
+		sphereColours[1] = new DoubleColour(0, 1, 0);
+		sphereVisibilities[1] = false;
+
+		sphereCentres[2] = new Vector3D(.2, 0, 1);
+		sphereRadii[2] = 0.01;
+		sphereColours[2] = new DoubleColour(0, 0, 1);
+		sphereVisibilities[2] = false;
+
 
 		cameraViewDirection = new Vector3D(0, 0, 1);
 		cameraHorizontalFOVDeg = 15;
@@ -135,18 +188,56 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	@Override
 	public String getFirstPartOfFilename()
 	{
-		return "SpiralLensVisualiser"	// the name
-				+ " type="+cylindricalLensSpiralType.toString()
-				+ " centre="+centre
-				+ " b="+b
-				+ " f="+f
-				+ " fMin="+fMin
-				+ " rotationAngle="+rotationAngleDeg+"°"
-				+ " d12="+distanceOfLens2BehindLens1
-				+ (showLens1?" lens 1 shown":"")
-				+ (showLens2?" lens 2 shown":"")
-				+ (showComparisonLens?" comparison lens f="+comparisonLensF+" shown":"")
+		return "SpiralLensVisualiser" // the name
+//				+ " type="+cylindricalLensSpiralType.toString()
+//				+ " centre="+centre
+//				+ " b="+b
+//				+ " f="+f
+//				+ " fMin="+fMin
+//				+ " rotationAngle="+rotationAngleDeg+"°"
+//				+ " d12="+distanceOfLens2BehindLens1
+//				+ (showLens1?" lens 1 shown":"")
+//				+ (showLens2?" lens 2 shown":"")
+//				+ (showComparisonLens?" comparison lens f="+comparisonLensF+" shown":"")
 				;
+	}
+	
+	@Override
+	public void writeParameters(PrintStream printStream)
+	{
+		printStream.println("cylindricalLensSpiralType = "+cylindricalLensSpiralType);
+		printStream.println("centre = "+centre);
+		printStream.println("spiralLens2AdditionalOffset = "+spiralLens2AdditionalOffset);
+		printStream.println("b = "+b);
+		printStream.println("f = "+f);
+		printStream.println("fMin = "+fMin);
+		printStream.println("rotationAngleDeg = "+rotationAngleDeg);
+		printStream.println("distanceOfLens2BehindLens1 = "+distanceOfLens2BehindLens1);
+		printStream.println("showLens1 = "+showLens1);
+		printStream.println("showLens2 = "+showLens2);
+		printStream.println("showComparisonLens = "+showComparisonLens);
+		printStream.println("comparisonLensF = "+comparisonLensF);
+		
+		printStream.println();
+
+		// rest of scene
+		
+		printStream.println("studioInitialisation = "+studioInitialisation);
+		for(int i=0; i<3; i++)
+		{
+			printStream.println("sphereCentres["+i+"] = "+sphereCentres[i]);
+			printStream.println("sphereRadii["+i+"] = "+sphereRadii[i]);
+			printStream.println("sphereColours["+i+"] = "+sphereColours[i]);
+			printStream.println("sphereVisibilities["+i+"] = "+sphereVisibilities[i]);
+		}
+
+		printStream.println();
+		
+		printStream.println("cameraViewDirection = "+cameraViewDirection);
+		printStream.println("cameraHorizontalFOVDeg = "+cameraHorizontalFOVDeg);
+		
+		// write all parameters defined in NonInteractiveTIMEngine
+		// super.writeParameters(printStream);		
 	}
 	
 	private double getFOfFocussedCylindricalLens(double fCylindrical)
@@ -211,7 +302,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		spiralLens1.setSurfaceProperty(hologram1);
 		scene.addSceneObject(spiralLens1, showLens1);
 
-		Vector3D spiralLens2Centre = Vector3D.sum(centre, lensNormal.getWithLength(distanceOfLens2BehindLens1));
+		Vector3D spiralLens2Centre = Vector3D.sum(centre, lensNormal.getWithLength(distanceOfLens2BehindLens1), spiralLens2AdditionalOffset);
 		EditableScaledParametrisedDisc spiralLens2 = new EditableScaledParametrisedDisc(
 				"spiral-lens 2",	// description
 				spiralLens2Centre,
@@ -272,6 +363,22 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 				studio
 		);
 		scene.addSceneObject(comparisonLens, showComparisonLens);
+		
+		// add any other scene objects
+		
+		// first the coloured spheres that can be added to the scene
+		for(int i=0; i<3; i++)
+			scene.addSceneObject(
+					new Sphere(
+							"Coloured sphere #"+i,	// description
+							sphereCentres[i],	// centre
+							sphereRadii[i],	// radius
+							new SurfaceColour(sphereColours[i], DoubleColour.WHITE, false),	// surface property: sphereColours[i], made shiny; don't throw shadow
+							scene,
+							studio
+						),
+					sphereVisibilities[i]
+				);
 
 		// the camera
 		studio.setCamera(getStandardCamera());
@@ -284,13 +391,18 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	//
 	
 	private JComboBox<CylindricalLensSpiralType> cylindricalLensSpiralTypeComboBox;
-	private LabelledVector3DPanel centrePanel;
+	private LabelledVector3DPanel centrePanel, spiralLens2AdditionalOffsetPanel;
 	private LabelledDoublePanel bPanel, fPanel, fMinPanel, distanceOfLens2BehindLens1Panel;
 	private DoublePanel comparisonLensFPanel;
 	private DoublePanel rotationAngleDegPanel;
 	private JCheckBox showLens1CheckBox, showLens2CheckBox, showComparisonLensCheckBox;
-	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 	private JButton calculateCombinedFocalLengthButton, calculateDistanceOfLens2BehindLens1Button, focusOnTIMEyesButton;
+	
+	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
+	private LabelledVector3DPanel[] sphereCentrePanels;
+	private LabelledDoublePanel[] sphereRadiusPanels;
+	private LabelledDoubleColourPanel[] sphereColourPanels;
+	private JCheckBox[] sphereVisibilityCheckBoxes;
 
 	// camera stuff
 	// private LabelledVector3DPanel cameraViewDirectionPanel;
@@ -310,53 +422,66 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	protected void createInteractiveControlPanel()
 	{
 		super.createInteractiveControlPanel();
+		
+		JTabbedPane tabbedPane = new JTabbedPane();
+		interactiveControlPanel.add(tabbedPane, "span");
+
+		// the "Lens" panel
+		
+		JPanel lensPanel = new JPanel();
+		lensPanel.setLayout(new MigLayout("insets 0"));
+		tabbedPane.addTab("Lens", lensPanel);
 				
 		cylindricalLensSpiralTypeComboBox = new JComboBox<CylindricalLensSpiralType>(CylindricalLensSpiralType.values());
 		cylindricalLensSpiralTypeComboBox.setSelectedItem(cylindricalLensSpiralType);
-		interactiveControlPanel.add(GUIBitsAndBobs.makeRow("Spiral type", cylindricalLensSpiralTypeComboBox), "span");
+		lensPanel.add(GUIBitsAndBobs.makeRow("Spiral type", cylindricalLensSpiralTypeComboBox), "span");
 
 		centrePanel = new LabelledVector3DPanel("Centre");
 		centrePanel.setVector3D(centre);
-		interactiveControlPanel.add(centrePanel, "span");
+		lensPanel.add(centrePanel, "span");
 		
-		bPanel = new LabelledDoublePanel("b");
+		bPanel = new LabelledDoublePanel("b parameter of spiral");
 		bPanel.setNumber(b);
-		interactiveControlPanel.add(bPanel, "span");
+		lensPanel.add(bPanel, "span");
 		
-		fPanel = new LabelledDoublePanel("f");
+		fPanel = new LabelledDoublePanel("f of cylindrical lens");
 		fPanel.setNumber(f);
-		interactiveControlPanel.add(fPanel, "span");
+		lensPanel.add(fPanel, "span");
 
 		rotationAngleDegPanel = new DoublePanel();
 		rotationAngleDegPanel.setNumber(rotationAngleDeg);
-		interactiveControlPanel.add(GUIBitsAndBobs.makeRow("Rotation angle between lenses", rotationAngleDegPanel, "°"), "span");
+		lensPanel.add(GUIBitsAndBobs.makeRow("Rotation angle between parts", rotationAngleDegPanel, "°"), "span");
 		
 		JPanel windingFocussingPanel = new JPanel();
 		windingFocussingPanel.setLayout(new MigLayout("insets 0"));
 		windingFocussingPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Winding focussing"));
 
-		fMinPanel = new LabelledDoublePanel("Smallest focal length on which winding can be focussed");
+		fMinPanel = new LabelledDoublePanel("Smallest focal length for which winding can be focussed");
 		fMinPanel.setNumber(fMin);
 		windingFocussingPanel.add(fMinPanel, "span");
 
-		distanceOfLens2BehindLens1Panel = new LabelledDoublePanel("Distance of lens 2 behind lens 1");
+		distanceOfLens2BehindLens1Panel = new LabelledDoublePanel("Distance of part 2 behind lens 1");
 		distanceOfLens2BehindLens1Panel.setNumber(distanceOfLens2BehindLens1);
 		windingFocussingPanel.add(distanceOfLens2BehindLens1Panel);
 		
 		calculateDistanceOfLens2BehindLens1Button = new JButton("Optimise");
-		calculateDistanceOfLens2BehindLens1Button.setToolTipText("Perform pixel focussing; works only if the focal length of the combination of the spiral lenses is positive");
+		calculateDistanceOfLens2BehindLens1Button.setToolTipText("Perform pixel focussing; works only if the focal length of the combination of the integral lens is greater than the smallest focal length for which winding can be focussed");
 		calculateDistanceOfLens2BehindLens1Button.addActionListener(this);
 		windingFocussingPanel.add(calculateDistanceOfLens2BehindLens1Button,"span");
 		
-		interactiveControlPanel.add(windingFocussingPanel, "span");
+		lensPanel.add(windingFocussingPanel, "span");
 		
-		showLens1CheckBox = new JCheckBox("Show lens 1");
+		spiralLens2AdditionalOffsetPanel = new LabelledVector3DPanel("Additional offset of part 2");
+		spiralLens2AdditionalOffsetPanel.setVector3D(spiralLens2AdditionalOffset);
+		lensPanel.add(spiralLens2AdditionalOffsetPanel, "span");
+		
+		showLens1CheckBox = new JCheckBox("Show part 1");
 		showLens1CheckBox.setSelected(showLens1);
-		interactiveControlPanel.add(showLens1CheckBox, "span");
+		lensPanel.add(showLens1CheckBox, "span");
 
-		showLens2CheckBox = new JCheckBox("Show lens 2");
+		showLens2CheckBox = new JCheckBox("Show part 2");
 		showLens2CheckBox.setSelected(showLens2);
-		interactiveControlPanel.add(showLens2CheckBox, "span");
+		lensPanel.add(showLens2CheckBox, "span");
 
 		showComparisonLensCheckBox = new JCheckBox("Show comparison lens of focal length");
 		showComparisonLensCheckBox.setSelected(showComparisonLens);
@@ -371,17 +496,57 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		calculateCombinedFocalLengthButton.addActionListener(this);
 		// interactiveControlPanel.add(calculateCombinedFocalLengthButton, "wrap");
 		
-		interactiveControlPanel.add(GUIBitsAndBobs.makeRow(showComparisonLensCheckBox, comparisonLensFPanel, calculateCombinedFocalLengthButton), "wrap");
+		lensPanel.add(GUIBitsAndBobs.makeRow(showComparisonLensCheckBox, comparisonLensFPanel, calculateCombinedFocalLengthButton), "wrap");
 		
+		
+		// the "Backdrop" panel
+		
+		JPanel backdropPanel = new JPanel();
+		backdropPanel.setLayout(new MigLayout("insets 0"));
+		tabbedPane.addTab("Backdrop", backdropPanel);
 
 		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
-		interactiveControlPanel.add(GUIBitsAndBobs.makeRow("Initialise backdrop to", studioInitialisationComboBox), "span");
+		backdropPanel.add(GUIBitsAndBobs.makeRow("Initialise backdrop to", studioInitialisationComboBox), "span");
+
+		JPanel spherePanels[] = new JPanel[3];
+		sphereCentrePanels = new LabelledVector3DPanel[3];
+		sphereRadiusPanels = new LabelledDoublePanel[3];
+		sphereColourPanels = new LabelledDoubleColourPanel[3];
+		sphereVisibilityCheckBoxes = new JCheckBox[3];
+		for(int i=0; i<3; i++)
+		{
+			spherePanels[i] = new JPanel();
+			spherePanels[i].setLayout(new MigLayout("insets 0"));
+			spherePanels[i].setBorder(GUIBitsAndBobs.getTitledBorder("Sphere #"+(i+1)));
+			
+			sphereCentrePanels[i] = new LabelledVector3DPanel("Centre");
+			sphereCentrePanels[i].setVector3D(sphereCentres[i]);
+			spherePanels[i].add(sphereCentrePanels[i], "wrap");
+
+			sphereRadiusPanels[i] = new LabelledDoublePanel("Radius");
+			sphereRadiusPanels[i].setNumber(sphereRadii[i]);
+			spherePanels[i].add(sphereRadiusPanels[i], "wrap");
+
+			sphereColourPanels[i] = new LabelledDoubleColourPanel("Colour");
+			sphereColourPanels[i].setDoubleColour(sphereColours[i]);
+			spherePanels[i].add(sphereColourPanels[i], "wrap");
+
+			sphereVisibilityCheckBoxes[i] = new JCheckBox("Visible");
+			sphereVisibilityCheckBoxes[i].setSelected(sphereVisibilities[i]);
+			spherePanels[i].add(sphereVisibilityCheckBoxes[i], "wrap");
+			
+			backdropPanel.add(spherePanels[i], "wrap");
+		}
+
+		
+		// the "Camera" panel
 		
 		JPanel cameraPanel = new JPanel();
-		cameraPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Camera"));
+		// cameraPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Camera"));
 		cameraPanel.setLayout(new MigLayout("insets 0"));
-		interactiveControlPanel.add(cameraPanel, "span");
+		// interactiveControlPanel.add(cameraPanel, "span");
+		tabbedPane.addTab("Camera", cameraPanel);
 
 		// camera stuff
 		
@@ -426,11 +591,20 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		rotationAngleDeg = rotationAngleDegPanel.getNumber();
 		fMin = fMinPanel.getNumber();
 		distanceOfLens2BehindLens1 = distanceOfLens2BehindLens1Panel.getNumber();
+		spiralLens2AdditionalOffset =spiralLens2AdditionalOffsetPanel.getVector3D();
 		showLens1 = showLens1CheckBox.isSelected();
 		showLens2 = showLens2CheckBox.isSelected();
 		showComparisonLens = showComparisonLensCheckBox.isSelected();
 		comparisonLensF = comparisonLensFPanel.getNumber();
+		
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
+		for(int i=0; i<3; i++)
+		{
+			sphereCentres[i] = sphereCentrePanels[i].getVector3D();
+			sphereRadii[i] = sphereRadiusPanels[i].getNumber();
+			sphereColours[i] = sphereColourPanels[i].getDoubleColour();
+			sphereVisibilities[i] = sphereVisibilityCheckBoxes[i].isSelected();
+		}
 		
 		// cameraViewDirection = cameraViewDirectionPanel.getVector3D();
 		cameraDistance = cameraDistancePanel.getNumber();

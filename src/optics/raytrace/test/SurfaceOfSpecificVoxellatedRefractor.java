@@ -19,7 +19,7 @@ public class SurfaceOfSpecificVoxellatedRefractor extends SurfaceOfVoxellatedRef
 	}
 
 	@Override
-	public double getRefractiveIndex(int[] voxelIndices)
+	public double getRefractiveIndex1(int[] voxelIndices)
 	{
 		return 2; // +0.1*(voxelIndices[1]*voxelIndices[1]); 
 	}

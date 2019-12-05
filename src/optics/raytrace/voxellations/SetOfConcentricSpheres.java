@@ -85,12 +85,14 @@ public class SetOfConcentricSpheres extends SetOfSurfaces
 	 */
 	@Override
 	public SceneObject getSurface(double i)
-	throws Exception
 	{
+		double r = getRadius1(i);
+		if(r <= 0.0) return null;
+		
 		return new ParametrisedSphere(
-				"Sphere #"+i+", radius="+getRadius(i),	// description
+				"Sphere #"+i+", radius="+r,	// description
 				centre,	// centre
-				getRadius(i),	// radius
+				r,	// radius
 				null,	// surface property
 				null,	// parent
 				null	// studio
@@ -99,20 +101,12 @@ public class SetOfConcentricSpheres extends SetOfSurfaces
 	
 	/**
 	 * @param i
-	 * @return	radius of sphere number i
-	 * @throws	Exception if the index r corresponds to a sphere of negative radius
+	 * @return	radius of sphere number i; note that the radius can be negative, which needs to be checked!
 	 */
-	public double getRadius(double i)
-	throws Exception
+	public double getRadius1(double i)
+	// throws Exception
 	{
-		// calculate the "raw" radius...
-		double r = radiusOfSphere0 + i*separation;
-		
-		// ... and check that it's not negative
-		if(r < 0) throw new Exception("Sphere index "+i+" corresponds to a negative radius.");
-		
-		// if it's positive, everything is fine
-		return r;
+		return radiusOfSphere0 + i*separation;
 	}
 	
 	/**

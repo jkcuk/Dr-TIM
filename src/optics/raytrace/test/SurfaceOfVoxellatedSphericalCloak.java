@@ -81,7 +81,8 @@ public class SurfaceOfVoxellatedSphericalCloak extends SurfaceOfVoxellatedMetric
 	 * @throws Exception 
 	 */
 	@Override
-	public double[] getMetricTensor(int[] voxelIndices) throws Exception
+	public double[] getMetricTensor(int[] voxelIndices)
+	throws Exception
 	{
 		
 //		 //calculate the radius of the spherical shell represented by the voxel the ray is currently in 
@@ -95,7 +96,7 @@ public class SurfaceOfVoxellatedSphericalCloak extends SurfaceOfVoxellatedMetric
 		
 		//Stephen's idea : use an arithmetic sequence?
 		// See Philbin & Leonhardt, pg.s 167, 211
-		double r=spheres.getRadius(voxelIndices[0]+0.5),
+		double r=spheres.getRadius1(voxelIndices[0]+0.5),
 			   R= 500,//double R= something:i? R=dr/dr'.
 		       //r'=r0+R*dr or r'=r0+i*dr 
 			   r_=spheres.getSeparation()*R,
@@ -103,6 +104,8 @@ public class SurfaceOfVoxellatedSphericalCloak extends SurfaceOfVoxellatedMetric
 			   e=(r_/r)*(r_/r)/R;// det e=R*(r_/r)*(r_/r)*1/R*1/R
 		//double[] MetricInterface.getDiagonalMetricTensor(double g11, double g22, double g33);
 
+		if(r <= 0.0) throw new Exception("Radius calculation gives negative value");
+		
 		// double e_ij=1,g_ij=e_ij/ Math.sqrt(ex*ey*ez); double g(i,j)=e(i,j)/sqrt(det e);
 		// double e(i,j) = diag(ex,ey,ez); 
 		// diag(nx^2,ny^2,nz^2)= diag(ey*ez,ex*ez,ex*ey); // since n^2 = g

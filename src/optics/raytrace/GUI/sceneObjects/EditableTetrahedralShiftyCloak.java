@@ -149,8 +149,12 @@ public class EditableTetrahedralShiftyCloak extends EditableHomogeneousPlanarIma
 		setW(w);
 		setAsymmetricConfiguration(asymmetricConfiguration);
 		setSideLength(sideLength);
-		double sideLengthIMax = (asymmetricConfiguration?0.96*sideLength:sideLength/3.);
-		setSideLengthI((sideLengthI>sideLengthIMax)?sideLengthIMax:sideLengthI);
+		double sideLengthIMax = (asymmetricConfiguration?0.96*sideLength:0.96*sideLength/3.);
+		if(sideLengthI > sideLengthIMax)
+		{
+			System.out.println("EditableTetrahedralShiftyCloak::EditableTetrahedralShiftyCloak: sideLengthI restricted to "+Math.min(sideLengthI, sideLengthIMax));
+		}
+		setSideLengthI(Math.min(sideLengthI, sideLengthIMax));
 		setDelta(delta);
 		setShowInterfaces(showInterfaces);
 		setImagingElementTransmissionCoefficient(interfaceTransmissionCoefficient);

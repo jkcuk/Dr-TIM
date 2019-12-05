@@ -44,11 +44,13 @@ public class SurfaceOfLayeredCylindricalLuneburgLens extends SurfaceOfVoxellated
 	 * @see optics.raytrace.surfaces.SurfaceOfVoxellatedRefractor#getRefractiveIndex(int[])
 	 */
 	@Override
-	public double getRefractiveIndex(int[] voxelIndices)
-	throws Exception
+	public double getRefractiveIndex1(int[] voxelIndices)
+	// throws Exception
 	{
 		// calculate the radius of the spherical shell represented by the voxel the ray is currently in
 		double r = cylinders.getRadius(voxelIndices[0]+0.5);
+		if(r <= 0.0) return Double.NaN;
+		
 		double rOverR = r / ((ParametrisedCylinder)surface).getRadius();
 		return Math.sqrt(2-rOverR*rOverR); 
 	}

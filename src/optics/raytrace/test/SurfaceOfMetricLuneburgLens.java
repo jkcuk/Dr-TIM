@@ -49,7 +49,9 @@ public class SurfaceOfMetricLuneburgLens extends SurfaceOfVoxellatedMetric
 	throws Exception
 	{
 		// calculate the radius of the spherical shell represented by the voxel the ray is currently in
-		double r = spheres.getRadius(voxelIndices[0]+0.5);
+		double r = spheres.getRadius1(voxelIndices[0]+0.5);
+		if(r <= 0.0) throw new Exception("Calculation of radius gives negative value");
+		
 		double rOverR = r / ((Sphere)surface).getRadius();
 		return MetricInterface.getMetricTensorForRefractiveIndex(Math.sqrt(2-rOverR*rOverR)); 
 	}

@@ -882,15 +882,15 @@ public class SpaceAroundBlackHoleVisualiser extends NonInteractiveTIMEngine
 			if(simulationType == SphericallySymmetricRefractiveIndexDistributionSimulationType.SPHERICAL_SHELLS_CONSTANT_N)
 			{
 				int[] voxelIndices = spaceAroundBlackHoleSphericalShells.getVoxelIndices(testPositionPanel.getVector3D());
-				try {
+				// try {
 					infoTextField.setText(
 							"layer number = "+voxelIndices[0]
-									+", refractive index = "+ spaceAroundBlackHoleSphericalShells.getRefractiveIndex(voxelIndices)
+									+", refractive index = "+ spaceAroundBlackHoleSphericalShells.getRefractiveIndex1(voxelIndices)
 							);
-				} catch (Exception e1) {
+				// } catch (Exception e1) {
 					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				// 	e1.printStackTrace();
+				// }
 			}
 			else
 			{

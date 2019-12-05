@@ -214,31 +214,29 @@ public class Pixellation extends SurfaceProperty
 		if(simulateDiffractiveBlur)
 		{
 			// simulate diffractive blur
-			
-			// The first diffraction minimum corresponds to a direction in which light rays that
-			// have passed through the slit a transverse distance w/2 apart receive phase shifts
-			// that differ by pi.  Such phase shifts are precisely achieved with a phase hologram
-			// that corresponds to a transverse phase gradient of pi / (w / 2) = 2 pi / w.
-			// 	So the direction of the first diffraction minimum can be calculated by simulating
-			// transmission through a phase hologram with this phase gradient.
-			// In the PhaseHologram class, phase gradients are given in units of (2 pi/lambda),
-			// and so a phase gradient of 2 pi / w becomes (2 pi / w) / (2 pi / lambda) = lambda / w.
-			// Here, a uniformly distributed random phase-gradient in the range +/- lambda/w is added
-			// in each transverse dimension.
-			// (2.*(Math.random()-0.5) gives a uniformly distributes random number in the range -1 to 1.)
-			Vector3D tangentialDirectionComponentChange = Vector3D.sum(
-					surfaceCoordinate1Axis.getProductWith(SingleSlitDiffraction.getRandomSinTheta(lambda, pixelSideLengthU)),
-					surfaceCoordinate2Axis.getProductWith(SingleSlitDiffraction.getRandomSinTheta(lambda, pixelSideLengthV))
-//					surfaceCoordinate1Axis.getProductWith(lambda/pixelSideLength*2.*(Math.random()-0.5)),
-//					surfaceCoordinate2Axis.getProductWith(lambda/pixelSideLength*2.*(Math.random()-0.5))
-				);
+//			Vector3D tangentialDirectionComponentChange = Vector3D.sum(
+//					surfaceCoordinate1Axis.getProductWith(SingleSlitDiffraction.getRandomSinTheta(lambda, pixelSideLengthU)),
+//					surfaceCoordinate2Axis.getProductWith(SingleSlitDiffraction.getRandomSinTheta(lambda, pixelSideLengthV))
+////					surfaceCoordinate1Axis.getProductWith(lambda/pixelSideLength*2.*(Math.random()-0.5)),
+////					surfaceCoordinate2Axis.getProductWith(lambda/pixelSideLength*2.*(Math.random()-0.5))
+//				);
 			try
 			{
-				rayDirection = PhaseHologram.getOutgoingNormalisedRayDirection(
-						rayDirection.getNormalised(),	// incidentNormalisedRayDirection
-						tangentialDirectionComponentChange,	// tangentialDirectionComponentChange
-						intersection.o.getNormalisedOutwardsSurfaceNormal(rayStartPosition),	// normalisedOutwardsSurfaceNormal
-						false	// isReflective
+//				rayDirection = PhaseHologram.getOutgoingNormalisedRayDirection(
+//						rayDirection.getNormalised(),	// incidentNormalisedRayDirection
+//						tangentialDirectionComponentChange,	// tangentialDirectionComponentChange
+//						intersection.o.getNormalisedOutwardsSurfaceNormal(rayStartPosition),	// normalisedOutwardsSurfaceNormal
+//						false	// isReflective
+//					);
+
+				rayDirection = SingleSlitDiffraction.getDiffractedLightRayDirection(
+						rayDirection,	// lightRayDirectionBeforeDiffraction
+						lambda,
+						pixelSideLengthU,
+						pixelSideLengthV,
+						surfaceCoordinate1Axis,	// uHat
+						surfaceCoordinate2Axis,	// vHat
+						intersection.o.getNormalisedOutwardsSurfaceNormal(rayStartPosition)	// normalisedApertureNormal
 					);
 			}
 			catch(EvanescentException e)

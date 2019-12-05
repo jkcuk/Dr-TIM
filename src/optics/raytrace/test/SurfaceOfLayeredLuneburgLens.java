@@ -43,11 +43,13 @@ public class SurfaceOfLayeredLuneburgLens extends SurfaceOfVoxellatedRefractor
 	 * @see optics.raytrace.surfaces.SurfaceOfVoxellatedRefractor#getRefractiveIndex(int[])
 	 */
 	@Override
-	public double getRefractiveIndex(int[] voxelIndices)
-	throws Exception
+	public double getRefractiveIndex1(int[] voxelIndices)
+	// throws Exception
 	{
 		// calculate the radius of the spherical shell represented by the voxel the ray is currently in
-		double r = spheres.getRadius(voxelIndices[0]+0.5);
+		double r = spheres.getRadius1(voxelIndices[0]+0.5);
+		if(r<=0.0) return Double.NaN;
+		
 		double rOverR = r / ((Sphere)surface).getRadius();
 		return Math.sqrt(2-rOverR*rOverR); 
 	}

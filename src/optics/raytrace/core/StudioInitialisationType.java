@@ -6,6 +6,7 @@ import optics.raytrace.studioInitialisation.ChristmasInitialisation;
 import optics.raytrace.studioInitialisation.CloakingInitialisation;
 import optics.raytrace.studioInitialisation.CurvedSpaceInitialisation;
 import optics.raytrace.studioInitialisation.CustomInitialisation;
+import optics.raytrace.studioInitialisation.DarknessInitialisation;
 import optics.raytrace.studioInitialisation.DistanceLabelledPlanes1Initialisation;
 import optics.raytrace.studioInitialisation.DistanceLabelledPlanes2Initialisation;
 import optics.raytrace.studioInitialisation.DistanceLabelledPlanes3Initialisation;
@@ -37,6 +38,7 @@ public enum StudioInitialisationType
 	CLOAKING(new CloakingInitialisation()),
 	CURVED_SPACE(new CurvedSpaceInitialisation()),
 	CUSTOM(new CustomInitialisation()),
+	DARKNESS(new DarknessInitialisation()),
 	DISTANCE_LABELLED_PLANES_1(new DistanceLabelledPlanes1Initialisation()),
 	DISTANCE_LABELLED_PLANES_2(new DistanceLabelledPlanes2Initialisation()),
 	DISTANCE_LABELLED_PLANES_3(new DistanceLabelledPlanes3Initialisation()),
@@ -62,17 +64,17 @@ public enum StudioInitialisationType
 	/**
 	 * an alternative to values() that gives a limited list of values, in this case those that are available in fully-interactive TIM
 	 */
-	public static StudioInitialisationType[] limitedValuesForInteractiveTIM = {CHRISTMAS, HALLOWEEN, HEAVEN, MINIMALIST, SHINY_BALLS, SURREALIST, SURROUND_LATTICE, TIM_HEAD, AUTOSTEREOGRAM_RESONATOR, CLOAKING, CURVED_SPACE}; 
+	public static StudioInitialisationType[] limitedValuesForInteractiveTIM = {CHRISTMAS, DARKNESS, HALLOWEEN, HEAVEN, MINIMALIST, SHINY_BALLS, SURREALIST, SURROUND_LATTICE, TIM_HEAD, AUTOSTEREOGRAM_RESONATOR, CLOAKING, CURVED_SPACE}; 
 
 	/**
 	 * an alternative to values() that gives a limited list of values, in this case those suitable as backgrounds
 	 */
-	public static StudioInitialisationType[] limitedValuesForBackgrounds = {CHRISTMAS, DISTANCE_LABELLED_PLANES_1, DISTANCE_LABELLED_PLANES_2, DISTANCE_LABELLED_PLANES_3, HALLOWEEN, HEAVEN, LATTICE, MINIMALIST, SHINY_BALLS, SURREALIST, TIM_HEAD};
+	public static StudioInitialisationType[] limitedValuesForBackgrounds = {CHRISTMAS, DARKNESS, DISTANCE_LABELLED_PLANES_1, DISTANCE_LABELLED_PLANES_2, DISTANCE_LABELLED_PLANES_3, HALLOWEEN, HEAVEN, LATTICE, MINIMALIST, SHINY_BALLS, SURREALIST, TIM_HEAD};
 
 	/**
 	 * an alternative to values() that gives a limited list of values, in this case those suitable as backgrounds
 	 */
-	public static StudioInitialisationType[] limitedValuesAndCustomForBackgrounds = {CHRISTMAS, CUSTOM, DISTANCE_LABELLED_PLANES_1, DISTANCE_LABELLED_PLANES_2, DISTANCE_LABELLED_PLANES_3, HALLOWEEN, HEAVEN, LATTICE, MINIMALIST, SHINY_BALLS, SURREALIST, TIM_HEAD};
+	public static StudioInitialisationType[] limitedValuesAndCustomForBackgrounds = {CHRISTMAS, CUSTOM, DARKNESS, DISTANCE_LABELLED_PLANES_1, DISTANCE_LABELLED_PLANES_2, DISTANCE_LABELLED_PLANES_3, HALLOWEEN, HEAVEN, LATTICE, MINIMALIST, SHINY_BALLS, SURREALIST, TIM_HEAD};
 
 	/**
 	 * initialise the studio according to the studioInitialisationType

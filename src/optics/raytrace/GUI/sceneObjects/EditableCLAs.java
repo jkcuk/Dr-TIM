@@ -36,8 +36,6 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 {
 	private static final long serialVersionUID = -881739071694388536L;
 
-	// TODO add diffraction effects?
-	
 	// parameters
 
 	/**
@@ -115,6 +113,17 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 	 */
 	private LensType channelingLensesType;
 	
+	/**
+	 * if true, add a random angle that represents diffractive blur to the direction of the outgoing light ray
+	 */
+	private boolean simulateDiffractiveBlur;
+
+	/**
+	 * wavelength of light;
+	 * used to calculate approximate magnitude of diffractive blur
+	 */
+	private double lambda;	// wavelength of light, for diffraction purposes
+
 
 	
 	// constructors etc.
@@ -136,6 +145,8 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 	 * @param channelingLens1F
 	 * @param channelingLens2F
 	 * @param channelingLensType
+	 * @param simulateDiffractiveBlur
+	 * @param lambda
 	 * @param parent
 	 * @param studio
 	 */
@@ -156,6 +167,8 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 			double channelingLens1F,
 			double channelingLens2F,
 			LensType channelingLensType,
+			boolean simulateDiffractiveBlur,
+			double lambda,
 			SceneObject parent, 
 			Studio studio
 	)
@@ -178,6 +191,8 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 		setChannelingLens1F(channelingLens1F);
 		setChannelingLens2F(channelingLens2F);
 		setChannelingLensType(channelingLensType);
+		setSimulateDiffractiveBlur(simulateDiffractiveBlur);
+		setLambda(lambda);
 
 		populateSceneObjectCollection();
 	}
@@ -210,6 +225,8 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 				1,	// channelingLens1F
 				1,	// channelingLens2F
 				LensType.IDEAL_THIN_LENS,	// channelingLensType
+				false,	// simulateDiffractiveBlur
+				633e-9,	// lambda
 				parent,
 				studio
 			);
@@ -222,24 +239,28 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 	 */
 	public EditableCLAs(EditableCLAs original)
 	{
-		super(original);
-		
-		// copy the original's parameters
-		setCentreOfCommonFocalPlane(original.getCentreOfCommonFocalPlane().clone());
-		setSpanVectorU(original.getSpanVectorU().clone());
-		setSpanVectorV(original.getSpanVectorV().clone());
-		setOutwardsNormalToLA1(original.getOutwardsNormalToLA1().clone());
-		setF1(original.getF1());
-		setF2(original.getF2());
-		setPeriodU(original.getPeriodU());
-		setPeriodV(original.getPeriodV());
-		setLensletArrayType(original.getLensletArrayType());
-		setShowBaffles(original.isShowBaffles());
-		setShowChannelingLens1(original.isShowChannelingLens1());
-		setShowChannelingLens2(original.isShowChannelingLens2());
-		setChannelingLens1F(original.getChannelingLens1F());
-		setChannelingLens2F(original.getChannelingLens2F());
-		setChannelingLensType(original.getChannelingLensType());
+		this(
+				original.getDescription(),
+				original.getCentreOfCommonFocalPlane().clone(),
+				original.getSpanVectorU().clone(),
+				original.getSpanVectorV().clone(),
+				original.getOutwardsNormalToLA1(),
+				original.getF1(),
+				original.getF2(),
+				original.getPeriodU(),
+				original.getPeriodV(),
+				original.getLensletArrayType(),
+				original.isShowBaffles(),
+				original.isShowChannelingLens1(),
+				original.isShowChannelingLens2(),
+				original.getChannelingLens1F(),
+				original.getChannelingLens2F(),
+				original.getChannelingLensType(),
+				original.isSimulateDiffractiveBlur(),
+				original.getLambda(),
+				original.getParent(), 
+				original.getStudio()
+			);
 	}
 
 	@Override
@@ -372,6 +393,23 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 		this.channelingLensesType = channelingLensType;
 	}
 
+	public boolean isSimulateDiffractiveBlur() {
+		return simulateDiffractiveBlur;
+	}
+
+	public void setSimulateDiffractiveBlur(boolean simulateDiffractiveBlur) {
+		this.simulateDiffractiveBlur = simulateDiffractiveBlur;
+	}
+
+	public double getLambda() {
+		return lambda;
+	}
+
+	public void setLambda(double lambda) {
+		this.lambda = lambda;
+	}
+
+
 
 	
 	// the bit with some substance
@@ -399,6 +437,8 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 					periodV,	// vPeriod
 					0,	// uOffset
 					0,	// vOffset
+					simulateDiffractiveBlur,
+					lambda,
 					1,	// throughputCoefficient
 					false,	// reflective
 					false	// shadowThrowing
@@ -412,6 +452,8 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 					periodV,	// vPeriod
 					0,	// uOffset
 					0,	// vOffset
+					simulateDiffractiveBlur,
+					lambda,
 					1,	// throughputCoefficient
 					false,	// reflective
 					false	// shadowThrowing
@@ -429,6 +471,8 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 					periodV,	// yPeriod
 					0,	// xOffset
 					0,	// yOffset
+					simulateDiffractiveBlur,
+					lambda,
 					1,	// transmissionCoefficient
 					false	// shadowThrowing
 					);
@@ -438,6 +482,8 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 					periodV,	// yPeriod
 					0,	// xOffset
 					0,	// yOffset
+					simulateDiffractiveBlur,
+					lambda,
 					1,	// transmissionCoefficient
 					false	// shadowThrowing
 					);

@@ -29,10 +29,10 @@ public abstract class SetOfSurfaces extends Voxellation
 	 * It is <i>not</i> linked into a scene or studio, and nor does it have a surface property.
 	 * @param i
 	 * @return	if <i>i</i> is an integer, the surface with index <i>i</i>, otherwise a surface at a position corresponding to the index <i>i</i>
-	 * @throws	Exception if the index r is out of bounds 
+	 * @throws	null if the index r is out of bounds 
 	 */
-	public abstract SceneObject getSurface(double i)
-	throws Exception;
+	public abstract SceneObject getSurface(double i);
+	// throws Exception;
 		
 	/**
 	 * Returns the "surface index" of the position.
@@ -115,7 +115,8 @@ public abstract class SetOfSurfaces extends Voxellation
 		try {
 			// System.out.println("getSurface(i-1)="+getSurface(i-1));
 			// System.out.println("getSurface(i)="+getSurface(i));
-			if(i>0) surface.addSceneObject(getSurface(i-1));
+			// if(i>0) 
+			surface.addSceneObject(getSurface(i-1));
 			surface.addSceneObject(getSurface(i));
 		} catch (Exception e) {
 			e.printStackTrace();

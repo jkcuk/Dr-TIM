@@ -45,11 +45,13 @@ public class SurfaceOfLayeredCuboidLuneburgLens extends SurfaceOfVoxellatedRefra
 	 * @see optics.raytrace.surfaces.SurfaceOfVoxellatedRefractor#getRefractiveIndex(int[])
 	 */
 	@Override
-	public double getRefractiveIndex(int[] voxelIndices)
-	throws Exception
+	public double getRefractiveIndex1(int[] voxelIndices)
+	// throws Exception
 	{
 		// calculate the radius of the cuboid shell represented by the voxel the ray is currently in
 		double r = cubes.index2Radius(voxelIndices[0]+0.5);
+		if(r <= 0.0) return Double.NaN;
+		
 		double rOverR = r / (((ParametrisedCuboid)surface).getWidth()/2);
 		return Math.sqrt(2-rOverR*rOverR); 
 	}

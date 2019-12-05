@@ -76,17 +76,17 @@ public class SetOfConcentricCubes extends SetOfSurfaces
 	 * a ray.
 	 * It is <i>not</i> linked into a scene or studio, and nor does it have a surface property.
 	 * @param i
-	 * @return	if <i>i</i> is an integer, the cube with index <i>i</i>, otherwise a cube at a position 
-	 * corresponding to the index <i>i</i>
+	 * @return	if <i>i</i> is an integer, the cube with index <i>i</i>, otherwise a cube with an in-between sidelength; if the sidelength < 0, return null
 	 * @throws	Exception if the index r corresponds to a cube of negative side
 	 */
 	@Override
 	public SceneObject getSurface(double i)
-	throws Exception
+	// throws Exception
 	{
 		// calculate the side length of the cube with index i
 		double d = 2*(radiusOfCube0 + i * deltaRadius);
-			
+		if(d <= 0.0) return null;
+		
 		return new ParametrisedCuboid(
 				"Cube #"+i,	// description
 				d, d, d, // width, height, depth

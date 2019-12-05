@@ -104,16 +104,14 @@ implements Serializable
 		s.setEdges(edges);
 		
 		s.inferFacesFromEdges();
-		// System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: faces="+s.getFaces());
-		System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: no of faces="+s.getFaces().size());
-		for(int f=0; f<s.getFaces().size(); f++)
-			System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: face #"+f+"="+s.getFaces().get(f));
+//		System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: no of faces="+s.getFaces().size());
+//		for(int f=0; f<s.getFaces().size(); f++)
+//			System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: face #"+f+"="+s.getFaces().get(f));
 		
 		s.inferSimplicesFromFaces();
-		// System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: simplices="+s.getSimplices());
-		System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: no of simplices="+s.getSimplices().size());
-		for(int f=0; f<s.getSimplices().size(); f++)
-			System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: simplex #"+f+"="+s.getSimplices().get(f));
+//		System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: no of simplices="+s.getSimplices().size());
+//		for(int f=0; f<s.getSimplices().size(); f++)
+//			System.out.println("SimplicialComplex::getSimplicialComplexFromVerticesAndEdges: simplex #"+f+"="+s.getSimplices().get(f));
 		
 		return s;
 	}

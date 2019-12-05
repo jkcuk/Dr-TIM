@@ -197,8 +197,10 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 	
 //	// lenslet-array panel
 	private JPanel lensletArrayPanel;
-	private LabelledDoublePanel lensletArrayFocalLengthPanel, lensletArrayTransmissionCoefficientPanel;
+	private LabelledDoublePanel lensletArrayFocalLengthPanel, lensletArrayTransmissionCoefficientPanel, lensletArrayLambdaPanel;
 	private LabelledVector2DPanel lensletArrayPeriodPanel, lensletArrayOffsetPanel;
+	private JCheckBox lensletArraySimulateDiffractiveBlurCheckBox;
+
 	
 	// LENTICULAR_ARRAY_WITH_LINEAR_POWER panel
 	private JPanel lenticularArrayWithLinearPowerPanel;
@@ -661,9 +663,15 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		lensletArrayOffsetPanel = new LabelledVector2DPanel("Offset in (x,y)");
 		lensletArrayOffsetPanel.setVector2D(0, 0);
 		lensletArrayPanel.add(lensletArrayOffsetPanel, "wrap");
+		lensletArraySimulateDiffractiveBlurCheckBox = new JCheckBox("Simulate diffractive blur");
+		lensletArraySimulateDiffractiveBlurCheckBox.setSelected(true);
+		lensletArrayLambdaPanel = new LabelledDoublePanel("Lambda");
+		lensletArrayLambdaPanel.setNumber(632.8e-9);
+		lensletArrayPanel.add(GUIBitsAndBobs.makeRow(lensletArraySimulateDiffractiveBlurCheckBox, lensletArrayLambdaPanel), "wrap");
+
 		lensletArrayTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient");
 		lensletArrayTransmissionCoefficientPanel.setNumber(SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT);
-		lensletArrayPanel.add(lensletArrayTransmissionCoefficientPanel, "wrap");;
+		lensletArrayPanel.add(lensletArrayTransmissionCoefficientPanel, "wrap");
 
 		//
 		// lenticular array with linearly-varying focussing power
@@ -1106,6 +1114,8 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 			lensletArrayTransmissionCoefficientPanel.setNumber(la.getTransmissionCoefficient());
 			lensletArrayPeriodPanel.setVector2D(la.getxPeriod(), la.getyPeriod());
 			lensletArrayOffsetPanel.setVector2D(la.getxOffset(), la.getyOffset());
+			lensletArrayLambdaPanel.setNumber(la.getLambda());;
+			lensletArraySimulateDiffractiveBlurCheckBox.setSelected(la.isSimulateDiffractiveBlur());
 			setOptionalParameterPanelComponent(lensletArrayPanel);
 		}
 		else if(surfaceProperty instanceof PhaseHologramOfLinearPowerLenticularArray)
@@ -1427,6 +1437,8 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 					lensletArrayPeriodPanel.getVector2D().y,	// yPeriod
 					lensletArrayOffsetPanel.getVector2D().x,	// xOffset
 					lensletArrayOffsetPanel.getVector2D().y,	// yOffset
+					lensletArraySimulateDiffractiveBlurCheckBox.isSelected(),	// simulatedDiffractiveBlur
+					lensletArrayLambdaPanel.getNumber(),	// lambda
 					lensletArrayTransmissionCoefficientPanel.getNumber(),	// throughputCoefficient
 					true	// shadowThrowing
 				);

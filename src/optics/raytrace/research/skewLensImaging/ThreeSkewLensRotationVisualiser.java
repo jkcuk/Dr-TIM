@@ -294,35 +294,35 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 	}
 	
 	
-	/**
-	 * for compatibility with Mathematica...
-	 * @param x
-	 * @return
-	 */
-	private double csc(double x)
-	{
-		return 1./Math.sin(x);
-	}
-	
-	/**
-	 * for compatibility with Mathematica...
-	 * @param x
-	 * @return
-	 */
-	private double sec(double x)
-	{
-		return 1./Math.cos(x);
-	}
-
-	/**
-	 * for compatibility with Mathematica...
-	 * @param x
-	 * @return
-	 */
-	private double cot(double x)
-	{
-		return 1./Math.tan(x);
-	}
+//	/**
+//	 * for compatibility with Mathematica...
+//	 * @param x
+//	 * @return
+//	 */
+//	private double csc(double x)
+//	{
+//		return 1./Math.sin(x);
+//	}
+//	
+//	/**
+//	 * for compatibility with Mathematica...
+//	 * @param x
+//	 * @return
+//	 */
+//	private double sec(double x)
+//	{
+//		return 1./Math.cos(x);
+//	}
+//
+//	/**
+//	 * for compatibility with Mathematica...
+//	 * @param x
+//	 * @return
+//	 */
+//	private double cot(double x)
+//	{
+//		return 1./Math.tan(x);
+//	}
 
 	@Override
 	public void populateStudio()

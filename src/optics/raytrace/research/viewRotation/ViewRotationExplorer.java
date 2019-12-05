@@ -379,6 +379,8 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 									mmPitch,	// vPeriod
 									0,	// uOffset
 									0,	// vOffset
+									false,	// simulateDiffractiveBlur
+									632.8e-9,	// lambda
 									SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
 									false,	// reflective
 									true	// shadowThrowing
@@ -411,6 +413,8 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 									mmPitch,	// vPeriod
 									0,	// uOffset
 									0,	// vOffset
+									false,	// simulateDiffractiveBlur
+									632.8e-9,	// lambda
 									SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
 									false,	// reflective
 									true	// shadowThrowing

@@ -1,7 +1,10 @@
 package optics.raytrace.utility;
 
 import math.InterpolatedFunction1D;
+import math.Vector3D;
+import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.InconsistencyException;
+import optics.raytrace.surfaces.PhaseHologram;
 
 /**
  * The inverse cumulative probability function for the light-ray direction change due to single-slit diffraction.
@@ -375,5 +378,71 @@ public class SingleSlitDiffraction
 	public static double getRandomSinTheta(double lambda, double w)
 	{
 		return calculateSinTheta(lambda, w, Math.random());
-	}	
+	}
+	
+	public static Vector3D getTangentialDirectionComponentChange(
+			double lambda,
+			double pixelSideLengthU,
+			double pixelSideLengthV,
+			Vector3D uHat,
+			Vector3D vHat
+		)
+	{
+		return Vector3D.sum(
+				uHat.getProductWith(getRandomSinTheta(lambda, pixelSideLengthU)),
+				vHat.getProductWith(getRandomSinTheta(lambda, pixelSideLengthV))
+				// The first diffraction minimum corresponds to a direction in which light rays that
+				// have passed through the slit a transverse distance w/2 apart receive phase shifts
+				// that differ by pi.  Such phase shifts are precisely achieved with a phase hologram
+				// that corresponds to a transverse phase gradient of pi / (w / 2) = 2 pi / w.
+				// So the direction of the first diffraction minimum can be calculated by simulating
+				// transmission through a phase hologram with this phase gradient.
+				// In the PhaseHologram class, phase gradients are given in units of (2 pi/lambda),
+				// and so a phase gradient of 2 pi / w becomes (2 pi / w) / (2 pi / lambda) = lambda / w.
+				// Here, a uniformly distributed random phase-gradient in the range +/- lambda/w is added
+				// in each transverse dimension.
+				// (2.*(Math.random()-0.5) gives a uniformly distributes random number in the range -1 to 1.)
+//				surfaceCoordinate1Axis.getProductWith(lambda/pixelSideLength*2.*(Math.random()-0.5)),
+//				surfaceCoordinate2Axis.getProductWith(lambda/pixelSideLength*2.*(Math.random()-0.5))
+			);
+	
+	}
+	
+	/**
+	 * @param lightRayDirectionBeforeDiffraction
+	 * @param lambda
+	 * @param pixelSideLengthU
+	 * @param pixelSideLengthV
+	 * @param uHat	unit direction of two of the sides of the rectangular pixels
+	 * @param vHat	unit direction of the other two sides of the rectangular pixels
+	 * @param normalisedApertureNormal	normalised vector normal to the plane of the rectangular aperture
+	 * @return	the diffracted light-ray direction, i.e. the light-ray direction before diffraction with a randomised tangential component, given by the sin^2 single-slit diffraction function in each direction, added to it
+	 * @throws EvanescentException	if the light ray becomes evanescent after addition of the tangential component
+	 */
+	public static Vector3D getDiffractedLightRayDirection(
+			Vector3D lightRayDirectionBeforeDiffraction,
+			double lambda,
+			double pixelSideLengthU,
+			double pixelSideLengthV,
+			Vector3D uHat,
+			Vector3D vHat,
+			Vector3D normalisedApertureNormal
+		)
+	throws EvanescentException
+	{
+			// simulate diffractive blur
+			
+			return PhaseHologram.getOutgoingNormalisedRayDirection(
+						lightRayDirectionBeforeDiffraction.getNormalised(),	// incidentNormalisedRayDirection
+						getTangentialDirectionComponentChange(
+								lambda,
+								pixelSideLengthU,
+								pixelSideLengthV,
+								uHat,
+								vHat
+							),	// tangentialDirectionComponentChange
+						normalisedApertureNormal,	// normalisedOutwardsSurfaceNormal
+						false	// isReflective
+					);
+	}
 }

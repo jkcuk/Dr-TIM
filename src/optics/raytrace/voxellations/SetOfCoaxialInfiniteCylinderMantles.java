@@ -83,13 +83,16 @@ public class SetOfCoaxialInfiniteCylinderMantles extends SetOfSurfaces
 	 */
 	@Override
 	public SceneObject getSurface(double i)
-	throws Exception
+	// throws Exception
 	{
+		double r = getRadius(i);
+		if(r < 0.0) return null;
+		
 		return new ParametrisedCylinderMantle(
 				"Cylinder mantle #"+i,	// description
 				Vector3D.sum(pointOnAxis, axisDirection.getProductWith(-10000)),	// start point
 				Vector3D.sum(pointOnAxis, axisDirection.getProductWith(10000)),	// end point
-				getRadius(i),	// radius
+				r,	// radius
 				null,	// surface property
 				null,	// parent
 				null	// studio
@@ -108,19 +111,12 @@ public class SetOfCoaxialInfiniteCylinderMantles extends SetOfSurfaces
 	/**
 	 * @param i
 	 * @return	radius of sphere number i
-	 * @throws	Exception if the index r corresponds to a sphere of negative radius
 	 */
 	public double getRadius(double i)
-	throws Exception
+	// throws Exception
 	{
 		// calculate the "raw" radius...
-		double r = radiusOfCylinder0 + i*separation;
-		
-		// ... and check that it's not negative
-		if(r < 0) throw new Exception("Cylinder index "+i+" corresonds to a negative radius.");
-		
-		// if it's positive, everything is fine
-		return r;
+		return radiusOfCylinder0 + i*separation;
 	}
 	
 	/**

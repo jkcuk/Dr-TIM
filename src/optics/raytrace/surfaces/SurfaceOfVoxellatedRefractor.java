@@ -69,10 +69,10 @@ public class SurfaceOfVoxellatedRefractor extends SurfaceOfVoxellatedVolume
 	
 	/**
 	 * @param voxelIndices
-	 * @return	the refractive index for the voxel with these voxelIndices or 
+	 * @return	the refractive index for the voxel with these voxelIndices, or Double.NaN if there is a problem
 	 */
-	public double getRefractiveIndex(int[] voxelIndices)
-	throws Exception
+	public double getRefractiveIndex1(int[] voxelIndices)
+	// throws Exception
 	{
 		return 2;
 	}
@@ -122,15 +122,24 @@ public class SurfaceOfVoxellatedRefractor extends SurfaceOfVoxellatedVolume
 				
 		// which voxel has the ray passed through?
 		int[] voxelIndices = getVoxelIndices(Vector3D.mean(i.p, i2.p));
+		double nVoxel = getRefractiveIndex1(voxelIndices);
 
-		try {
+		if(nVoxel == Double.NaN)
+		{
+			(new RayTraceException("Calculation of refractive index of voxel "+voxelIndices+" failed.")).printStackTrace();	// uncomment for debugging
+//			System.exit(-1);
+			
+			// something is wrong --- return a "warning colour"
+			return DoubleColour.ORANGE;
+		}
+
 			// check if the intersection is with the surface
 			if(surface.getSceneObjectPrimitives().contains(i2.o))
 			{
 				// the intersection is with the surface; leave the volume
 				// (multiply by the transmission coefficient because of attenuation upon entering volume)
 				return getColourUponLeavingVolume(
-						r, i2, getRefractiveIndex(voxelIndices), scene, l, stepsLeft-1, traceLevel, raytraceExceptionHandler);
+						r, i2, nVoxel, scene, l, stepsLeft-1, traceLevel, raytraceExceptionHandler);
 			}
 			else
 			{
@@ -138,21 +147,8 @@ public class SurfaceOfVoxellatedRefractor extends SurfaceOfVoxellatedVolume
 
 				// the intersection is with one of the planes; deal with it
 				return getColourUponIntersectingWithSurface(
-						r, i2, getRefractiveIndex(voxelIndices), scene, l, stepsLeft-1, traceLevel, raytraceExceptionHandler);
+						r, i2, nVoxel, scene, l, stepsLeft-1, traceLevel, raytraceExceptionHandler);
 			}
-		}
-//		catch (EvanescentException e)
-//		{
-//			return DoubleColour.BLUE;
-//		}
-		catch (Exception e)
-		{
-			e.printStackTrace();	// uncomment for debugging
-//			System.exit(-1);
-			
-			// something is wrong --- return a "warning colour"
-			return DoubleColour.ORANGE;
-		}
 	}
 
 
@@ -181,18 +177,19 @@ public class SurfaceOfVoxellatedRefractor extends SurfaceOfVoxellatedVolume
 		
 		// calculate the refractive index of that voxel
 		double nVoxel;
-		try {
-			nVoxel = getRefractiveIndex(voxelIndices);
+		// try {
+			nVoxel = getRefractiveIndex1(voxelIndices);
 			// if(DEBUG) System.out.println("::getColourUponEnteringVolume: nVoxel="+nVoxel);
 			if(DEBUG) System.out.println("SurfaceOfVoxellatedRefractor::getColourUponEnteringVolume: voxelIndices="+Arrays.toString(voxelIndices)+", nVoxel="+nVoxel);
-		}
+		// }
 //		catch (EvanescentException e)
 //		{
 //			return DoubleColour.BLUE;
 //		}
-		catch (Exception e)
+		// catch (Exception e)
+		if(nVoxel == Double.NaN)
 		{
-			e.printStackTrace();	// uncomment for debugging
+		 	(new RayTraceException("Calculation of refractive index failed")).printStackTrace();	// uncomment for debugging
 			
 			// something is wrong --- return a "warning colour"
 			return DoubleColour.ORANGE;
@@ -263,12 +260,13 @@ public class SurfaceOfVoxellatedRefractor extends SurfaceOfVoxellatedVolume
 		
 		// calculate the refractive index of that voxel
 		double nVoxel;
-		try {
-			nVoxel = getRefractiveIndex(voxelIndices);
-		}
-		catch (Exception e)
+		// try {
+			nVoxel = getRefractiveIndex1(voxelIndices);
+		// }
+		// catch (Exception e)
+		if(nVoxel == Double.NaN)
 		{
-			// e.printStackTrace();
+			 (new RayTraceException("Calculation of refractive index failed")).printStackTrace();	// uncomment for debugging
 
 			// something is wrong --- return a "warning colour"
 			return DoubleColour.ORANGE;
