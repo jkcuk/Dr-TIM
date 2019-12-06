@@ -108,6 +108,8 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 	 */
 	private double fartherLensletArrayF;
 	
+	private boolean showCloserLA, showFartherLA;
+	
 	/**
 	 * if true, simulate an ideal thin lens that removes ray-offset blur of images in the lens's focal plane
 	 */
@@ -222,27 +224,29 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 		initType = InitType.CUSTOM;
 		studioInitialisation = StudioInitialisationType.DISTANCE_LABELLED_PLANES_1;	// the backdrop
 		testImage = TestImage.USAF_TEST_CHART_Thorlabs;
-		testImageZ = 50*CM;
+		testImageZ = 100*CM;
 		testImageCentreX = 0*CM;
 		testImageCentreY = 0*CM;
 		testImageHeight = 8*CM;
 		
 		showPixelChannelingLens = true;
-		pixelChannelingLensZ = 15*CM;	// MyMath.TINY;
+		pixelChannelingLensZ = 2*CM;	// MyMath.TINY;
 		pixelChannelingLensF = testImageZ - pixelChannelingLensZ;
 		
 		// set all parameters
 		pixellatedComponentType = PixellatedComponentType.CLAs;
-		claLensType = CLALensType.IDEAL;
 		
 		pixelSideLengthX = 1*CM;
 		pixelSideLengthY = 1*CM;
-		pixellatedPlaneZ = 10*CM;
+		pixellatedPlaneZ = 1*CM;
 		simulateDiffractiveBlur = true;
 		simulateRayOffsetBlur = true;
 		wavelength = 633*NM;	// lambda; 564nm is the wavelength at which the human eye is most sensitive -- see http://hypertextbook.com/facts/2007/SusanZhao.shtml
-		closerLensletArrayF = -2*CM;
-		fartherLensletArrayF = 4*CM;
+		fartherLensletArrayF = 0.1*CM;
+		closerLensletArrayF = -0.05*CM;
+		showFartherLA = true;
+		showCloserLA = true;
+		claLensType = CLALensType.IDEAL;
 		showBaffles = true;
 
 		cameraApertureCentreX = 0;
@@ -253,10 +257,10 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 				new Vector3D(cameraApertureCentreX, cameraApertureCentreY, 0),
 				cameraViewDirection.getWithLength(cameraDistance)
 			);
-		cameraHorizontalFOVDeg = 20;
+		cameraHorizontalFOVDeg = 10;
 		cameraApertureSize = ApertureSizeType.TINY;
 		apertureRadiusFactor = 1.0;
-		cameraFocussingDistance = 1000000000.*CM;	// focussed on images produced by individual telescopes
+		cameraFocussingDistance = 10000000*CM;	// focussed on images produced by individual telescopes
 		focusObjectZ = testImageZ;
 		
 		if(nonInteractiveTIMAction == NonInteractiveTIMActionEnum.INTERACTIVE)
@@ -364,8 +368,8 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 			printStream.println("Simulate ray-offset blur "+simulateRayOffsetBlur);
 			break;
 		case CLAs:
-			printStream.println("Focal length of farther lenslet array "+fartherLensletArrayF/CM+" cm");
-			printStream.println("Focal length of closer lenslet array "+closerLensletArrayF/CM+" cm");
+			printStream.println("Show farther lenslet array "+showFartherLA+" of focal length "+fartherLensletArrayF/CM+" cm");
+			printStream.println("Show closer lenslet array "+showCloserLA+" of focal length "+closerLensletArrayF/CM+" cm");
 			printStream.println("Lens type "+claLensType);
 			printStream.println("Show baffles "+showBaffles);
 		}
@@ -607,6 +611,8 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 						false	// shadowThrowing
 					);
 			}
+			System.out.println("showFartherLA = "+showFartherLA+", showCloserLA = "+showCloserLA);
+			
 			scene.addSceneObject(new EditableParametrisedPlane(
 					"farther lenslet array",	// description
 					new Vector3D(0, 0, pixellatedPlaneZ+fartherLensletArrayF),	// pointOnPlane
@@ -614,7 +620,8 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 					fartherLASurfaceProperty,
 					scene,
 					studio
-					));
+					),
+				showFartherLA);
 
 			scene.addSceneObject(new EditableParametrisedPlane(
 					"closer lenslet array",	// description
@@ -623,7 +630,8 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 					closerLASurfaceProperty,
 					scene,
 					studio
-					));
+					),
+				showCloserLA);
 			
 			scene.addSceneObject(baffledVolume, showBaffles);
 		}
@@ -761,7 +769,7 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 		testImageHeightCMPanel,
 		focusObjectZCMPanel;
 	// private Vector2DPanel testImageCentreXYCMPanel;
-	private JCheckBox simulateDiffractiveBlurCheckBox, simulateRayOffsetBlurCheckBox, showPixelChannelingLensCheckBox, showBafflesCheckBox;	// , idealCLAsCheckBox;
+	private JCheckBox simulateDiffractiveBlurCheckBox, simulateRayOffsetBlurCheckBox, showPixelChannelingLensCheckBox, showBafflesCheckBox, showFartherLACheckBox, showCloserLACheckBox;	// , idealCLAsCheckBox;
 	private JComboBox<CLALensType> claLensTypeComboBox;
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 	private JComboBox<TestImage> testImageComboBox;
@@ -909,13 +917,17 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 		CLAsPanel.setLayout(new MigLayout("insets 0"));
 		pixellatedComponentTabbedPane.addTab("CLAs", CLAsPanel);
 
+		showFartherLACheckBox = new JCheckBox();
+		showFartherLACheckBox.setSelected(showFartherLA);
 		fartherLensletArrayFCMPanel = new DoublePanel();
 		fartherLensletArrayFCMPanel.setNumber(fartherLensletArrayF/CM);
-		CLAsPanel.add(GUIBitsAndBobs.makeRow("Focal length of farther lenslet array", fartherLensletArrayFCMPanel, " cm"), "span");
+		CLAsPanel.add(GUIBitsAndBobs.makeRow(showFartherLACheckBox, "Show farther lenslet array of focal length ", fartherLensletArrayFCMPanel, " cm"), "span");
 
+		showCloserLACheckBox = new JCheckBox();
+		showCloserLACheckBox.setSelected(showCloserLA);
 		closerLensletArrayFCMPanel = new DoublePanel();
 		closerLensletArrayFCMPanel.setNumber(closerLensletArrayF/CM);
-		CLAsPanel.add(GUIBitsAndBobs.makeRow("Focal length of closer lenslet array", closerLensletArrayFCMPanel, " cm"), "span");
+		CLAsPanel.add(GUIBitsAndBobs.makeRow(showCloserLACheckBox, "Show closer lenslet array of focal length ", closerLensletArrayFCMPanel, " cm"), "span");
 
 		claLensTypeComboBox = new JComboBox<CLALensType>(CLALensType.values());
 		claLensTypeComboBox.setSelectedItem(claLensType);
@@ -1033,6 +1045,8 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 		testImageHeight = testImageHeightCMPanel.getNumber()*CM;
 		closerLensletArrayF = closerLensletArrayFCMPanel.getNumber()*CM;
 		fartherLensletArrayF = fartherLensletArrayFCMPanel.getNumber()*CM;
+		showFartherLA = showFartherLACheckBox.isSelected();
+		showCloserLA = showCloserLACheckBox.isSelected();
 		pixelChannelingLensZ = pixelChannelingLensZCMPanel.getNumber()*CM;
 		
 		// set pixellated component type

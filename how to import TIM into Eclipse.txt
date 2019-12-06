@@ -2,6 +2,27 @@ EGit tutorial: https://eclipsesource.com/blogs/tutorials/egit-tutorial/
 
 How to import TIM from the repository into Eclipse
 
+Dr TIM lives in a GIT repository
+
+1) Get github account (at https://github.com/)
+2) e-mail username to me
+3) I will add you as a "Collaborator" on the project (at https://github.com/jkcuk/Dr-TIM/settings/collaboration)
+4) In Eclipse, Import... (by right-clicking in the Package Explorer) > Projects from Git with the following settings:
+Location
+URI: https://github.com/jkcuk/Dr-TIM.git
+Host: github.com
+Repository path: /jkcuk/Dr-TIM.git
+Connection
+Protocol: https
+Port: 
+Authentication
+User: <your Git user name>
+Password: <your Git password>
+Store in Secure Store: yes
+5) Hopefully, the next few steps make sense...
+
+OLD: Subversion repository
+
 If a new user wants to do this, I need to have given them access to the source code at https://sourceforge.net/p/timray/admin/groups/ .
 Eclipse needs to have the subversion plugin installed (Eclipse subversion plugin:  http://www.eclipse.org/subversive/ ; install in Eclipse by selecting "Install New Software�" in the "Help" menu; select one of the standard Eclipse software servers, ...)
 
