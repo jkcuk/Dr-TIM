@@ -137,6 +137,11 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	protected double cameraHorizontalFOVDeg;
 	
 	/**
+	 * the velocity of the camera in the scene frame, in units of c
+	 */
+	protected Vector3D cameraBeta;
+	
+	/**
 	 * the camera's maxTraceLevel
 	 * @see optics.raytrace.NonInteractiveTIMEngine.getStandardCamera()
 	 */
@@ -219,6 +224,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	 * @see cameraDistance
 	 * @see cameraFocussingDistance
 	 * @see cameraHorizontalFOVDeg
+	 * @see camaraBeta
 	 * @see cameraMaxTraceLevel
 	 * @see cameraPixelsX
 	 * @see cameraPixelsY
@@ -244,6 +250,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 		cameraDistance = 10;
 		cameraFocussingDistance = 10;
 		cameraHorizontalFOVDeg = 20;
+		cameraBeta = new Vector3D(0, 0, 0);
 		cameraMaxTraceLevel = 100;
 		cameraPixelsX = 640;
 		cameraPixelsY = 480;
@@ -360,6 +367,16 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 
 	public void setCameraHorizontalFOV(double cameraHorizontalFOVDeg) {
 		this.cameraHorizontalFOVDeg = cameraHorizontalFOVDeg;
+	}
+
+
+	public Vector3D getCameraBeta() {
+		return cameraBeta;
+	}
+
+
+	public void setCameraBeta(Vector3D cameraBeta) {
+		this.cameraBeta = cameraBeta;
 	}
 
 
@@ -617,7 +634,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 				cameraViewDirection,	// viewDirection
 				topDirection,	// top direction vector
 				cameraHorizontalFOVDeg,	// horiontalViewAngle in degrees; 2*MyMath.rad2deg(Math.atan(2./10.)) gives same view angle as in previous version
-				new Vector3D(0, 0, 0),	// beta
+				cameraBeta,	// beta
 				cameraPixelsX, cameraPixelsY,	// logical number of pixels
 				cameraExposureCompensation,	// ExposureCompensationType.EC0,	// exposure compensation +0
 				cameraMaxTraceLevel,	// maxTraceLevel
@@ -871,6 +888,8 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 
 //		protected double cameraHorizontalFOVDeg;
 		printStream.println("cameraHorizontalFOVDeg = "+cameraHorizontalFOVDeg);
+
+		printStream.println("cameraBeta = "+cameraBeta);
 
 //		protected int cameraMaxTraceLevel;
 		printStream.println("cameraMaxTraceLevel = "+cameraMaxTraceLevel);

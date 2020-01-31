@@ -147,23 +147,25 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 	 */
 	private double pixellatedPlaneZ;
 	
-	private enum InitType
-	{
-		STANDARD("Standard scenes"),
-		CUSTOM("Test image");
-		
-		private String description;
-		private InitType(String description) {this.description = description;}
-		@Override
-		public String toString() {return description;}
-	}
-	
-	private InitType initType;
+//	private enum InitType
+//	{
+//		STANDARD("Standard scenes"),
+//		CUSTOM("Test image");
+//		
+//		private String description;
+//		private InitType(String description) {this.description = description;}
+//		@Override
+//		public String toString() {return description;}
+//	}
+//	
+//	private InitType initType;
 
 	/**
 	 * Determines how to initialise the backdrop
 	 */
 	private StudioInitialisationType studioInitialisation;
+	
+	private boolean showTestImage;
 	
 	private TestImage testImage;
 	
@@ -221,8 +223,9 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 //		showBaffles = true;
 
 		// paper initialisation
-		initType = InitType.CUSTOM;
-		studioInitialisation = StudioInitialisationType.DISTANCE_LABELLED_PLANES_1;	// the backdrop
+		// initType = InitType.CUSTOM;
+		studioInitialisation = StudioInitialisationType.DARKNESS;	// the backdrop
+		showTestImage = true;
 		testImage = TestImage.USAF_TEST_CHART_Thorlabs;
 		testImageZ = 100*CM;
 		testImageCentreX = 0*CM;
@@ -239,15 +242,15 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 		pixelSideLengthX = 1*CM;
 		pixelSideLengthY = 1*CM;
 		pixellatedPlaneZ = 1*CM;
-		simulateDiffractiveBlur = true;
 		simulateRayOffsetBlur = true;
-		wavelength = 633*NM;	// lambda; 564nm is the wavelength at which the human eye is most sensitive -- see http://hypertextbook.com/facts/2007/SusanZhao.shtml
-		fartherLensletArrayF = 0.1*CM;
-		closerLensletArrayF = -0.05*CM;
 		showFartherLA = true;
+		fartherLensletArrayF = 0.1*CM;
 		showCloserLA = true;
+		closerLensletArrayF = -0.05*CM;
 		claLensType = CLALensType.IDEAL;
 		showBaffles = true;
+		simulateDiffractiveBlur = true;
+		wavelength = 633*NM;	// lambda; 564nm is the wavelength at which the human eye is most sensitive -- see http://hypertextbook.com/facts/2007/SusanZhao.shtml
 
 		cameraApertureCentreX = 0;
 		cameraApertureCentreY = 0;
@@ -265,7 +268,7 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 		
 		if(nonInteractiveTIMAction == NonInteractiveTIMActionEnum.INTERACTIVE)
 		{
-			windowTitle = "Dr TIM's pixellation-effects explorer 2.0";
+			windowTitle = "Dr TIM's pixellation-effects explorer 2.1";
 			windowWidth = 1400;
 			windowHeight = 750;
 		}
@@ -330,64 +333,70 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 		// printStream.println("*** Scene initialisation*** ");
 		printStream.println();
 		
-		printStream.println(initType+" (Initialisation type)");
-		switch(initType)
-		{
-		case CUSTOM:
-			printStream.println("Test image "+testImage);
-			printStream.println("Distance from camera "+testImageZ/CM+" cm");
-			printStream.println("Transverse offset ("+testImageCentreX/CM+" cm ,"+testImageCentreY/CM+" cm)");
-			printStream.println("Height = "+testImageHeight/CM+" cm");
-			break;
-		case STANDARD:
-			printStream.println("Scene "+studioInitialisation);			
-		}
+//		printStream.println(initType+" (Initialisation type)");
+//		switch(initType)
+//		{
+//		case STANDARD:
+			printStream.println("Background "+studioInitialisation);	
+			printStream.println();
+//		case CUSTOM:
+			printStream.println("Test image");
+			printStream.println();
+			printStream.println("  Show "+showTestImage);
+			if(showTestImage)
+			{
+				printStream.println("  Image "+testImage);
+				printStream.println("  Distance from camera "+testImageZ/CM+" cm");
+				printStream.println("  Transverse offset ("+testImageCentreX/CM+" cm ,"+testImageCentreY/CM+" cm)");
+				printStream.println("  Height = "+testImageHeight/CM+" cm");
+			}
+//			break;
+//		}
 		
 		printStream.println();
 		printStream.println("Pixel-channeling lens");
 		printStream.println();
-
-		printStream.println("Show "+showPixelChannelingLens);
+		printStream.println("  Show "+showPixelChannelingLens);
 		if(showPixelChannelingLens)
 		{
-			printStream.println("Focal length "+pixelChannelingLensF/CM+" cm");
-			printStream.println("Distance from camera "+pixelChannelingLensZ/CM+" cm");
+			printStream.println("  Focal length "+pixelChannelingLensF/CM+" cm");
+			printStream.println("  Distance from camera "+pixelChannelingLensZ/CM+" cm");
 		}
 		
 		printStream.println();
 		printStream.println("Pixellated component");
 		printStream.println();
 
-		printStream.println("Pixel size "+pixelSideLengthX/CM+" cm x"+pixelSideLengthY/CM+" cm");
-		printStream.println("Distance from camera "+pixellatedPlaneZ/CM+" cm");
+		printStream.println("  Pixel size "+pixelSideLengthX/CM+" cm x"+pixelSideLengthY/CM+" cm");
+		printStream.println("  Distance from camera "+pixellatedPlaneZ/CM+" cm");
 
-		printStream.println("Component type "+pixellatedComponentType);
+		printStream.println("  Component type "+pixellatedComponentType);
 		switch(pixellatedComponentType)
 		{
 		case BLUR_ONLY:
-			printStream.println("Simulate ray-offset blur "+simulateRayOffsetBlur);
+			printStream.println("  Simulate ray-offset blur "+simulateRayOffsetBlur);
 			break;
 		case CLAs:
-			printStream.println("Show farther lenslet array "+showFartherLA+" of focal length "+fartherLensletArrayF/CM+" cm");
-			printStream.println("Show closer lenslet array "+showCloserLA+" of focal length "+closerLensletArrayF/CM+" cm");
-			printStream.println("Lens type "+claLensType);
-			printStream.println("Show baffles "+showBaffles);
+			printStream.println("  Show farther lenslet array "+showFartherLA+" of focal length "+fartherLensletArrayF/CM+" cm");
+			printStream.println("  Show closer lenslet array "+showCloserLA+" of focal length "+closerLensletArrayF/CM+" cm");
+			printStream.println("  Lens type "+claLensType);
+			printStream.println("  Show baffles "+showBaffles);
 		}
-		printStream.println("Simulate diffractive blur "+simulateDiffractiveBlur);
+		printStream.println("  Simulate diffractive blur "+simulateDiffractiveBlur);
 		if(simulateDiffractiveBlur)
-			printStream.println("wavelength "+wavelength/NM+"nm");	// +" (simulateDiffractiveBlur=true only)");
+			printStream.println("  Wavelength "+wavelength/NM+"nm");	// +" (simulateDiffractiveBlur=true only)");
 		
 		printStream.println();
 		printStream.println("Camera");
 		printStream.println();
 
-		printStream.println("Aperture centre ("+cameraApertureCentreX/CM+" cm, "+cameraApertureCentreY/CM+" cm, 0)");
-		printStream.println("Horizontal FOV "+cameraHorizontalFOVDeg+"°");
-		printStream.println("Camera aperture "+cameraApertureSize+"*"+apertureRadiusFactor);
-		printStream.println("Focussing distance "+cameraFocussingDistance/CM+" cm");
-		printStream.println("[Focus on images due to individual telescopes] or [Focus on integral image] of plane a distance "+focusObjectZ/CM+" cm from camera");
+		printStream.println("  Aperture centre ("+cameraApertureCentreX/CM+" cm, "+cameraApertureCentreY/CM+" cm, 0)");
+		printStream.println("  Horizontal FOV "+cameraHorizontalFOVDeg+"°");
+		printStream.println("  Camera aperture "+cameraApertureSize+"*"+apertureRadiusFactor);
+		printStream.println("  Focussing distance "+cameraFocussingDistance/CM+" cm");
+		printStream.println("  [Focus on images due to individual telescopes] or [Focus on integral image] of plane a distance "+focusObjectZ/CM+" cm from camera");
 		
-		printStream.println("Camera exposure compensation "+cameraExposureCompensation);
+		printStream.println("  Camera exposure compensation "+cameraExposureCompensation);
 	
 		// write all parameters defined in NonInteractiveTIMEngine
 		// super.writeParameters(printStream);
@@ -405,25 +414,27 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 
 		studio.setScene(scene);
 		
-		switch(initType)
-		{
-		case STANDARD:
+//		switch(initType)
+//		{
+//		case STANDARD:
 			// initialise the scene and lights
 			StudioInitialisationType.initialiseSceneAndLights(
 					studioInitialisation,
 					scene,
 					studio
 					);
-			break;
-		case CUSTOM:
-		default:
-			// a white background...
-			StudioInitialisationType.initialiseSceneAndLights(
-					StudioInitialisationType.HEAVEN,
-					scene,
-					studio
-					);
+//			break;
+//		case CUSTOM:
+//		default:
+//			// a white background...
+//			StudioInitialisationType.initialiseSceneAndLights(
+//					StudioInitialisationType.HEAVEN,
+//					scene,
+//					studio
+//					);
 			
+			if(showTestImage)
+			{
 			// ... and an object in a given z plane
 			double testImageWidth = testImageHeight * testImage.getAspectRatio();
 			scene.addSceneObject(testImage.getEditableScaledParametrisedCentredParallelogram(
@@ -433,7 +444,8 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 					new Vector3D(0, -testImageHeight, 0),	// spanVector2
 					scene,	// parent
 					studio));
-		}
+			}
+//		}
 
 		// studio.setLights(LightSource.getStandardLightsFromBehind());
 		// cameraViewCentre = new Vector3D(cameraApertureCentreX, cameraApertureCentreY, cameraDistance);
@@ -769,11 +781,11 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 		testImageHeightCMPanel,
 		focusObjectZCMPanel;
 	// private Vector2DPanel testImageCentreXYCMPanel;
-	private JCheckBox simulateDiffractiveBlurCheckBox, simulateRayOffsetBlurCheckBox, showPixelChannelingLensCheckBox, showBafflesCheckBox, showFartherLACheckBox, showCloserLACheckBox;	// , idealCLAsCheckBox;
+	private JCheckBox showTestImageCheckBox, simulateDiffractiveBlurCheckBox, simulateRayOffsetBlurCheckBox, showPixelChannelingLensCheckBox, showBafflesCheckBox, showFartherLACheckBox, showCloserLACheckBox;	// , idealCLAsCheckBox;
 	private JComboBox<CLALensType> claLensTypeComboBox;
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 	private JComboBox<TestImage> testImageComboBox;
-	private JTabbedPane pixellatedComponentTabbedPane, sceneTabbedPane;
+	private JTabbedPane pixellatedComponentTabbedPane;	// , sceneTabbedPane;
 	
 	// camera stuff
 	// private LabelledVector3DPanel cameraViewDirectionPanel;
@@ -795,39 +807,45 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 	{
 		super.createInteractiveControlPanel();
 		
-		// scene tabbed pane
-		sceneTabbedPane = new JTabbedPane();
-		interactiveControlPanel.add(sceneTabbedPane, "span");
-		
-		// standard scene
-		JPanel standardScenesPanel = new JPanel();
-		standardScenesPanel.setLayout(new MigLayout("insets 0"));
-		sceneTabbedPane.addTab("Standard scenes", standardScenesPanel);
+//		// scene tabbed pane
+//		sceneTabbedPane = new JTabbedPane();
+//		interactiveControlPanel.add(sceneTabbedPane, "span");
+//		
+//		// standard scene
+//		JPanel standardScenesPanel = new JPanel();
+//		standardScenesPanel.setLayout(new MigLayout("insets 0"));
+//		sceneTabbedPane.addTab("Standard scenes", standardScenesPanel);
 
 		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
 		// studioInitialisationComboBox.addItem(StudioInitialisationType.CUSTOM);
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
-		standardScenesPanel.add(GUIBitsAndBobs.makeRow("Scene", studioInitialisationComboBox), "span");
+		interactiveControlPanel.add(GUIBitsAndBobs.makeRow("Scene", studioInitialisationComboBox), "span");
 		// interactiveControlPanel.add(new JLabel("(choose Heaven for distance-labelled planes)"), "span");
 
-		// custom scene
-		JPanel customScenePanel = new JPanel();
-		customScenePanel.setLayout(new MigLayout("insets 0"));
-		sceneTabbedPane.addTab("Test image", customScenePanel);
+		// test image
+		JPanel testImagePanel = new JPanel();
+		testImagePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Test image"));
+		testImagePanel.setLayout(new MigLayout("insets 0"));
+		interactiveControlPanel.add(testImagePanel, "span");
+		// sceneTabbedPane.addTab("Test image", customScenePanel);
+		
+		showTestImageCheckBox = new JCheckBox("Show");
+		showTestImageCheckBox.setSelected(showTestImage);
+		testImagePanel.add(showTestImageCheckBox, "wrap");
 		
 		testImageComboBox = new JComboBox<TestImage>(TestImage.values());
 		testImageComboBox.setSelectedItem(testImage);
-		customScenePanel.add(GUIBitsAndBobs.makeRow("Test image", testImageComboBox), "span");
+		testImagePanel.add(GUIBitsAndBobs.makeRow("Test image", testImageComboBox), "span");
 
 		testImageZCMPanel = new DoublePanel();
 		testImageZCMPanel.setNumber(testImageZ/CM);
-		customScenePanel.add(GUIBitsAndBobs.makeRow("Distance from camera", testImageZCMPanel, " cm"), "span");
+		testImagePanel.add(GUIBitsAndBobs.makeRow("Distance from camera", testImageZCMPanel, " cm"), "span");
 		
 		testImageCentreXCMPanel = new DoublePanel();
 		testImageCentreXCMPanel.setNumber(testImageCentreX/CM);
 		testImageCentreYCMPanel = new DoublePanel();
 		testImageCentreYCMPanel.setNumber(testImageCentreY/CM);
-		customScenePanel.add(GUIBitsAndBobs.makeRow("Transverse offset (", testImageCentreXCMPanel, " cm,", testImageCentreYCMPanel, " cm)"), "span");
+		testImagePanel.add(GUIBitsAndBobs.makeRow("Transverse offset (", testImageCentreXCMPanel, " cm,", testImageCentreYCMPanel, " cm)"), "span");
 
 //		testImageCentreXYCMPanel = new Vector2DPanel();
 //		testImageCentreXYCMPanel.setVector2D(testImageCentreX/CM, testImageCentreY/CM);
@@ -835,10 +853,10 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 
 		testImageHeightCMPanel = new DoublePanel();
 		testImageHeightCMPanel.setNumber(testImageHeight/CM);
-		customScenePanel.add(GUIBitsAndBobs.makeRow("Height", testImageHeightCMPanel, " cm"), "span");
+		testImagePanel.add(GUIBitsAndBobs.makeRow("Height", testImageHeightCMPanel, " cm"), "span");
 		
-		if(initType == InitType.STANDARD) sceneTabbedPane.setSelectedIndex(0);
-		else sceneTabbedPane.setSelectedIndex(1);
+//		if(initType == InitType.STANDARD) sceneTabbedPane.setSelectedIndex(0);
+//		else sceneTabbedPane.setSelectedIndex(1);
 		
 
 		//
@@ -1023,31 +1041,30 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 	{
 		super.acceptValuesInInteractiveControlPanel();
 		
-		apertureRadiusFactor = apertureRadiusFactorPanel.getNumber();
-		cameraApertureCentreX = cameraApertureCentreXPanel.getNumber()*CM;
-		cameraApertureCentreY = cameraApertureCentreYPanel.getNumber()*CM;
-		
-		pixelSideLengthX = pixelSideLengthXCMPanel.getNumber()*CM;
-		pixelSideLengthY = pixelSideLengthYCMPanel.getNumber()*CM;
-		wavelength = wavelengthNMPanel.getNumber()*NM;
-		pixellatedPlaneZ = pixellatedPlaneZCMPanel.getNumber()*CM;
-		simulateDiffractiveBlur = simulateDiffractiveBlurCheckBox.isSelected();
-		simulateRayOffsetBlur = simulateRayOffsetBlurCheckBox.isSelected();
-		showPixelChannelingLens = showPixelChannelingLensCheckBox.isSelected();
-		pixelChannelingLensF = pixelChannelingLensFPanel.getNumber()*CM;
-		if(sceneTabbedPane.getSelectedIndex() == 0) initType = InitType.STANDARD;
-		else initType = InitType.CUSTOM;
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
+		showTestImage = showTestImageCheckBox.isSelected();
 		testImage = (TestImage)(testImageComboBox.getSelectedItem());
 		testImageZ = testImageZCMPanel.getNumber()*CM;
 		testImageCentreX = testImageCentreXCMPanel.getNumber()*CM;
 		testImageCentreY = testImageCentreYCMPanel.getNumber()*CM;
 		testImageHeight = testImageHeightCMPanel.getNumber()*CM;
+
+		showPixelChannelingLens = showPixelChannelingLensCheckBox.isSelected();
+		pixelChannelingLensF = pixelChannelingLensFPanel.getNumber()*CM;
+		pixelChannelingLensZ = pixelChannelingLensZCMPanel.getNumber()*CM;
+
+		pixelSideLengthX = pixelSideLengthXCMPanel.getNumber()*CM;
+		pixelSideLengthY = pixelSideLengthYCMPanel.getNumber()*CM;
+		pixellatedPlaneZ = pixellatedPlaneZCMPanel.getNumber()*CM;
+		simulateRayOffsetBlur = simulateRayOffsetBlurCheckBox.isSelected();
+//		if(sceneTabbedPane.getSelectedIndex() == 0) initType = InitType.STANDARD;
+//		else initType = InitType.CUSTOM;
 		closerLensletArrayF = closerLensletArrayFCMPanel.getNumber()*CM;
 		fartherLensletArrayF = fartherLensletArrayFCMPanel.getNumber()*CM;
 		showFartherLA = showFartherLACheckBox.isSelected();
 		showCloserLA = showCloserLACheckBox.isSelected();
-		pixelChannelingLensZ = pixelChannelingLensZCMPanel.getNumber()*CM;
+		simulateDiffractiveBlur = simulateDiffractiveBlurCheckBox.isSelected();
+		wavelength = wavelengthNMPanel.getNumber()*NM;
 		
 		// set pixellated component type
 		switch(pixellatedComponentTabbedPane.getSelectedIndex())
@@ -1073,9 +1090,14 @@ public class PixellationEffectsExplorer2_1 extends NonInteractiveTIMEngine
 //		}
 		showBaffles = showBafflesCheckBox.isSelected();
 		
+		cameraApertureCentreX = cameraApertureCentreXPanel.getNumber()*CM;
+		cameraApertureCentreY = cameraApertureCentreYPanel.getNumber()*CM;
+		
+
 		// cameraViewDirection = cameraViewDirectionPanel.getVector3D();
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
 		cameraApertureSize = (ApertureSizeType)(cameraApertureSizeComboBox.getSelectedItem());
+		apertureRadiusFactor = apertureRadiusFactorPanel.getNumber();
 		cameraFocussingDistance = cameraFocussingDistanceCMPanel.getNumber()*CM;
 		focusObjectZ = focusObjectZCMPanel.getNumber()*CM;
 		cameraExposureCompensation = (ExposureCompensationType)(cameraExposureCompensationComboBox.getSelectedItem());
