@@ -78,6 +78,7 @@ public class Ellipsoid extends SceneObjectPrimitive implements Serializable
 	// private variables
 	
 	private Vector3D aHat, bHat, cHat;
+	private double a2, b2, c2;
 	
 
 	
@@ -119,6 +120,11 @@ public class Ellipsoid extends SceneObjectPrimitive implements Serializable
 		aHat = this.a.getNormalised();
 		bHat = this.b.getNormalised();
 		cHat = this.c.getNormalised();
+		
+		// for the calculation of the normal
+		a2 = this.a.getModSquared();
+		b2 = this.b.getModSquared();
+		c2 = this.c.getModSquared();
 	}
 
 
@@ -184,9 +190,8 @@ public class Ellipsoid extends SceneObjectPrimitive implements Serializable
 	@Override
 	public Vector3D getNormalisedOutwardsSurfaceNormal(Vector3D p)
 	{
-		// the surface normal at p is simply given by p-c
-		return stretch(Vector3D.difference(p, centre)).getNormalised();	
-		// TODO This is clearly wrong -- think about the geometry and fix it!
+		// the surface normal at p is simply given by p-c -- see https://math.stackexchange.com/questions/2931909/normal-of-a-point-on-the-surface-of-an-ellipsoid
+		return Vector3D.difference(p, centre).toBasis(aHat, bHat, cHat).getComponentwiseProductWith(2./a2, 2./b2, 2./c2).fromBasis(aHat, bHat, cHat).getNormalised();	
 	}
 
 	@Override

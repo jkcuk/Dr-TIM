@@ -15,9 +15,7 @@ import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 import optics.raytrace.exceptions.SceneException;
-import optics.raytrace.sceneObjects.Ellipsoid;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-import optics.raytrace.surfaces.RelativisticDistortionEllipsoidConstructionSurface;
 
 
 /**
@@ -31,7 +29,7 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 	private Vector3D betaHat;
 	private double beta;
 	
-	private boolean simulateAsEllipsoidConstruction;
+	private boolean simulateAsEllipsoidConstruction, outsideCameraPosition;
 	
 	/**
 	 * Determines how to initialise the backdrop
@@ -50,19 +48,24 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		renderQuality = RenderQualityEnum.DRAFT;
 		
 		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
-		movie = false;
 		numberOfFrames = 50;
 		firstFrame = 0;
 		lastFrame = numberOfFrames-1;
 		
 		betaHat = new Vector3D(0, 0, 1);
-		beta = 0.1;
+		beta = 0.9;
 		
 		studioInitialisation = StudioInitialisationType.TIM_HEAD;	// the backdrop
 
 		simulateAsEllipsoidConstruction = true;
+		outsideCameraPosition = true;
 		
 		// camera parameters are set in createStudio()
+		
+		windowTitle = "Dr TIM's ellipsoid-construction visualiser";
+		windowWidth = 1500;
+		windowHeight = 650;
+
 	}
 
 	
@@ -98,13 +101,29 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 	public void populateStudio()
 	throws SceneException
 	{
-		// double phi = -0.25+(movie?2.*Math.PI*frame/(numberOfFrames+1):0);
-		cameraViewDirection = Vector3D.Z;
-		//		new Vector3D(-Math.sin(phi), -.2, Math.cos(phi)).getNormalised();
-		cameraDistance = 1;	// camera is located at (0, 0, 0)
-		cameraViewCentre = cameraViewDirection;	// this places the camera at the origin
+		if(outsideCameraPosition)
+		{
+			// either
+			double phi = -0.25+(movie?2.*Math.PI*frame/(numberOfFrames+1):0);
+			cameraViewDirection = new Vector3D(-Math.sin(phi), -.2, Math.cos(phi)).getNormalised();
+			cameraDistance = 10;	// camera is located at (0, 0, 0)
+			cameraViewCentre = new Vector3D(0, 0, 0);	// this places the camera at the origin
+			cameraHorizontalFOVDeg = 25;
+			movie = true;
+		}
+		else
+		{
+			// or
+			cameraViewDirection = Vector3D.Z;
+			cameraDistance = 1;	// camera is located at (0, 0, 0)
+			cameraViewCentre = cameraViewDirection;	// this places the camera at the origin
+			cameraHorizontalFOVDeg = 40;
+			movie = false;
+		}	
+		
+		// Vector3D cameraPosition = Vector3D.difference(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance));
+
 		cameraFocussingDistance = 10;
-		cameraHorizontalFOVDeg = 40;
 		cameraMaxTraceLevel = 100;
 		cameraPixelsX = 640;
 		cameraPixelsY = 480;
@@ -128,37 +147,18 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		{
 			// scene.addSceneObject(new Sphere("Sphere", new Vector3D(0, 0, 10), 1, SurfaceColour.CYAN_SHINY, scene, studio));
 
-			Vector3D aHat = betaHat;
-			Vector3D bHat = Vector3D.getANormal(aHat);
-			Vector3D cHat = Vector3D.crossProduct(aHat, bHat);
+			RelativisticDistortionEllipsoidConstructionSurface s = new RelativisticDistortionEllipsoidConstructionSurface(new Vector3D(0, 0, 0), betaHat, beta);
+			
+			scene.addSceneObject(s.createAndSetEllipsoid("Ellipsoid", 1, scene, studio));
 
-			double gamma = 1./Math.sqrt(1.-beta*beta);
-
-			// System.out.println("EllipsoidConstructionVisualiser::populateStudio: gamma = "+gamma);
-
-			Ellipsoid ellipsoid = new Ellipsoid(
-					"Ellipsoid",	// description
-					betaHat.getProductWith(beta),	// centre
-					aHat,	// a
-					bHat.getProductWith(gamma),	// b
-					cHat.getProductWith(gamma),	// c
-					null,	// surfaceProperty -- set in a minute
-					scene,	// parent
-					studio
-					);
-			ellipsoid.setSurfaceProperty(
-					// SurfaceColourLightSourceIndependent.GREEN
-					new RelativisticDistortionEllipsoidConstructionSurface(scene, betaHat, beta, ellipsoid)
-					);
-
-			studio.setScene(ellipsoid);
 			cameraBeta = new Vector3D(0, 0, 0);
 		}
 		else
 		{
-			studio.setScene(scene);
+			// studio.setScene(scene);
 			cameraBeta = betaHat.getProductWith(beta);
 		}
+		studio.setScene(scene);
 		studio.setCamera(getStandardCamera());
 
 		
@@ -172,7 +172,7 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 	
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 	private LabelledVector3DPanel betaPanel;
-	private JCheckBox simulateAsEllipsoidConstructionCheckBox;
+	private JCheckBox simulateAsEllipsoidConstructionCheckBox, outsideCameraPositionCheckBox;
 
 	
 	/**
@@ -195,6 +195,10 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		simulateAsEllipsoidConstructionCheckBox = new JCheckBox("Simulate as ellipsoid construction?");
 		simulateAsEllipsoidConstructionCheckBox.setSelected(simulateAsEllipsoidConstruction);
 		interactiveControlPanel.add(simulateAsEllipsoidConstructionCheckBox, "span");
+
+		outsideCameraPositionCheckBox = new JCheckBox("outside camera position");
+		outsideCameraPositionCheckBox.setSelected(outsideCameraPosition);
+		interactiveControlPanel.add(outsideCameraPositionCheckBox, "span");
 	}
 	
 	/**
@@ -213,6 +217,7 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		beta = betaV.getLength();
 		
 		simulateAsEllipsoidConstruction = simulateAsEllipsoidConstructionCheckBox.isSelected();
+		outsideCameraPosition = outsideCameraPositionCheckBox.isSelected();
 	}
 
 	

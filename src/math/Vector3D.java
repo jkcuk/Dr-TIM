@@ -106,6 +106,7 @@ public class Vector3D implements Serializable, Cloneable
 	{
 		return new Vector3D(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x);
 	}
+	
 
 	/**
 	 * Calculate the difference between two Vector3Ds.
@@ -198,6 +199,17 @@ public class Vector3D implements Serializable, Cloneable
 	public double getScalarProductWith(Vector3D v)
 	{       //returns the scalar product of the current instance with
 		return x*v.x+y*v.y+z*v.z;				//Vector3D v
+	}
+	
+	/**
+	 * @param xFactor
+	 * @param yFactor
+	 * @param zFactor
+	 * @return	The componentwise  product
+	 */
+	public Vector3D getComponentwiseProductWith(double xFactor, double yFactor, double zFactor)
+	{
+		return new Vector3D(xFactor*x, yFactor*y, zFactor*z);
 	}
 
 	/**
