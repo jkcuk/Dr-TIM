@@ -4,13 +4,18 @@ import java.io.PrintStream;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JPanel;
 
+import math.Matrix3D;
 import math.Vector3D;
+import net.miginfocom.swing.MigLayout;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
 import optics.raytrace.GUI.cameras.RenderQualityEnum;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
+import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
+import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
@@ -26,10 +31,28 @@ import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 {
 	
-	private Vector3D betaHat;
-	private double beta;
+	private Vector3D betaHat, cameraViewDirection0;
+	private double beta0, cameraDistance0, ellipsoidPrincipalRadiusInBetaDirection;
+	private boolean simulateAsEllipsoidConstruction;
 	
-	private boolean simulateAsEllipsoidConstruction, outsideCameraPosition;
+	public enum MovieType
+	{
+		STILL_IMAGE("Still image"),
+		MOVIE_Y_ROTATION("Rotation of camera view direction around vertical"),
+		MOVIE_CAMERA_DISTANCE("Vary camera distance from +(given value) to -(given value)"),
+		MOVIE_VARY_BETA("Vary beta from (0,0,0) to the given vector");
+		
+		private String description;
+		private MovieType(String description)
+		{
+			this.description = description;
+		}
+		
+		@Override
+		public String toString() {return description;}
+	}
+	MovieType movieType;
+
 	
 	/**
 	 * Determines how to initialise the backdrop
@@ -48,17 +71,23 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		renderQuality = RenderQualityEnum.DRAFT;
 		
 		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
-		numberOfFrames = 50;
+		numberOfFrames = 20;
 		firstFrame = 0;
 		lastFrame = numberOfFrames-1;
+		movieType = MovieType.STILL_IMAGE;
+		
+		
+		cameraViewDirection0 = new Vector3D(0, 0, 1);
+		cameraDistance0 = 0;
+		cameraHorizontalFOVDeg = 40;
 		
 		betaHat = new Vector3D(0, 0, 1);
-		beta = 0.9;
+		beta0 = 0.99;
 		
-		studioInitialisation = StudioInitialisationType.TIM_HEAD;	// the backdrop
+		studioInitialisation = StudioInitialisationType.SURROUND_LATTICE;	// the backdrop
 
 		simulateAsEllipsoidConstruction = true;
-		outsideCameraPosition = true;
+		ellipsoidPrincipalRadiusInBetaDirection = 0.4;
 		
 		// camera parameters are set in createStudio()
 		
@@ -90,6 +119,18 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		// write any parameters not defined in NonInteractiveTIMEngine, each parameter is saved like this:
 		// printStream.println("parameterName = "+parameterName);
 
+		printStream.println("betaHat = "+ betaHat);
+		printStream.println("beta0 = "+beta0);
+
+		printStream.println("simulateAsEllipsoidConstruction = "+simulateAsEllipsoidConstruction);
+		printStream.println("ellipsoidPrincipalRadiusInBetaDirection = "+ellipsoidPrincipalRadiusInBetaDirection);
+
+		printStream.println("cameraViewDirection0 = "+cameraViewDirection0);
+		printStream.println("cameraDistance0 = "+cameraDistance0);
+		printStream.println("cameraHorizontalFOVDeg = "+cameraHorizontalFOVDeg);
+		
+		printStream.println("movieType = "+movieType);
+
 		// write all parameters defined in NonInteractiveTIMEngine
 		super.writeParameters(printStream);
 	}
@@ -101,25 +142,68 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 	public void populateStudio()
 	throws SceneException
 	{
-		if(outsideCameraPosition)
+		// standard values, which will be varied by the various movies
+		double beta = beta0;
+		cameraViewDirection = cameraViewDirection0;
+		cameraDistance = cameraDistance0;
+
+		switch(movieType)
 		{
-			// either
-			double phi = -0.25+(movie?2.*Math.PI*frame/(numberOfFrames+1):0);
-			cameraViewDirection = new Vector3D(-Math.sin(phi), -.2, Math.cos(phi)).getNormalised();
-			cameraDistance = 10;	// camera is located at (0, 0, 0)
-			cameraViewCentre = new Vector3D(0, 0, 0);	// this places the camera at the origin
-			cameraHorizontalFOVDeg = 25;
+		case MOVIE_Y_ROTATION:
 			movie = true;
-		}
-		else
-		{
-			// or
-			cameraViewDirection = Vector3D.Z;
-			cameraDistance = 1;	// camera is located at (0, 0, 0)
-			cameraViewCentre = cameraViewDirection;	// this places the camera at the origin
-			cameraHorizontalFOVDeg = 40;
+			
+			// vary the cameraViewDirection
+			double phi = 2.*Math.PI*frame/numberOfFrames;
+			//  cameraViewDirection = new Vector3D(-Math.sin(phi), -.2, Math.cos(phi)).getNormalised();
+			cameraViewDirection = Matrix3D.rotateVector(
+					cameraViewDirection0,	// vector to be rotated
+					-phi,	// rotationAngle
+					Vector3D.Y	// rotationAxis
+				);
+
+			break;
+		case MOVIE_CAMERA_DISTANCE:
+			movie = true;
+
+			// vary the cameraDistance from +cameraDistance0 to -cameraDistance0
+			cameraDistance = cameraDistance0 - 2*cameraDistance0*frame/(numberOfFrames-1);
+			
+			// vary the cameraDistance from cameraDistance0 to 0
+			// cameraDistance = cameraDistance0*(numberOfFrames-1-frame)/(numberOfFrames-1);
+			
+			// System.out.println("camera distance = "+cameraDistance);
+
+			break;
+		case MOVIE_VARY_BETA:
+			movie = true;
+			
+			// vary the value of beta
+			beta = beta0*frame/(numberOfFrames-1);
+			
+			break;
+		case STILL_IMAGE:
+		default:
 			movie = false;
-		}	
+		}
+
+		// in any case, have the origin at the centre of the view
+		cameraViewCentre = new Vector3D(0, 0, 0);
+
+//		if(outsideCameraPosition)
+//		{
+//			// either
+//
+//			cameraDistance = 10;	// camera is located at (0, 0, 0)
+//			cameraViewCentre = new Vector3D(0, 0, 0);	// this places the camera at the origin
+//			cameraHorizontalFOVDeg = 25;
+//		}
+//		else
+//		{
+//			// or
+//			cameraDistance = 1;
+//			cameraViewCentre = cameraViewDirection;	// this places the camera at the origin
+//			cameraHorizontalFOVDeg = 40;
+//		}	
 		
 		// Vector3D cameraPosition = Vector3D.difference(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance));
 
@@ -147,9 +231,10 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		{
 			// scene.addSceneObject(new Sphere("Sphere", new Vector3D(0, 0, 10), 1, SurfaceColour.CYAN_SHINY, scene, studio));
 
-			RelativisticDistortionEllipsoidConstructionSurface s = new RelativisticDistortionEllipsoidConstructionSurface(new Vector3D(0, 0, 0), betaHat, beta);
+			RelativisticDistortionEllipsoidConstructionSurface s =
+					new RelativisticDistortionEllipsoidConstructionSurface(new Vector3D(0, 0, 0), betaHat, beta, ellipsoidPrincipalRadiusInBetaDirection);
 			
-			scene.addSceneObject(s.createAndSetEllipsoid("Ellipsoid", 1, scene, studio));
+			scene.addSceneObject(s.createAndSetEllipsoid("Ellipsoid", scene, studio));
 
 			cameraBeta = new Vector3D(0, 0, 0);
 		}
@@ -171,8 +256,11 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 	// interactive stuff
 	
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
-	private LabelledVector3DPanel betaPanel;
-	private JCheckBox simulateAsEllipsoidConstructionCheckBox, outsideCameraPositionCheckBox;
+	private JComboBox<MovieType> movieTypeComboBox;
+	private LabelledVector3DPanel betaVectorPanel, initialCameraViewDirectionPanel;
+	private LabelledDoublePanel initialCameraDistancePanel, cameraHorizontalFOVDegPanel, ellipsoidPrincipalRadiusInBetaDirectionPanel;
+	private LabelledIntPanel numberOfFramesPanel;
+	private JCheckBox simulateAsEllipsoidConstructionCheckBox;
 
 	
 	/**
@@ -188,17 +276,51 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
 		interactiveControlPanel.add(GUIBitsAndBobs.makeRow("Initialise backdrop to", studioInitialisationComboBox), "span");
 		
-		betaPanel = new LabelledVector3DPanel("Beta");
-		betaPanel.setVector3D(betaHat.getProductWith(beta));
-		interactiveControlPanel.add(betaPanel, "span");
+		betaVectorPanel = new LabelledVector3DPanel("Beta");
+		betaVectorPanel.setVector3D(betaHat.getProductWith(beta0));
+		interactiveControlPanel.add(betaVectorPanel, "span");
 
 		simulateAsEllipsoidConstructionCheckBox = new JCheckBox("Simulate as ellipsoid construction?");
 		simulateAsEllipsoidConstructionCheckBox.setSelected(simulateAsEllipsoidConstruction);
 		interactiveControlPanel.add(simulateAsEllipsoidConstructionCheckBox, "span");
+		
+		ellipsoidPrincipalRadiusInBetaDirectionPanel = new LabelledDoublePanel("Principal radius of ellipsoid in beta direction");
+		ellipsoidPrincipalRadiusInBetaDirectionPanel.setNumber(ellipsoidPrincipalRadiusInBetaDirection);
+		interactiveControlPanel.add(ellipsoidPrincipalRadiusInBetaDirectionPanel, "span");
+		
+		JPanel cameraPanel = new JPanel();
+		cameraPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Camera"));
+		cameraPanel.setLayout(new MigLayout("insets 0"));
+		interactiveControlPanel.add(cameraPanel, "span");
 
-		outsideCameraPositionCheckBox = new JCheckBox("outside camera position");
-		outsideCameraPositionCheckBox.setSelected(outsideCameraPosition);
-		interactiveControlPanel.add(outsideCameraPositionCheckBox, "span");
+		initialCameraViewDirectionPanel = new LabelledVector3DPanel("View direction");
+		initialCameraViewDirectionPanel.setVector3D(cameraViewDirection0);
+		cameraPanel.add(initialCameraViewDirectionPanel, "span");
+		
+		initialCameraDistancePanel = new LabelledDoublePanel("Distance from camera position for which ellipsoid is designed");
+		initialCameraDistancePanel.setNumber(cameraDistance0);
+		cameraPanel.add(initialCameraDistancePanel, "span");
+		
+		cameraHorizontalFOVDegPanel = new LabelledDoublePanel("Horizontal FOV (in degrees)");
+		cameraHorizontalFOVDegPanel.setNumber(cameraHorizontalFOVDeg);
+		cameraPanel.add(cameraHorizontalFOVDegPanel, "span");
+		
+		JPanel moviePanel = new JPanel();
+		moviePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Movie"));
+		moviePanel.setLayout(new MigLayout("insets 0"));
+		interactiveControlPanel.add(moviePanel, "span");
+
+		movieTypeComboBox = new JComboBox<MovieType>(MovieType.values());
+		movieTypeComboBox.setSelectedItem(movieType);
+		moviePanel.add(GUIBitsAndBobs.makeRow("Movie type", movieTypeComboBox), "span");
+		
+		numberOfFramesPanel = new LabelledIntPanel("No of frames");
+		numberOfFramesPanel.setNumber(numberOfFrames);
+		moviePanel.add(numberOfFramesPanel,  "span");
+		
+//		movieCheckBox = new JCheckBox("movie");
+//		movieCheckBox.setSelected(movie);
+//		interactiveControlPanel.add(movieCheckBox, "span");
 	}
 	
 	/**
@@ -212,12 +334,22 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 				
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		
-		Vector3D betaV = betaPanel.getVector3D();
-		betaHat = betaV.getNormalised();
-		beta = betaV.getLength();
-		
 		simulateAsEllipsoidConstruction = simulateAsEllipsoidConstructionCheckBox.isSelected();
-		outsideCameraPosition = outsideCameraPositionCheckBox.isSelected();
+		ellipsoidPrincipalRadiusInBetaDirection = ellipsoidPrincipalRadiusInBetaDirectionPanel.getNumber();
+		
+		Vector3D betaVector = betaVectorPanel.getVector3D();
+		beta0 = betaVector.getLength();
+		betaHat = ((beta0!=0.0)?betaVector.getNormalised():Vector3D.Z);
+		
+		cameraViewDirection0 = initialCameraViewDirectionPanel.getVector3D();
+		cameraDistance0 = initialCameraDistancePanel.getNumber();
+		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
+		
+		movieType = (MovieType)(movieTypeComboBox.getSelectedItem());
+		numberOfFrames = numberOfFramesPanel.getNumber();
+		lastFrame = numberOfFrames-1;
+
+		// movie = movieCheckBox.isSelected();
 	}
 
 	

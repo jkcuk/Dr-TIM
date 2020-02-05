@@ -47,6 +47,8 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	 */
 	private double beta;
 	
+	private double ellipsoidPrincipalRadiusInBetaDirection;
+	
 	
 	// internal variable
 	
@@ -64,16 +66,17 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	 * 
 	 * @param transmissionCoefficient
 	 */
-	public RelativisticDistortionEllipsoidConstructionSurface(Vector3D cameraPosition, Vector3D betaHat, double beta)
+	public RelativisticDistortionEllipsoidConstructionSurface(Vector3D cameraPosition, Vector3D betaHat, double beta, double ellipsoidPrincipalRadiusInBetaDirection)
 	{
 		super(
-				1.0,	// transmissionCoefficient
+				0.9,	// transmissionCoefficient, when looking from inside the ellipsoid
 				false	// shadowThrowing
 			);
 		
 		setCameraPosition(cameraPosition);
 		setBetaHat(betaHat);
 		setBeta(beta);
+		setEllipsoidPrincipalRadiusInBetaDirection(ellipsoidPrincipalRadiusInBetaDirection);
 	}
 		
 	/* (non-Javadoc)
@@ -82,7 +85,7 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	@Override
 	public RelativisticDistortionEllipsoidConstructionSurface clone()
 	{
-		return new RelativisticDistortionEllipsoidConstructionSurface(cameraPosition, betaHat, beta);
+		return new RelativisticDistortionEllipsoidConstructionSurface(cameraPosition, betaHat, beta, ellipsoidPrincipalRadiusInBetaDirection);
 	}
 	
 	
@@ -113,6 +116,14 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 		this.beta = beta;
 	}
 
+	public double getEllipsoidPrincipalRadiusInBetaDirection() {
+		return ellipsoidPrincipalRadiusInBetaDirection;
+	}
+
+	public void setEllipsoidPrincipalRadiusInBetaDirection(double ellipsoidPrincipalRadiusInBetaDirection) {
+		this.ellipsoidPrincipalRadiusInBetaDirection = ellipsoidPrincipalRadiusInBetaDirection;
+	}
+
 	public Ellipsoid getEllipsoid() {
 		return ellipsoid;
 	}
@@ -124,14 +135,12 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	/**
 	 * Create the ellipsoid that corresponds to the parameters of this surface property, make this the ellipsoid's surface property
 	 * @param description
-	 * @param maxDimension	the size of the ellipsoid in the directions perpendicular to betaHat
 	 * @param parent
 	 * @param studio
 	 * @return	the ellipsoid
 	 */
 	public Ellipsoid createAndSetEllipsoid(
 			String description,
-			double maxDimension,
 			SceneObject parent,
 			Studio studio
 		)
@@ -147,10 +156,11 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 		// set the internal ellipsoid variable
 		ellipsoid = new Ellipsoid(
 				description,
-				Vector3D.sum(cameraPosition, betaHat.getProductWith(beta)),	// centre
-				betaHat.getProductWith(maxDimension),	// a
-				alpha1Hat.getProductWith(maxDimension/gamma),	// b
-				alpha2Hat.getProductWith(maxDimension/gamma),	// c
+				// cameraPosition,
+				Vector3D.sum(cameraPosition, betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection*beta)),	// centre
+				betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection),	// a
+				alpha1Hat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection/gamma),	// b
+				alpha2Hat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection/gamma),	// c
 				this,	// surfaceProperty
 				parent,	// parent
 				studio
@@ -163,18 +173,26 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	/* (non-Javadoc)
 	 * @see optics.raytrace.SurfaceProperty#getColour(optics.raytrace.Ray, optics.raytrace.RaySceneObjectIntersection, optics.raytrace.SceneObject, optics.raytrace.LightSource, int)
 	 */
+	/* (non-Javadoc)
+	 * @see optics.raytrace.core.SurfaceProperty#getColour(optics.raytrace.core.Ray, optics.raytrace.core.RaySceneObjectIntersection, optics.raytrace.core.SceneObject, optics.raytrace.core.LightSource, int, optics.raytrace.core.RaytraceExceptionHandler)
+	 */
 	@Override
 	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	throws RayTraceException
 	{
 		if(traceLevel <= 0) return DoubleColour.BLACK;
 		
+		// imagine the ellipsoid surface to be coloured;
+		// calculate the colour of the given surface point
+		
 		double gamma = 1./Math.sqrt(1-beta*beta);
 
 		// System.out.println("RelativisticDistortionEllipsoidConstructionSurface::getColour: gamma = "+gamma);
 
 		// ray.getD() is the (backwards) light-ray direction in the camera frame; construct the corresponding light-ray direction in the scene frame
-		Vector3D dPrimeMinusBetaOverGamma = Vector3D.difference(Vector3D.difference(i.p, cameraPosition), betaHat.getProductWith(beta));
+		Vector3D dPrimeMinusBetaOverGamma = 
+				// Vector3D.difference(i.p, cameraPosition);
+				Vector3D.difference(Vector3D.difference(i.p, cameraPosition), betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection*beta));
 		Vector3D d = Vector3D.sum(
 				dPrimeMinusBetaOverGamma.getPartParallelTo(betaHat),
 				dPrimeMinusBetaOverGamma.getPartPerpendicularTo(betaHat).getProductWith(gamma)
@@ -190,18 +208,58 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 				ray.getT()
 				));
 		
-		// launch a new ray from here
-		return scene.getColourAvoidingOrigin(
-			new Ray(
-					i1.p,	// start position
-					d,	// direction
-					ray.getT()	// start time
-					),
-			ellipsoid,	// origin object
-			l,
-			scene,
-			traceLevel-1,
-			raytraceExceptionHandler
-		).multiply(getTransmissionCoefficient());
+		Ray ray1 = new Ray(
+				i1.p,	// start position
+				d,	// direction
+				ray.getT()	// start time
+				);
+		
+		// the colour of the surface point is therefore
+		DoubleColour s = scene.getColourAvoidingOrigin(
+				ray1,
+				ellipsoid,	// origin object
+				l,
+				scene,
+				traceLevel-1,
+				raytraceExceptionHandler
+			);
+		
+		return s.multiply(getTransmissionCoefficient());
+
+		
+//		// also determine the camera the ray would be if the surface was transparent
+//		DoubleColour t = scene.getColourAvoidingOrigin(
+//				ray.getBranchRay(
+//						i.p,
+//						ray.getD(),
+//						i.t
+//				),
+//				ellipsoid,	// origin object
+//				l,
+//				scene,
+//				traceLevel-1,
+//				raytraceExceptionHandler
+//			);
+//		
+//		// now return a colour, depending on whether or not the ray is outwards or inwards
+//		// System.out.println("orientation = "+i.getOrientation());
+//		
+//		return DoubleColour.sum(
+//				s.multiply(1-getTransmissionCoefficient()),
+//				t.getGrayScaleColour().multiply(getTransmissionCoefficient())
+//			);
+		
+//		switch(i.getRayOrientation(ray))
+//		{
+//		case INWARDS:
+//			return l.getColour(
+//					new SurfaceColour(c, DoubleColour.WHITE, true),	// shiny
+//					scene, i, ray, traceLevel-1
+//				);
+//		case OUTWARDS:
+//		default:
+//			return c.multiply(getTransmissionCoefficient());
+//		}
+		
 	}
 }

@@ -230,6 +230,12 @@ public class DoubleColour implements Serializable
 		return LUMINANCE_R_FACTOR*getR() + LUMINANCE_G_FACTOR*getG() + LUMINANCE_B_FACTOR*getB();
 	}
 	
+	public DoubleColour getGrayScaleColour()
+	{
+		double l = getLuminance();
+		return new DoubleColour(l, l, l);
+	}
+	
 	public double getRestrictedLuminance() {
 		// return blue;
 		return Math.min(Math.max(getLuminance(), 0.0), 1.0);

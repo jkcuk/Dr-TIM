@@ -104,6 +104,11 @@ public class Matrix3D implements Serializable, Cloneable
 		return makeRowVector(v.x, v.y, v.z);
 	}
 	
+	public static Vector3D toVector3D(double[][] columnVector)
+	{
+		return new Vector3D(columnVector[0][0], columnVector[1][0], columnVector[2][0]);
+	}
+	
 	public static double[][] extractColumnVector(double[][] m, int index)
 	{
 		double[][] v = {
@@ -177,6 +182,17 @@ public class Matrix3D implements Serializable, Cloneable
 		};
 		
 		return m;
+	}
+	
+	public static Vector3D rotateVector(Vector3D vector, double rotationAngle, Vector3D rotationAxis)
+	{
+		return toVector3D(
+				getProduct(
+						getMatrixForRotation(rotationAngle, rotationAxis),
+						makeColumnVector(vector)
+					)
+			);
+		
 	}
 
 }
