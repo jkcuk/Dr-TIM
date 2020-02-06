@@ -2,6 +2,7 @@ package optics.raytrace.research.relativisticDistortion;
 
 import math.Vector3D;
 import optics.DoubleColour;
+import optics.raytrace.cameras.RelativisticAnyFocusSurfaceCamera.TransformType;
 import optics.raytrace.core.LightSource;
 import optics.raytrace.core.Ray;
 import optics.raytrace.core.RaySceneObjectIntersection;
@@ -49,15 +50,9 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	
 	private double ellipsoidPrincipalRadiusInBetaDirection;
 	
+	private TransformType transformType;
 	
-	// internal variable
-	
-	/**
-	 * the ellipsoid this surface property is associated with
-	 */
-	private Ellipsoid ellipsoid;
-	
-	
+
 	
 	// constructors etc.
 	
@@ -66,7 +61,7 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	 * 
 	 * @param transmissionCoefficient
 	 */
-	public RelativisticDistortionEllipsoidConstructionSurface(Vector3D cameraPosition, Vector3D betaHat, double beta, double ellipsoidPrincipalRadiusInBetaDirection)
+	public RelativisticDistortionEllipsoidConstructionSurface(Vector3D cameraPosition, Vector3D betaHat, double beta, TransformType transformType, double ellipsoidPrincipalRadiusInBetaDirection)
 	{
 		super(
 				0.9,	// transmissionCoefficient, when looking from inside the ellipsoid
@@ -76,6 +71,7 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 		setCameraPosition(cameraPosition);
 		setBetaHat(betaHat);
 		setBeta(beta);
+		setTransformType(transformType);
 		setEllipsoidPrincipalRadiusInBetaDirection(ellipsoidPrincipalRadiusInBetaDirection);
 	}
 		
@@ -85,7 +81,7 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	@Override
 	public RelativisticDistortionEllipsoidConstructionSurface clone()
 	{
-		return new RelativisticDistortionEllipsoidConstructionSurface(cameraPosition, betaHat, beta, ellipsoidPrincipalRadiusInBetaDirection);
+		return new RelativisticDistortionEllipsoidConstructionSurface(cameraPosition, betaHat, beta, transformType, ellipsoidPrincipalRadiusInBetaDirection);
 	}
 	
 	
@@ -112,8 +108,21 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 		return beta;
 	}
 
+	/**
+	 * Set beta, i.e. the speed as a fraction of c, the speed of light.
+	 * This method also pre-calculates the transverse stretch factor.
+	 * @param beta
+	 */
 	public void setBeta(double beta) {
 		this.beta = beta;
+	}
+
+	public TransformType getTransformType() {
+		return transformType;
+	}
+
+	public void setTransformType(TransformType transformType) {
+		this.transformType = transformType;
 	}
 
 	public double getEllipsoidPrincipalRadiusInBetaDirection() {
@@ -129,8 +138,32 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	}
 
 	
+	// internal variables
+	
+	/**
+	 * the ellipsoid this surface property is associated with
+	 */
+	private Ellipsoid ellipsoid;
+	private double transverseStretchFactor;
+
 	
 	// the interesting bits
+
+	public double calculateTransverseEllipsoidStretchFactor()
+	{
+		// if(transformType == null) return 1.0;
+
+		double gamma = 1./Math.sqrt(1.-beta*beta);
+
+		switch(transformType)
+		{
+		case GALILEAN_TRANSFORM:
+			return 1.0;
+		case LORENTZ_TRANSFORM:
+		default:
+			return 1./gamma;
+		}
+	}
 	
 	/**
 	 * Create the ellipsoid that corresponds to the parameters of this surface property, make this the ellipsoid's surface property
@@ -145,22 +178,23 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 			Studio studio
 		)
 	{
+		// set the tranverse stretch factor (which is also used later, in the getColour method)
+		transverseStretchFactor = calculateTransverseEllipsoidStretchFactor();
+
 		// create two directions perpendicular to betaHat
 		Vector3D alpha1Hat, alpha2Hat;
 		
 		alpha1Hat = Vector3D.getANormal(betaHat);
 		alpha2Hat = Vector3D.crossProduct(betaHat, alpha1Hat);
 		
-		double gamma = 1./Math.sqrt(1.-beta*beta);
-
 		// set the internal ellipsoid variable
 		ellipsoid = new Ellipsoid(
 				description,
 				// cameraPosition,
 				Vector3D.sum(cameraPosition, betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection*beta)),	// centre
 				betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection),	// a
-				alpha1Hat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection/gamma),	// b
-				alpha2Hat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection/gamma),	// c
+				alpha1Hat.getProductWith(transverseStretchFactor*ellipsoidPrincipalRadiusInBetaDirection),	// b
+				alpha2Hat.getProductWith(transverseStretchFactor*ellipsoidPrincipalRadiusInBetaDirection),	// c
 				this,	// surfaceProperty
 				parent,	// parent
 				studio
@@ -185,8 +219,6 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 		// imagine the ellipsoid surface to be coloured;
 		// calculate the colour of the given surface point
 		
-		double gamma = 1./Math.sqrt(1-beta*beta);
-
 		// System.out.println("RelativisticDistortionEllipsoidConstructionSurface::getColour: gamma = "+gamma);
 
 		// ray.getD() is the (backwards) light-ray direction in the camera frame; construct the corresponding light-ray direction in the scene frame
@@ -195,7 +227,7 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 				Vector3D.difference(Vector3D.difference(i.p, cameraPosition), betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection*beta));
 		Vector3D d = Vector3D.sum(
 				dPrimeMinusBetaOverGamma.getPartParallelTo(betaHat),
-				dPrimeMinusBetaOverGamma.getPartPerpendicularTo(betaHat).getProductWith(gamma)
+				dPrimeMinusBetaOverGamma.getPartPerpendicularTo(betaHat).getProductWith(1./transverseStretchFactor)
 				);
 
 		// System.out.println("RelativisticDistortionEllipsoidConstructionSurface::getColour: dPrimeMinusBeta = "+dPrimeMinusBeta);

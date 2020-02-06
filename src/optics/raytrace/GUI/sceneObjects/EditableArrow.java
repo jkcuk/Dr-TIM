@@ -47,6 +47,28 @@ public class EditableArrow extends Arrow implements IPanelComponent
 		super(description, startPoint, endPoint, shaftRadius, tipLength, tipAngle, surfaceProperty, parent, studio);
 	}
 	
+	public EditableArrow(
+			String description,
+			Vector3D startPoint,
+			Vector3D endPoint,
+			SurfaceProperty surfaceProperty,
+			SceneObject parent, 
+			Studio studio
+		)
+	{
+		this(
+				description,
+				startPoint,
+				endPoint,
+				Vector3D.getDistance(endPoint, startPoint)*0.03,	// shaftRadius
+				Vector3D.getDistance(endPoint, startPoint)*0.2,	// tipLength
+				MyMath.deg2rad(20),	// tipAngle
+				surfaceProperty,
+				parent,
+				studio
+				);
+	}
+	
 	/**
 	 * Create a clone of original
 	 * @param original

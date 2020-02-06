@@ -7,6 +7,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 import math.Matrix3D;
+import math.MyMath;
 import math.Vector3D;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.NonInteractiveTIMActionEnum;
@@ -17,10 +18,14 @@ import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
+import optics.raytrace.GUI.sceneObjects.EditableArrow;
+import optics.raytrace.cameras.RelativisticAnyFocusSurfaceCamera;
+import optics.raytrace.cameras.RelativisticAnyFocusSurfaceCamera.TransformType;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.surfaces.SurfaceColour;
 
 
 /**
@@ -33,8 +38,10 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 	
 	private Vector3D betaHat, cameraViewDirection0;
 	private double beta0, cameraDistance0, ellipsoidPrincipalRadiusInBetaDirection;
-	private boolean simulateAsEllipsoidConstruction;
+	private boolean simulateAsEllipsoidConstruction, showBetaHatArrow;
 	
+	TransformType transformType;
+
 	public enum MovieType
 	{
 		STILL_IMAGE("Still image"),
@@ -81,8 +88,10 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		cameraDistance0 = 0;
 		cameraHorizontalFOVDeg = 40;
 		
+		transformType = TransformType.LORENTZ_TRANSFORM;
 		betaHat = new Vector3D(0, 0, 1);
 		beta0 = 0.99;
+		showBetaHatArrow = false;
 		
 		studioInitialisation = StudioInitialisationType.SURROUND_LATTICE;	// the backdrop
 
@@ -119,8 +128,10 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		// write any parameters not defined in NonInteractiveTIMEngine, each parameter is saved like this:
 		// printStream.println("parameterName = "+parameterName);
 
+		printStream.println("transformType = "+transformType);
 		printStream.println("betaHat = "+ betaHat);
 		printStream.println("beta0 = "+beta0);
+		printStream.println("showBetaHatVector = "+showBetaHatArrow);
 
 		printStream.println("simulateAsEllipsoidConstruction = "+simulateAsEllipsoidConstruction);
 		printStream.println("ellipsoidPrincipalRadiusInBetaDirection = "+ellipsoidPrincipalRadiusInBetaDirection);
@@ -226,13 +237,29 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 				scene,
 				studio
 			);
+		
+		// add any other scene objects
+		// Vector3D betaHatArrowStartPoint = Vector3D.difference(new Vector3D(0, 1.2*ellipsoidPrincipalRadiusInBetaDirection, 0), betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection));	// set the start point such that the arrow is centred above the camera position
+		Vector3D betaHatArrowStartPoint = betaHat.getProductWith((1+beta)*ellipsoidPrincipalRadiusInBetaDirection);	// set the start point such that the foot of the arrow is in front of the ellipsoid
+		scene.addSceneObject(
+				new EditableArrow(
+						"betaHat",	// description
+						betaHatArrowStartPoint,	// startPoint
+						Vector3D.sum(betaHatArrowStartPoint, betaHat.getWithLength(beta*ellipsoidPrincipalRadiusInBetaDirection)),	// endPoint
+						beta*ellipsoidPrincipalRadiusInBetaDirection*0.05,	// shaftRadius
+						beta*ellipsoidPrincipalRadiusInBetaDirection*0.25,	// tipLength
+						MyMath.deg2rad(20),	// tipAngle
+						SurfaceColour.WHITE_SHINY,	// surfaceProperty
+						scene,	// parent 
+						studio
+					), showBetaHatArrow);
 
 		if(simulateAsEllipsoidConstruction)
 		{
 			// scene.addSceneObject(new Sphere("Sphere", new Vector3D(0, 0, 10), 1, SurfaceColour.CYAN_SHINY, scene, studio));
 
 			RelativisticDistortionEllipsoidConstructionSurface s =
-					new RelativisticDistortionEllipsoidConstructionSurface(new Vector3D(0, 0, 0), betaHat, beta, ellipsoidPrincipalRadiusInBetaDirection);
+					new RelativisticDistortionEllipsoidConstructionSurface(new Vector3D(0, 0, 0), betaHat, beta, transformType, ellipsoidPrincipalRadiusInBetaDirection);
 			
 			scene.addSceneObject(s.createAndSetEllipsoid("Ellipsoid", scene, studio));
 
@@ -244,7 +271,11 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 			cameraBeta = betaHat.getProductWith(beta);
 		}
 		studio.setScene(scene);
-		studio.setCamera(getStandardCamera());
+		
+		RelativisticAnyFocusSurfaceCamera camera = getStandardCamera();
+		camera.setTransformType(transformType);
+		
+		studio.setCamera(camera);
 
 		
 		// add anything to the scene by uncommenting the following line...
@@ -256,11 +287,12 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 	// interactive stuff
 	
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
+	private JComboBox<TransformType> transformTypeComboBox;
 	private JComboBox<MovieType> movieTypeComboBox;
 	private LabelledVector3DPanel betaVectorPanel, initialCameraViewDirectionPanel;
 	private LabelledDoublePanel initialCameraDistancePanel, cameraHorizontalFOVDegPanel, ellipsoidPrincipalRadiusInBetaDirectionPanel;
 	private LabelledIntPanel numberOfFramesPanel;
-	private JCheckBox simulateAsEllipsoidConstructionCheckBox;
+	private JCheckBox simulateAsEllipsoidConstructionCheckBox, showBetaHatArrowCheckBox;
 
 	
 	/**
@@ -276,9 +308,17 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
 		interactiveControlPanel.add(GUIBitsAndBobs.makeRow("Initialise backdrop to", studioInitialisationComboBox), "span");
 		
+		transformTypeComboBox = new JComboBox<TransformType>(TransformType.values());
+		transformTypeComboBox.setSelectedItem(transformType);
+		interactiveControlPanel.add(transformTypeComboBox, "span");
+
 		betaVectorPanel = new LabelledVector3DPanel("Beta");
 		betaVectorPanel.setVector3D(betaHat.getProductWith(beta0));
 		interactiveControlPanel.add(betaVectorPanel, "span");
+		
+		showBetaHatArrowCheckBox = new JCheckBox("Show arrow indicating direction of beta");
+		showBetaHatArrowCheckBox.setSelected(showBetaHatArrow);
+		interactiveControlPanel.add(showBetaHatArrowCheckBox, "span");
 
 		simulateAsEllipsoidConstructionCheckBox = new JCheckBox("Simulate as ellipsoid construction?");
 		simulateAsEllipsoidConstructionCheckBox.setSelected(simulateAsEllipsoidConstruction);
@@ -334,12 +374,14 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 				
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		
+		transformType = (TransformType)(transformTypeComboBox.getSelectedItem());
 		simulateAsEllipsoidConstruction = simulateAsEllipsoidConstructionCheckBox.isSelected();
 		ellipsoidPrincipalRadiusInBetaDirection = ellipsoidPrincipalRadiusInBetaDirectionPanel.getNumber();
 		
 		Vector3D betaVector = betaVectorPanel.getVector3D();
 		beta0 = betaVector.getLength();
 		betaHat = ((beta0!=0.0)?betaVector.getNormalised():Vector3D.Z);
+		showBetaHatArrow = showBetaHatArrowCheckBox.isSelected();
 		
 		cameraViewDirection0 = initialCameraViewDirectionPanel.getVector3D();
 		cameraDistance0 = initialCameraDistancePanel.getNumber();
