@@ -10,7 +10,7 @@ import optics.raytrace.core.SurfacePropertyPrimitive;
 import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.Sphere;
-import math.LorentzTransform;
+import math.LorentzTransformation;
 import math.Vector3D;
 
 /**
@@ -154,7 +154,7 @@ public class MaxwellFisheyeLensSurface extends SurfacePropertyPrimitive
 			Vector3D newRayDirection = RefractiveSimple.getRefractedLightRayDirection(dPrimeInside, s.getNormalisedOutwardsSurfaceNormal(newStartingPoint), getRatioNSurfaceNSurrounding());
 			
 			// calculate the time the ray took to arrive there, assuming it has travelled in a straight line
-			double dt = Vector3D.difference(newStartingPoint, i.p).getLength() / LorentzTransform.c;
+			double dt = Vector3D.difference(newStartingPoint, i.p).getLength() / LorentzTransformation.c;
 			
 			// launch a new ray from here
 			return scene.getColourAvoidingOrigin(

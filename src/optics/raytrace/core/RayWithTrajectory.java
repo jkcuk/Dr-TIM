@@ -152,7 +152,7 @@ public class RayWithTrajectory extends Ray
 		return new RayWithTrajectory(
 				getP().getSumWith(getD().getProductWith(a)),
 				getD(),
-				getT() - a/LorentzTransform.c,
+				getT() - a/SpaceTimeTransformation.c,
 				isReportToConsole()
 			);
 	}

@@ -1,6 +1,6 @@
 package optics.raytrace.cameras.shutterModels;
 
-import math.LorentzTransform;
+import math.LorentzTransformation;
 import math.Vector3D;
 import optics.raytrace.cameras.RelativisticAnyFocusSurfaceCamera;
 
@@ -130,7 +130,7 @@ public class DetectorPlaneShutterModel extends InstantShutterModel
 		switch(lensType)
 		{
 		case LENS_HOLOGRAM:
-			return getShutterOpeningTime() - pe.getLength() / LorentzTransform.c;
+			return getShutterOpeningTime() - pe.getLength() / LorentzTransformation.c;
 		case IDEAL_LENS:
 		default:
 			// If the lens is perfectly imaging, then all light rays from the detector pixel to its image position
@@ -145,10 +145,10 @@ public class DetectorPlaneShutterModel extends InstantShutterModel
 			// Therefore deltaT = 1/c (|pi| - |pe| - |ei|).
 			Vector3D pi = Vector3D.difference(pixelImagePosition, p);
 			Vector3D ei = pointOnPupil2Image;
-			double deltaT = (pi.getLength() - pe.getLength() - (pixelImagePositionInFront?1:-1) * ei.getLength()) / LorentzTransform.c;
+			double deltaT = (pi.getLength() - pe.getLength() - (pixelImagePositionInFront?1:-1) * ei.getLength()) / LorentzTransformation.c;
 
 			// the time the (backwards-traced) light ray leaves the entrance pupil is then
-			return getShutterOpeningTime() - pe.getLength() / LorentzTransform.c - deltaT;
+			return getShutterOpeningTime() - pe.getLength() / LorentzTransformation.c - deltaT;
 		}
 		
 		// old code that I don't understand any longer

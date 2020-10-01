@@ -175,7 +175,7 @@ public class Ray {
 		setP(p.getSumWith(d.getProductWith(a)));
 		
 		// as the ray is a backwards-traced ray, "advancing" it means going backwards in time
-		setT(t-a/LorentzTransform.c);
+		setT(t-a/SpaceTimeTransformation.c);
 		return this;
 	}
 	
@@ -190,7 +190,7 @@ public class Ray {
 	{
 		// TODO this is wrong in a medium
 		// as the ray is a backwards-traced ray, "advancing" it means going backwards in time
-		return new Ray(p.getSumWith(d.getProductWith(a)), d, t-a/LorentzTransform.c);
+		return new Ray(p.getSumWith(d.getProductWith(a)), d, t-a/SpaceTimeTransformation.c);
 	}
 
 	/**

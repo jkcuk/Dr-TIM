@@ -13,6 +13,7 @@ import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
 import math.*;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
 import optics.raytrace.GUI.cameras.shutterModels.ShutterModelPanel;
 import optics.raytrace.GUI.core.*;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
@@ -58,7 +59,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 	private LabelledDoublePanel horizontalViewAnglePanel;
 	private JComboBox<ExposureCompensationType> exposureCompensationComboBox;
 	private ShutterModelPanel shutterModelPanel;
-	private JComboBox<TransformType> transformComboBox;
+	private JComboBox<SpaceTimeTransformationType> transformComboBox;
 	// private JComboBox<LensType> lensTypeComboBox;
 	// private LabelledComboBoxPanel lensTypeComboBoxPanel;
 	// private LabelledDoublePanel detectorDistancePanel;
@@ -78,6 +79,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 			Vector3D apertureCentre,
 			Vector3D centreOfView,
 			Vector3D horizontalSpanVector, Vector3D verticalSpanVector,
+			SpaceTimeTransformationType spaceTimeTransformationType,
 			Vector3D beta,
 			int imagePixelsHorizontal, int imagePixelsVertical, 
 			ExposureCompensationType exposureCompensation,
@@ -93,6 +95,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 				apertureCentre,	// pinhole position is aperture Centre
 				centreOfView,
 				horizontalSpanVector, verticalSpanVector,
+				spaceTimeTransformationType,
 				beta,
 				imagePixelsHorizontal, imagePixelsVertical,
 				exposureCompensation,
@@ -100,7 +103,6 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 				focusScene,
 				cameraFrameScene,	// scene in camera frame
 				new AperturePlaneShutterModel(),
-				TransformType.LORENTZ_TRANSFORM,	// TODO
 				// 1.,	// default distance detector sits behind entrance pupil
 				0.,	// placeholder aperture radius
 				1	// placeholder rays per pixel
@@ -151,6 +153,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 						horizontalSpanVector,
 						Vector3D.difference(centreOfView, apertureCentre)
 					).getWithLength(horizontalSpanVector.getLength() * imagePixelsVertical / imagePixelsHorizontal),
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
 				beta,
 				imagePixelsHorizontal, imagePixelsVertical,
 				exposureCompensation,
@@ -186,6 +189,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 			Vector3D viewDirection,
 			Vector3D topDirection,
 			double horizontalViewAngle,
+			SpaceTimeTransformationType spaceTimeTransformationType,
 			Vector3D beta,
 			int imagePixelsHorizontal, int imagePixelsVertical, 
 			ExposureCompensationType exposureCompensation,
@@ -202,6 +206,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 				calculateCentreOfView(apertureCentre, viewDirection),
 				calculateHorizontalSpanVector(viewDirection, topDirection, horizontalViewAngle),
 				calculateVerticalSpanVector(viewDirection, topDirection, horizontalViewAngle, imagePixelsHorizontal, imagePixelsVertical),
+				spaceTimeTransformationType,
 				beta,
 				imagePixelsHorizontal, imagePixelsVertical,
 				exposureCompensation,
@@ -217,6 +222,43 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 		this.viewDirection = viewDirection;
 		this.topDirection = topDirection;
 		this.horizontalViewAngle = horizontalViewAngle;
+	}
+	
+	public EditableRelativisticAnyFocusSurfaceCamera(
+			String name,
+			Vector3D apertureCentre,
+			Vector3D viewDirection,
+			Vector3D topDirection,
+			double horizontalViewAngle,
+			Vector3D beta,
+			int imagePixelsHorizontal, int imagePixelsVertical, 
+			ExposureCompensationType exposureCompensation,
+			int maxTraceLevel,
+			SceneObject focusScene,
+			SceneObject cameraFrameScene,
+			ApertureSizeType apertureSize,
+			QualityType blurQuality,
+			QualityType antiAliasingQuality
+		)
+	{
+		this(
+				name,
+				apertureCentre,
+				viewDirection,
+				topDirection,
+				horizontalViewAngle,
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
+				beta,
+				imagePixelsHorizontal,
+				imagePixelsVertical,
+				exposureCompensation,
+				maxTraceLevel,
+				focusScene,
+				cameraFrameScene,
+				apertureSize,
+				blurQuality,
+				antiAliasingQuality
+				);
 	}
 	
 	private static Vector3D calculateCentreOfView(
@@ -472,9 +514,9 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 		JPanel transformPanel = new JPanel();
 		transformPanel.setLayout(new MigLayout("insets 0"));
 		transformPanel.add(new JLabel("Transform light rays according to"));
-		transformComboBox = new JComboBox<TransformType>(TransformType.values());
+		transformComboBox = new JComboBox<SpaceTimeTransformationType>(SpaceTimeTransformationType.values());
 		transformComboBox.addActionListener(this);
-		transformComboBox.setSelectedItem(TransformType.LORENTZ_TRANSFORM);
+		transformComboBox.setSelectedItem(SpaceTimeTransformationType.LORENTZ_TRANSFORMATION);
 		transformPanel.add(transformComboBox);
 		relativisticPanel.add(transformPanel, "wrap");
 		
@@ -548,10 +590,9 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 				getImagePixelsHorizontal(), getImagePixelsVertical()
 			);
 		setExposureCompensation((ExposureCompensationType)(exposureCompensationComboBox.getSelectedItem()));
-		setBeta(betaPanel.getVector3D());
+    	setSpaceTimeTransformation((SpaceTimeTransformationType)(transformComboBox.getSelectedItem()), betaPanel.getVector3D());
 		setShutterModel(shutterModelPanel.getShutterModel());
 		// setDetectorDistance(detectorDistancePanel.getNumber());
-		setTransformType((TransformType)(transformComboBox.getSelectedItem()));
 		return this;
 	}
 

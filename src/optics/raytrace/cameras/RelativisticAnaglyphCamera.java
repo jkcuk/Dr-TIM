@@ -11,6 +11,7 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.RayTraceException;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
 import math.Vector3D;
 
 /**
@@ -65,6 +66,7 @@ public class RelativisticAnaglyphCamera extends RelativisticAnyFocusSurfaceCamer
 			Vector3D horizontalSpanVector,	// a vector along the width of the field of view, pointing to the right
 			Vector3D verticalSpanVector,	// a vector along the height of the field of view, pointing upwards
 			Vector3D eyeSeparation,	// separation between the eyes
+			SpaceTimeTransformationType spaceTimeTransformationType,
 			Vector3D beta,	// scene speed
 			int detectorPixelsHorizontal, int detectorPixelsVertical,
 			ExposureCompensationType exposureCompensation,
@@ -82,6 +84,7 @@ public class RelativisticAnaglyphCamera extends RelativisticAnyFocusSurfaceCamer
 				betweenTheEyes,	// pinholePosition,
 				centreOfView,	// the point in the centre of the field of view
 				horizontalSpanVector, verticalSpanVector,
+				spaceTimeTransformationType,
 				beta,
 				detectorPixelsHorizontal, detectorPixelsVertical,
 				exposureCompensation,
@@ -89,7 +92,6 @@ public class RelativisticAnaglyphCamera extends RelativisticAnyFocusSurfaceCamer
 				focusScene,
 				cameraFrameScene,
 				shutterModel,
-				TransformType.LORENTZ_TRANSFORM,
 				apertureRadius,
 				raysPerPixel
 			);
@@ -109,6 +111,7 @@ public class RelativisticAnaglyphCamera extends RelativisticAnyFocusSurfaceCamer
 			Vector3D horizontalSpanVector,	// a vector along the width of the field of view, pointing to the right
 			Vector3D verticalSpanVector,	// a vector along the height of the field of view, pointing upwards
 			Vector3D eyeSeparation,	// separation between the eyes
+			SpaceTimeTransformationType spaceTimeTransformationType,
 			Vector3D beta,	// camera speed, in units of c
 			int detectorPixelsHorizontal, int detectorPixelsVertical,
 			ExposureCompensationType exposureCompensation,
@@ -121,6 +124,7 @@ public class RelativisticAnaglyphCamera extends RelativisticAnyFocusSurfaceCamer
 				centreOfView,
 				horizontalSpanVector, verticalSpanVector,
 				eyeSeparation,
+				spaceTimeTransformationType,
 				beta,
 				detectorPixelsHorizontal, detectorPixelsVertical,
 				exposureCompensation,
@@ -172,6 +176,7 @@ public class RelativisticAnaglyphCamera extends RelativisticAnyFocusSurfaceCamer
 				Vector3D.sum(getBetweenTheEyes(), eyeSeparation.getProductWith(-0.5)),	// centre of aperture,
 				getCentreOfView(),	// the point in the centre of the field of view
 				getHorizontalSpanVector(), getVerticalSpanVector(),
+				getTransformType(),	// .LORENTZ_TRANSFORM,
 				getBeta(),
 				getDetectorPixelsHorizontal(), getDetectorPixelsVertical(),
 				getExposureCompensation(),
@@ -179,7 +184,6 @@ public class RelativisticAnaglyphCamera extends RelativisticAnyFocusSurfaceCamer
 				getFocusScene(),
 				getCameraFrameScene(),
 				getShutterModel().clone(),
-				getTransformType(),	// .LORENTZ_TRANSFORM,
 				getApertureRadius(),
 				getRaysPerPixel()
 			);
@@ -194,6 +198,7 @@ public class RelativisticAnaglyphCamera extends RelativisticAnyFocusSurfaceCamer
 				Vector3D.sum(getBetweenTheEyes(), eyeSeparation.getProductWith(+0.5)),	// centre of aperture,
 				getCentreOfView(),	// the point in the centre of the field of view
 				getHorizontalSpanVector(), getVerticalSpanVector(),
+				getTransformType(),	// .LORENTZ_TRANSFORM,
 				getBeta(),
 				getDetectorPixelsHorizontal(), getDetectorPixelsVertical(),
 				getExposureCompensation(),
@@ -201,7 +206,6 @@ public class RelativisticAnaglyphCamera extends RelativisticAnyFocusSurfaceCamer
 				getFocusScene(),
 				getCameraFrameScene(),
 				getShutterModel(),
-				getTransformType(),	// .LORENTZ_TRANSFORM,
 				getApertureRadius(),
 				getRaysPerPixel()
 			);

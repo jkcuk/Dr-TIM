@@ -1,17 +1,10 @@
 package optics.raytrace.research.RelativisticPhotography;
 
-import java.awt.*;
+import java.awt.Container;
 
-import math.*;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-import optics.raytrace.studioInitialisation.SurroundLatticeInitialisation;
-import optics.raytrace.surfaces.LorentzTransformInterface;
-import optics.raytrace.surfaces.SurfaceColour;
-import optics.raytrace.utility.CoordinateSystems.CoordinateSystemType;
-import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
-import optics.raytrace.cameras.shutterModels.ArbitraryPlaneShutterModel;
-import optics.raytrace.cameras.RelativisticAnyFocusSurfaceCamera.TransformType;
-import optics.raytrace.core.*;
+import math.MyMath;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
+import math.Vector3D;
 import optics.raytrace.TIMInteractiveBits;
 import optics.raytrace.GUI.cameras.EditableRelativisticAnaglyphCamera;
 import optics.raytrace.GUI.cameras.QualityType;
@@ -21,6 +14,15 @@ import optics.raytrace.GUI.nonInteractive.PhotoFrame;
 import optics.raytrace.GUI.sceneObjects.EditableNinkyNonkSilhouette;
 import optics.raytrace.GUI.sceneObjects.EditableParametrisedPlane;
 import optics.raytrace.GUI.sceneObjects.EditableSceneObjectCollection;
+import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
+import optics.raytrace.cameras.shutterModels.ArbitraryPlaneShutterModel;
+import optics.raytrace.core.LightSource;
+import optics.raytrace.core.Studio;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.studioInitialisation.SurroundLatticeInitialisation;
+import optics.raytrace.surfaces.LorentzTransformInterface;
+import optics.raytrace.surfaces.SurfaceColour;
+import optics.raytrace.utility.CoordinateSystems.CoordinateSystemType;
 
 
 /**
@@ -108,6 +110,7 @@ public class LorentzWindowAnaglyph
 				new Vector3D(0, 0, anaglyphViewDistance),	// centre of view: the point in the centre of both eyes' field of view
 				new Vector3D(2*anaglyphViewDistance*Math.tan(MyMath.deg2rad(TIMInteractiveBits.HORIZONTAL_VIEW_ANGLE/2)), 0, 0),	// horizontal span vector
 				new Vector3D(0.4, 0, 0),	// eyeSeparation: separation between the eyes
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
 				(BETA_0?new Vector3D(0, 0, 0):beta),	// beta
 				pixelsX, pixelsY,	// logical number of pixels
 				ExposureCompensationType.EC0,
@@ -132,7 +135,6 @@ public class LorentzWindowAnaglyph
 				beta,	// normal to shutter plane
 				-1	// shutter-opening time
 			));
-		camera.setTransformType(TransformType.LORENTZ_TRANSFORM);
 		camera.setupCameras();
 
 		studio.setScene(scene);

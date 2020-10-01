@@ -1,6 +1,6 @@
 package optics.raytrace.cameras.shutterModels;
 
-import math.LorentzTransform;
+import math.LorentzTransformation;
 import math.Vector3D;
 
 /**
@@ -54,7 +54,7 @@ public class FocusSurfaceShutterModel extends InstantShutterModel
 		Vector3D pointOnPupil2Image = pixelImagePosition.getDifferenceWith(pointOnEntrancePupil);
 
 		// calculate the corresponding time when the ray is at the point on the entrance pupil
-		return getShutterOpeningTime() - (pixelImagePositionInFront?-1:1) * pointOnPupil2Image.getLength() / LorentzTransform.c;
+		return getShutterOpeningTime() - (pixelImagePositionInFront?-1:1) * pointOnPupil2Image.getLength() / LorentzTransformation.c;
 	}
 
 	/* (non-Javadoc)

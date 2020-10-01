@@ -1,7 +1,7 @@
 package optics.raytrace.cameras.shutterModels;
 
 import math.Geometry;
-import math.LorentzTransform;
+import math.LorentzTransformation;
 import math.Vector3D;
 
 /**
@@ -125,7 +125,7 @@ public class ArbitraryPlaneShutterModel extends InstantShutterModel
 //				normalToShutterPlane
 //			));
 		// the time the light ray passes through the entrance pupil is then
-		return getShutterOpeningTime() - lengthToShutter / LorentzTransform.c;
+		return getShutterOpeningTime() - lengthToShutter / LorentzTransformation.c;
 //		t = getShutterOpeningTime() - Geometry.getFactorToLinePlaneIntersection(
 //				pointOnEntrancePupil,	// pointOnLine
 //				pointOnPupil2Image.getWithLength(pixelImagePositionInFront?1:-1),	// directionOfLine, here the normalised physical ray direction

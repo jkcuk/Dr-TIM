@@ -3,6 +3,7 @@ package optics.raytrace.demo;
 import java.awt.Container;
 
 import math.*;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
 import optics.raytrace.surfaces.*;
 import optics.raytrace.sceneObjects.*;
 import optics.raytrace.GUI.nonInteractive.PhotoCanvas;
@@ -132,6 +133,7 @@ public class UniversityCrest3D
 				new Vector3D(fieldOfViewWidth, 0, 0),	// rightDirection,	a vector pointing to the right
 				new Vector3D(0, -fieldOfViewWidth*pixelsY/pixelsX, 0),
 				new Vector3D(6./physicalWidth, 0, 0),	// eyeSeparation, separation between the eyes; 6. = eye separation in cm?
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
 				new Vector3D(0, 0, 0),	// camera speed (in units of c)
 				(int)(pixelsX*antiAliasingFactor), (int)(pixelsY*antiAliasingFactor),	// logical number of pixels
 				ExposureCompensationType.EC0,

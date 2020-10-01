@@ -13,6 +13,7 @@ import javax.swing.JTabbedPane;
 
 import net.miginfocom.swing.MigLayout;
 import math.*;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
 import optics.raytrace.GUI.cameras.shutterModels.ShutterModelPanel;
 import optics.raytrace.GUI.core.*;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
@@ -46,7 +47,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 	// private JComboBox<ExposureCompensationType> exposureCompensationComboBox;	// TODO link this in
 	private LabelledVector3DPanel betaPanel;	// the speed of the camera, in units of c, relative to the scene
 	private ShutterModelPanel shutterModelPanel;
-	private JComboBox<TransformType> transformComboBox;
+	private JComboBox<SpaceTimeTransformationType> transformComboBox;
 	private JCheckBox colourPanel;
 	private LabelledQualityComboBox antiAliasingQualityPanel;
 	private BlurPanel blurPanel;
@@ -82,6 +83,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 			Vector3D horizontalSpanVector,	// a vector pointing to the right
 			Vector3D verticalSpanVector,
 			Vector3D eyeSeparation,	// separation between the eyes
+			SpaceTimeTransformationType spaceTimeTransformationType,
 			Vector3D beta,
 			int imagePixelsHorizontal, int imagePixelsVertical,
 			ExposureCompensationType exposureCompensation,
@@ -99,6 +101,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 				centreOfView,
 				horizontalSpanVector, verticalSpanVector,
 				eyeSeparation,
+				spaceTimeTransformationType,
 				beta,
 				imagePixelsHorizontal, imagePixelsVertical,
 				exposureCompensation,
@@ -141,6 +144,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 			Vector3D centreOfView,	// the point in the centre of both eyes' field of view
 			Vector3D horizontalSpanVector,	// a vector pointing to the right
 			Vector3D eyeSeparation,	// separation between the eyes
+			SpaceTimeTransformationType spaceTimeTransformationType,
 			Vector3D beta,
 			int imagePixelsHorizontal, int imagePixelsVertical,
 			ExposureCompensationType exposureCompensation,
@@ -162,6 +166,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 						Vector3D.difference(centreOfView, betweenTheEyes)
 					).getWithLength(horizontalSpanVector.getLength() * imagePixelsVertical / imagePixelsHorizontal),
 				eyeSeparation,	// separation between the eyes
+				spaceTimeTransformationType,
 				beta,
 				imagePixelsHorizontal, imagePixelsVertical,
 				exposureCompensation,
@@ -339,9 +344,9 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 		JPanel transformPanel = new JPanel();
 		transformPanel.setLayout(new MigLayout("insets 0"));
 		transformPanel.add(new JLabel("Transform light rays according to"));
-		transformComboBox = new JComboBox<TransformType>(TransformType.values());
+		transformComboBox = new JComboBox<SpaceTimeTransformationType>(SpaceTimeTransformationType.values());
 		transformComboBox.addActionListener(this);
-		transformComboBox.setSelectedItem(TransformType.LORENTZ_TRANSFORM);
+		transformComboBox.setSelectedItem(SpaceTimeTransformationType.LORENTZ_TRANSFORMATION);
 		transformPanel.add(transformComboBox);
 		relativisticPanel.add(transformPanel, "wrap");
 
@@ -402,9 +407,8 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 				getDetectorPixelsHorizontal(), getDetectorPixelsVertical(),
 				colourPanel.isSelected()
 			);
-		setBeta(betaPanel.getVector3D());
+		setSpaceTimeTransformation((SpaceTimeTransformationType)(transformComboBox.getSelectedItem()), betaPanel.getVector3D());
 		setShutterModel(shutterModelPanel.getShutterModel());
-		setTransformType((TransformType)(transformComboBox.getSelectedItem()));
 		setBlur(blurPanel.getApertureSize(), blurPanel.getBlurQuality());
 		setAntiAliasingQuality(antiAliasingQualityPanel.getQuality());
 		

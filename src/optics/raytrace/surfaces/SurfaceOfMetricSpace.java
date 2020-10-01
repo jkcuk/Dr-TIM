@@ -1,7 +1,7 @@
 package optics.raytrace.surfaces;
 
 import Jama.Matrix;
-import math.LorentzTransform;
+import math.LorentzTransformation;
 import math.MyMath;
 import math.Vector3D;
 import math.ODE.Derivatives;
@@ -735,7 +735,7 @@ implements Derivatives
 			r.setP(newP);
 			
 			// ...  time, ...
-			r.setT(r.getT() - Vector3D.scalarProduct(r.getK(), dX)/LorentzTransform.c);	// TODO is this correct?
+			r.setT(r.getT() - Vector3D.scalarProduct(r.getK(), dX)/LorentzTransformation.c);	// TODO is this correct?
 			
 			// System.out.println("SurfaceOfMetricSpace::getColourUponStartingWithinVolume: r.getT() = "+r.getT());
 

@@ -11,6 +11,7 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.RayTraceException;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
 import math.Vector3D;
 
 /**
@@ -88,6 +89,7 @@ public class Relativistic3DTVCamera extends RelativisticAnyFocusSurfaceCamera
 				betweenTheEyes,	// pinholePosition,
 				centreOfView,	// the point in the centre of the field of view
 				horizontalSpanVector, verticalSpanVector,
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
 				beta,
 				getPackedImagePixels(OrientationType.HORIZONTAL, framePixelsHorizontal, framePixelsVertical, framePackingOrientation, gapBetweenFrames),
 				getPackedImagePixels(OrientationType.VERTICAL, framePixelsHorizontal, framePixelsVertical, framePackingOrientation, gapBetweenFrames),
@@ -96,7 +98,6 @@ public class Relativistic3DTVCamera extends RelativisticAnyFocusSurfaceCamera
 				focusScene,
 				cameraFrameScene,
 				shutterModel,
-				TransformType.LORENTZ_TRANSFORM,
 				apertureRadius,
 				raysPerPixel
 			);
@@ -228,6 +229,7 @@ public class Relativistic3DTVCamera extends RelativisticAnyFocusSurfaceCamera
 				Vector3D.sum(getBetweenTheEyes(), eyeSeparation.getProductWith(-0.5)),	// centre of aperture,
 				getCentreOfView(),	// the point in the centre of the field of view
 				getHorizontalSpanVector(), getVerticalSpanVector(),
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
 				getBeta(),
 				getFramePixelsHorizontal(), getFramePixelsVertical(),
 				getExposureCompensation(),
@@ -235,7 +237,6 @@ public class Relativistic3DTVCamera extends RelativisticAnyFocusSurfaceCamera
 				getFocusScene(),
 				getCameraFrameScene(),
 				getShutterModel(),
-				TransformType.LORENTZ_TRANSFORM,
 				getApertureRadius(),
 				getRaysPerPixel()
 			);
@@ -245,6 +246,7 @@ public class Relativistic3DTVCamera extends RelativisticAnyFocusSurfaceCamera
 				Vector3D.sum(getBetweenTheEyes(), eyeSeparation.getProductWith(+0.5)),	// centre of aperture,
 				getCentreOfView(),	// the point in the centre of the field of view
 				getHorizontalSpanVector(), getVerticalSpanVector(),
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
 				getBeta(),
 				getFramePixelsHorizontal(), getFramePixelsVertical(),
 				getExposureCompensation(),
@@ -252,7 +254,6 @@ public class Relativistic3DTVCamera extends RelativisticAnyFocusSurfaceCamera
 				getFocusScene(),
 				getCameraFrameScene(),
 				getShutterModel(),
-				TransformType.LORENTZ_TRANSFORM,
 				getApertureRadius(),
 				getRaysPerPixel()
 			);

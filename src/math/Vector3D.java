@@ -232,12 +232,17 @@ public class Vector3D implements Serializable, Cloneable
 	}
 	
 	/**
-	 * Normalize a Vector3D by dividing it by its original length.  Zero-length will result in a divide-by-zero error.
+	 * Normalize a Vector3D by dividing it by its original length.
+	 * If the vector is the zero vector, a unit vector in the x direction is returned.
 	 * @return The normalized Vector3D
 	 */
 	public Vector3D getNormalised()
 	{
-		return this.getProductWith(1./getLength());
+		double length = getLength();
+		if(length != 0.0) return this.getProductWith(1./getLength());
+		
+		//  the length of the vector is 0; return (1,0,0)
+		return new Vector3D(1, 0, 0);
 	}
 
 	/**
@@ -548,14 +553,20 @@ public class Vector3D implements Serializable, Cloneable
 	 */
 	public static Vector3D getANormal(Vector3D v)
 	{
-		// if v is the zero vector, return x
-		if(v.equals(O)) return new Vector3D(1,0,0);
+		// if the x and y components of v are both zero, i.e. if v is either pointing in the z direction or is equal to zero, return a unit vector in the x direction
+		if((v.x == 0.) && (v.y == 0.)) return new Vector3D(1, 0, 0);
 		
-		// if v is along the x axis, return y
-		if((v.y == 0.) && (v.z == 0.)) return new Vector3D(0, 1, 0);
+		// v is neither identical to zero, and nor does it point in the z direction, so v x z gives a vector perpendicular to v; return this vector, normalised
+		return Vector3D.crossProduct(v, Z).getNormalised();
 		
-		// otherwise return the part of x that's perpendicular to v
-		return X.getPartPerpendicularTo(v).getNormalised();
+//		// if v is the zero vector, return x
+//		if(v.equals(O)) return new Vector3D(1,0,0);
+//		
+//		// if v is along the x axis, return y
+//		if((v.y == 0.) && (v.z == 0.)) return new Vector3D(0, 1, 0);
+//		
+//		// otherwise return the part of x that's perpendicular to v
+//		return X.getPartPerpendicularTo(v).getNormalised();
 	}
 	
 	public boolean equals(Vector3D v)

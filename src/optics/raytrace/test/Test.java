@@ -1,6 +1,8 @@
 package optics.raytrace.test;
 
 import Jama.Matrix;
+import math.GalileanTransform;
+import math.LorentzTransformation;
 import math.Vector3D;
 import math.ODE.IntegrationType;
 import optics.raytrace.surfaces.SurfaceOfTOXShifter;
@@ -268,10 +270,18 @@ public class Test
 //
 //		System.out.println("dx/dtau = "+s.dXdTau(x, k));
 //		System.out.println("dk/dtau = "+s.dKdTau(x, k));
+//		
+//		for(int j=0; j<4; j++)
+//		{
+//			System.out.println("(j+1) % 4 = " + ((j+1) % 4));
+//		}
 		
-		for(int j=0; j<4; j++)
-		{
-			System.out.println("(j+1) % 4 = " + ((j+1) % 4));
-		}
+		Vector3D
+			d = new Vector3D(1,2,3).getNormalised(),
+			beta = new Vector3D(0, 0, 0.99);
+		System.out.println("d = "+d);
+		System.out.println("d+beta = "+Vector3D.sum(d, beta));
+		System.out.println("GalileanTransform.getTransformedLightRayDirection(d, beta) = "+GalileanTransform.getTransformedLightRayDirection(d, beta));
+		System.out.println("LorentzTransform.getTransformedLightRayDirection(d, beta) = "+LorentzTransformation.getTransformedLightRayDirection(d, beta));
 	}
 }

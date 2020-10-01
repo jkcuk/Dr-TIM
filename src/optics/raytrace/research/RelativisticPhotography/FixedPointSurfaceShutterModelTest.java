@@ -3,11 +3,11 @@ package optics.raytrace.research.RelativisticPhotography;
 import java.awt.*;
 
 import math.*;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
 import optics.raytrace.cameras.shutterModels.FixedPointSurfaceShutterModel;
-import optics.raytrace.cameras.RelativisticAnyFocusSurfaceCamera.TransformType;
 import optics.raytrace.core.*;
 import optics.raytrace.GUI.cameras.EditableRelativisticAnyFocusSurfaceCamera;
 import optics.raytrace.GUI.cameras.QualityType;
@@ -117,6 +117,7 @@ public class FixedPointSurfaceShutterModelTest
 				new Vector3D(0, 0, 1),	// viewDirection
 				new Vector3D(0, 1, 0),	// top direction vector
 				20,	// horiontalViewAngle in degrees; 2*MyMath.rad2deg(Math.atan(2./10.)) gives same view angle as in previous version
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
 				(BETA_0?new Vector3D(0, 0, 0):beta),	// beta
 				pixelsX, pixelsY,	// logical number of pixels
 				ExposureCompensationType.EC0,	// exposure compensation +0
@@ -134,7 +135,6 @@ public class FixedPointSurfaceShutterModelTest
 				TEST?QualityType.BAD:QualityType.GREAT,	// blur quality
 				TEST?QualityType.NORMAL:QualityType.GOOD	// QualityType.GREAT	// anti-aliasing quality
 		);
-		camera.setTransformType(TransformType.LORENTZ_TRANSFORM);
 
 		// the reference shutter model
 		FixedPointSurfaceShutterModel shutterModel = new FixedPointSurfaceShutterModel(beta);		

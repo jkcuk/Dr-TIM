@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import javax.swing.*;
 
 import math.*;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.core.*;
 import optics.raytrace.GUI.cameras.*;
@@ -237,6 +238,7 @@ public class TIMInteractiveBits
 				new Vector3D(0, 0, anaglyphViewDistance),	// centre of view: the point in the centre of both eyes' field of view
 				new Vector3D(2*anaglyphViewDistance*Math.tan(MyMath.deg2rad(HORIZONTAL_VIEW_ANGLE/2)), 0, 0),	// horizontal span vector
 				new Vector3D(0.4, 0, 0),	// eyeSeparation: separation between the eyes
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
 				new Vector3D(0, 0, 0),	// beta
 				imageCanvasSizeX, imageCanvasSizeY,	// logical number of pixels
 				ExposureCompensationType.EC0,

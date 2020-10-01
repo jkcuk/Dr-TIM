@@ -3,6 +3,7 @@ package optics.raytrace.demo;
 import java.awt.Container;
 
 import math.*;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
 import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.TimHead;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
@@ -83,6 +84,7 @@ public class AnaglyphCameraDemo
 				new Vector3D(4, 0, 0),	// horizontal span vector, a vector pointing to the right
 				new Vector3D(0, -4*(double)pixelsY/pixelsX, 0),	// vertical span vector
 				new Vector3D(0.4, 0, 0),	// eyeSeparation,	// separation between the eyes
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
 				new Vector3D(0, 0, 0),	// camera speed (in units of c)
 				pixelsX*antiAliasingFactor,	pixelsY*antiAliasingFactor,	// imagePixelsHorizontal, imagePixelsVertical,
 				ExposureCompensationType.EC0,

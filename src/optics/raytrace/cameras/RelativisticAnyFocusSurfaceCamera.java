@@ -1,5 +1,10 @@
 package optics.raytrace.cameras;
 
+import math.GalileanTransformation;
+import math.LorentzTransformation;
+import math.SpaceTimeTransformation;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
+import math.Vector3D;
 import optics.DoubleColour;
 import optics.raytrace.cameras.shutterModels.ShutterModel;
 import optics.raytrace.core.DefaultRaytraceExceptionHandler;
@@ -8,9 +13,6 @@ import optics.raytrace.core.Ray;
 import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.exceptions.RayTraceException;
-import math.GalileanTransform;
-import math.LorentzTransform;
-import math.Vector3D;
 
 /**
  * @author johannes
@@ -26,11 +28,9 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 {
 	private static final long serialVersionUID = -5157996130583972646L;
 	
-	/**
-	 * the velocity of the scene in the camera frame, in units of c (the speed of light)
-	 */
-	protected Vector3D
-		beta = new Vector3D(0, 0, 0);
+	
+	private SpaceTimeTransformation spaceTimeTransformation;
+
 
 	/**
      * Any objects that are at rest in the camera frame
@@ -55,24 +55,12 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 	 */
 	protected ShutterModel shutterModel;
 	
-	public enum TransformType
-	{
-		GALILEAN_TRANSFORM("Galilean transform"),
-		LORENTZ_TRANSFORM("Lorentz transform");
-		
-		private String description;
-		private TransformType(String description) {this.description = description;}	
-		@Override
-		public String toString() {return description;}
-	}
-
-	protected TransformType transformType = TransformType.LORENTZ_TRANSFORM;
-	
     public RelativisticAnyFocusSurfaceCamera(
     		String description,
             Vector3D apertureCentre,
             Vector3D centreOfView,
             Vector3D horizontalSpanVector, Vector3D verticalSpanVector,
+			SpaceTimeTransformationType spaceTimeTransformationType,
             Vector3D beta,
             int detectorPixelsHorizontal, int detectorPixelsVertical, 
             ExposureCompensationType exposureCompensation,
@@ -80,7 +68,6 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
             SceneObject focusScene,
             SceneObject cameraFrameScene,
             ShutterModel shutterModel,
-			TransformType transformType,
             // double detectorDistance,	// in the detector-plane shutter model, the detector is this distance behind the entrance pupil
             double apertureRadius,
             int raysPerPixel
@@ -91,13 +78,11 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
     			detectorPixelsHorizontal, detectorPixelsVertical, exposureCompensation, maxTraceLevel,
     			focusScene, apertureRadius, raysPerPixel
     		);
+    	setSpaceTimeTransformation(spaceTimeTransformationType, beta);
     	setRaytraceExceptionHandler(this);
-    	setBeta(beta);
     	setCameraFrameScene(cameraFrameScene);
     	setSceneFrameRaytraceExceptionHandler(new DefaultRaytraceExceptionHandler());
     	setShutterModel(shutterModel);
-    	setTransformType(transformType);
-    	// setDetectorDistance(detectorDistance);
     }
     
 
@@ -109,6 +94,7 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 				original.getCentreOfView(),
 				original.getHorizontalSpanVector(),
 				original.getVerticalSpanVector(),
+				original.getTransformType(),
 				original.getBeta(),
 				original.getDetectorPixelsHorizontal(),
 				original.getDetectorPixelsVertical(), 
@@ -117,7 +103,6 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 				original.getFocusScene(),
 				original.getCameraFrameScene(),
 				original.getShutterModel(),
-				original.getTransformType(),
 				// original.getDetectorDistance(),
 				original.getApertureRadius(),
 				original.getRaysPerPixel()
@@ -132,14 +117,28 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 	}
 
 	// getters and setters
+	
+	public void setSpaceTimeTransformation(SpaceTimeTransformationType spaceTimeTransformationType, Vector3D beta)
+	{
+		switch(spaceTimeTransformationType)
+		{
+		case GALILEAN_TRANSFORMATION:
+			spaceTimeTransformation = new GalileanTransformation(beta.getReverse());
+			break;
+		case LORENTZ_TRANSFORMATION:
+		default:
+			spaceTimeTransformation = new LorentzTransformation(beta.getReverse());
+		}
+	}
+	
+	public void setBeta(Vector3D beta) {
+		spaceTimeTransformation.setBeta(beta);
+	}
+	
 	public Vector3D getBeta() {
-		return beta;
+		return spaceTimeTransformation.getBeta().getReverse();
 	}
 
-	public void setBeta(Vector3D beta)
-	{
-		this.beta = beta;
-	}
 
 //	@Override
 //	public Ray getCentralRayForPixel(int i, int j)
@@ -205,14 +204,10 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 		this.shutterModel = shutterModel;
 	}
 
-	public TransformType getTransformType() {
-		return transformType;
+	public SpaceTimeTransformationType getTransformType() {
+		return spaceTimeTransformation.getSpaceTimeTransformationType();
 	}
 
-
-	public void setTransformType(TransformType transformType) {
-		this.transformType = transformType;
-	}
 
 	/**
 	 * holds the scene objects in the scene frame
@@ -257,7 +252,7 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 		}
 	
 		// if we're dealing with the non-relativistic situation...
-		if((beta.x == 0.0) && (beta.y == 0.0) && (beta.z == 0.0))
+		if(spaceTimeTransformation.isBetaZero())
 		{
 			// ... no need to transform any positions
 			return sceneFrameScene.getColour(
@@ -278,38 +273,19 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 		
 		// System.out.println("t="+ray.getT());
 		
-		Vector3D rayStartPointSceneFrame, rayDirectionSceneFrame;
-		double startTimeSceneFrame;
-		
 		// the velocity/c of the scene frame in the camera frame
-		Vector3D minusBeta = beta.getReverse();
-		
-		switch(transformType)
-		{
-		case GALILEAN_TRANSFORM:
-			// transforming the start position is easy
-			rayStartPointSceneFrame = GalileanTransform.getTransformedPosition(ray.getP(), ray.getT(), minusBeta);
+		// transforming the start position is easy
+		Vector3D rayStartPointSceneFrame = spaceTimeTransformation.getTransformedPosition(ray.getP(), ray.getT());
 			
-			// transforming the ray direction is also easy
-			rayDirectionSceneFrame = GalileanTransform.getTransformedLightRayDirection(ray.getD(), minusBeta);
+		// transforming the ray direction is also easy
+		Vector3D rayDirectionSceneFrame = spaceTimeTransformation.getTransformedLightRayDirection(ray.getD());
 			
-			startTimeSceneFrame = GalileanTransform.getTransformedTime(ray.getP(), ray.getT(), minusBeta);
+		double startTimeSceneFrame = spaceTimeTransformation.getTransformedTime(ray.getP(), ray.getT());
 			
-			break;
-		case LORENTZ_TRANSFORM:
-		default:
-			// transforming the start position is easy
-			rayStartPointSceneFrame = LorentzTransform.getTransformedPosition(ray.getP(), ray.getT(), minusBeta);
-			
-			// transforming the ray direction is also easy
-			rayDirectionSceneFrame = LorentzTransform.getTransformedLightRayDirection(ray.getD(), minusBeta);
-
-			startTimeSceneFrame = LorentzTransform.getTransformedTime(ray.getP(), ray.getT(), minusBeta);
-		}
-		
 //		System.out.println(
 //				"original ray: P="+ray.getP()+", t="+ray.getT()+", D="+ray.getD()+"; "+
-//				"transformed ray: P'="+rayStartPointSceneFrame+", D'="+rayDirectionSceneFrame
+//				"transformed ray: P'="+rayStartPointSceneFrame+", D'="+rayDirectionSceneFrame +
+//				" = D-beta?"+rayDirectionSceneFrame.equals(Vector3D.difference(ray.getD().getNormalised(), getBeta()))	// should be true for Galilean Transformation
 //			);
 		
 		// now we know all we need to know about the ray in the scene frame, so launch it!

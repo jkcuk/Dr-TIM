@@ -1,8 +1,8 @@
 package optics.raytrace.research.relativisticDistortion;
 
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
 import math.Vector3D;
 import optics.DoubleColour;
-import optics.raytrace.cameras.RelativisticAnyFocusSurfaceCamera.TransformType;
 import optics.raytrace.core.LightSource;
 import optics.raytrace.core.Ray;
 import optics.raytrace.core.RaySceneObjectIntersection;
@@ -46,11 +46,11 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	/**
 	 * speed in units of c, i.e. v/c
 	 */
-	private double beta;
+	private double betaAbs;
 	
 	private double ellipsoidPrincipalRadiusInBetaDirection;
 	
-	private TransformType transformType;
+	private SpaceTimeTransformationType transformType;
 	
 
 	
@@ -61,7 +61,7 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	 * 
 	 * @param transmissionCoefficient
 	 */
-	public RelativisticDistortionEllipsoidConstructionSurface(Vector3D cameraPosition, Vector3D betaHat, double beta, TransformType transformType, double ellipsoidPrincipalRadiusInBetaDirection)
+	public RelativisticDistortionEllipsoidConstructionSurface(Vector3D cameraPosition, Vector3D beta, SpaceTimeTransformationType transformType, double ellipsoidPrincipalRadiusInBetaDirection)
 	{
 		super(
 				0.9,	// transmissionCoefficient, when looking from inside the ellipsoid
@@ -69,8 +69,8 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 			);
 		
 		setCameraPosition(cameraPosition);
-		setBetaHat(betaHat);
-		setBeta(beta);
+		setBetaHat(beta);
+		setBetaAbs(beta.getLength());
 		setTransformType(transformType);
 		setEllipsoidPrincipalRadiusInBetaDirection(ellipsoidPrincipalRadiusInBetaDirection);
 	}
@@ -81,7 +81,7 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	@Override
 	public RelativisticDistortionEllipsoidConstructionSurface clone()
 	{
-		return new RelativisticDistortionEllipsoidConstructionSurface(cameraPosition, betaHat, beta, transformType, ellipsoidPrincipalRadiusInBetaDirection);
+		return new RelativisticDistortionEllipsoidConstructionSurface(cameraPosition, getBeta(), transformType, ellipsoidPrincipalRadiusInBetaDirection);
 	}
 	
 	
@@ -100,28 +100,33 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 		return betaHat;
 	}
 
-	public void setBetaHat(Vector3D betaHat) {
-		this.betaHat = betaHat.getNormalised();
+	public void setBetaHat(Vector3D beta) {
+		this.betaHat = beta.getNormalised();
 	}
 
-	public double getBeta() {
-		return beta;
+	public double getBetaAbs() {
+		return betaAbs;
 	}
 
 	/**
-	 * Set beta, i.e. the speed as a fraction of c, the speed of light.
+	 * Set betaAbs, i.e. the speed as a fraction of c, the speed of light.
 	 * This method also pre-calculates the transverse stretch factor.
-	 * @param beta
+	 * @param betaAbs
 	 */
-	public void setBeta(double beta) {
-		this.beta = beta;
+	public void setBetaAbs(double betaAbs) {
+		this.betaAbs = betaAbs;
+	}
+	
+	public Vector3D getBeta()
+	{
+		return betaHat.getProductWith(betaAbs);
 	}
 
-	public TransformType getTransformType() {
+	public SpaceTimeTransformationType getTransformType() {
 		return transformType;
 	}
 
-	public void setTransformType(TransformType transformType) {
+	public void setTransformType(SpaceTimeTransformationType transformType) {
 		this.transformType = transformType;
 	}
 
@@ -153,15 +158,13 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 	{
 		// if(transformType == null) return 1.0;
 
-		double gamma = 1./Math.sqrt(1.-beta*beta);
-
 		switch(transformType)
 		{
-		case GALILEAN_TRANSFORM:
+		case GALILEAN_TRANSFORMATION:
 			return 1.0;
-		case LORENTZ_TRANSFORM:
+		case LORENTZ_TRANSFORMATION:
 		default:
-			return 1./gamma;
+			return Math.sqrt(1.-betaAbs*betaAbs);	// 1./gamma, where gamma = 1./Math.sqrt(1.-beta*beta);
 		}
 	}
 	
@@ -191,7 +194,7 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 		ellipsoid = new Ellipsoid(
 				description,
 				// cameraPosition,
-				Vector3D.sum(cameraPosition, betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection*beta)),	// centre
+				Vector3D.sum(cameraPosition, betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection*betaAbs)),	// centre
 				betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection),	// a
 				alpha1Hat.getProductWith(transverseStretchFactor*ellipsoidPrincipalRadiusInBetaDirection),	// b
 				alpha2Hat.getProductWith(transverseStretchFactor*ellipsoidPrincipalRadiusInBetaDirection),	// c
@@ -224,7 +227,7 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 		// ray.getD() is the (backwards) light-ray direction in the camera frame; construct the corresponding light-ray direction in the scene frame
 		Vector3D dPrimeMinusBetaOverGamma = 
 				// Vector3D.difference(i.p, cameraPosition);
-				Vector3D.difference(Vector3D.difference(i.p, cameraPosition), betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection*beta));
+				Vector3D.difference(Vector3D.difference(i.p, cameraPosition), betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection*betaAbs));
 		Vector3D d = Vector3D.sum(
 				dPrimeMinusBetaOverGamma.getPartParallelTo(betaHat),
 				dPrimeMinusBetaOverGamma.getPartPerpendicularTo(betaHat).getProductWith(1./transverseStretchFactor)
@@ -241,7 +244,7 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 				));
 		
 		Ray ray1 = new Ray(
-				i1.p,	// start position
+				(i1 != RaySceneObjectIntersection.NO_INTERSECTION)?i1.p:cameraPosition,	// start position
 				d,	// direction
 				ray.getT()	// start time
 				);

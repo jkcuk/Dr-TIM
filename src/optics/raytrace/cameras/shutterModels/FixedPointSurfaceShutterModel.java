@@ -1,6 +1,6 @@
 package optics.raytrace.cameras.shutterModels;
 
-import math.LorentzTransform;
+import math.LorentzTransformation;
 import math.Vector3D;
 
 /**
@@ -57,10 +57,10 @@ public class FixedPointSurfaceShutterModel extends ShutterModel
 	 */
 	public double getTimeWhenPositionIsStationary(Vector3D position)
 	{
-		double gamma = LorentzTransform.getGamma(beta);
 		double beta2 = Vector3D.scalarProduct(beta, beta);
+		double gamma = 1./Math.sqrt(1.-beta2);	// LorentzTransformation.getGamma(beta);
 
-		return (1-gamma)*Vector3D.scalarProduct(beta, position)/(LorentzTransform.c*gamma*beta2);
+		return (1-gamma)*Vector3D.scalarProduct(beta, position)/(LorentzTransformation.c*gamma*beta2);
 	}
 	
 	//
@@ -77,7 +77,7 @@ public class FixedPointSurfaceShutterModel extends ShutterModel
 		Vector3D pointOnPupil2Image = pixelImagePosition.getDifferenceWith(pointOnEntrancePupil);
 
 		// calculate the corresponding time when the ray is at the point on the entrance pupil
-		return getTimeWhenPositionIsStationary(pixelImagePosition) + (pixelImagePositionInFront?1:-1) * pointOnPupil2Image.getLength() / LorentzTransform.c;
+		return getTimeWhenPositionIsStationary(pixelImagePosition) + (pixelImagePositionInFront?1:-1) * pointOnPupil2Image.getLength() / LorentzTransformation.c;
 	}
 
 	/* (non-Javadoc)

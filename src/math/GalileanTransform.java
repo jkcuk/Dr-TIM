@@ -55,7 +55,7 @@ public class GalileanTransform
 		
 		// first method: draw a straight line through two "events" that are the ray passing through two points;
 		// the first event is the ray passing through the origin, O, at t=0;
-		// the second event is the ray passing through the position O+d at t=|d|/c 
+		// the second event is the ray passing through the position O+d at t=-|d|/c 
 		return getTransformedPosition(d, -d.getLength()/c, beta);
 	}
 }

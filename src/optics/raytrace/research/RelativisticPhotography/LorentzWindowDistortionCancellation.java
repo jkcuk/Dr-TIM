@@ -1,19 +1,11 @@
 package optics.raytrace.research.RelativisticPhotography;
 
-import java.awt.*;
+import java.awt.Container;
 
-import math.*;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-import optics.raytrace.surfaces.LorentzTransformInterface;
-import optics.raytrace.surfaces.SurfaceColour;
-import optics.raytrace.utility.CoordinateSystems.CoordinateSystemType;
-import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
-import optics.raytrace.cameras.shutterModels.ArbitraryPlaneShutterModel;
-import optics.raytrace.cameras.shutterModels.DetectorPlaneShutterModel;
-import optics.raytrace.cameras.shutterModels.LensType;
-import optics.raytrace.cameras.shutterModels.ShutterModelType;
-import optics.raytrace.cameras.RelativisticAnyFocusSurfaceCamera.TransformType;
-import optics.raytrace.core.*;
+import math.Geometry;
+import math.LorentzTransformation;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
+import math.Vector3D;
 import optics.raytrace.GUI.cameras.EditableRelativisticAnyFocusSurfaceCamera;
 import optics.raytrace.GUI.cameras.QualityType;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
@@ -23,6 +15,18 @@ import optics.raytrace.GUI.sceneObjects.EditableNinkyNonkSilhouette;
 import optics.raytrace.GUI.sceneObjects.EditableParametrisedPlane;
 import optics.raytrace.GUI.sceneObjects.EditableSceneObjectCollection;
 import optics.raytrace.GUI.sceneObjects.EditableTimHead;
+import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
+import optics.raytrace.cameras.shutterModels.ArbitraryPlaneShutterModel;
+import optics.raytrace.cameras.shutterModels.DetectorPlaneShutterModel;
+import optics.raytrace.cameras.shutterModels.LensType;
+import optics.raytrace.cameras.shutterModels.ShutterModelType;
+import optics.raytrace.core.LightSource;
+import optics.raytrace.core.SceneObjectClass;
+import optics.raytrace.core.Studio;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.surfaces.LorentzTransformInterface;
+import optics.raytrace.surfaces.SurfaceColour;
+import optics.raytrace.utility.CoordinateSystems.CoordinateSystemType;
 
 
 /**
@@ -138,6 +142,7 @@ public class LorentzWindowDistortionCancellation
 				new Vector3D(0, 0, 1),	// viewDirection
 				new Vector3D(0, 1, 0),	// top direction vector
 				20,	// horiontalViewAngle in degrees; 2*MyMath.rad2deg(Math.atan(2./10.)) gives same view angle as in previous version
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
 				(BETA_0?new Vector3D(0, 0, 0):beta),	// beta
 				pixelsX, pixelsY,	// logical number of pixels
 				ExposureCompensationType.EC0,	// exposure compensation +0
@@ -179,7 +184,7 @@ public class LorentzWindowDistortionCancellation
 							// distance from the straight-ahead point on the shutter plane to the aperture centre
 							Vector3D.difference(straightAheadPointOnShutterPlane, new Vector3D(0, 0, 0)).getLength() +
 							1	// camera distance
-					)/LorentzTransform.c
+					)/LorentzTransformation.c
 					// this shutter time makes this detector-plane shutter model as equivalent as possible
 					// with the arbitrary-plane shutter model below
 				));
@@ -192,7 +197,6 @@ public class LorentzWindowDistortionCancellation
 					-1	// shutter-opening time
 				));
 		}
-		camera.setTransformType(TransformType.LORENTZ_TRANSFORM);
 
 
 		studio.setScene(scene);

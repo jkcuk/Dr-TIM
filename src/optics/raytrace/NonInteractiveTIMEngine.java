@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import math.*;
+import math.SpaceTimeTransformation.SpaceTimeTransformationType;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.*;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
@@ -136,6 +137,8 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	 */
 	protected double cameraHorizontalFOVDeg;
 	
+	protected SpaceTimeTransformationType cameraSpaceTimeTransformationType;
+	
 	/**
 	 * the velocity of the camera in the scene frame, in units of c
 	 */
@@ -250,6 +253,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 		cameraDistance = 10;
 		cameraFocussingDistance = 10;
 		cameraHorizontalFOVDeg = 20;
+		cameraSpaceTimeTransformationType = SpaceTimeTransformationType.LORENTZ_TRANSFORMATION;
 		cameraBeta = new Vector3D(0, 0, 0);
 		cameraMaxTraceLevel = 100;
 		cameraPixelsX = 640;
@@ -367,6 +371,16 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 
 	public void setCameraHorizontalFOV(double cameraHorizontalFOVDeg) {
 		this.cameraHorizontalFOVDeg = cameraHorizontalFOVDeg;
+	}
+
+
+	public SpaceTimeTransformationType getCameraSpaceTimeTransformationType() {
+		return cameraSpaceTimeTransformationType;
+	}
+
+
+	public void setCameraSpaceTimeTransformationType(SpaceTimeTransformationType cameraSpaceTimeTransformationType) {
+		this.cameraSpaceTimeTransformationType = cameraSpaceTimeTransformationType;
 	}
 
 
@@ -634,6 +648,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 				cameraViewDirection,	// viewDirection
 				topDirection,	// top direction vector
 				cameraHorizontalFOVDeg,	// horiontalViewAngle in degrees; 2*MyMath.rad2deg(Math.atan(2./10.)) gives same view angle as in previous version
+				cameraSpaceTimeTransformationType,	// spaceTimeTransformationType
 				cameraBeta,	// beta
 				cameraPixelsX, cameraPixelsY,	// logical number of pixels
 				cameraExposureCompensation,	// ExposureCompensationType.EC0,	// exposure compensation +0
@@ -889,6 +904,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 //		protected double cameraHorizontalFOVDeg;
 		printStream.println("cameraHorizontalFOVDeg = "+cameraHorizontalFOVDeg);
 
+		printStream.println("cameraSpaceTimeTransformationType = "+cameraSpaceTimeTransformationType);
 		printStream.println("cameraBeta = "+cameraBeta);
 
 //		protected int cameraMaxTraceLevel;
