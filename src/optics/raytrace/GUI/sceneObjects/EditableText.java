@@ -325,19 +325,18 @@ public class EditableText extends SceneObjectWithHoles implements IPanelComponen
 			e.printStackTrace();
 		}
 		
-		setEitherOrSurface(
-				new EitherOrSurface(
-						image,	// picture, 
-						0,	// xMin
-						1,	// xMax
-						0,	// yMin
-						1,	// yMax
-						null,	// SurfaceColour.BLACK_MATT,	// surfaceProperty0
-						null	// Transparent.PERFECT	// surfaceProperty1
-						)
+		EitherOrSurface eitherOrSurface = new EitherOrSurface(
+				image,	// picture, 
+				0,	// xMin
+				1,	// xMax
+				0,	// yMin
+				1,	// yMax
+				null,	// SurfaceColour.BLACK_MATT,	// surfaceProperty0
+				null	// Transparent.PERFECT	// surfaceProperty1
 				);
+		eitherOrSurface.setSurfaceTypeCorrespondingToHole(1);
 		
-		setInvert(true);
+		setHoleySurface(eitherOrSurface);
 	}
 	
 

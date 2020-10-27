@@ -25,11 +25,13 @@ import math.Vector2D;
  * which decides which one of two surface properties is applicable at different points.
  * The surface has to be a ParametrisedSurface for this to work.
  * 
+ * When used as a HoleySurface, surfaceProperty0 corresponds to a hole, surfaceProperty1 to surface.
+ * 
  * See also MaskedSceneObject.
  * 
  * @author Johannes Courtial
  */
-public class EitherOrSurface extends SurfaceProperty implements SurfacePropertyWithControllableShadow
+public class EitherOrSurface extends SurfaceProperty implements SurfacePropertyWithControllableShadow, HoleySurface	
 {
 	private static final long serialVersionUID = 7457784376225449911L;
 
@@ -52,6 +54,11 @@ public class EitherOrSurface extends SurfaceProperty implements SurfacePropertyW
 	private BufferedImage picture;
 	
 	private boolean shadowThrowing = true;
+	
+	/**
+	 * used by isHole method to establish whether or not an intersection is with a hole
+	 */
+	private int surfaceTypeCorrespondingToHole = 0;
 	
 	/**
 	 * Loads a mask image, sets the range of x and y
@@ -229,6 +236,14 @@ public class EitherOrSurface extends SurfaceProperty implements SurfacePropertyW
 		return height;
 	}
 	
+	public int getSurfaceTypeCorrespondingToHole() {
+		return surfaceTypeCorrespondingToHole;
+	}
+
+	public void setSurfaceTypeCorrespondingToHole(int surfaceTypeCorrespondingToHole) {
+		this.surfaceTypeCorrespondingToHole = surfaceTypeCorrespondingToHole;
+	}
+
 	/**
 	 * @param i
 	 * @return	0 or 1 if the position of the intersection <i> falls within the range covered by the image, -1 otherwise
@@ -351,5 +366,10 @@ public class EitherOrSurface extends SurfaceProperty implements SurfacePropertyW
 	@Override
 	public void setShadowThrowing(boolean shadowThrowing) {
 		this.shadowThrowing = shadowThrowing;
+	}
+
+	@Override
+	public boolean isHole(RaySceneObjectIntersection i) {
+		return getSurfaceTypeAtIntersection(i) == surfaceTypeCorrespondingToHole;
 	}
 }

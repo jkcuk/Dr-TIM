@@ -276,12 +276,11 @@ public class Test
 //			System.out.println("(j+1) % 4 = " + ((j+1) % 4));
 //		}
 		
-		Vector3D
-			d = new Vector3D(1,2,3).getNormalised(),
-			beta = new Vector3D(0, 0, 0.99);
-		System.out.println("d = "+d);
-		System.out.println("d+beta = "+Vector3D.sum(d, beta));
-		System.out.println("GalileanTransform.getTransformedLightRayDirection(d, beta) = "+GalileanTransform.getTransformedLightRayDirection(d, beta));
-		System.out.println("LorentzTransform.getTransformedLightRayDirection(d, beta) = "+LorentzTransformation.getTransformedLightRayDirection(d, beta));
+		// modulo test
+		for(double d = -2; d <= 2; d+=0.2)
+		{
+			System.out.println(d + "% 0.5 =" + ((d%0.5 + 0.5)%0.5));
+		}
+
 	}
 }

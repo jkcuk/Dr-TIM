@@ -2,25 +2,34 @@ package optics.raytrace.surfaces;
 
 import java.util.ArrayList;
 
-import math.MyMath;
 import math.Vector2D;
 import math.Vector3D;
 import optics.raytrace.core.One2OneParametrisedObject;
 import optics.raytrace.core.Orientation;
+import optics.raytrace.core.RaySceneObjectIntersection;
 
 /**
- * A phase hologram of a rectangular array of lenslets of focal length f.
+ * A phase hologram of a sparse rectangular array of lenslets of focal length f.
+ * The array us "sparse" in the sense that only every nth lens is present; in between, there is nothing.
  * 
  * The associated SceneObject must be a ParametrisedObject as the getSurfaceCoordinates(Vector3D) method is used to calculate the coordinates on the surface.
  * 
  * @author johannes
  */
-public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
+/**
+ * @author johannes
+ *
+ */
+/**
+ * @author johannes
+ *
+ */
+public class PhaseHologramOfSparseRectangularLensletArray extends PhaseHologram implements HoleySurface
 {
-	private static final long serialVersionUID = -2021116407743899158L;
+	private static final long serialVersionUID = -1341965636822305236L;
 
 	/**
-	 * the cylindrical lens's focal length;
+	 * the lenses' focal length;
 	 * the phase cross-section of the lens is Phi(t) = (pi r^2)(lambda f), where r is the distance from the lens centre
 	 */
 	private double focalLength;
@@ -36,14 +45,24 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 	private double yPeriod;
 
 	/**
-	 * offset in x direction
+	 * offset in x direction; one of the lenses is centred at (xOffset, yOffset)
 	 */
 	private double xOffset;
 
 	/**
-	 * offset in y direction
+	 * offset in y direction; one of the lenses is centred at (xOffset, yOffset)
 	 */
 	private double yOffset;
+	
+	/**
+	 * every <i>nx</i>th lens in the <i>x</i> direction is physically present (the space in between in a hole)
+	 */
+	private int nx;
+	
+	/**
+	 * every <i>ny</i>th lens in the <i>y</i> direction is physically present (the space in between in a hole)
+	 */
+	private int ny;
 
 	/**
 	 * the scene object this surface property is associated with
@@ -60,17 +79,21 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 	 * @param yPeriod
 	 * @param xOffset
 	 * @param yOffset
+	 * @param nx
+	 * @param ny
 	 * @param sceneObject
 	 * @param throughputCoefficient
 	 * @param reflective
 	 * @param shadowThrowing
 	 */
-	public PhaseHologramOfRectangularLensletArray(
+	public PhaseHologramOfSparseRectangularLensletArray(
 			double focalLength,
 			double xPeriod,
 			double yPeriod,
 			double xOffset,
 			double yOffset,
+			int nx,
+			int ny,
 			One2OneParametrisedObject sceneObject,
 			double throughputCoefficient,
 			boolean reflective,
@@ -83,23 +106,27 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 		setyPeriod(yPeriod);
 		setxOffset(xOffset);
 		setyOffset(yOffset);
+		setNx(nx);
+		setNy(ny);
 		setSceneObject(sceneObject);
 	}
 
-	public PhaseHologramOfRectangularLensletArray(PhaseHologramOfRectangularLensletArray original) {
+	public PhaseHologramOfSparseRectangularLensletArray(PhaseHologramOfSparseRectangularLensletArray original) {
 		super(original);
 		setFocalLength(original.getFocalLength());
 		setxPeriod(original.getxPeriod());
 		setyPeriod(original.getyPeriod());
 		setxOffset(original.getxOffset());
 		setyOffset(original.getyOffset());
+		setNx(original.getNx());
+		setNy(original.getNy());
 		setSceneObject(original.getSceneObject());
 	}
 	
 	@Override
-	public PhaseHologramOfRectangularLensletArray clone()
+	public PhaseHologramOfSparseRectangularLensletArray clone()
 	{
-		return new PhaseHologramOfRectangularLensletArray(this);
+		return new PhaseHologramOfSparseRectangularLensletArray(this);
 	}
 
 
@@ -148,6 +175,22 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 		this.yOffset = yOffset;
 	}
 
+	public int getNx() {
+		return nx;
+	}
+
+	public void setNx(int nx) {
+		this.nx = nx;
+	}
+
+	public int getNy() {
+		return ny;
+	}
+
+	public void setNy(int ny) {
+		this.ny = ny;
+	}
+
 	public One2OneParametrisedObject getSceneObject() {
 		return sceneObject;
 	}
@@ -155,31 +198,23 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 	public void setSceneObject(One2OneParametrisedObject sceneObject) {
 		this.sceneObject = sceneObject;
 	}
-
 	
-	private double findLensletCentreCoordinate(double u, double uPeriod, double uOffset)
+	private double mod(double a, double b)
 	{
-		return uOffset + uPeriod*Math.floor((u-uOffset)/uPeriod+0.5);
+		return ((a % b) + b) % b;
 	}
-	
-	public double lensHeight(double x, double y)
-	{
-		return
-				MyMath.square((x-xOffset)-xPeriod*Math.floor((x-xOffset)/xPeriod + 0.5)) + 
-				MyMath.square((y-yOffset)-yPeriod*Math.floor((y-yOffset)/yPeriod + 0.5));
-	}
-	
+		
 	@Override
 	public Vector3D getTangentialDirectionComponentChangeTransmissive(Vector3D surfacePosition,
 			Vector3D surfaceNormal)
 	{	
 		// calculate the x and y coordinates of the position; for this to work, the scene object must be sensibly parametrised
 		Vector2D xy = sceneObject.getSurfaceCoordinates(surfacePosition);
-		double x = xy.x;
-		double y = xy.y;
+		double x = xy.x - xOffset;
+		double y = xy.y - yOffset;
 		
-		double xDerivative = x-xOffset-findLensletCentreCoordinate(x, xPeriod, xOffset);
-		double yDerivative = y-yOffset-findLensletCentreCoordinate(y, yPeriod, yOffset);
+		double xDerivative = mod(x+0.5*nx*xPeriod, nx*xPeriod) - 0.5*nx*xPeriod;
+		double yDerivative = mod(y+0.5*ny*yPeriod, ny*yPeriod) - 0.5*ny*yPeriod;
 		
 		ArrayList<Vector3D> xHatYHat = sceneObject.getSurfaceCoordinateAxes(surfacePosition);
 		return Vector3D.sum(xHatYHat.get(0).getProductWith(-xDerivative/focalLength), xHatYHat.get(1).getProductWith(-yDerivative/focalLength));
@@ -191,6 +226,19 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 	{
 		// TODO Not sure this makes sense completely...
 		return getTangentialDirectionComponentChangeTransmissive(surfacePosition, surfaceNormal);
+	}
+
+	@Override
+	public boolean isHole(RaySceneObjectIntersection i)
+	{
+		Vector2D xy = sceneObject.getSurfaceCoordinates(i.p);
+		double x = xy.x - xOffset;
+		double y = xy.y - yOffset;
+		
+		double dx = Math.abs(mod(x+0.5*nx*xPeriod, nx*xPeriod) - 0.5*nx*xPeriod);
+		double dy = Math.abs(mod(y+0.5*ny*yPeriod, ny*yPeriod) - 0.5*ny*yPeriod);
+
+		return (dx > 0.5*xPeriod) || (dy > 0.5*yPeriod);
 	}
 
 }

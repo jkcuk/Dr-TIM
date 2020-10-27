@@ -12,12 +12,12 @@ import optics.raytrace.core.SceneObjectClass;
 import optics.raytrace.core.SceneObjectPrimitive;
 import optics.raytrace.core.Transformation;
 import optics.raytrace.exceptions.SceneException;
-import optics.raytrace.surfaces.EitherOrSurface;
+import optics.raytrace.surfaces.HoleySurface;
 
 /**
  * @author johannes
  * A wrapper for scene objects that allows holes in the surface.
- * Whether or not at a particular point on the surface there is a hole or not is decided by the associated EitherOrSurface.
+ * Whether or not at a particular point on the surface there is a hole or not is decided by the associated HoleySurface.
  */
 public class SceneObjectWithHoles extends SceneObjectClass implements Serializable
 {
@@ -29,16 +29,9 @@ public class SceneObjectWithHoles extends SceneObjectClass implements Serializab
 	protected SceneObject wrappedSceneObject;
 	
 	/**
-	 * The surface property that decides whether or not a particular point on the object is a hole;
-	 * unless inverted, surfaceProperty0 is a hole, surfaceProperty1 isn't
+	 * The surface property that decides whether or not a particular point on the object is a hole
 	 */
-	private EitherOrSurface eitherOrSurface;
-	
-	/**
-	 * If true, surfaceProperty1 is a hole, surfaceProperty0 isn't;
-	 * if false, surfaceProperty0 is a hole, surfaceProperty1 isn't
-	 */
-	private boolean invert;
+	private HoleySurface holeySurface;
 
 	
 	//
@@ -49,18 +42,16 @@ public class SceneObjectWithHoles extends SceneObjectClass implements Serializab
 	 * Create a wrapper around <sceneObject> that switches the surface on or off
 	 * @param description
 	 * @param sceneObject
-	 * @param eitherOrSurface
-	 * @param invert
+	 * @param holeySurface
 	 * @throws SceneException
 	 */
-	public SceneObjectWithHoles(String description, SceneObject sceneObject, EitherOrSurface eitherOrSurface, boolean invert)
+	public SceneObjectWithHoles(String description, SceneObject sceneObject, HoleySurface holeySurface)
 	throws SceneException
 	{
-		super(description, sceneObject.getParent(), sceneObject.getStudio());
+		super(description, null, null);
 		
 		setWrappedSceneObject(sceneObject);
-		setEitherOrSurface(eitherOrSurface);
-		setInvert(invert);
+		setHoleySurface(holeySurface);
 	}
 	
 	/**
@@ -71,14 +62,13 @@ public class SceneObjectWithHoles extends SceneObjectClass implements Serializab
 	public SceneObjectWithHoles(String description)
 	{
 		super(description, null, null);
-		setInvert(false);
 	}
 
 	
 	public SceneObjectWithHoles(SceneObjectWithHoles original)
 	throws SceneException
 	{
-		this(original.getDescription(), original.getWrappedSceneObject(), original.getEitherOrSurface(), original.isInvert());
+		this(original.getDescription(), original.getWrappedSceneObject(), original.getHoleySurface());
 	}
 	
 	/* (non-Javadoc)
@@ -116,8 +106,8 @@ public class SceneObjectWithHoles extends SceneObjectClass implements Serializab
 		if(sceneObject instanceof ParametrisedObject)
 		{
 			this.wrappedSceneObject = sceneObject;
-			setParent(sceneObject.getParent());
-			setStudio(sceneObject.getStudio());
+			setParent((sceneObject!=null)?sceneObject.getParent():null);
+			setStudio((sceneObject!=null)?sceneObject.getStudio():null);
 		}
 		else
 		{
@@ -125,21 +115,14 @@ public class SceneObjectWithHoles extends SceneObjectClass implements Serializab
 		}
 	}
 
-	public EitherOrSurface getEitherOrSurface() {
-		return eitherOrSurface;
+	public HoleySurface getHoleySurface() {
+		return holeySurface;
 	}
 
-	public void setEitherOrSurface(EitherOrSurface eitherOrSurface) {
-		this.eitherOrSurface = eitherOrSurface;
+	public void setHoleySurface(HoleySurface holeySurface) {
+		this.holeySurface = holeySurface;
 	}
 
-	public boolean isInvert() {
-		return invert;
-	}
-
-	public void setInvert(boolean invert) {
-		this.invert = invert;
-	}
 
 	
 	//
@@ -156,7 +139,7 @@ public class SceneObjectWithHoles extends SceneObjectClass implements Serializab
 		if(i == RaySceneObjectIntersection.NO_INTERSECTION) return i;
 		
 		// if the either-or surface says that the intersection point is not a hole...
-		if(eitherOrSurface.getSurfaceTypeAtIntersection(i) == (invert?0:1))
+		if(!holeySurface.isHole(i))
 			// return the intersection point
 			return i;
 		
@@ -174,7 +157,7 @@ public class SceneObjectWithHoles extends SceneObjectClass implements Serializab
 		if(i == RaySceneObjectIntersection.NO_INTERSECTION) return i;
 		
 		// if the either-or surface says that the intersection point is not a hole...
-		if(eitherOrSurface.getSurfaceTypeAtIntersection(i) == (invert?0:1))
+		if(!holeySurface.isHole(i))
 			// return the intersection point
 			return i;
 		
@@ -193,7 +176,7 @@ public class SceneObjectWithHoles extends SceneObjectClass implements Serializab
 		if(i == RaySceneObjectIntersection.NO_INTERSECTION) return i;
 		
 		// if the either-or surface says that the intersection point is not a hole...
-		if(eitherOrSurface.getSurfaceTypeAtIntersection(i) == (invert?0:1))
+		if(!holeySurface.isHole(i))
 			// return the intersection point
 			return i;
 		
@@ -212,7 +195,7 @@ public class SceneObjectWithHoles extends SceneObjectClass implements Serializab
 		if(i == RaySceneObjectIntersection.NO_INTERSECTION) return i;
 		
 		// if the either-or surface says that the intersection point is not a hole...
-		if(eitherOrSurface.getSurfaceTypeAtIntersection(i) == (invert?0:1))
+		if(!holeySurface.isHole(i))
 			// return the intersection point
 			return i;
 		
@@ -224,7 +207,7 @@ public class SceneObjectWithHoles extends SceneObjectClass implements Serializab
 	public SceneObject transform(Transformation t)
 	{
 		try {
-			return new SceneObjectWithHoles(getDescription(), getWrappedSceneObject().transform(t), getEitherOrSurface(), isInvert());
+			return new SceneObjectWithHoles(getDescription(), getWrappedSceneObject().transform(t), getHoleySurface());
 		} catch (SceneException e) {
 			// this should never happen
 			e.printStackTrace();

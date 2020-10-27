@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
@@ -46,13 +47,11 @@ public abstract class EditableSilhouette extends SceneObjectWithHoles implements
 
 	private Vector3D rightDirection, upDirection;
 	private double width;
-
-	// GUI panels
-	private JPanel editPanel;
-	private LabelledStringPanel descriptionPanel;
-	private LabelledVector3DPanel bottomLeftCornerPanel, rightDirectionPanel, upDirectionPanel;
-	private LabelledDoublePanel widthPanel;
 	
+	
+	private EitherOrSurface eitherOrSurface;	// the holey surface
+	
+
 	/**
 	 * Default constructor
 	 * 
@@ -184,21 +183,30 @@ public abstract class EditableSilhouette extends SceneObjectWithHoles implements
 			image = new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB);
 		}
 
-		setEitherOrSurface(
-				new EitherOrSurface(
-						image,	// picture, 
-						0,	// xMin
-						1,	// xMax
-						0,	// yMin
-						1,	// yMax
-						null,	// SurfaceColour.BLACK_MATT,	// surfaceProperty0
-						null	// Transparent.PERFECT	// surfaceProperty1
-						)
+		eitherOrSurface = new EitherOrSurface(
+				image,	// picture, 
+				0,	// xMin
+				1,	// xMax
+				0,	// yMin
+				1,	// yMax
+				null,	// SurfaceColour.BLACK_MATT,	// surfaceProperty0
+				null	// Transparent.PERFECT	// surfaceProperty1
 				);
+		eitherOrSurface.setSurfaceTypeCorrespondingToHole(1);
 		
-		setInvert(true);
+		setHoleySurface(eitherOrSurface);
 	}
 	
+	
+	
+	// GUI panels
+	private JPanel editPanel;
+	private LabelledStringPanel descriptionPanel;
+	private LabelledVector3DPanel bottomLeftCornerPanel, rightDirectionPanel, upDirectionPanel;
+	private LabelledDoublePanel widthPanel;
+	private JCheckBox isInvertedPanel;
+	
+
 
 
 	/**
@@ -233,6 +241,9 @@ public abstract class EditableSilhouette extends SceneObjectWithHoles implements
 		widthPanel = new LabelledDoublePanel("Width");
 		editPanel.add(widthPanel);
 		
+		isInvertedPanel = new JCheckBox("Inverted");
+		editPanel.add(isInvertedPanel);
+		
 		editPanel.validate();
 	}
 	
@@ -248,6 +259,7 @@ public abstract class EditableSilhouette extends SceneObjectWithHoles implements
 		rightDirectionPanel.setVector3D(rightDirection);
 		upDirectionPanel.setVector3D(upDirection);
 		widthPanel.setNumber(width);
+		isInvertedPanel.setSelected(eitherOrSurface.getSurfaceTypeCorrespondingToHole() == 1);
 	}
 
 	/* (non-Javadoc)
@@ -264,6 +276,8 @@ public abstract class EditableSilhouette extends SceneObjectWithHoles implements
 				upDirectionPanel.getVector3D(),	// spanVector2
 				widthPanel.getNumber()
 			);
+		
+		eitherOrSurface.setSurfaceTypeCorrespondingToHole(isInvertedPanel.isSelected()?1:0);
 		
 		return this;
 	}

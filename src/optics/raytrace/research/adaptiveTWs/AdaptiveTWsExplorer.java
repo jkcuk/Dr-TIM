@@ -1,7 +1,8 @@
-package optics.raytrace.research.lensletArrays;
+package optics.raytrace.research.adaptiveTWs;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.PrintStream;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -10,6 +11,7 @@ import javax.swing.JTabbedPane;
 
 import math.*;
 import net.miginfocom.swing.MigLayout;
+import optics.raytrace.sceneObjects.SparseRectangularLensletArray;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
@@ -18,64 +20,34 @@ import optics.raytrace.GUI.cameras.RenderQualityEnum;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
+import optics.raytrace.GUI.lowLevel.IntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
-import optics.raytrace.GUI.sceneObjects.EditableRectangularLensletArray;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 
 
 /**
- * Simulate the visual appearance of combinations of lenslet arrays, and the view through them.
+ * Simulate the visual appearance of adaptive TWs.
  * 
  * @author Johannes Courtial
  */
-public class LensletArrayExplorer extends NonInteractiveTIMEngine implements ActionListener
+public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements ActionListener
 {
 	/**
-	 * focal length of lenslet array 1
+	 * focal length of 0th lens in array with positive focal lengths
 	 */
-	private double f1;
+	private double f0;
 	
 	/**
-	 * focal length of lenslet array 2
+	 * eta_1
 	 */
-	private double f2;
+	private double eta1;
 	
 	/**
-	 * pitch of lenslet array 1
+	 * pitch of lenslet arrays
 	 */
-	private double pitch1;
-
-	/**
-	 * pitch of lenslet array 2
-	 */
-	private double pitch2;
-
-	/**
-	 * angle of normal to lenslet array 1 w.r.t. z axis
-	 */
-	private double theta1Deg;
-	
-	/**
-	 * angle of normal to lenslet array 2 w.r.t. z axis
-	 */
-	private double theta2Deg;
-			
-	/**
-	 * rotation angle of LA1 around its normal
-	 */
-	private double phi1Deg;
-
-	/**
-	 * rotation angle of LA2 around its normal
-	 */
-	private double phi2Deg;
-	
-	/**
-	 * z separation of LA centres = f1+f2+dz
-	 */
-	private double dz;
+	private double pitch;
 
 	/**
 	 * show lenslet array 1
@@ -86,6 +58,12 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 	 * show lenslet array 2
 	 */
 	private boolean showLensletArray2;
+	
+	private int nx;
+	
+	private int ny;
+	
+	private Vector3D offset1;
 
 	//
 	// the rest of the scene
@@ -101,7 +79,7 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 	 * Constructor.
 	 * Sets all parameters.
 	 */
-	public LensletArrayExplorer()
+	public AdaptiveTWsExplorer()
 	{
 		super();
 		
@@ -113,17 +91,14 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 		renderQuality = RenderQualityEnum.DRAFT;
 		
 		// lenslet-array parameters
-		f1 = 0.1;
-		f2 = -f1;
-		dz = 0.00001;
-		pitch1 = 0.01;
-		pitch2 = 0.01;
-		theta1Deg = 0;
-		theta2Deg = 0;
-		phi1Deg = 0;
-		phi2Deg = 0;
+		f0 = 0.1;
+		eta1 = 0.8;
+		pitch = 0.1;
 		showLensletArray1 = true;
 		showLensletArray2 = true;
+		nx = 1;
+		ny = 1;
+		offset1 = new Vector3D(0, 0, 0.00001);
 		
 		studioInitialisation = StudioInitialisationType.LATTICE;	// the backdrop
 
@@ -137,7 +112,7 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 		
 		if(nonInteractiveTIMAction == NonInteractiveTIMActionEnum.INTERACTIVE)
 		{
-			windowTitle = "Dr TIM's lenslet-array explorer";
+			windowTitle = "Dr TIM's adaptive-TWs explorer";
 			windowWidth = 1500;
 			windowHeight = 650;
 		}
@@ -147,29 +122,16 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 	@Override
 	public String getFirstPartOfFilename()
 	{
-		return "LensletArrayExplorer"	// the name
-				+ (showLensletArray1?
-						" LA1 theta="+theta1Deg+"deg"
-						+" phi="+phi1Deg+"deg"
-						+" f="+f1
-						+" pitch="+pitch1
-						:"")
-				+ (showLensletArray2?
-						" LA2 theta="+theta2Deg+"deg"
-						+" phi="+phi2Deg+"deg"
-						+" f="+f2
-						+" pitch="+pitch2
-						:"")
-				+ " dz="+dz
-				+ " backdrop="+studioInitialisation.toString()
-				+ " cD="+cameraDistance
-				+ " cVD="+cameraViewDirection
-				+ " cFOV="+cameraHorizontalFOVDeg
-				+ " cAS="+cameraApertureSize
-				+ " cFD="+cameraFocussingDistance
-				;
+		return "AdaptiveTWsExplorer";	// the name
 	}
-		
+	
+	@Override
+	public void writeParameters(PrintStream printStream)
+	{
+		// printStream.println("renderQuality = "+renderQuality);
+	}
+
+
 	@Override
 	public void populateStudio()
 	throws SceneException
@@ -188,60 +150,61 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 				studio
 			);
 		
-		Vector3D up = new Vector3D(0, 1, 0);
-		double zSeparation = f1+f2+dz;
+		Vector3D up = new Vector3D(0, 1, 0);		
+		Vector3D normal = new Vector3D(0, 0, 1);
+		Vector3D right = Vector3D.crossProduct(up, normal);
 		
-		double theta1 = MyMath.deg2rad(theta1Deg);
-		double phi1 = MyMath.deg2rad(phi1Deg);
-		Vector3D normal1 = new Vector3D(Math.sin(theta1), 0, Math.cos(theta1));
-		Vector3D right1 = Vector3D.crossProduct(normal1, up);
-		double c1 = Math.cos(phi1);
-		double s1 = Math.sin(phi1);
-		
-		scene.addSceneObject(new EditableRectangularLensletArray(
-				"LA1",	// description
-				new Vector3D(0, 0, -0.5*zSeparation),	// centre
-				Vector3D.sum(right1.getProductWith(c1), up.getProductWith(s1)),	// spanVector1
-				Vector3D.sum(right1.getProductWith(-s1), up.getProductWith(c1)),	// spanVector2
-				f1,	// focalLength
-				pitch1,	// xPeriod
-				pitch1,	// yPeriod
-				0,	// xOffset
-				0,	// yOffset
-				0.96,	// throughputCoefficient
-				false,	// reflective
-				true,	// shadowThrowing
-				scene,	// parent
-				studio
-			), 
-			showLensletArray1
-		);
+		// add nx arrays
+		double fn = f0;
+		for(int n = 0; n<nx; n++)
+		{
+			scene.addSceneObject(
+					new SparseRectangularLensletArray(
+							"LA+"+n,	// description
+							new Vector3D(-0.5+n*pitch, -0.5, fn).getSumWith(offset1),	// corner
+							right,	// spanVector1
+							up,	// spanVector2
+							fn,	// focalLength
+							pitch,	// xPeriod
+							pitch,	// yPeriod
+							0.5*pitch,	// xOffset
+							0.5*pitch,	// yOffset
+							nx,	// nx
+							ny,	// ny
+							0.96,	// throughputCoefficient
+							false,	// reflective
+							true,	// shadowThrowing
+							scene,	// parent
+							studio
+							), 
+					showLensletArray1
+					);
 
-		double theta2 = MyMath.deg2rad(theta2Deg);
-		double phi2 = MyMath.deg2rad(phi2Deg);
-		Vector3D normal2 = new Vector3D(Math.sin(theta2), 0, Math.cos(theta2));
-		Vector3D right2 = Vector3D.crossProduct(normal2, up);
-		double c2 = Math.cos(phi2);
-		double s2 = Math.sin(phi2);
-		
-		scene.addSceneObject(new EditableRectangularLensletArray(
-				"LA2",	// description
-				new Vector3D(0, 0, +0.5*zSeparation),	// centre
-				Vector3D.sum(right2.getProductWith(c2), up.getProductWith(s2)),	// spanVector1
-				Vector3D.sum(right2.getProductWith(-s2), up.getProductWith(c2)),	// spanVector2
-				f2,	// focalLength
-				pitch2,	// xPeriod
-				pitch2,	// yPeriod
-				0,	// xOffset
-				0,	// yOffset
-				0.96,	// throughputCoefficient
-				false,	// reflective
-				true,	// shadowThrowing
-				scene,	// parent
-				studio
-			), 
-			showLensletArray2
-		);
+			scene.addSceneObject(
+					new SparseRectangularLensletArray(
+							"LA-"+n,	// description
+							new Vector3D(-0.5+n*pitch, -0.5, fn),	//.getSumWith(offset2),	// corner
+							right,	// spanVector1
+							up,	// spanVector2
+							-fn,	// focalLength
+							pitch,	// xPeriod
+							pitch,	// yPeriod
+							0.5*pitch,	// xOffset
+							0.5*pitch,	// yOffset
+							nx,	// nx
+							ny,	// ny
+							0.96,	// throughputCoefficient
+							false,	// reflective
+							true,	// shadowThrowing
+							scene,	// parent
+							studio
+							), 
+					showLensletArray2
+					);
+			
+			fn *= eta1;
+		}
+
 
 		// the camera
 		studio.setCamera(getStandardCamera());
@@ -255,10 +218,7 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 	
 	public enum LensletArraysInitialisationType
 	{
-		INIT("Initialise lenslet arrays to..."),
-		GABOR("Gabor superlens"),
-		MOIRE("Moir\u00E9 magnifier"),
-		CLAS("Confocal lenslet arrays");
+		INIT("Initialise...");
 		
 		private String description;
 		private LensletArraysInitialisationType(String description) {this.description = description;}	
@@ -267,8 +227,9 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 	}
 
 	
-	private LabelledDoublePanel f1Panel, f2Panel, dzPanel, pitch1Panel, pitch2Panel;
-	private DoublePanel theta1DegPanel, theta2DegPanel, phi1DegPanel, phi2DegPanel;
+	private LabelledDoublePanel f0Panel, eta1Panel, pitchPanel;
+	private LabelledVector3DPanel offset2Panel;
+	private IntPanel nxPanel, nyPanel;
 	private JCheckBox showLensletArray1CheckBox, showLensletArray2CheckBox;
 	private JComboBox<LensletArraysInitialisationType> lensletArraysInitialisationComboBox;
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
@@ -367,79 +328,40 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 //		clasInitialisationButton.addActionListener(this);
 //		clasPanel.add(clasInitialisationButton, "span");
 
-		//
-		// the LA1 panel
-		//
 		
-		JPanel la1Panel = new JPanel();
-		la1Panel.setBorder(GUIBitsAndBobs.getTitledBorder("Lenslet array 1"));
-		la1Panel.setLayout(new MigLayout("insets 0"));
-		scenePanel.add(la1Panel, "span");
-
-		f1Panel = new LabelledDoublePanel("f");
-		f1Panel.setNumber(f1);
-		f1Panel.setToolTipText("Focal length of the lenslets");
-		la1Panel.add(f1Panel, "span");
+		nxPanel = new IntPanel();
+		nxPanel.setNumber(nx);
+		nxPanel.setToolTipText("Only every n_xth lenslet is present in the x direction");		
+		nyPanel = new IntPanel();
+		nyPanel.setNumber(ny);
+		nyPanel.setToolTipText("Only every n_yth lenslet is present in the y direction");
+		scenePanel.add(GUIBitsAndBobs.makeRow("(nx, ny) = (", nxPanel, ",", nyPanel, ")"), "span");
 		
-		pitch1Panel = new LabelledDoublePanel("pitch");
-		pitch1Panel.setNumber(pitch1);
-		pitch1Panel.setToolTipText("Pitch, i.e. distance between neighbouring lenslets");
-		la1Panel.add(pitch1Panel, "span");
+		f0Panel = new LabelledDoublePanel("f0");
+		f0Panel.setNumber(f0);
+		f0Panel.setToolTipText("Focal length of 0th lenslet in array with positive focal lengths");
+		scenePanel.add(f0Panel, "span");
+		
+		eta1Panel = new LabelledDoublePanel("eta_1");
+		eta1Panel.setNumber(eta1);
+		eta1Panel.setToolTipText("eta1");
+		scenePanel.add(eta1Panel, "span");
 
-		theta1DegPanel = new DoublePanel();
-		theta1DegPanel.setNumber(theta1Deg);
-		theta1DegPanel.setToolTipText("Angle of the array normal with the z axis");
-		la1Panel.add(GUIBitsAndBobs.makeRow("theta", theta1DegPanel, "degrees"), "span");
+		pitchPanel = new LabelledDoublePanel("pitch");
+		pitchPanel.setNumber(pitch);
+		pitchPanel.setToolTipText("Pitch, i.e. distance between neighbouring lenslets");
+		scenePanel.add(pitchPanel, "span");
 
-		phi1DegPanel = new DoublePanel();
-		phi1DegPanel.setNumber(phi1Deg);
-		phi1DegPanel.setToolTipText("Angle by which the array is rotated around the array normal");
-		la1Panel.add(GUIBitsAndBobs.makeRow("phi", phi1DegPanel, "degrees"), "span");
-
-		showLensletArray1CheckBox = new JCheckBox("Show");
+		showLensletArray1CheckBox = new JCheckBox();
 		showLensletArray1CheckBox.setSelected(showLensletArray1);
-		la1Panel.add(showLensletArray1CheckBox, "span");
-		
-
-
-		//
-		// the LA2 panel
-		//
-		
-		JPanel la2Panel = new JPanel();
-		la2Panel.setBorder(GUIBitsAndBobs.getTitledBorder("Lenslet array 2"));
-		la2Panel.setLayout(new MigLayout("insets 0"));
-		scenePanel.add(la2Panel, "span");
-		
-		f2Panel = new LabelledDoublePanel("f");
-		f2Panel.setNumber(f2);
-		f2Panel.setToolTipText("Focal length of the lenslets");
-		la2Panel.add(f2Panel, "span");
-		
-		pitch2Panel = new LabelledDoublePanel("pitch");
-		pitch2Panel.setNumber(pitch2);
-		pitch2Panel.setToolTipText("Pitch, i.e. distance between neighbouring lenslets");
-		la2Panel.add(pitch2Panel, "span");
-
-		theta2DegPanel = new DoublePanel();
-		theta2DegPanel.setNumber(theta2Deg);
-		theta2DegPanel.setToolTipText("Angle of the array normal with the z axis");
-		la2Panel.add(GUIBitsAndBobs.makeRow("theta", theta2DegPanel, "degrees"), "span");
-
-		phi2DegPanel = new DoublePanel();
-		phi2DegPanel.setNumber(phi2Deg);
-		phi2DegPanel.setToolTipText("Angle by which the array is rotated around the array normal");
-		la2Panel.add(GUIBitsAndBobs.makeRow("phi", phi2DegPanel, "degrees"), "span");
-
-		showLensletArray2CheckBox = new JCheckBox("Show");
+		showLensletArray2CheckBox = new JCheckBox();
 		showLensletArray2CheckBox.setSelected(showLensletArray2);
-		la2Panel.add(showLensletArray2CheckBox, "span");
+		scenePanel.add(GUIBitsAndBobs.makeRow("Show LA1", showLensletArray1CheckBox, ", show LA2", showLensletArray2CheckBox), "span");
 
-
-		dzPanel = new LabelledDoublePanel("dz (centre separation = f1+f2+dz)");
-		dzPanel.setNumber(dz);
-		dzPanel.setToolTipText("The centres of the two lenslet arrays are separated in the z direction by a distance f1 + f2 + dz");
-		scenePanel.add(dzPanel, "span");
+		offset2Panel = new LabelledVector3DPanel("Offset of LA1");
+		offset2Panel.setVector3D(offset1);
+		offset2Panel.setToolTipText("Offset of LA1");
+		scenePanel.add(offset2Panel, "span");
 		
 		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
@@ -490,15 +412,12 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 	{
 		super.acceptValuesInInteractiveControlPanel();
 		
-		f1 = f1Panel.getNumber();
-		f2 = f2Panel.getNumber();
-		dz = dzPanel.getNumber();
-		pitch1 = pitch1Panel.getNumber();
-		pitch2 = pitch2Panel.getNumber();
-		theta1Deg = theta1DegPanel.getNumber();
-		theta2Deg = theta2DegPanel.getNumber();
-		phi1Deg = phi1DegPanel.getNumber();
-		phi2Deg = phi2DegPanel.getNumber();
+		f0 = f0Panel.getNumber();
+		eta1 = eta1Panel.getNumber();
+		pitch = pitchPanel.getNumber();
+		nx = nxPanel.getNumber();
+		ny = nyPanel.getNumber();
+		offset1 = offset2Panel.getVector3D();
 		
 		showLensletArray1 = showLensletArray1CheckBox.isSelected();
 		showLensletArray2 = showLensletArray2CheckBox.isSelected();
@@ -512,62 +431,6 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 		cameraFocussingDistance = cameraFocussingDistancePanel.getNumber();
 	}
 	
-	/**
-	 * initialise the lenslet-array parameters to a Gabor superlens
-	 */
-	private void gaborInitialisation()
-	{
-		// lenslet-array parameters
-		f1Panel.setNumber(0.1);
-		f2Panel.setNumber(-0.1);
-		dzPanel.setNumber(0.00001);
-		pitch1Panel.setNumber(0.0099);
-		pitch2Panel.setNumber(0.01);
-		theta1DegPanel.setNumber(0);
-		theta2DegPanel.setNumber(0);
-		phi1DegPanel.setNumber(0);
-		phi2DegPanel.setNumber(0);
-		showLensletArray1CheckBox.setSelected(true);
-		showLensletArray2CheckBox.setSelected(true);
-	}
-
-	/**
-	 * initialise the lenslet-array parameters to a Moire magnifier
-	 */
-	private void moireInitialisation()
-	{
-		// lenslet-array parameters
-		f1Panel.setNumber(0.1);
-		f2Panel.setNumber(-0.1);
-		dzPanel.setNumber(0.00001);
-		pitch1Panel.setNumber(0.01);
-		pitch2Panel.setNumber(0.01);
-		theta1DegPanel.setNumber(0);
-		theta2DegPanel.setNumber(0);
-		phi1DegPanel.setNumber(0);
-		phi2DegPanel.setNumber(0.1);
-		showLensletArray1CheckBox.setSelected(true);
-		showLensletArray2CheckBox.setSelected(true);
-	}
-
-	/**
-	 * initialise the lenslet-array parameters to a Moire magnifier
-	 */
-	private void clasInitialisation()
-	{
-		// lenslet-array parameters
-		f1Panel.setNumber(0.1);
-		f2Panel.setNumber(-0.05);
-		dzPanel.setNumber(0.00001);
-		pitch1Panel.setNumber(0.01);
-		pitch2Panel.setNumber(0.01);
-		theta1DegPanel.setNumber(0);
-		theta2DegPanel.setNumber(0);
-		phi1DegPanel.setNumber(0);
-		phi2DegPanel.setNumber(0);
-		showLensletArray1CheckBox.setSelected(true);
-		showLensletArray2CheckBox.setSelected(true);
-	}
 
 	@Override
 	public void actionPerformed(ActionEvent e)
@@ -578,15 +441,6 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 		{
 			switch((LensletArraysInitialisationType)(lensletArraysInitialisationComboBox.getSelectedItem()))
 			{
-			case GABOR:
-				gaborInitialisation();
-				break;
-			case MOIRE:
-				moireInitialisation();
-				break;
-			case CLAS:
-				clasInitialisation();
-				break;
 			case INIT:
 			default:
 				// do nothing
@@ -594,18 +448,6 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 			lensletArraysInitialisationComboBox.setSelectedItem(LensletArraysInitialisationType.INIT);
 		}
 		
-//		if(e.getSource().equals(gaborInitialisationButton))
-//		{
-//			gaborInitialisation();
-//		}
-//		else if(e.getSource().equals(moireInitialisationButton))
-//		{
-//			moireInitialisation();
-//		}
-//		else if(e.getSource().equals(clasInitialisationButton))
-//		{
-//			clasInitialisation();
-//		}
 	}
 
 
@@ -619,6 +461,6 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 	 */
 	public static void main(final String[] args)
 	{
-		(new LensletArrayExplorer()).run();
+		(new AdaptiveTWsExplorer()).run();
 	}
 }

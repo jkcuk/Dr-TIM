@@ -7,6 +7,9 @@ import optics.raytrace.NonInteractiveTIMEngine;
 import optics.raytrace.GUI.cameras.RenderQualityEnum;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.exceptions.SceneException;
+import optics.raytrace.sceneObjects.Sphere;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.surfaces.SurfaceColour;
 
 
 /**
@@ -24,7 +27,7 @@ public class NonInteractiveTIM extends NonInteractiveTIMEngine
 	{
 		super();
 		
-		renderQuality = RenderQualityEnum.DRAFT;
+		renderQuality = RenderQualityEnum.GREAT;
 		
 		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
 //		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.MOVIE;
@@ -85,8 +88,10 @@ public class NonInteractiveTIM extends NonInteractiveTIMEngine
 		super.populateSimpleStudio();
 		
 		// add anything to the scene by uncommenting the following line...
-		// SceneObjectContainer scene = (SceneObjectContainer)studio.getScene();
+		SceneObjectContainer scene = (SceneObjectContainer)studio.getScene();
 		// ... and then adding scene objects to scene
+		
+		scene.addSceneObject(new Sphere("The sphere", new Vector3D(0,0,0), 1, SurfaceColour.CYAN_SHINY, scene, studio));
 	}
 
 	

@@ -73,6 +73,7 @@ public class Studio implements Serializable
 	public BufferedImage takePhoto(RaytraceWorker raytraceWorker)
 	{
 		// camera.allocatePhotoMemory();
+		// System.out.println("camera = "+camera);
 		return camera.takePhoto(scene, lights, raytraceWorker);
 	}
 	
