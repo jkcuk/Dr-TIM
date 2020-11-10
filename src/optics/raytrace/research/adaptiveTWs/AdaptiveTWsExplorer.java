@@ -11,18 +11,26 @@ import javax.swing.JTabbedPane;
 
 import math.*;
 import net.miginfocom.swing.MigLayout;
+import optics.raytrace.sceneObjects.ScaledParametrisedParallelogram;
+import optics.raytrace.sceneObjects.SceneObjectWithHoles;
 import optics.raytrace.sceneObjects.SparseRectangularLensletArray;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.surfaces.PhaseHologramOfSparseRectangularLensletArray;
+import optics.raytrace.surfaces.SemiTransparent;
+import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
+import optics.raytrace.GUI.cameras.EditableRelativisticAnyFocusSurfaceCamera;
 import optics.raytrace.GUI.cameras.RenderQualityEnum;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.IntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
+import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
+import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 
@@ -35,35 +43,58 @@ import optics.raytrace.core.StudioInitialisationType;
 public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements ActionListener
 {
 	/**
-	 * focal length of 0th lens in array with positive focal lengths
-	 */
-	private double f0;
-	
-	/**
 	 * eta_1
 	 */
 	private double eta1;
 	
 	/**
-	 * pitch of lenslet arrays
+	 * width of the individual lenses
 	 */
-	private double pitch;
+	private double lensWidth;
+
+	/**
+	 * period (in lens widths) of each lens array
+	 */
+	private int period;
+
+	/**
+	 * focal length of 0th lens in lens array 1
+	 */
+	private double f01;
+	
+	/**
+	 * focal length of 0th lens in lens array 2
+	 */
+	private double f02;
+	
+	/**
+	 * if true, black out <noOfBlackedOutLenses> lens per period in lenslet array 2
+	 */
+	private boolean blackOutLenses;
+	
+	/**
+	 * if <blackOutLenses>=true, black out <noOfBlackedOutLenses> lens per period in lenslet array 2
+	 */
+	private int noOfBlackedOutLenses;
 
 	/**
 	 * show lenslet array 1
 	 */
 	private boolean showLensletArray1;
+	
+	private boolean showCommonFocalPlane;
 
 	/**
 	 * show lenslet array 2
 	 */
 	private boolean showLensletArray2;
 	
-	private int nx;
-	
-	private int ny;
-	
+	/**
+	 * offset of lens array 1 relative to lens array 2
+	 */
 	private Vector3D offset1;
+	
+
 
 	//
 	// the rest of the scene
@@ -91,24 +122,27 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 		renderQuality = RenderQualityEnum.DRAFT;
 		
 		// lenslet-array parameters
-		f0 = 0.1;
-		eta1 = 0.8;
-		pitch = 0.1;
+		eta1 = 0.5;
+		f01 = 0.1;
+		f02 = -0.1;
+		lensWidth = 0.01;
+		period = 4;
+		blackOutLenses = true;
+		noOfBlackedOutLenses = 1;
 		showLensletArray1 = true;
 		showLensletArray2 = true;
-		nx = 1;
-		ny = 1;
+		showCommonFocalPlane = false;
 		offset1 = new Vector3D(0, 0, 0.00001);
 		
-		studioInitialisation = StudioInitialisationType.LATTICE;	// the backdrop
+		studioInitialisation = StudioInitialisationType.TIM_HEAD;	// the backdrop
 
 		// camera
 		cameraViewCentre = new Vector3D(0, 0, 0);
-		cameraDistance = 8;
+		cameraDistance = 10;
 		cameraViewDirection = new Vector3D(0, 0, 1);
 		cameraHorizontalFOVDeg = 10;
 		cameraApertureSize = ApertureSizeType.PINHOLE;
-		cameraFocussingDistance = 10;
+		cameraFocussingDistance = 20;
 		
 		if(nonInteractiveTIMAction == NonInteractiveTIMActionEnum.INTERACTIVE)
 		{
@@ -128,7 +162,97 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 	@Override
 	public void writeParameters(PrintStream printStream)
 	{
-		// printStream.println("renderQuality = "+renderQuality);
+		// super.writeParameters(printStream);
+		
+		printStream.println("renderQuality = "+renderQuality);
+
+		printStream.println();
+		printStream.println("Scene parameters");
+		printStream.println();
+
+		printStream.println("eta1 = "+eta1);
+		printStream.println("f01 = "+f01);
+		printStream.println("f02 = "+f02);
+		printStream.println("lensWidth = "+lensWidth);
+		printStream.println("period = "+period);
+		printStream.println("blackOutLenses = "+blackOutLenses);
+		printStream.println("noOfBlackedOutLenses = "+noOfBlackedOutLenses);
+		printStream.println("showLensletArray1 = "+showLensletArray1);
+		printStream.println("showLensletArray2 = "+showLensletArray2);
+		printStream.println("offset1 = "+offset1);
+		printStream.println("showCommonFocalPlane = "+ showCommonFocalPlane);
+		
+		studioInitialisation = StudioInitialisationType.TIM_HEAD;	// the backdrop
+
+		printStream.println();
+		printStream.println("Camera parameters");
+		printStream.println();
+
+		// camera
+		printStream.println("cameraViewCentre = "+cameraViewCentre);
+		printStream.println("cameraDistance = "+cameraDistance);
+		printStream.println("cameraViewDirection = "+cameraViewDirection);
+		printStream.println("cameraHorizontalFOVDeg = "+cameraHorizontalFOVDeg);
+		printStream.println("cameraApertureSize = "+cameraApertureSize);
+		printStream.println("cameraFocussingDistance = "+cameraFocussingDistance);
+	}
+
+	
+	public SceneObjectWithHoles createBlackStripes(
+			String description,
+			Vector3D corner, 
+			Vector3D spanVector1,
+			Vector3D spanVector2, 
+			double xPeriod,
+			double yPeriod,
+			double xOffset,
+			double yOffset,
+			int nx,
+			int ny,
+			SceneObject parent,
+			Studio studio
+		)
+	{
+		SceneObjectWithHoles s = new SceneObjectWithHoles(description + " (holey)");
+		
+		// create the wrapped SceneObject
+		
+		ScaledParametrisedParallelogram parallelogram = new ScaledParametrisedParallelogram(
+				description,
+				corner, 
+				spanVector1,
+				spanVector2, 
+				0, spanVector1.getLength(),	// suMin, suMax
+				0, spanVector2.getLength(),	// svMin, svMax
+				SurfaceColour.BLACK_MATT,	// surfaceProperty
+				parent,
+				studio
+			);
+
+		// create a HoleySurface...
+		PhaseHologramOfSparseRectangularLensletArray sparseLensArray = new PhaseHologramOfSparseRectangularLensletArray(
+					1,
+					xPeriod,
+					yPeriod,
+					xOffset,
+					yOffset,
+					nx,
+					ny,
+					parallelogram,	// sceneObject
+					1,
+					false,
+					true
+				);
+		
+		try {
+			s.setWrappedSceneObject(parallelogram);
+		} catch (SceneException e) {
+			// this shouldn't happen
+			e.printStackTrace();
+		}
+		s.setHoleySurface(sparseLensArray);
+
+		return s;
 	}
 
 
@@ -155,22 +279,68 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 		Vector3D right = Vector3D.crossProduct(up, normal);
 		
 		// add nx arrays
-		double fn = f0;
-		for(int n = 0; n<nx; n++)
+		double fn1 = f01;
+		double fn2 = f02;
+		for(int n = 0; n<period; n++)
 		{
+			if(blackOutLenses && (n < noOfBlackedOutLenses))
+			{
+				scene.addSceneObject(
+						createBlackStripes(
+								"LA2, baffle instead of lens "+n,	// description,
+								new Vector3D(-0.5+n*lensWidth, -0.5, -fn2),	// corner
+								right,	// spanVector1
+								up,	// spanVector2
+								lensWidth,	// xPeriod
+								lensWidth,	// yPeriod
+								0.5*lensWidth,	// xOffset
+								0.5*lensWidth,	// yOffset
+								period,	// nx
+								1,	// ny
+								scene,	// parent,
+								studio
+								),
+						showLensletArray2
+						);
+			}
+			else
+			{
+				scene.addSceneObject(
+						new SparseRectangularLensletArray(
+								"LA2, lens "+n,	// description
+								new Vector3D(-0.5+n*lensWidth, -0.5, -fn2),	//.getSumWith(offset1),	// corner
+								right,	// spanVector1
+								up,	// spanVector2
+								fn2,	// focalLength
+								lensWidth,	// xPeriod
+								lensWidth,	// yPeriod
+								0.5*lensWidth,	// xOffset
+								0.5*lensWidth,	// yOffset
+								period,	// nx
+								1,	// ny
+								0.96,	// throughputCoefficient
+								false,	// reflective
+								true,	// shadowThrowing
+								scene,	// parent
+								studio
+								), 
+						showLensletArray2
+						);
+			}
+
 			scene.addSceneObject(
 					new SparseRectangularLensletArray(
-							"LA+"+n,	// description
-							new Vector3D(-0.5+n*pitch, -0.5, fn).getSumWith(offset1),	// corner
+							"LA1, lens "+n,	// description
+							new Vector3D(-0.5+n*lensWidth, -0.5, fn1).getSumWith(offset1),	// corner
 							right,	// spanVector1
 							up,	// spanVector2
-							fn,	// focalLength
-							pitch,	// xPeriod
-							pitch,	// yPeriod
-							0.5*pitch,	// xOffset
-							0.5*pitch,	// yOffset
-							nx,	// nx
-							ny,	// ny
+							fn1,	// focalLength
+							lensWidth,	// xPeriod
+							lensWidth,	// yPeriod
+							0.5*lensWidth,	// xOffset
+							0.5*lensWidth,	// yOffset
+							period,	// nx
+							1,	// ny
 							0.96,	// throughputCoefficient
 							false,	// reflective
 							true,	// shadowThrowing
@@ -179,35 +349,33 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 							), 
 					showLensletArray1
 					);
-
-			scene.addSceneObject(
-					new SparseRectangularLensletArray(
-							"LA-"+n,	// description
-							new Vector3D(-0.5+n*pitch, -0.5, fn),	//.getSumWith(offset2),	// corner
-							right,	// spanVector1
-							up,	// spanVector2
-							-fn,	// focalLength
-							pitch,	// xPeriod
-							pitch,	// yPeriod
-							0.5*pitch,	// xOffset
-							0.5*pitch,	// yOffset
-							nx,	// nx
-							ny,	// ny
-							0.96,	// throughputCoefficient
-							false,	// reflective
-							true,	// shadowThrowing
-							scene,	// parent
-							studio
-							), 
-					showLensletArray2
-					);
 			
-			fn *= eta1;
+
+			
+			fn1 *= eta1;
+			fn2 *= eta1;
 		}
+		
+		// show focal plane
+		
+		scene.addSceneObject(new ScaledParametrisedParallelogram(
+				"Common focal plane",
+				new Vector3D(-0.5, -0.5, 0),	// corner 
+				right,	// spanVector1
+				up,	// spanVector2
+				SemiTransparent.RED_SHINY_SEMITRANSPARENT,	// surfaceProperty
+				scene,	// parent
+				studio
+				),
+				showCommonFocalPlane
+				);
+
 
 
 		// the camera
-		studio.setCamera(getStandardCamera());
+		EditableRelativisticAnyFocusSurfaceCamera camera = getStandardCamera();
+		camera.setApertureRadius(cameraApertureSize.getApertureRadius()/10.*cameraFocussingDistance);
+		studio.setCamera(camera);
 	}
 
 	
@@ -216,32 +384,44 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 	// for interactive version
 	//
 	
-	public enum LensletArraysInitialisationType
+	public enum ParametersInitialisationType
 	{
-		INIT("Initialise...");
+		INIT("Initialise parameters..."),
+		JUST_TIM("No lens arrays, camera focussed on TIM"),
+		MAGNIFYING_LARGE_LENSES_FOCUS_ON_TIM("Magnifying, large lenses, camera focussed on image of TIM"),
+		MAGNIFYING_SMALL_LENSES_FOCUS_ON_TIM("Magnifying, small lenses, camera focussed on image of TIM"),
+		DEMAGNIFYING_LARGE_LENSES_FOCUS_ON_TIM("De-magnifying, large lenses, camera focussed on image of TIM"),
+		DEMAGNIFYING_SMALL_LENSES_FOCUS_ON_TIM("De-magnifying, small lenses, camera focussed on image of TIM"),
+		SHOW_LAS_AND_TIM("Initialise camera parameters to show lenses and TIM"),
+		SHOW_LAS_FROM_ABOVE("Initialise camera parameters to show LAs from above");
 		
 		private String description;
-		private LensletArraysInitialisationType(String description) {this.description = description;}	
+		private ParametersInitialisationType(String description) {this.description = description;}	
 		@Override
 		public String toString() {return description;}
 	}
-
 	
-	private LabelledDoublePanel f0Panel, eta1Panel, pitchPanel;
-	private LabelledVector3DPanel offset2Panel;
-	private IntPanel nxPanel, nyPanel;
-	private JCheckBox showLensletArray1CheckBox, showLensletArray2CheckBox;
-	private JComboBox<LensletArraysInitialisationType> lensletArraysInitialisationComboBox;
+	private JComboBox<ParametersInitialisationType> parametersInitialisationComboBox;
+
+	private LabelledDoublePanel f01Panel, f02Panel, eta1Panel, lensWidthPanel;
+	private LabelledVector3DPanel offset1Panel;
+	private LabelledIntPanel periodPanel;
+	private IntPanel noOfBlackedOutLensesPanel;
+	private JCheckBox showLensletArray1CheckBox, showLensletArray2CheckBox, blackOutLensesCheckBox, showCommonFocalPlaneCheckBox;
+	// private JComboBox<LensletArraysInitialisationType> lensletArraysInitialisationComboBox;
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 	// private JButton lensletArraysInitialisationButton;	// gaborInitialisationButton, moireInitialisationButton, clasInitialisationButton;
 
 	// camera stuff
+	
 	// private LabelledVector3DPanel cameraViewDirectionPanel;
 	private LabelledDoublePanel cameraDistancePanel;
-	private LabelledVector3DPanel cameraViewDirectionPanel;
+	private LabelledVector3DPanel cameraViewCentrePanel, cameraViewDirectionPanel;
 	private DoublePanel cameraHorizontalFOVDegPanel;
 	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
 	private LabelledDoublePanel cameraFocussingDistancePanel;
+	// private JComboBox<CameraInitialisationType> cameraInitialisationComboBox;
+
 
 
 
@@ -255,6 +435,11 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 	{
 		super.createInteractiveControlPanel();
 
+		parametersInitialisationComboBox = new JComboBox<ParametersInitialisationType>(ParametersInitialisationType.values());
+		parametersInitialisationComboBox.setSelectedItem(ParametersInitialisationType.INIT);
+		parametersInitialisationComboBox.addActionListener(this);
+		interactiveControlPanel.add(parametersInitialisationComboBox, "span");
+
 		// the main tabbed pane, with "Scene" and "Camera" tabs
 		JTabbedPane sceneCameraTabbedPane = new JTabbedPane();
 		interactiveControlPanel.add(sceneCameraTabbedPane, "span");
@@ -266,102 +451,72 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 		JPanel scenePanel = new JPanel();
 		scenePanel.setLayout(new MigLayout("insets 0"));
 		sceneCameraTabbedPane.addTab("Scene", scenePanel);
-
-		//
-		// the Lenslet-arrays-initialisation panel
-		//
-
-		// scenePanel.add(new JLabel("Lenslet-array initialisation"));
 		
-		lensletArraysInitialisationComboBox = new JComboBox<LensletArraysInitialisationType>(LensletArraysInitialisationType.values());
-		lensletArraysInitialisationComboBox.setSelectedItem(LensletArraysInitialisationType.INIT);
-		lensletArraysInitialisationComboBox.addActionListener(this);
-//		lensletArraysInitialisationButton = new JButton("Go");
-//		lensletArraysInitialisationButton.addActionListener(this);
-		scenePanel.add(
-//				GUIBitsAndBobs.makeRow("Initialise LAs to", 
-				lensletArraysInitialisationComboBox
-	//			, lensletArraysInitialisationButton)
-			, "span");
-
-
-//		scenePanel.add(new JLabel("Lenslet-array initialisation"), "span");
-//		JTabbedPane laInitTabbedPane = new JTabbedPane();
-//		scenePanel.add(laInitTabbedPane, "span");
-//		
-//		//
-//		// the Gabor superlens initialisation panel
-//		//
-//		
-//		JPanel gaborSuperlensPanel = new JPanel();
-//		gaborSuperlensPanel.setLayout(new MigLayout("insets 0"));
-//		laInitTabbedPane.addTab("Gabor superlens",
-//				gaborSuperlensPanel);
-//		
-//		gaborInitialisationButton = new JButton("Initialise");
-//		gaborInitialisationButton.addActionListener(this);
-//		gaborSuperlensPanel.add(gaborInitialisationButton, "span");
-//
-//		//
-//		// the moire magnifier initialisation panel
-//		//
-//		
-//		JPanel moireMagnifierPanel = new JPanel();
-//		moireMagnifierPanel.setLayout(new MigLayout("insets 0"));
-//		laInitTabbedPane.addTab("Moire magnifier", 
-//				moireMagnifierPanel);
-//
-//		moireInitialisationButton = new JButton("Initialise");
-//		moireInitialisationButton.addActionListener(this);
-//		moireMagnifierPanel.add(moireInitialisationButton, "span");
-//
-//		//
-//		// the confocal lenslet arrays initialisation panel
-//		//
-//		
-//		JPanel clasPanel = new JPanel();
-//		clasPanel.setLayout(new MigLayout("insets 0"));
-//		laInitTabbedPane.addTab("Confocal lenslet arrays",
-//				clasPanel);
-//
-//		clasInitialisationButton = new JButton("Initialise");
-//		clasInitialisationButton.addActionListener(this);
-//		clasPanel.add(clasInitialisationButton, "span");
-
-		
-		nxPanel = new IntPanel();
-		nxPanel.setNumber(nx);
-		nxPanel.setToolTipText("Only every n_xth lenslet is present in the x direction");		
-		nyPanel = new IntPanel();
-		nyPanel.setNumber(ny);
-		nyPanel.setToolTipText("Only every n_yth lenslet is present in the y direction");
-		scenePanel.add(GUIBitsAndBobs.makeRow("(nx, ny) = (", nxPanel, ",", nyPanel, ")"), "span");
-		
-		f0Panel = new LabelledDoublePanel("f0");
-		f0Panel.setNumber(f0);
-		f0Panel.setToolTipText("Focal length of 0th lenslet in array with positive focal lengths");
-		scenePanel.add(f0Panel, "span");
+		periodPanel = new LabelledIntPanel("Period (# lenses)");
+		periodPanel.setNumber(period);
+		periodPanel.setToolTipText("Only every n_xth lenslet is present in the x direction");		
+		scenePanel.add(periodPanel, "span");
 		
 		eta1Panel = new LabelledDoublePanel("eta_1");
 		eta1Panel.setNumber(eta1);
 		eta1Panel.setToolTipText("eta1");
 		scenePanel.add(eta1Panel, "span");
 
-		pitchPanel = new LabelledDoublePanel("pitch");
-		pitchPanel.setNumber(pitch);
-		pitchPanel.setToolTipText("Pitch, i.e. distance between neighbouring lenslets");
-		scenePanel.add(pitchPanel, "span");
+		lensWidthPanel = new LabelledDoublePanel("Width of individual lenses");
+		lensWidthPanel.setNumber(lensWidth);
+		lensWidthPanel.setToolTipText("Width of individual lenses");
+		scenePanel.add(lensWidthPanel, "span");
 
-		showLensletArray1CheckBox = new JCheckBox();
+		// lenslet array 1
+		
+		JPanel LA1Panel = new JPanel();
+		LA1Panel.setLayout(new MigLayout("insets 0"));
+		LA1Panel.setBorder(GUIBitsAndBobs.getTitledBorder("Lenslet array 1"));
+		scenePanel.add(LA1Panel, "span");
+
+		showLensletArray1CheckBox = new JCheckBox("Show");
 		showLensletArray1CheckBox.setSelected(showLensletArray1);
-		showLensletArray2CheckBox = new JCheckBox();
-		showLensletArray2CheckBox.setSelected(showLensletArray2);
-		scenePanel.add(GUIBitsAndBobs.makeRow("Show LA1", showLensletArray1CheckBox, ", show LA2", showLensletArray2CheckBox), "span");
+		showLensletArray1CheckBox.setToolTipText("Determines whether or not lenslet array 1 is rendered");
+		LA1Panel.add(showLensletArray1CheckBox, "span");
 
-		offset2Panel = new LabelledVector3DPanel("Offset of LA1");
-		offset2Panel.setVector3D(offset1);
-		offset2Panel.setToolTipText("Offset of LA1");
-		scenePanel.add(offset2Panel, "span");
+		f01Panel = new LabelledDoublePanel("f01");
+		f01Panel.setNumber(f01);
+		f01Panel.setToolTipText("Focal length of 0th lenslet in lenslet array 1");
+		LA1Panel.add(f01Panel, "span");
+		
+		offset1Panel = new LabelledVector3DPanel("Offset of LA1");
+		offset1Panel.setVector3D(offset1);
+		offset1Panel.setToolTipText("Offset of LA1");
+		LA1Panel.add(offset1Panel, "span");
+		
+		// lenslet array 2
+		
+		JPanel LA2Panel = new JPanel();
+		LA2Panel.setLayout(new MigLayout("insets 0"));
+		LA2Panel.setBorder(GUIBitsAndBobs.getTitledBorder("Lenslet array 2"));
+		scenePanel.add(LA2Panel, "span");
+
+		showLensletArray2CheckBox = new JCheckBox("Show");
+		showLensletArray2CheckBox.setSelected(showLensletArray2);
+		LA2Panel.add(showLensletArray2CheckBox, "span");
+
+		f02Panel = new LabelledDoublePanel("f02");
+		f02Panel.setNumber(f02);
+		f02Panel.setToolTipText("Focal length of 0th lenslet in lenslet array 2");
+		LA2Panel.add(f02Panel, "span");
+		
+		blackOutLensesCheckBox = new JCheckBox();
+		blackOutLensesCheckBox.setSelected(blackOutLenses);
+		blackOutLensesCheckBox.setToolTipText("If checked, black out lenses in lenslet array 2");
+		noOfBlackedOutLensesPanel = new IntPanel();
+		noOfBlackedOutLensesPanel.setNumber(noOfBlackedOutLenses);
+		noOfBlackedOutLensesPanel.setToolTipText("No of lenses in each period to be blacked out in lenslet array 2");
+		LA2Panel.add(GUIBitsAndBobs.makeRow(blackOutLensesCheckBox, "Black out", noOfBlackedOutLensesPanel, "lens(es) per period in lenslet array 2"), "span");
+		
+		showCommonFocalPlaneCheckBox = new JCheckBox("Show common focal plane");
+		showCommonFocalPlaneCheckBox.setSelected(showCommonFocalPlane);
+		showCommonFocalPlaneCheckBox.setToolTipText("Check to show the common focal plane");
+		scenePanel.add(showCommonFocalPlaneCheckBox, "span");
 		
 		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
@@ -377,11 +532,12 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 		sceneCameraTabbedPane.addTab("Camera", cameraPanel);
 
 		// camera stuff
+				
+		cameraViewCentrePanel = new LabelledVector3DPanel("View centre");
+		cameraViewCentrePanel.setVector3D(cameraViewCentre);
+		cameraPanel.add(cameraViewCentrePanel, "span");
 		
-//		cameraViewDirectionPanel = new LabelledVector3DPanel("View direction");
-//		cameraViewDirectionPanel.setVector3D(cameraViewDirection);
-//		cameraPanel.add(cameraViewDirectionPanel, "span");
-		
+
 		cameraDistancePanel = new LabelledDoublePanel("Camera distance");
 		cameraDistancePanel.setNumber(cameraDistance);
 		cameraPanel.add(cameraDistancePanel, "span");
@@ -396,7 +552,7 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 		
 		cameraApertureSizeComboBox = new JComboBox<ApertureSizeType>(ApertureSizeType.values());
 		cameraApertureSizeComboBox.setSelectedItem(cameraApertureSize);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera aperture", cameraApertureSizeComboBox), "span");		
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera aperture size (scaled by focussing distance)", cameraApertureSizeComboBox), "span");		
 		
 		cameraFocussingDistancePanel = new LabelledDoublePanel("Focussing distance");
 		cameraFocussingDistancePanel.setNumber(cameraFocussingDistance);
@@ -412,18 +568,22 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 	{
 		super.acceptValuesInInteractiveControlPanel();
 		
-		f0 = f0Panel.getNumber();
+		f01 = f01Panel.getNumber();
+		f02 = f02Panel.getNumber();
 		eta1 = eta1Panel.getNumber();
-		pitch = pitchPanel.getNumber();
-		nx = nxPanel.getNumber();
-		ny = nyPanel.getNumber();
-		offset1 = offset2Panel.getVector3D();
+		lensWidth = lensWidthPanel.getNumber();
+		period = periodPanel.getNumber();
+		offset1 = offset1Panel.getVector3D();
+		blackOutLenses = blackOutLensesCheckBox.isSelected();
+		noOfBlackedOutLenses = noOfBlackedOutLensesPanel.getNumber();
 		
 		showLensletArray1 = showLensletArray1CheckBox.isSelected();
 		showLensletArray2 = showLensletArray2CheckBox.isSelected();
+		showCommonFocalPlane = showCommonFocalPlaneCheckBox.isSelected();
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		
 		// cameraViewDirection = cameraViewDirectionPanel.getVector3D();
+		cameraViewCentre = cameraViewCentrePanel.getVector3D();
 		cameraDistance = cameraDistancePanel.getNumber();
 		cameraViewDirection = cameraViewDirectionPanel.getVector3D();
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
@@ -437,17 +597,142 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 	{
 		super.actionPerformed(e);
 		
-		if(e.getSource().equals(lensletArraysInitialisationComboBox))
+		if(e.getSource().equals(parametersInitialisationComboBox))
 		{
-			switch((LensletArraysInitialisationType)(lensletArraysInitialisationComboBox.getSelectedItem()))
+			double lensWidth1, eta1, cameraDistance1 = 5;
+			switch((ParametersInitialisationType)(parametersInitialisationComboBox.getSelectedItem()))
 			{
+			case JUST_TIM:
+				blackOutLensesCheckBox.setSelected(false);
+				showLensletArray1CheckBox.setSelected(false);
+				showLensletArray2CheckBox.setSelected(false);
+				studioInitialisationComboBox.setSelectedItem(StudioInitialisationType.TIM_HEAD);
+				
+				cameraViewCentrePanel.setVector3D(new Vector3D(0, 0, 0));
+				cameraDistancePanel.setNumber(cameraDistance1);
+				cameraViewDirectionPanel.setVector3D(new Vector3D(0, 0, 1));
+				cameraHorizontalFOVDegPanel.setNumber(10);
+				cameraApertureSizeComboBox.setSelectedItem(ApertureSizeType.MEDIUM);
+				cameraFocussingDistancePanel.setNumber(cameraDistance1+9);
+
+				break;
+			case MAGNIFYING_SMALL_LENSES_FOCUS_ON_TIM:
+				lensWidth1 = 0.002;
+				eta1 = 0.5;
+				lensWidthPanel.setNumber(lensWidth1);
+				f01Panel.setNumber(5*lensWidth1);
+				f02Panel.setNumber(-f01Panel.getNumber());
+				eta1Panel.setNumber(eta1);
+				periodPanel.setNumber(3);
+				offset1Panel.setVector3D(new Vector3D(lensWidth1, 0, 0.00001));
+				blackOutLensesCheckBox.setSelected(true);
+				noOfBlackedOutLensesPanel.setNumber(1);
+				showLensletArray1CheckBox.setSelected(true);
+				showLensletArray2CheckBox.setSelected(true);
+				studioInitialisationComboBox.setSelectedItem(StudioInitialisationType.TIM_HEAD);
+				
+				cameraViewCentrePanel.setVector3D(new Vector3D(0, 0, 0));
+				cameraDistancePanel.setNumber(cameraDistance1);
+				cameraViewDirectionPanel.setVector3D(new Vector3D(0, 0, 1));
+				cameraHorizontalFOVDegPanel.setNumber(17);
+				cameraApertureSizeComboBox.setSelectedItem(ApertureSizeType.MEDIUM);
+				cameraFocussingDistancePanel.setNumber(cameraDistance1+eta1*9);
+
+				break;
+			case MAGNIFYING_LARGE_LENSES_FOCUS_ON_TIM:
+				lensWidth1 = 0.05;
+				eta1 = 0.5;
+				lensWidthPanel.setNumber(lensWidth1);
+				f01Panel.setNumber(5*lensWidth1);
+				f02Panel.setNumber(-f01Panel.getNumber());
+				eta1Panel.setNumber(eta1);
+				periodPanel.setNumber(3);
+				offset1Panel.setVector3D(new Vector3D(lensWidth1, 0, 0.00001));
+				blackOutLensesCheckBox.setSelected(true);
+				noOfBlackedOutLensesPanel.setNumber(1);
+				showLensletArray1CheckBox.setSelected(true);
+				showLensletArray2CheckBox.setSelected(true);
+				studioInitialisationComboBox.setSelectedItem(StudioInitialisationType.TIM_HEAD);
+				
+				cameraViewCentrePanel.setVector3D(new Vector3D(0, 0, 0));
+				cameraDistancePanel.setNumber(cameraDistance1);
+				cameraViewDirectionPanel.setVector3D(new Vector3D(0, 0, 1));
+				cameraHorizontalFOVDegPanel.setNumber(17);
+				cameraApertureSizeComboBox.setSelectedItem(ApertureSizeType.MEDIUM);
+				cameraFocussingDistancePanel.setNumber(cameraDistance1+eta1*9);
+
+				break;
+			case DEMAGNIFYING_SMALL_LENSES_FOCUS_ON_TIM:
+				lensWidth1 = 0.002;	// 0.001;
+				eta1 = 2;	// 0.5;
+				lensWidthPanel.setNumber(lensWidth1);
+				f01Panel.setNumber(-2*lensWidth1);
+				f02Panel.setNumber(-f01Panel.getNumber());
+				eta1Panel.setNumber(eta1);
+				periodPanel.setNumber(3);
+				offset1Panel.setVector3D(new Vector3D(lensWidth1, 0, 0.00001));
+				blackOutLensesCheckBox.setSelected(true);
+				noOfBlackedOutLensesPanel.setNumber(1);
+				showLensletArray1CheckBox.setSelected(true);
+				showLensletArray2CheckBox.setSelected(true);
+				studioInitialisationComboBox.setSelectedItem(StudioInitialisationType.TIM_HEAD);
+				
+				cameraViewCentrePanel.setVector3D(new Vector3D(0, 0, 0));
+				cameraDistancePanel.setNumber(cameraDistance1);
+				cameraViewDirectionPanel.setVector3D(new Vector3D(0, 0, 1));
+				cameraHorizontalFOVDegPanel.setNumber(17);
+				cameraApertureSizeComboBox.setSelectedItem(ApertureSizeType.MEDIUM);
+				cameraFocussingDistancePanel.setNumber(cameraDistance1+eta1*9);
+
+				break;
+			case DEMAGNIFYING_LARGE_LENSES_FOCUS_ON_TIM:
+				lensWidth1 = 0.05;	// 0.001;
+				eta1 = 2;	// 0.5;
+				lensWidthPanel.setNumber(lensWidth1);
+				f01Panel.setNumber(-2*lensWidth1);
+				f02Panel.setNumber(-f01Panel.getNumber());
+				eta1Panel.setNumber(eta1);
+				periodPanel.setNumber(3);
+				offset1Panel.setVector3D(new Vector3D(lensWidth1, 0, 0.00001));
+				blackOutLensesCheckBox.setSelected(true);
+				noOfBlackedOutLensesPanel.setNumber(1);
+				showLensletArray1CheckBox.setSelected(true);
+				showLensletArray2CheckBox.setSelected(true);
+				studioInitialisationComboBox.setSelectedItem(StudioInitialisationType.TIM_HEAD);
+				
+				cameraViewCentrePanel.setVector3D(new Vector3D(0, 0, 0));
+				cameraDistancePanel.setNumber(cameraDistance1);
+				cameraViewDirectionPanel.setVector3D(new Vector3D(0, 0, 1));
+				cameraHorizontalFOVDegPanel.setNumber(17);
+				cameraApertureSizeComboBox.setSelectedItem(ApertureSizeType.MEDIUM);
+				cameraFocussingDistancePanel.setNumber(cameraDistance1+eta1*9);
+
+				break;
+			case SHOW_LAS_FROM_ABOVE:
+				cameraViewCentrePanel.setVector3D(new Vector3D(0, 0, 0.5*f01Panel.getNumber()));
+				cameraDistancePanel.setNumber(2);
+				cameraViewDirectionPanel.setVector3D(new Vector3D(0.02, -1, .2));
+				cameraHorizontalFOVDegPanel.setNumber(15);
+				cameraApertureSizeComboBox.setSelectedItem(ApertureSizeType.TINY);
+				cameraFocussingDistancePanel.setNumber(1.5);
+				
+				break;
+			case SHOW_LAS_AND_TIM:
+				cameraViewCentrePanel.setVector3D(new Vector3D(0, 0.5, 0));	// 0.5*f1Panel.getNumber()));
+				cameraDistancePanel.setNumber(0.25);
+				cameraViewDirectionPanel.setVector3D(new Vector3D(0, -.8, 1));
+				cameraHorizontalFOVDegPanel.setNumber(110);
+				cameraApertureSizeComboBox.setSelectedItem(ApertureSizeType.LARGE);
+				cameraFocussingDistancePanel.setNumber(0.25);
+				
+				break;
 			case INIT:
 			default:
 				// do nothing
 			}
-			lensletArraysInitialisationComboBox.setSelectedItem(LensletArraysInitialisationType.INIT);
+			parametersInitialisationComboBox.setSelectedItem(ParametersInitialisationType.INIT);
 		}
-		
+
 	}
 
 

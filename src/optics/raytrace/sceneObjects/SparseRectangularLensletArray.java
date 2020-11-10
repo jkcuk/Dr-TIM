@@ -46,12 +46,12 @@ implements Serializable
 			Studio studio
 		)
 	{
-		super(description);
+		super(description + " (holey)");
 		
 		// create the wrapped SceneObject
 		
 		parallelogram = new ScaledParametrisedParallelogram(
-				description + " (without holes)",
+				description,
 				corner, 
 				spanVector1,
 				spanVector2, 
