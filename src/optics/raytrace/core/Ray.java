@@ -198,7 +198,10 @@ public class Ray {
 	 */
 	public Ray getReversedRay()
 	{
-		return new Ray(p, k.getReverse(), d.getReverse(), t);
+		if(k != null)
+			return new Ray(p, k.getReverse(), d.getReverse(), t);
+		else
+			return new Ray(p, d.getReverse(), t);
 	}
 
 	/**

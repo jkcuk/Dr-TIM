@@ -8,7 +8,9 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfacePropertyPrimitive;
 import optics.raytrace.exceptions.SceneException;
+import optics.raytrace.surfaces.ColourFilter;
 import optics.raytrace.surfaces.PhaseHologramOfSparseRectangularLensletArray;
+import optics.raytrace.surfaces.SurfacePropertyLayerStack;
 
 /**
  * A rectangle whose surface area is a phase hologram of a rectangular lenslet array
@@ -39,6 +41,9 @@ implements Serializable
 			double yOffset,
 			int nx,
 			int ny,
+			boolean simulateDiffractiveBlur,
+			double lambda,
+			boolean colouredLenses,
 			double throughputCoefficient,
 			boolean reflective,
 			boolean shadowThrowing,
@@ -46,7 +51,7 @@ implements Serializable
 			Studio studio
 		)
 	{
-		super(description + " (holey)");
+		super(description);
 		
 		// create the wrapped SceneObject
 		
@@ -70,13 +75,20 @@ implements Serializable
 					yOffset,
 					nx,
 					ny,
+					simulateDiffractiveBlur,
+					lambda,
 					parallelogram,	// sceneObject
 					throughputCoefficient,
 					reflective,
 					shadowThrowing
 				);
 		
-		parallelogram.setSurfaceProperty(sparseLensArray);
+		if(colouredLenses)
+			parallelogram.setSurfaceProperty(
+					new SurfacePropertyLayerStack(sparseLensArray, ColourFilter.LIGHT_CYAN_GLASS)
+				);
+		else
+			parallelogram.setSurfaceProperty(sparseLensArray);
 
 		try {
 			setWrappedSceneObject(parallelogram);
@@ -105,6 +117,9 @@ implements Serializable
 				0,	// yOffset
 				1,	// nx
 				1,	// ny
+				true,	// simulateDiffractiveBlur
+				632.8e-9,	// lambda
+				true,	// colouredLenses
 				SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
 				false,	// reflective
 				true,	// shadowThrowing

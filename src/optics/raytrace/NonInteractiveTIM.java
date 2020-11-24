@@ -27,7 +27,7 @@ public class NonInteractiveTIM extends NonInteractiveTIMEngine
 	{
 		super();
 		
-		renderQuality = RenderQualityEnum.GREAT;
+		renderQuality = RenderQualityEnum.DRAFT;
 		
 		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
 //		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.MOVIE;

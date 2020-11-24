@@ -7,6 +7,7 @@ import math.Vector3D;
 import optics.raytrace.core.One2OneParametrisedObject;
 import optics.raytrace.core.Orientation;
 import optics.raytrace.core.RaySceneObjectIntersection;
+import optics.raytrace.utility.SingleSlitDiffraction;
 
 /**
  * A phase hologram of a sparse rectangular array of lenslets of focal length f.
@@ -63,6 +64,16 @@ public class PhaseHologramOfSparseRectangularLensletArray extends PhaseHologram 
 	 * every <i>ny</i>th lens in the <i>y</i> direction is physically present (the space in between in a hole)
 	 */
 	private int ny;
+	
+	/**
+	 * if true, simulate diffractive light-ray-direction change at aperture of size <xOffset> x <yOffset> for wavelength <lambda>
+	 */
+	private boolean simulateDiffractiveBlur;
+	
+	/**
+	 * wavelength for which diffractive light-ray-direction change is simulated (if <simulateDiffractiveBlur> = true)
+	 */
+	private double lambda;
 
 	/**
 	 * the scene object this surface property is associated with
@@ -81,6 +92,8 @@ public class PhaseHologramOfSparseRectangularLensletArray extends PhaseHologram 
 	 * @param yOffset
 	 * @param nx
 	 * @param ny
+	 * @param simulateDiffractiveBlur
+	 * @param lambda
 	 * @param sceneObject
 	 * @param throughputCoefficient
 	 * @param reflective
@@ -94,6 +107,8 @@ public class PhaseHologramOfSparseRectangularLensletArray extends PhaseHologram 
 			double yOffset,
 			int nx,
 			int ny,
+			boolean simulateDiffractiveBlur,
+			double lambda,
 			One2OneParametrisedObject sceneObject,
 			double throughputCoefficient,
 			boolean reflective,
@@ -108,6 +123,8 @@ public class PhaseHologramOfSparseRectangularLensletArray extends PhaseHologram 
 		setyOffset(yOffset);
 		setNx(nx);
 		setNy(ny);
+		setSimulateDiffractiveBlur(simulateDiffractiveBlur);
+		setLambda(lambda);
 		setSceneObject(sceneObject);
 	}
 
@@ -120,6 +137,8 @@ public class PhaseHologramOfSparseRectangularLensletArray extends PhaseHologram 
 		setyOffset(original.getyOffset());
 		setNx(original.getNx());
 		setNy(original.getNy());
+		setSimulateDiffractiveBlur(original.isSimulateDiffractiveBlur());
+		setLambda(original.getLambda());
 		setSceneObject(original.getSceneObject());
 	}
 	
@@ -191,6 +210,22 @@ public class PhaseHologramOfSparseRectangularLensletArray extends PhaseHologram 
 		this.ny = ny;
 	}
 
+	public boolean isSimulateDiffractiveBlur() {
+		return simulateDiffractiveBlur;
+	}
+
+	public void setSimulateDiffractiveBlur(boolean simulateDiffractiveBlur) {
+		this.simulateDiffractiveBlur = simulateDiffractiveBlur;
+	}
+
+	public double getLambda() {
+		return lambda;
+	}
+
+	public void setLambda(double lambda) {
+		this.lambda = lambda;
+	}
+
 	public One2OneParametrisedObject getSceneObject() {
 		return sceneObject;
 	}
@@ -217,7 +252,21 @@ public class PhaseHologramOfSparseRectangularLensletArray extends PhaseHologram 
 		double yDerivative = mod(y+0.5*ny*yPeriod, ny*yPeriod) - 0.5*ny*yPeriod;
 		
 		ArrayList<Vector3D> xHatYHat = sceneObject.getSurfaceCoordinateAxes(surfacePosition);
-		return Vector3D.sum(xHatYHat.get(0).getProductWith(-xDerivative/focalLength), xHatYHat.get(1).getProductWith(-yDerivative/focalLength));
+		Vector3D xHat = xHatYHat.get(0);
+		Vector3D yHat = xHatYHat.get(1);
+		Vector3D directionChange = Vector3D.sum(xHat.getProductWith(-xDerivative/focalLength), yHat.getProductWith(-yDerivative/focalLength));
+		if(simulateDiffractiveBlur)
+		{
+			return Vector3D.sum(directionChange, SingleSlitDiffraction.getTangentialDirectionComponentChange(
+					lambda,
+					xPeriod,	// pixelSideLengthU
+					yPeriod,	// pixelSideLengthV
+					xHat,	// uHat
+					yHat	// vHat
+				));
+		}
+		else
+			return directionChange;
 	}
 
 	@Override
