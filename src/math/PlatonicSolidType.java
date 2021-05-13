@@ -4,7 +4,7 @@ package math;
   * 
   * @author Johannes
   *
-  * A few basic data related to Platonic solids
+  * A few basic data related to Platonic solids, centred on the origin, of circumradius (i.e. distance of the vertices from the centre) 1
   */
 
 public enum PlatonicSolidType
@@ -129,7 +129,7 @@ public enum PlatonicSolidType
 		return faces[0].length;
 	}
 	
-	public Vector3D getOutwardFaceNormal(int faceIndex)
+	public Vector3D getFaceCentre(int faceIndex)
 	{
 		// add all the vertices of this face together...
 		Vector3D sum = new Vector3D(0, 0, 0);
@@ -138,8 +138,38 @@ public enum PlatonicSolidType
 			sum = Vector3D.sum(sum, vertices[faces[faceIndex][i]]);
 		}
 		
-		// ... and normalise and return
-		return sum.getNormalised();
+		// ... and divide by the number of vertices that were summed and return
+		return sum.getProductWith(1./getNumberOfVerticesPerFace());
+	}
+	
+	/**
+	 * @return the inradius of the Platonic solid, i.e. the distance from its centre to the centre of the faces
+	 */
+	public double getInradius()
+	{
+		// calculate the distance from the centre to the centre of the 0th face, and return
+		return getFaceCentre(0).getLength();
+	}
+
+	public Vector3D getOutwardFaceNormal(int faceIndex)
+	{
+		return getFaceCentre(faceIndex).getNormalised();
+		
+//		// add all the vertices of this face together...
+//		Vector3D sum = new Vector3D(0, 0, 0);
+//		for(int i=0; i<getNumberOfVerticesPerFace(); i++)
+//		{
+//			sum = Vector3D.sum(sum, vertices[faces[faceIndex][i]]);
+//		}
+//		
+//		// ... and normalise and return
+//		return sum.getNormalised();
+	}
+	
+	public double getFaceCircumradius()
+	{
+		// calculate the distance between the centre of the 0th face and the 0th vertex of the 0th face, and return
+		return Vector3D.getDistance(getFaceCentre(0), vertices[faces[0][0]]);
 	}
 	
 	@Override

@@ -39,6 +39,12 @@ implements MouseListener, MouseMotionListener, ActionListener
 {
 	private static final long serialVersionUID = 8594474760681044299L;
 
+	/**
+	 * when the user clicks on the image, a ray is traced backwards from the camera in the direction of the click position;
+	 * this variable holds the first intersection between this ray and the scene
+	 */
+	private RaySceneObjectIntersection lastClickIntersection;
+	
 	private StatusIndicator statusIndicator;
 	private JPopupMenu popupMenu;
 	private MouseEvent popupMenuMouseEvent;
@@ -129,7 +135,17 @@ implements MouseListener, MouseMotionListener, ActionListener
     	addMouseMotionListener(this);
     }
     
-    public StatusIndicator getStatusIndicator()
+    /**
+	 * when the user clicks on the image, a ray is traced backwards from the camera in the direction of the click position;
+	 * this method returns the first intersection between the ray and the scene for the last click
+	 * 
+     * @return the closest intersection with the scene along the line of sight in which the click position is seen
+     */
+    public RaySceneObjectIntersection getLastClickIntersection() {
+		return lastClickIntersection;
+	}
+
+	public StatusIndicator getStatusIndicator()
     {
 		return statusIndicator;
 	}
@@ -313,16 +329,16 @@ implements MouseListener, MouseMotionListener, ActionListener
 	private void setTemporaryStatusToLocalCoordinates(MouseEvent e)
 	{
 		// intersect the ray with the scene
-		RaySceneObjectIntersection i=getRaySceneObjectIntersection(e);
+		lastClickIntersection = getRaySceneObjectIntersection(e);
 
 		String coordinates;
-		if(i.o instanceof ParametrisedObject)
+		if(lastClickIntersection.o instanceof ParametrisedObject)
 		{
-			ArrayList<String> parameterNames = ((ParametrisedObject)i.o).getSurfaceCoordinateNames();
+			ArrayList<String> parameterNames = ((ParametrisedObject)lastClickIntersection.o).getSurfaceCoordinateNames();
 
 			coordinates="[scene object's surface coordinates ("
 				+ parameterNames.get(0) + ", " + parameterNames.get(1) + ") = "
-				+ ((ParametrisedObject)i.o).getSurfaceCoordinates(i.p)
+				+ ((ParametrisedObject)lastClickIntersection.o).getSurfaceCoordinates(lastClickIntersection.p)
 				+ "]";
 		}
 		else

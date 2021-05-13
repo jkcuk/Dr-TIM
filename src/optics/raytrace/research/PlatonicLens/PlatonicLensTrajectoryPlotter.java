@@ -125,17 +125,21 @@ public class PlatonicLensTrajectoryPlotter
 				1.0/getScaleFactor(PLATONIC_SOLID_TYPE),	// focalLength
 				0.7,	// lensTransmissionCoefficient
 				false,	// showPlatonicSolid
-				false,	// showInnerEdges
+				false,	// showPyramidalCaps
+				false,	// showLensEdges
 				scene,	// parent,
 				studio
 			);
 		scene.addSceneObject(platonicLens);
 		
+		Vector3D
+			rayStartPosition = new Vector3D(-0.5-1.0*frame/getNoOfFrames(), 0.3, 0),
+			rayDirection = new Vector3D(0.2, 0.1, 1);
 		scene.addSceneObject(new EditableRayTrajectory(
 						"ray trajectory",
-						new Vector3D(-0.5-1.0*frame/getNoOfFrames(), 0.3, 0),	// start point
+						rayStartPosition,	// start point
 						0,	// start time
-						new Vector3D(0.2, 0.1, 1),	// initial direction
+						rayDirection,	// initial direction
 						0.01,	// radius
 						new SurfaceColourLightSourceIndependent(DoubleColour.GREEN, true),
 						100,	// max trace level
@@ -161,7 +165,7 @@ public class PlatonicLensTrajectoryPlotter
 		platonicSolid.populateSceneObjectCollection();
 		// ... and draw all the relevant edges
 		platonicLens.setShowPlatonicSolid(true);
-		platonicLens.setShowInnerEdges(true);
+		platonicLens.setShowLensEdges(true);
 		platonicLens.populateSceneObjectCollection();
 
 
@@ -189,10 +193,15 @@ public class PlatonicLensTrajectoryPlotter
 				Studio.NULL_STUDIO
 		);
 		
+		boolean normalView = false;
+		Vector3D
+			viewDirection = (normalView?Vector3D.crossProduct(rayStartPosition, rayDirection).getNormalised():new Vector3D(-.2, -.3, 1).getNormalised());
+		System.out.println("PlatonicLensTrajectoryPlotter::createStudio: viewDirection = "+viewDirection);
+		
 		EditableRelativisticAnyFocusSurfaceCamera camera = new EditableRelativisticAnyFocusSurfaceCamera(
 				"Camera",
-				new Vector3D(2, 3, -10),	// centre of aperture
-				new Vector3D(-.2, -.3, 1),	// viewDirection
+				viewDirection.getProductWith(-10.),	// new Vector3D(2, 3, -10),	// centre of aperture
+				viewDirection,	// viewDirection
 				new Vector3D(0, 1, 0),	// top direction vector
 				30,	// horiontalViewAngle in degrees; 2*MyMath.rad2deg(Math.atan(2./10.)) gives same view angle as in previous version
 				new Vector3D(0, 0, 0),	// beta
@@ -203,7 +212,7 @@ public class PlatonicLensTrajectoryPlotter
 				null,	// cameraFrameScene,
 				ApertureSizeType.PINHOLE,	// aperture size
 				QualityType.RUBBISH,	// blur quality
-				QualityType.GOOD	// anti-aliasing quality
+				QualityType.NORMAL	// anti-aliasing quality
 		);
 
 		studio.setLights(LightSource.getStandardLightsFromBehind());

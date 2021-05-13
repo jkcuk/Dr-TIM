@@ -49,6 +49,7 @@ import optics.raytrace.GUI.sceneObjects.EditablePinchTransformationWindow;
 import optics.raytrace.GUI.sceneObjects.EditablePlatonicLens;
 import optics.raytrace.GUI.sceneObjects.EditablePlatonicSolid;
 import optics.raytrace.GUI.sceneObjects.EditablePolarToCartesianConverter;
+import optics.raytrace.GUI.sceneObjects.EditablePolygonalIdealLensCloak;
 import optics.raytrace.GUI.sceneObjects.EditableRayRotationSheetStar;
 import optics.raytrace.GUI.sceneObjects.EditableRayTrajectory;
 import optics.raytrace.GUI.sceneObjects.EditableRayTrajectoryCone;
@@ -363,7 +364,7 @@ public enum SceneObjectType
 					studio
 				));
 		case IDEAL_LENS_CLOAK:
-			return(new EditableIdealLensCloak(parent, studio));
+			return(new EditablePolygonalIdealLensCloak(parent, studio));
 		case LATTICE:
 			return(new EditableCylinderLattice(
 					"cylinder lattice",

@@ -27,6 +27,7 @@ import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableSpaceCancellingWedge;
+import optics.raytrace.GUI.sceneObjects.EditableArrow;
 import optics.raytrace.GUI.sceneObjects.EditableParametrisedCylinder;
 import optics.raytrace.GUI.sceneObjects.EditableRayTrajectory;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedSphere;
@@ -169,6 +170,23 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 	 */
 	private double sphereRadius;
 	
+	/**
+	 * place, in the centre of each face, a "projected" xyz coordinate system centred in the cube
+	 */
+	private boolean showProjectedCoordinateSystems;
+	private double projectedCoordinateSystemsSize;
+	
+	private boolean
+		showCoordinateSystemFor00Face,
+		showCoordinateSystemFor10Face,
+		showCoordinateSystemFor20Face,
+		showCoordinateSystemForM10Face,
+		showCoordinateSystemForM20Face,
+		showCoordinateSystemFor01Face,
+		showCoordinateSystemFor02Face,
+		showCoordinateSystemFor0M1Face,
+		showCoordinateSystemFor0M2Face;
+	
 	
 	public enum CameraType
 	{
@@ -217,7 +235,7 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		nullSpaceWedgeHeight = 1;
 		nullSpaceWedgeLegLengthFactor = 1.0;
 		nullSpaceWedgeSurfaceTransmissionCoefficient = 0.96;
-		gluingType = GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS;
+		gluingType = GluingType.PERFECT; // GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS;
 		numberOfNegativeSpaceWedges = 2;
 		netEdgeSurfaceProperty = // SurfaceColour.BLUE_SHINY;
 			ColourFilter.CYAN_GLASS;
@@ -226,13 +244,25 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		
 		showNullSpaceWedges = true;
 		showNetEdges = true;
-		showNullSpaceWedgeEdges = true;
+		showNullSpaceWedgeEdges = false;
 		
 		// stuff
 		studioInitialisation = StudioInitialisationType.HEAVEN;	// the backdrop
 		showSphere = false;
 		sphereCentre = new Vector3D(0.2, 0.1, 0.25);
 		sphereRadius = 0.1;
+		showProjectedCoordinateSystems = true;
+		projectedCoordinateSystemsSize = 0.4*sideLength;
+		showCoordinateSystemFor00Face = true;
+		showCoordinateSystemFor10Face = true;
+		showCoordinateSystemFor20Face = true;
+		showCoordinateSystemForM10Face = true;
+		showCoordinateSystemForM20Face = true;
+		showCoordinateSystemFor01Face = true;
+		showCoordinateSystemFor02Face = true;
+		showCoordinateSystemFor0M1Face = true;
+		showCoordinateSystemFor0M2Face = true;
+
 		
 		// trajectory
 		showTrajectory1 = false;
@@ -341,6 +371,19 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 			printStream.println("sphereCentre = "+sphereCentre);
 			printStream.println("sphereRadius = "+sphereRadius);
 		}
+		
+		printStream.println("showProjectedCoordinateSystems = "+showProjectedCoordinateSystems);
+		printStream.println("projectedCoordinateSystemsSize = "+projectedCoordinateSystemsSize);
+		printStream.println("showCoordinateSystemFor00Face = "+showCoordinateSystemFor00Face);
+		printStream.println("showCoordinateSystemFor10Face = "+showCoordinateSystemFor10Face);
+		printStream.println("showCoordinateSystemFor20Face = "+showCoordinateSystemFor20Face);
+		printStream.println("showCoordinateSystemForM10Face = "+showCoordinateSystemForM10Face);
+		printStream.println("showCoordinateSystemForM20Face = "+showCoordinateSystemForM20Face);
+		printStream.println("showCoordinateSystemFor01Face = "+showCoordinateSystemFor01Face);
+		printStream.println("showCoordinateSystemFor02Face = "+showCoordinateSystemFor02Face);
+		printStream.println("showCoordinateSystemFor0M1Face = "+showCoordinateSystemFor0M1Face);
+		printStream.println("showCoordinateSystemFor0M2Face = "+showCoordinateSystemFor0M2Face);
+
 		
 		printStream.println("studioInitialisation = "+studioInitialisation);
 
@@ -510,7 +553,141 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 				showSphere
 			);
 		
+		// add xyz coordinate systems...
+		Vector3D 
+			xVecPlus = new Vector3D(projectedCoordinateSystemsSize, 0, 0),
+			xVecMinus = new Vector3D(-projectedCoordinateSystemsSize, 0, 0),
+			yVecPlus = new Vector3D(0, projectedCoordinateSystemsSize, 0),
+			yVecMinus = new Vector3D(0, -projectedCoordinateSystemsSize, 0),
+			zVecPlus = new Vector3D(0, 0, projectedCoordinateSystemsSize),
+			zVecMinus = new Vector3D(0, 0, -projectedCoordinateSystemsSize);
 		
+		// ... to the central face, ...
+		scene.addSceneObject(
+				createCoordinateSystem(
+						"(0, 0) face coordinate system",	// name
+						new Vector3D(0, 0, 0),	// origin
+						xVecPlus,	// x
+						yVecPlus,	// y
+						zVecPlus,	// z
+						scene,
+						studio
+					),
+				showProjectedCoordinateSystems && showCoordinateSystemFor00Face
+			);
+
+		// ... to the face shifted in the +x direction from the central face, ...
+		scene.addSceneObject(
+				createCoordinateSystem(
+						"(1, 0) face coordinate system",	// name
+						new Vector3D(sideLength, 0, 0),	// origin
+						yVecPlus,	// x
+						xVecMinus,	// y
+						zVecPlus,	// z
+						scene,
+						studio
+					),
+				showProjectedCoordinateSystems && showCoordinateSystemFor10Face
+			);
+
+		// ... to the face shifted twice in the +x direction from the central face, ...
+		scene.addSceneObject(
+				createCoordinateSystem(
+						"(2, 0) face coordinate system",	// name
+						new Vector3D(2*sideLength, 0, 0),	// origin
+						xVecMinus,	// x
+						yVecMinus,	// y
+						zVecPlus,	// z
+						scene,
+						studio
+					),
+				showProjectedCoordinateSystems && showCoordinateSystemFor20Face
+			);
+
+		// ... to the face shifted in the -x direction from the central face, ...
+		scene.addSceneObject(
+				createCoordinateSystem(
+						"(-1, 0) face coordinate system",	// name
+						new Vector3D(-sideLength, 0, 0),	// origin
+						yVecMinus,	// x
+						xVecPlus,	// y
+						zVecPlus,	// z
+						scene,
+						studio
+					),
+				showProjectedCoordinateSystems && showCoordinateSystemForM10Face
+			);
+
+		// ... to the face shifted twice in the -x direction from the central face, ...
+		scene.addSceneObject(
+				createCoordinateSystem(
+						"(-2, 0) face coordinate system",	// name
+						new Vector3D(-2*sideLength, 0, 0),	// origin
+						xVecMinus,	// x
+						yVecMinus,	// y
+						zVecPlus,	// z
+						scene,
+						studio
+					),
+				showProjectedCoordinateSystems && showCoordinateSystemForM20Face
+			);
+
+		// ... to the face shifted in the +z direction from the central face, ...
+		scene.addSceneObject(
+				createCoordinateSystem(
+						"(0, 1) face coordinate system",	// name
+						new Vector3D(0, 0, sideLength),	// origin
+						xVecPlus,	// x
+						zVecMinus,	// y
+						yVecPlus,	// z
+						scene,
+						studio
+					),
+				showProjectedCoordinateSystems && showCoordinateSystemFor01Face
+			);
+
+		// ... to the face shifted twice in the +z direction from the central face, ...
+		scene.addSceneObject(
+				createCoordinateSystem(
+						"(0, 2) face coordinate system",	// name
+						new Vector3D(0, 0, 2*sideLength),	// origin
+						xVecPlus,	// x
+						yVecMinus,	// y
+						zVecMinus,	// z
+						scene,
+						studio
+					),
+				showProjectedCoordinateSystems && showCoordinateSystemFor02Face
+			);
+
+		// ... to the face shifted in the -z direction from the central face, ...
+		scene.addSceneObject(
+				createCoordinateSystem(
+						"(0, -1) face coordinate system",	// name
+						new Vector3D(0, 0, -sideLength),	// origin
+						xVecPlus,	// x
+						zVecPlus,	// y
+						yVecMinus,	// z
+						scene,
+						studio
+					),
+				showProjectedCoordinateSystems && showCoordinateSystemFor0M1Face
+			);
+
+		// ... to the face shifted twice in the -z direction from the central face, ...
+		scene.addSceneObject(
+				createCoordinateSystem(
+						"(0, -2) face coordinate system",	// name
+						new Vector3D(0, 0, -2*sideLength),	// origin
+						xVecPlus,	// x
+						yVecMinus,	// y
+						zVecMinus,	// z
+						scene,
+						studio
+					),
+				showProjectedCoordinateSystems && showCoordinateSystemFor0M2Face
+			);
+
 
 		// the trajectories
 		
@@ -873,6 +1050,58 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		}
 	}
 	
+	private SceneObjectContainer createCoordinateSystem(String name, Vector3D origin, Vector3D x, Vector3D y, Vector3D z, SceneObjectContainer scene, Studio studio)
+	{
+		// create a container for the arrows that form the coordinate system to go into
+		SceneObjectContainer c = new SceneObjectContainer(name, scene, studio);
+		
+		double l = x.getLength();
+		double shaftRadius = 0.05*l;
+		double tipLength = 0.3*l;
+		double tipAngle = MyMath.deg2rad(30);
+		
+		// create a red x arrow
+		c.addSceneObject(new EditableArrow(
+				"x",
+				origin,	// start point
+				Vector3D.sum(origin, x),	// end point
+				shaftRadius,
+				tipLength,
+				tipAngle,
+				SurfaceColour.RED_SHINY,	// surfaceProperty
+				c,
+				studio
+		));
+
+		// create a green y arrow
+		c.addSceneObject(new EditableArrow(
+				"y",
+				origin,	// start point
+				Vector3D.sum(origin, y),	// end point
+				shaftRadius,
+				tipLength,
+				tipAngle,
+				SurfaceColour.GREEN_SHINY,	// surfaceProperty
+				c,
+				studio
+		));
+
+		// create a blue z arrow
+		c.addSceneObject(new EditableArrow(
+				"z",
+				origin,	// start point
+				Vector3D.sum(origin, z),	// end point
+				shaftRadius,
+				tipLength,
+				tipAngle,
+				SurfaceColour.BLUE_SHINY,	// surfaceProperty
+				c,
+				studio
+		));
+		
+		return c;
+	}
+	
 	
 	//
 	// for interactive version
@@ -897,6 +1126,19 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 	private JCheckBox showSphereCheckBox;
 	private LabelledVector3DPanel sphereCentrePanel;
 	private LabelledDoublePanel sphereRadiusPanel;
+	private JCheckBox
+		showProjectedCoordinateSystemsCheckBox,
+		showCoordinateSystemFor00FaceCheckBox,
+		showCoordinateSystemFor10FaceCheckBox,
+		showCoordinateSystemFor20FaceCheckBox,
+		showCoordinateSystemForM10FaceCheckBox,
+		showCoordinateSystemForM20FaceCheckBox,
+		showCoordinateSystemFor01FaceCheckBox,
+		showCoordinateSystemFor02FaceCheckBox,
+		showCoordinateSystemFor0M1FaceCheckBox,
+		showCoordinateSystemFor0M2FaceCheckBox;
+	private LabelledDoublePanel projectedCoordinateSystemsSizePanel;
+
 
 	// camera
 	private JTabbedPane cameraTypeTabbedPane;
@@ -1019,6 +1261,57 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		redSpherePanel.add(sphereRadiusPanel, "wrap");
 		
 		stuffPanel.add(redSpherePanel, "wrap");
+		
+		JPanel coordinateSystemsPanel = new JPanel();
+		coordinateSystemsPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Central (x,y,z) coordinate system, projected onto faces"));
+		coordinateSystemsPanel.setLayout(new MigLayout("insets 0"));
+
+		showProjectedCoordinateSystemsCheckBox = new JCheckBox("Show");
+		showProjectedCoordinateSystemsCheckBox.setSelected(showProjectedCoordinateSystems);
+		coordinateSystemsPanel.add(showProjectedCoordinateSystemsCheckBox, "wrap");
+		
+		projectedCoordinateSystemsSizePanel = new LabelledDoublePanel("Vector length");
+		projectedCoordinateSystemsSizePanel.setNumber(projectedCoordinateSystemsSize);
+		coordinateSystemsPanel.add(projectedCoordinateSystemsSizePanel, "wrap");
+
+		showCoordinateSystemFor00FaceCheckBox = new JCheckBox("Show (0,0)");
+		showCoordinateSystemFor00FaceCheckBox.setSelected(showCoordinateSystemFor00Face);
+		coordinateSystemsPanel.add(showCoordinateSystemFor00FaceCheckBox, "wrap");
+
+		showCoordinateSystemFor10FaceCheckBox = new JCheckBox("Show (1,0)");
+		showCoordinateSystemFor10FaceCheckBox.setSelected(showCoordinateSystemFor10Face);
+		coordinateSystemsPanel.add(showCoordinateSystemFor10FaceCheckBox, "wrap");
+
+		showCoordinateSystemFor20FaceCheckBox = new JCheckBox("Show (2,0)");
+		showCoordinateSystemFor20FaceCheckBox.setSelected(showCoordinateSystemFor20Face);
+		coordinateSystemsPanel.add(showCoordinateSystemFor20FaceCheckBox, "wrap");
+
+		showCoordinateSystemForM10FaceCheckBox = new JCheckBox("Show (-1,0)");
+		showCoordinateSystemForM10FaceCheckBox.setSelected(showCoordinateSystemForM10Face);
+		coordinateSystemsPanel.add(showCoordinateSystemForM10FaceCheckBox, "wrap");
+
+		showCoordinateSystemForM20FaceCheckBox = new JCheckBox("Show (-2,0)");
+		showCoordinateSystemForM20FaceCheckBox.setSelected(showCoordinateSystemForM20Face);
+		coordinateSystemsPanel.add(showCoordinateSystemForM20FaceCheckBox, "wrap");
+
+		showCoordinateSystemFor01FaceCheckBox = new JCheckBox("Show (0,1)");
+		showCoordinateSystemFor01FaceCheckBox.setSelected(showCoordinateSystemFor01Face);
+		coordinateSystemsPanel.add(showCoordinateSystemFor01FaceCheckBox, "wrap");
+
+		showCoordinateSystemFor02FaceCheckBox = new JCheckBox("Show (0,2)");
+		showCoordinateSystemFor02FaceCheckBox.setSelected(showCoordinateSystemFor02Face);
+		coordinateSystemsPanel.add(showCoordinateSystemFor02FaceCheckBox, "wrap");
+
+		showCoordinateSystemFor0M1FaceCheckBox = new JCheckBox("Show (0,-1)");
+		showCoordinateSystemFor0M1FaceCheckBox.setSelected(showCoordinateSystemFor0M1Face);
+		coordinateSystemsPanel.add(showCoordinateSystemFor0M1FaceCheckBox, "wrap");
+
+		showCoordinateSystemFor0M2FaceCheckBox = new JCheckBox("Show (0,-2)");
+		showCoordinateSystemFor0M2FaceCheckBox.setSelected(showCoordinateSystemFor0M2Face);
+		coordinateSystemsPanel.add(showCoordinateSystemFor0M2FaceCheckBox, "wrap");
+
+		stuffPanel.add(coordinateSystemsPanel, "wrap");
+
 		
 		tabbedPane.addTab("Stuff", stuffPanel);
 
@@ -1203,6 +1496,18 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		showSphere = showSphereCheckBox.isSelected();
 		sphereCentre = sphereCentrePanel.getVector3D();
 		sphereRadius = sphereRadiusPanel.getNumber();
+		showProjectedCoordinateSystems = showProjectedCoordinateSystemsCheckBox.isSelected();
+		projectedCoordinateSystemsSize = projectedCoordinateSystemsSizePanel.getNumber();
+		showCoordinateSystemFor00Face = showCoordinateSystemFor00FaceCheckBox.isSelected();
+		showCoordinateSystemFor10Face = showCoordinateSystemFor10FaceCheckBox.isSelected();
+		showCoordinateSystemFor20Face = showCoordinateSystemFor20FaceCheckBox.isSelected();
+		showCoordinateSystemForM10Face = showCoordinateSystemForM10FaceCheckBox.isSelected();
+		showCoordinateSystemForM20Face = showCoordinateSystemForM20FaceCheckBox.isSelected();
+		showCoordinateSystemFor01Face = showCoordinateSystemFor01FaceCheckBox.isSelected();
+		showCoordinateSystemFor02Face = showCoordinateSystemFor02FaceCheckBox.isSelected();
+		showCoordinateSystemFor0M1Face = showCoordinateSystemFor0M1FaceCheckBox.isSelected();
+		showCoordinateSystemFor0M2Face = showCoordinateSystemFor0M2FaceCheckBox.isSelected();
+
 		
 		cameraType = (cameraTypeTabbedPane.getSelectedIndex()==0)?CameraType.STANDARD:CameraType.ORTHOGRAPHIC;
 		cameraViewCentre = cameraViewCentrePanel.getVector3D();

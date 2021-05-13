@@ -309,9 +309,30 @@ public class EditablePlatonicSolid extends EditableSceneObjectCollection impleme
 		return platonicSolid.getEdges()[i];
 	}
 	
+	/**
+	 * @param i
+	 * @return	the indices of the vertices of face i
+	 */
 	public int[] getFace(int i)
 	{
 		return platonicSolid.getFaces()[i];
+	}
+	
+	/**
+	 * @param i
+	 * @return	the position vectors of the vertices of face i
+	 */
+	public Vector3D[] getVerticesForFace(int i)
+	{
+		int[] faceIndices = getFace(i);
+		Vector3D[] faceVertices = new Vector3D[platonicSolid.getNumberOfVerticesPerFace()];
+		
+		for(int j=0; j<platonicSolid.getNumberOfVerticesPerFace(); j++)
+		{
+			faceVertices[j] = getVertex(faceIndices[j]);
+		}
+
+		return faceVertices;
 	}
 	
 	public int getNumberOfVertices()
@@ -334,10 +355,41 @@ public class EditablePlatonicSolid extends EditableSceneObjectCollection impleme
 		return platonicSolid.getNumberOfVerticesPerFace();
 	}
 	
+	public Vector3D getFaceCentre(int faceIndex)
+	{
+		// add all the vertices of this face together...
+		Vector3D sum = new Vector3D(0, 0, 0);
+		Vector3D[] faceVertices = getVerticesForFace(faceIndex);
+		for(Vector3D vertex : faceVertices)
+		{
+			sum = Vector3D.sum(vertex, sum);
+		}
+		
+		// ... and divide by the number of vertices that were summed and return
+		return sum.getProductWith(1./getNumberOfVerticesPerFace());
+	}
+
+	/**
+	 * @param faceIndex
+	 * @return	the normalised outwards-facing normal to face #faceIndex
+	 */
 	public Vector3D getOutwardFaceNormal(int faceIndex)
 	{
-		return platonicSolid.getOutwardFaceNormal(faceIndex);
+		return Vector3D.difference(getFaceCentre(faceIndex), centre).getNormalised();
 	}
+	
+	public double getInradius()
+	{
+		return platonicSolid.getInradius()*radius;
+	}
+	
+	public double getFaceCircumradius()
+	{
+		// calculate the distance between the centre of the 0th face and the 0th vertex of the 0th face, and return
+		return Vector3D.getDistance(getFaceCentre(0), getVertex(getFace(0)[0]));
+	}
+
+	
 	
 	private void addVertices()
 	{

@@ -27,6 +27,7 @@ import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableSpaceCancellingWedge;
+import optics.raytrace.GUI.sceneObjects.EditableArrow;
 import optics.raytrace.GUI.sceneObjects.EditableParametrisedCylinder;
 import optics.raytrace.GUI.sceneObjects.EditableRayTrajectory;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedCentredParallelogram;
@@ -168,7 +169,14 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 	 * radius of sphere
 	 */
 	private double sphereRadius;
+
+	/**
+	 * place, in the centre of each face, a "projected" xyz coordinate system centred in the cube
+	 */
+	private boolean showProjectedCoordinateSystems;
+	private double projectedCoordinateSystemsSize;
 	
+	private boolean showCoordinateSystemForFace[] = new boolean[4];
 	
 	public enum CameraType
 	{
@@ -217,7 +225,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		nullSpaceWedgeHeight = 1;
 		nullSpaceWedgeLegLengthFactor = 1.0;
 		nullSpaceWedgeSurfaceTransmissionCoefficient = 0.96;
-		curvedSpaceSimulationType = GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS;
+		curvedSpaceSimulationType = GluingType.PERFECT; // SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS;
 		numberOfNegativeSpaceWedges = 2;
 		netEdgeSurfaceProperty = // SurfaceColour.BLUE_SHINY;
 			ColourFilter.CYAN_GLASS;
@@ -226,13 +234,16 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		
 		showNullSpaceWedges = true;
 		showNetEdges = true;
-		showNullSpaceWedgeEdges = true;
+		showNullSpaceWedgeEdges = false;
 		
 		// stuff
 		studioInitialisation = StudioInitialisationType.HEAVEN;	// the backdrop
 		showSphere = false;
 		sphereCentre = new Vector3D(0.2, 0.1, 0.25);
 		sphereRadius = 0.1;
+		showProjectedCoordinateSystems = true;
+		projectedCoordinateSystemsSize = 0.4*sideLength;
+		for(int i=0; i<4; i++) showCoordinateSystemForFace[i] = true;
 
 		// trajectory
 		showTrajectory1 = false;
@@ -258,7 +269,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		cameraPixelsX = 640;
 		cameraPixelsY = 480;
 		cameraApertureSize = ApertureSizeType.PINHOLE;
-		orthographicCameraWidth = 4.5;
+		orthographicCameraWidth = 3;
 
 		traceRaysWithTrajectory = false;	// don't automatically trace rays with trajectory
 		
@@ -341,6 +352,11 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 			printStream.println("sphereCentre = "+sphereCentre);
 			printStream.println("sphereRadius = "+sphereRadius);
 		}
+		
+		printStream.println("showProjectedCoordinateSystems = "+showProjectedCoordinateSystems);
+		printStream.println("projectedCoordinateSystemsSize = "+projectedCoordinateSystemsSize);
+		for(int i=0; i<4; i++)
+			printStream.println("showCoordinateSystemForFace["+i+"] = "+showCoordinateSystemForFace[i]);
 		
 		printStream.println("studioInitialisation = "+studioInitialisation);
 
@@ -544,6 +560,61 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 				showSphere
 			);
 		
+		// add coordinate systems...
+		double normalsAngle = Math.PI - Math.acos(1/3.);
+		Vector3D faceNormal[] = new Vector3D[4];
+		faceNormal[0] = new Vector3D(0, projectedCoordinateSystemsSize, 0);
+		for(int i=1; i<4; i++)
+		{
+			double phi = (i+1)*2.0*Math.PI/3.0-0.5*Math.PI;
+			double cos = Math.cos(phi);
+			double sin = Math.sin(phi);
+			
+			faceNormal[i] = Matrix3D.rotateVector(
+					faceNormal[0],
+					normalsAngle,	// rotationAngle
+					Vector3D.sum(u.getProductWith(cos), v.getProductWith(sin))
+					);
+		}
+		
+		// ... to the central face...
+		scene.addSceneObject(
+				createCoordinateSystem(
+						0,	// faceNumber
+						centre,	// origin
+						null,	// rotationAxis
+						faceNormal,
+						scene,
+						studio
+					),
+				showProjectedCoordinateSystems && showCoordinateSystemForFace[0]
+			);
+
+		// ... and to the other faces
+		double faceInRadius = faceCircumRadius * Math.sin(MyMath.deg2rad(30));
+		for(int i=1; i<4; i++)
+		{
+			double phi = (i+1)*2.0*Math.PI/3.0 + Math.PI;
+			double cos = Math.cos(phi);
+			double sin = Math.sin(phi);
+			
+			Vector3D radialDirection = Vector3D.sum(u.getProductWith(cos), v.getProductWith(sin));
+			Vector3D origin = Vector3D.sum(centre, radialDirection.getProductWith(2*faceInRadius));
+			Vector3D rotationAxis = Vector3D.crossProduct(origin, upDirection).getNormalised();
+			
+			scene.addSceneObject(
+					createCoordinateSystem(
+							i,	// faceNumber
+							origin,	// origin
+							rotationAxis,	// rotationAxis
+							faceNormal,
+							scene,
+							studio
+						),
+					showProjectedCoordinateSystems && showCoordinateSystemForFace[i]
+				);
+		}
+
 		
 		// the trajectories
 		
@@ -758,7 +829,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 					);
 				scene.addSceneObject(
 						new EditableScaledParametrisedSphere(
-								"Outer vertex of outer net triangle #"+i,
+								"Outer vertex of outer net triangle #"+(i+1),
 								v4,	// centre
 								edgeRadius,	// radius
 								netEdgeSurfaceProperty,
@@ -782,7 +853,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 
 				scene.addSceneObject(
 						new EditableParametrisedCylinder(
-								"Outer edge #1 of outer net triangle #"+i,
+								"Outer edge #1 of outer net triangle #"+(i+1),
 								v1,	// start point
 								v4,	// end point
 								edgeRadius,	// radius
@@ -793,7 +864,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 					);
 				scene.addSceneObject(
 						new EditableParametrisedCylinder(
-								"Outer edge #2 of outer net triangle #"+i,
+								"Outer edge #2 of outer net triangle #"+(i+1),
 								v2,	// start point
 								v4,	// end point
 								edgeRadius,	// radius
@@ -806,6 +877,50 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 
 		}
 	}
+	
+	private static SurfaceColour faceNormalColour[] = {
+			SurfaceColour.RED_SHINY,
+			SurfaceColour.GREEN_SHINY,
+			SurfaceColour.BLUE_SHINY,
+			SurfaceColour.YELLOW_SHINY
+	};
+	
+	private SceneObjectContainer createCoordinateSystem(int faceNumber, Vector3D origin, Vector3D rotationAxis, Vector3D[] faceNormal, SceneObjectContainer scene, Studio studio)
+	{
+		// create a container for the arrows that form the coordinate system to go into
+		SceneObjectContainer c = new SceneObjectContainer("Coordinate system for face #"+faceNumber, scene, studio);
+		
+		double shaftRadius = 0.025*projectedCoordinateSystemsSize;
+		double tipLength = 0.15*projectedCoordinateSystemsSize;
+		double tipAngle = MyMath.deg2rad(30);
+		double normalsAngle = Math.PI - Math.acos(1/3.);
+		
+		for(int i=0; i<4; i++)
+		{
+			Vector3D currentFaceNormal;
+			if(rotationAxis == null) currentFaceNormal = faceNormal[i];
+			else currentFaceNormal = Matrix3D.rotateVector(
+					faceNormal[i],	// vector
+					normalsAngle,	// rotationAngle
+					rotationAxis
+				);
+					
+			c.addSceneObject(new EditableArrow(
+					"Axis #"+i,
+					Vector3D.sum(origin, currentFaceNormal.getProductWith(-0.5)),	// start point
+					Vector3D.sum(origin, currentFaceNormal.getProductWith( 0.5)),	// end point
+					shaftRadius,
+					tipLength,
+					tipAngle,
+					faceNormalColour[i],	// surfaceProperty
+					c,
+					studio
+			));
+		}
+				
+		return c;
+	}
+
 	
 	
 	//
@@ -831,6 +946,10 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 	private JCheckBox showSphereCheckBox;
 	private LabelledVector3DPanel sphereCentrePanel;
 	private LabelledDoublePanel sphereRadiusPanel;
+	private JCheckBox showProjectedCoordinateSystemsCheckBox;
+	private JCheckBox showCoordinateSystemForFaceCheckBox[] = new JCheckBox[4];
+	private LabelledDoublePanel projectedCoordinateSystemsSizePanel;
+
 
 	// camera
 	private JTabbedPane cameraTypeTabbedPane;
@@ -953,6 +1072,27 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		redSpherePanel.add(sphereRadiusPanel, "wrap");
 		
 		stuffPanel.add(redSpherePanel, "wrap");
+		
+		JPanel coordinateSystemsPanel = new JPanel();
+		coordinateSystemsPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Central face normals, projected onto faces"));
+		coordinateSystemsPanel.setLayout(new MigLayout("insets 0"));
+
+		showProjectedCoordinateSystemsCheckBox = new JCheckBox("Show");
+		showProjectedCoordinateSystemsCheckBox.setSelected(showProjectedCoordinateSystems);
+		coordinateSystemsPanel.add(showProjectedCoordinateSystemsCheckBox, "wrap");
+		
+		projectedCoordinateSystemsSizePanel = new LabelledDoublePanel("Vector length");
+		projectedCoordinateSystemsSizePanel.setNumber(projectedCoordinateSystemsSize);
+		coordinateSystemsPanel.add(projectedCoordinateSystemsSizePanel, "wrap");
+
+		for(int i=0; i<4; i++)
+		{
+			showCoordinateSystemForFaceCheckBox[i] = new JCheckBox("Show for face #"+i);
+			showCoordinateSystemForFaceCheckBox[i].setSelected(showCoordinateSystemForFace[i]);
+			coordinateSystemsPanel.add(showCoordinateSystemForFaceCheckBox[i], "wrap");
+		}
+		
+		stuffPanel.add(coordinateSystemsPanel, "wrap");
 		
 		tabbedPane.addTab("Stuff", stuffPanel);
 
@@ -1137,6 +1277,9 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		showSphere = showSphereCheckBox.isSelected();
 		sphereCentre = sphereCentrePanel.getVector3D();
 		sphereRadius = sphereRadiusPanel.getNumber();
+		showProjectedCoordinateSystems = showProjectedCoordinateSystemsCheckBox.isSelected();
+		for(int i=0; i<4; i++) showCoordinateSystemForFace[i] = showCoordinateSystemForFaceCheckBox[i].isSelected();
+		projectedCoordinateSystemsSize = projectedCoordinateSystemsSizePanel.getNumber();
 		
 		cameraType = (cameraTypeTabbedPane.getSelectedIndex()==0)?CameraType.STANDARD:CameraType.ORTHOGRAPHIC;
 		cameraViewCentre = cameraViewCentrePanel.getVector3D();

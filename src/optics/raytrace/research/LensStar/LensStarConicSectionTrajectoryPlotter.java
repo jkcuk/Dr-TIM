@@ -25,19 +25,20 @@ import optics.raytrace.GUI.sceneObjects.EditableLensStar;
  */
 public class LensStarConicSectionTrajectoryPlotter
 {
-	public static final int NUMBER_OF_LENSES = 113;
 	public static final boolean SHOW_CIRCLE_TRAJECTORY = true;
 	public static final boolean SHOW_ELLIPTIC_TRAJECTORY = true;
 	public static final boolean SHOW_PARABOLIC_TRAJECTORY = true;
 	public static final boolean SHOW_HYPERBOLIC_TRAJECTORY = true;
-	public static final boolean SHOW_LENS_EDGES = true;
-	public static final boolean MAKE_TRAJECTORIES_STRIPED = false;
-	// it is possible to show the trajectories in another lens star, which is useful here for simultaneously 
-	// plotting the trajectories in a lens star with a small number of lenses and one where N -> \infty;
-	// <=0 means don't plot trajectories in a second lens star
-	public static final int NUMBER_OF_LENSES_IN_SECOND_LENS_STAR =
-		-1;
-		// 111;
+
+	// Lens star 1 / 2
+	public static final int[] NUMBER_OF_LENSES = {5, 499};
+	public static final boolean[] SHOW_LENS_EDGES = {true, false};
+	public static final boolean[] STRIPED_TRAJECTORIES = {true, false};
+	public static final boolean[] SHOW_TRAJECTORIES = {true, true};
+	
+	// camera
+	public static final double IMAGE_WIDTH = 10;
+	public static final double IMAGE_SHIFT_V = 2;
 
 	/**
 	 * Filename under which main saves the rendered image.
@@ -46,15 +47,18 @@ public class LensStarConicSectionTrajectoryPlotter
 	 */
 	public static String getFilename()
 	{
-		return "LensStarTrajectory "	// the name
+		String name = 
+				"LensStarTrajectory "	// the name
 			+ (SHOW_CIRCLE_TRAJECTORY?"C":"")
 			+ (SHOW_ELLIPTIC_TRAJECTORY?"E":"")
 			+ (SHOW_PARABOLIC_TRAJECTORY?"P":"")
 			+ (SHOW_HYPERBOLIC_TRAJECTORY?"H":"")
-			+ " number of lenses "+NUMBER_OF_LENSES
-			+ " lens edges " + (SHOW_LENS_EDGES?"on":"off")
-			+ ((NUMBER_OF_LENSES_IN_SECOND_LENS_STAR>=0)?"#lenses in 2nd star "+NUMBER_OF_LENSES_IN_SECOND_LENS_STAR:"")
+			+ (SHOW_TRAJECTORIES[0]?" #L="+NUMBER_OF_LENSES[0] + " E=" + (SHOW_LENS_EDGES[0]?"on":"off"):"")
+			+ (SHOW_TRAJECTORIES[1]?" #L="+NUMBER_OF_LENSES[1] + " E=" + (SHOW_LENS_EDGES[1]?"on":"off"):"")
+			+ " w="+IMAGE_WIDTH
+			+ " sv="+IMAGE_SHIFT_V
 		    +".bmp";	// the extension
+		return name;
 	}
 	
 	private static void addTrajectory(
@@ -72,7 +76,7 @@ public class LensStarConicSectionTrajectoryPlotter
 		Vector3D direction = new Vector3D(Math.cos(initialAngleWithCircularTrajectory), 0, Math.sin(initialAngleWithCircularTrajectory));
 		
 		SurfaceColourLightSourceIndependent c = new SurfaceColourLightSourceIndependent(colour, true);
-		SurfaceProperty s = (striped?new Striped(c, SurfaceColourLightSourceIndependent.WHITE, .1):c);
+		SurfaceProperty s = (striped?new Striped(c, SurfaceColourLightSourceIndependent.WHITE, .1*IMAGE_WIDTH/10.):c);
 		
 		// a ray trajectory in the positive direction...
 		scene.addSceneObject(new EditableRayTrajectory(
@@ -108,7 +112,7 @@ public class LensStarConicSectionTrajectoryPlotter
 	
 	private static void addTrajectories(boolean striped, int numberOfLenses, SceneObjectContainer scene, Studio studio)
 	{
-		double radius = 0.025;
+		double radius = 0.025*IMAGE_WIDTH/10.;
 		
 		// circular trajectory
 		if(SHOW_CIRCLE_TRAJECTORY)
@@ -168,7 +172,7 @@ public class LensStarConicSectionTrajectoryPlotter
 
 	}
 	
-	public static EditableLensStar getLensStar(int numberOfLenses, SceneObject parent, Studio studio)
+	public static EditableLensStar getLensStar(int numberOfLenses, boolean showEdges, SceneObject parent, Studio studio)
 	{
 		return new EditableLensStar(
 				"Lens star",	// description
@@ -187,8 +191,8 @@ public class LensStarConicSectionTrajectoryPlotter
 				MyMath.HUGE,	// starRadius,
 				2,	// starLength,
 				0.7,	// lensTransmissionCoefficient
-				SHOW_LENS_EDGES,	// showEdges,
-				0.005,	// edgeRadius
+				showEdges,	// showEdges,
+				0.005*IMAGE_WIDTH/10.,	// edgeRadius
 				SurfaceColour.GREY50_MATT,	// edgeSurfaceProperty
 				parent,
 				studio
@@ -220,46 +224,48 @@ public class LensStarConicSectionTrajectoryPlotter
 //				scene,
 //				studio
 //			));
-
-		SceneObjectContainer trajectories1 = new SceneObjectContainer("ray trajectories 1", scene, studio); 
-		addTrajectories(MAKE_TRAJECTORIES_STRIPED, NUMBER_OF_LENSES, trajectories1, studio);
-		scene.addSceneObject(trajectories1);
 		
-		// the lens star
-		EditableLensStar lensStar = getLensStar(NUMBER_OF_LENSES, scene, studio);
-		scene.addSceneObject(lensStar);
+		// first, trace the trajectories through one lens star at a time
 		
-		// trace the rays with trajectory through the scene
-		studio.traceRaysWithTrajectory();
-
-//		// make the lenses effectively plane bits of glass
-//		lensStar.setFocalLength(MyMath.HUGE);
-//		lensStar.populateSceneObjectCollection();
-
-		// remove the lens star and the previously calculated trajectories so that ray tracing through the second lens star works okay
-		scene.removeSceneObject(lensStar);
-		scene.removeSceneObject(trajectories1);
+		// create a space where all the trajectories go
+		SceneObjectContainer trajectories = new SceneObjectContainer("ray trajectories", scene, studio); ;
 		
-		if(NUMBER_OF_LENSES_IN_SECOND_LENS_STAR > 0)
+		for(int i=0; i<SHOW_TRAJECTORIES.length; i++)
 		{
-			// the lens star
-			EditableLensStar lensStar2 = getLensStar(NUMBER_OF_LENSES_IN_SECOND_LENS_STAR, scene, studio);
-			scene.addSceneObject(lensStar2);
-			
-			SceneObjectContainer trajectories2 = new SceneObjectContainer("ray trajectories 2", scene, studio); 
-			addTrajectories(false, NUMBER_OF_LENSES_IN_SECOND_LENS_STAR, trajectories2, studio);
-			scene.addSceneObject(trajectories2);
-			
-			// trace the rays with trajectory through the scene
-			studio.traceRaysWithTrajectory();
+			// create the trajectories for lens star i		
+			if(SHOW_TRAJECTORIES[i])
+			{
+				// add the lens star, without the edges
+				EditableLensStar lensStar = getLensStar(NUMBER_OF_LENSES[i], false, scene, studio);
+				scene.addSceneObject(lensStar);
 
-			scene.removeSceneObject(lensStar2);
+				// set the trajectory starting points
+				SceneObjectContainer trajectoriesOfCurrentLensStar = new SceneObjectContainer("ray trajectories for lens star "+i, trajectories, studio); 
+				addTrajectories(STRIPED_TRAJECTORIES[i], NUMBER_OF_LENSES[i], trajectoriesOfCurrentLensStar, studio);
+				scene.addSceneObject(trajectoriesOfCurrentLensStar);
+
+				// trace the rays with trajectory through the lens star
+				studio.traceRaysWithTrajectory();
+				
+				// add the trajectories of the current lens star to the trajectories
+				trajectories.addSceneObject(trajectoriesOfCurrentLensStar);
+
+				// remove the lens star and the previously calculated trajectories so that ray tracing through the second lens star works okay
+				scene.removeSceneObject(lensStar);
+				scene.removeSceneObject(trajectoriesOfCurrentLensStar);
+			}
 		}
 
-		scene.addSceneObject(trajectories1);
+		scene.addSceneObject(trajectories);
 		
-		// as we removed the lens star earlier, add it here again, if necessary
-		if(SHOW_LENS_EDGES) scene.addSceneObject(lensStar);
+		// add the lens star edges again
+		for(int i=0; i<SHOW_TRAJECTORIES.length; i++)
+		{
+			// add the lens star
+			EditableLensStar lensStar = getLensStar(NUMBER_OF_LENSES[i], SHOW_LENS_EDGES[i], scene, studio);
+			scene.addSceneObject(lensStar);
+		}
+
 
 		// define the camera
 		//
@@ -299,19 +305,17 @@ public class LensStarConicSectionTrajectoryPlotter
 //				QualityType.RUBBISH,	// blur quality
 //				QualityType.NORMAL	// anti-aliasing quality
 //		);
-		
-		double width = 10;
-		
+				
 		EditableOrthographicCamera camera = new EditableOrthographicCamera(
 				"Camera",	// name
 				new Vector3D(0, -1, 0),	// viewDirection
-				new Vector3D(0, 1000, 0),	// CCDCentre
-				new Vector3D(0, 0, width),	// horizontalSpanVector3D
-				new Vector3D(width*pixelsY/pixelsX, 0, 0),	// verticalSpanVector3D
+				new Vector3D(IMAGE_SHIFT_V, 1000, 0),	// CCDCentre
+				new Vector3D(0, 0, IMAGE_WIDTH),	// horizontalSpanVector3D
+				new Vector3D(IMAGE_WIDTH*pixelsY/pixelsX, 0, 0),	// verticalSpanVector3D
 				pixelsX,	// imagePixelsHorizontal
 				pixelsY,	// imagePixelsVertical
 				100,	// maxTraceLevel
-				QualityType.GOOD	// antiAliasingQuality	
+				QualityType.GREAT	// antiAliasingQuality	
 			);
 
 		studio.setLights(LightSource.getStandardLightsFromBehind());

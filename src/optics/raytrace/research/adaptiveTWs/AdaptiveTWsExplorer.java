@@ -44,9 +44,9 @@ import optics.raytrace.core.StudioInitialisationType;
 public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements ActionListener
 {
 	/**
-	 * eta_1
+	 * eta_1 / eta_0
 	 */
-	private double eta1;
+	private double eta10;
 	
 	/**
 	 * width of the individual lenses
@@ -139,7 +139,7 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 		lensWidth = 0.002;
 		f01 = 5*lensWidth;
 		f02 = -f01;
-		eta1 = 0.5;
+		eta10 = 0.5;
 		period = 3;
 		offset1 = new Vector3D(lensWidth, 0, 0.000001);
 		blackOutLenses = true;
@@ -156,7 +156,7 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 		cameraViewDirection = new Vector3D(0, 0, 1);
 		cameraHorizontalFOVDeg = 17;
 		cameraApertureSize = ApertureSizeType.MEDIUM;
-		cameraFocussingDistance = cameraDistance+eta1*9;
+		cameraFocussingDistance = cameraDistance+eta10*9;
 
 //		// lenslet-array parameters
 //		eta1 = 0.5;
@@ -207,7 +207,7 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 		printStream.println("Scene parameters");
 		printStream.println();
 
-		printStream.println("eta1 = "+eta1);
+		printStream.println("eta1/eta0 = "+eta10);
 		printStream.println("f01 = "+f01);
 		printStream.println("f02 = "+f02);
 		printStream.println("lensWidth = "+lensWidth);
@@ -222,7 +222,7 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 		printStream.println("colouredLenses = "+colouredLenses);
 		printStream.println("showCommonFocalPlane = "+ showCommonFocalPlane);
 		
-		studioInitialisation = StudioInitialisationType.TIM_HEAD;	// the backdrop
+		printStream.println("studioInitialisation =" + studioInitialisation);		
 
 		printStream.println();
 		printStream.println("Camera parameters");
@@ -400,8 +400,8 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 			
 
 			
-			fn1 *= eta1;
-			fn2 *= eta1;
+			fn1 *= eta10;
+			fn2 *= eta10;
 		}
 		
 		// show focal plane
@@ -506,8 +506,8 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 		periodPanel.setToolTipText("Only every n_xth lenslet is present in the x direction");		
 		scenePanel.add(periodPanel, "span");
 		
-		eta1Panel = new LabelledDoublePanel("eta_1");
-		eta1Panel.setNumber(eta1);
+		eta1Panel = new LabelledDoublePanel("eta_1 / eta_0");
+		eta1Panel.setNumber(eta10);
 		eta1Panel.setToolTipText("eta1");
 		scenePanel.add(eta1Panel, "span");
 
@@ -632,7 +632,7 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 		
 		f01 = f01Panel.getNumber();
 		f02 = f02Panel.getNumber();
-		eta1 = eta1Panel.getNumber();
+		eta10 = eta1Panel.getNumber();
 		lensWidth = lensWidthPanel.getNumber();
 		period = periodPanel.getNumber();
 		offset1 = offset1Panel.getVector3D();
