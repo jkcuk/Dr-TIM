@@ -2,19 +2,26 @@ package optics.raytrace.surfaces;
 
 import math.MyMath;
 import math.Vector3D;
-import optics.raytrace.core.Orientation;
+import optics.DoubleColour;
+import optics.raytrace.core.LightSource;
+import optics.raytrace.core.Ray;
+import optics.raytrace.core.RaySceneObjectIntersection;
+import optics.raytrace.core.RaytraceExceptionHandler;
+import optics.raytrace.core.SceneObject;
+import optics.raytrace.core.SurfacePropertyPrimitive;
+import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.utility.SingleSlitDiffraction;
 
 /**
- * A phase hologram of a rectangular array of lenslets of focal length f.
+ * A rectangular array of lenslets of focal length f.
  * 
  * This class does not require the associated scene object to be parametrised.
  * 
  * @author johannes
  */
-public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
+public class RectangularIdealThinLensletArraySimple extends SurfacePropertyPrimitive
 {
-	private static final long serialVersionUID = 5709331854362381231L;
+	private static final long serialVersionUID = 2206232408794176834L;
 
 	private Vector3D centre;
 	
@@ -68,7 +75,7 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 	// constructors etc.
 	//
 
-	public PhaseHologramOfRectangularLensletArraySimple(
+	public RectangularIdealThinLensletArraySimple(
 			Vector3D centre,
 			Vector3D uHat,
 			Vector3D vHat,
@@ -80,11 +87,10 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 			boolean simulateDiffractiveBlur,
 			double lambda,
 			double throughputCoefficient,
-			boolean reflective,
 			boolean shadowThrowing
 		)
 	{
-		super(throughputCoefficient, reflective, shadowThrowing);
+		super(throughputCoefficient, shadowThrowing);
 		this.centre = centre;
 		this.uHat = uHat;
 		this.vHat = vHat;
@@ -100,7 +106,7 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 	/**
 	 * @param original
 	 */
-	public PhaseHologramOfRectangularLensletArraySimple(PhaseHologramOfRectangularLensletArraySimple original)
+	public RectangularIdealThinLensletArraySimple(RectangularIdealThinLensletArraySimple original)
 	{
 		this(
 				original.getCentre(),
@@ -114,15 +120,14 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 				original.isSimulateDiffractiveBlur(),
 				original.getLambda(),
 				original.getTransmissionCoefficient(),
-				original.isReflective(),
 				original.isShadowThrowing()
 			);
 	}
 	
 	@Override
-	public PhaseHologramOfRectangularLensletArraySimple clone()
+	public RectangularIdealThinLensletArraySimple clone()
 	{
-		return new PhaseHologramOfRectangularLensletArraySimple(this);
+		return new RectangularIdealThinLensletArraySimple(this);
 	}
 
 
@@ -227,26 +232,55 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 				MyMath.square((y-vOffset)-vPeriod*Math.floor((y-vOffset)/vPeriod + 0.5));
 	}
 	
+	/* (non-Javadoc)
+	 * @see optics.raytrace.SurfaceProperty#getColour(optics.raytrace.Ray, optics.raytrace.RaySceneObjectIntersection, optics.raytrace.SceneObject, optics.raytrace.LightSource, int)
+	 */
 	@Override
-	public Vector3D getTangentialDirectionComponentChangeTransmissive(Vector3D surfacePosition,
-			Vector3D surfaceNormal)
-	{	
+	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+	throws RayTraceException
+	{
+		if (traceLevel <= 0) return DoubleColour.BLACK;
+		
+		Vector3D surfaceNormal = i.getNormalisedOutwardsSurfaceNormal();
+		// System.out.println("RectangularIdealThinLensletArraySimple::getColour: surfaceNormal="+surfaceNormal);
+		
 		// calculate the u and v coordinates of the position
-		Vector3D uBasisVector = uHat.getPartPerpendicularTo(surfaceNormal);	// .getNormalised();
-		Vector3D vBasisVector = vHat.getPartPerpendicularTo(surfaceNormal);	// Vector3D.crossProduct(surfaceNormal, uBasisVector).getNormalised();
-		Vector3D r = Vector3D.difference(surfacePosition, centre);
+		Vector3D uBasisVector = uHat.getPartPerpendicularTo(surfaceNormal).getNormalised();	// .getNormalised();
+		Vector3D vBasisVector = vHat.getPartPerpendicularTo(surfaceNormal).getNormalised();	// Vector3D.crossProduct(surfaceNormal, uBasisVector).getNormalised();
+		Vector3D r = Vector3D.difference(i.p, centre);
 		Vector3D rUVN = r.toBasis(uBasisVector, vBasisVector, surfaceNormal);
-		double u = rUVN.x;	// Vector3D.scalarProduct(r, uBasisVector);
-		double v = rUVN.y;	// Vector3D.scalarProduct(r, vBasisVector);
+		double u = rUVN.x;	// Vector3D.scalarProduct(r, uBasisVector);	// 
+		double v = rUVN.y;	// Vector3D.scalarProduct(r, vBasisVector);	// 
+		Vector3D lensletCentreUVN = new Vector3D(
+				findLensletCentreCoordinate(u, uPeriod, uOffset),
+				findLensletCentreCoordinate(v, vPeriod, vOffset),
+				0
+			);
+		Vector3D lensletCentre = Vector3D.sum(
+				centre,
+				lensletCentreUVN.fromBasis(uBasisVector, vBasisVector, surfaceNormal)
+			);
 		
-		double xDerivative = (u-uOffset)-findLensletCentreCoordinate(u, uPeriod, uOffset);
-		double yDerivative = (v-vOffset)-findLensletCentreCoordinate(v, vPeriod, vOffset);
+		// calculate direction of deflected ray;
+		// see thinLensAlgebra.pdf
 		
-		Vector3D newRayDirection = Vector3D.sum(uBasisVector.getProductWith(-xDerivative/focalLength), vBasisVector.getProductWith(-yDerivative/focalLength));
+		// scalar product of ray direction and normalised vector in direction of optical axis is what we call dz in thinLensAlgebra.pdf;
+		// need absolute value of this in case the normalised surface normal points "the other way"
+		double dz = Math.abs(ray.getD().getScalarProductWith(surfaceNormal));
+		
+		// now calculate the point Q in the image-sided focal plane through which
+		// the ray has to pass
+		Vector3D Q = Vector3D.sum(
+				lensletCentre,	// point where optical axis intersects surface
+				ray.getD().getProductWith(getFocalLength()/dz)	// d*f/dz
+			);
+
+		// calculate normalised new light-ray direction
+		Vector3D newRayDirection = Vector3D.difference(Q, i.p).getNormalised().getProductWith(Math.signum(getFocalLength()));
 		
 		if(simulateDiffractiveBlur)
 		{
-				return Vector3D.sum(newRayDirection, SingleSlitDiffraction.getTangentialDirectionComponentChange(
+				newRayDirection = Vector3D.sum(newRayDirection, SingleSlitDiffraction.getTangentialDirectionComponentChange(
 						lambda,
 						uPeriod,	// pixelSideLengthU
 						vPeriod,	// pixelSideLengthV
@@ -255,14 +289,25 @@ public class PhaseHologramOfRectangularLensletArraySimple extends PhaseHologram
 					));
 		}
 		
-		return newRayDirection;
+		// launch a new ray from here
+		return scene.getColourAvoidingOrigin(
+			ray.getBranchRay(i.p, newRayDirection, i.t),
+			i.o,
+			l,
+			scene,
+			traceLevel-1,
+			raytraceExceptionHandler
+		).multiply(
+			getTransmissionCoefficient()
+			// * Math.abs(newRayDirection.getScalarProductWith(n))/dz // cos(angle of new ray with normal) / cos(angle of old ray with normal)
+			//
+			// not sure the intensity scales --- see http://www.astronomy.net/articles/29/
+			// Also, one of the article's reviewers wrote this:
+			// This is also related to the brightening in Fig. 7. In fact, I think that such a brightening should not occur.
+			// It is known that brightness of an object does not change if the object is observed by some non-absorbing optical
+			// instrument. For example, a sun reflected in a curved metallic surface is equally bright as if it is viewed directly.
+			// I expect the same for teleported image. Maybe if the effect of the additional factor in eq. (5) is taken into
+			// account together with the other method of calculation of the ray direction, no brightening will occur.
+		);
 	}
-
-	@Override
-	public Vector3D getTangentialDirectionComponentChangeReflective(Orientation incidentLightRayOrientation,
-			Vector3D surfacePosition, Vector3D surfaceNormal)
-	{
-		return getTangentialDirectionComponentChangeTransmissive(surfacePosition, surfaceNormal);
-	}
-
 }

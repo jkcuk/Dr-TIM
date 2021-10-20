@@ -1,5 +1,6 @@
 package optics.raytrace.GUI.lowLevel;
 
+import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusListener;
 
@@ -62,6 +63,17 @@ public class LabelledDoublePanel extends JPanel
 	{
 		label.setEnabled(enabled);
 		doublePanel.setEnabled(enabled);
+	}
+	
+	public void setEditable(boolean editable)
+	{
+		doublePanel.setEditable(editable);
+	}
+	
+	@Override
+	public void setBackground(Color bg)
+	{
+		if(doublePanel != null) doublePanel.setBackground(bg);
 	}
 	
 	public void addDocumentListener(DocumentListener d)

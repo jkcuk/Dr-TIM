@@ -1,5 +1,7 @@
 package optics.raytrace.GUI.lowLevel;
 
+import java.awt.Color;
+
 import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
@@ -44,5 +46,11 @@ public class LabelledVector2DPanel extends JPanel
 	public Vector2DPanel getVector2DPanel()
 	{
 		return vector2DPanel;
+	}
+	
+	@Override
+	public void setBackground(Color bg)
+	{
+		if(vector2DPanel != null) vector2DPanel.setBackground(bg);
 	}
 }

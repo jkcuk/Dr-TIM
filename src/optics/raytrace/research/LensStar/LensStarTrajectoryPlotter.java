@@ -17,6 +17,7 @@ import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.nonInteractive.PhotoCanvas;
 import optics.raytrace.GUI.nonInteractive.PhotoFrame;
 import optics.raytrace.GUI.sceneObjects.EditableRayTrajectory;
+import optics.raytrace.GUI.sceneObjects.ThinLensType;
 import optics.raytrace.GUI.sceneObjects.EditableLensStar;
 
 
@@ -89,6 +90,8 @@ public class LensStarTrajectoryPlotter
 				MyMath.HUGE,	// starRadius,
 				2,	// starLength,
 				0.7,	// lensTransmissionCoefficient
+				true,	// lensesShadowThrowing
+				ThinLensType.IDEAL_THIN_LENS,	// thinLensType
 				true,	// showEdges,
 				0.01,	// edgeRadius
 				SemiTransparent.RED_SHINY_SEMITRANSPARENT,	// edgeSurfaceProperty

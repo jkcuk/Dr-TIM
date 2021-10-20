@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
@@ -21,6 +22,8 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.surfaces.GlensSurface;
+import optics.raytrace.surfaces.ImagingDirection;
+import optics.raytrace.surfaces.Point2PointImagingPhaseHologram;
 import optics.raytrace.surfaces.SurfaceColour;
 
 /**
@@ -110,11 +113,24 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 	 * of radius <starRadius> whose axis coincides with the intersection line.
 	 */
 	private double starLength;
+	
+	private ThinLensType thinLensType;
+	
+	/**
+	 * if thinLensType = phaseHologram and designPosition != null, optimise the phase hologram for light rays that pass, before passing through lens #0,
+	 * through the designPosition
+	 */
+	private Vector3D designPosition;
 
 	/**
 	 * Transmission coefficient of each lens.
 	 */
 	private double lensTransmissionCoefficient;
+	
+	/**
+	 * True if lenses show a shadow, false if they don't
+	 */
+	private boolean lensesShadowThrowing;
 	
 	private boolean showEdges;
 	private double edgeRadius;
@@ -128,19 +144,6 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 	private EditableSceneObjectCollection lenses, edges;
 	
 
-	// GUI panels
-	private LabelledIntPanel numberOfLensesPanel, numberOfShownLensesPanel, shownLensesStartIndexPanel;
-	private LabelledDoublePanel focalLengthPanel, principalPointDistancePanel, starRadiusPanel, starLengthPanel, lensTransmissionCoefficientPanel, edgeRadiusPanel;
-	private LabelledVector3DPanel centrePanel, intersectionDirectionPanel, pointOnLens1Panel;
-	private JCheckBox showEdgesCheckBox, showAllLensesCheckBox;
-	private SurfacePropertyPanel edgeSurfacePropertyPanel;
-	private JButton convertButton;
-	
-//	private LabelledDoublePanel frameRadiusLine;
-//	private JCheckBox showFramesCheckBox;
-//	private SurfacePropertyPanel frameSurfacePropertyPanel;
-	
-	
 	double getRadiusOfRegularPolygonTrajectory()
 	{
 		return 2*focalLength*Math.sin(Math.PI/numberOfLenses);
@@ -151,6 +154,78 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 		return 0.5*radiusOfRegularPolygonTrajectory/Math.sin(Math.PI/numberOfLenses);
 	}
 	
+	/**
+	 * @param description
+	 * @param numberOfLenses
+	 * @param showAllLenses
+	 * @param numberOfShownLenses
+	 * @param shownLensesStartIndex
+	 * @param focalLength
+	 * @param principalPointDistance
+	 * @param centre
+	 * @param intersectionDirection
+	 * @param pointOnLens1
+	 * @param starRadius
+	 * @param starLength
+	 * @param lensTransmissionCoefficient
+	 * @param lensesShadowThrowing
+	 * @param thinLensType
+	 * @param designPosition
+	 * @param showEdges
+	 * @param edgeRadius
+	 * @param edgeSurfaceProperty
+	 * @param parent
+	 * @param studio
+	 */
+	public EditableLensStar(
+			String description,
+			int numberOfLenses,
+			boolean showAllLenses,
+			int numberOfShownLenses,
+			int shownLensesStartIndex,
+			double focalLength,
+			double principalPointDistance,
+			Vector3D centre,
+			Vector3D intersectionDirection,
+			Vector3D pointOnLens1,
+			double starRadius,
+			double starLength,
+			double lensTransmissionCoefficient,
+			boolean lensesShadowThrowing,
+			ThinLensType thinLensType,
+			Vector3D designPosition,
+			boolean showEdges,
+			double edgeRadius,
+			SurfaceProperty edgeSurfaceProperty,
+			SceneObject parent, 
+			Studio studio
+			)
+	{
+		// constructor of superclass
+		super(description, true, parent, studio);
+		
+		setNumberOfLenses(numberOfLenses);
+		setShowAllLenses(showAllLenses);
+		setNumberOfShownLenses(numberOfShownLenses);
+		setShownLensesStartIndex(shownLensesStartIndex);
+		setFocalLength(focalLength);
+		setPrincipalPointDistance(principalPointDistance);
+		setCentre(centre);
+		setIntersectionDirection(intersectionDirection);
+		setPointOnLens1(pointOnLens1);
+		setStarRadius(starRadius);
+		setStarLength(starLength);
+		setLensTransmissionCoefficient(lensTransmissionCoefficient);
+		setLensesShadowThrowing(lensesShadowThrowing);
+		setThinLensType(thinLensType);
+		setShowEdges(showEdges);
+		setEdgeRadius(edgeRadius);
+		setEdgeSurfaceProperty(edgeSurfaceProperty);
+		setDesignPosition(designPosition);
+
+		populateSceneObjectCollection();
+	}
+
 	/**
 	 * Constructor that allows all parameters to be specified.
 	 * @param description
@@ -186,6 +261,8 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 			double starRadius,
 			double starLength,
 			double lensTransmissionCoefficient,
+			boolean lensesShadowThrowing,
+			ThinLensType thinLensType,
 			boolean showEdges,
 			double edgeRadius,
 			SurfaceProperty edgeSurfaceProperty,
@@ -193,26 +270,53 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 			Studio studio
 			)
 	{
-		// constructor of superclass
-		super(description, true, parent, studio);
+		this(
+				description,
+				numberOfLenses,
+				showAllLenses,
+				numberOfShownLenses,
+				shownLensesStartIndex,
+				focalLength,
+				principalPointDistance,
+				centre,
+				intersectionDirection,
+				pointOnLens1,
+				starRadius,
+				starLength,
+				lensTransmissionCoefficient,
+				lensesShadowThrowing,
+				thinLensType,
+				null,	// designPosition
+				showEdges,
+				edgeRadius,
+				edgeSurfaceProperty,
+				parent,
+				studio
+			);
 		
-		setNumberOfLenses(numberOfLenses);
-		setShowAllLenses(showAllLenses);
-		setNumberOfShownLenses(numberOfShownLenses);
-		setShownLensesStartIndex(shownLensesStartIndex);
-		setFocalLength(focalLength);
-		setPrincipalPointDistance(principalPointDistance);
-		setCentre(centre);
-		setIntersectionDirection(intersectionDirection);
-		setPointOnLens1(pointOnLens1);
-		setStarRadius(starRadius);
-		setStarLength(starLength);
-		setLensTransmissionCoefficient(lensTransmissionCoefficient);
-		setShowEdges(showEdges);
-		setEdgeRadius(edgeRadius);
-		setEdgeSurfaceProperty(edgeSurfaceProperty);
-
-		populateSceneObjectCollection();
+//		// constructor of superclass
+//		super(description, true, parent, studio);
+//		
+//		setNumberOfLenses(numberOfLenses);
+//		setShowAllLenses(showAllLenses);
+//		setNumberOfShownLenses(numberOfShownLenses);
+//		setShownLensesStartIndex(shownLensesStartIndex);
+//		setFocalLength(focalLength);
+//		setPrincipalPointDistance(principalPointDistance);
+//		setCentre(centre);
+//		setIntersectionDirection(intersectionDirection);
+//		setPointOnLens1(pointOnLens1);
+//		setStarRadius(starRadius);
+//		setStarLength(starLength);
+//		setLensTransmissionCoefficient(lensTransmissionCoefficient);
+//		setLensesShadowThrowing(lensesShadowThrowing);
+//		setThinLensType(thinLensType);
+//		setShowEdges(showEdges);
+//		setEdgeRadius(edgeRadius);
+//		setEdgeSurfaceProperty(edgeSurfaceProperty);
+//		setDesignPosition(null);
+//
+//		populateSceneObjectCollection();
 	}
 
 	public EditableLensStar(SceneObject parent, Studio studio)
@@ -232,6 +336,8 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 				2,	// starRadius,
 				1,	// starLength,
 				0.96,	// lensTransmissionCoefficient
+				false,	// lensesShadowThrowing
+				ThinLensType.IDEAL_THIN_LENS,	// thinLensType
 				false,	// showFrames,
 				0.01,	// edgeRadius
 				SurfaceColour.RED_SHINY,	// edgeSurfaceProperty
@@ -260,6 +366,8 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 			original.getStarRadius(),
 			original.getStarLength(),
 			original.getLensTransmissionCoefficient(),
+			original.isLensesShadowThrowing(),
+			original.getThinLensType(),
 			original.isShowEdges(),
 			original.getEdgeRadius(),
 			original.getEdgeSurfaceProperty().clone(),
@@ -375,6 +483,30 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 		this.lensTransmissionCoefficient = lensTransmissionCoefficient;
 	}
 	
+	public boolean isLensesShadowThrowing() {
+		return lensesShadowThrowing;
+	}
+
+	public void setLensesShadowThrowing(boolean lensesShadowThrowing) {
+		this.lensesShadowThrowing = lensesShadowThrowing;
+	}
+
+	public ThinLensType getThinLensType() {
+		return thinLensType;
+	}
+
+	public void setThinLensType(ThinLensType thinLensType) {
+		this.thinLensType = thinLensType;
+	}
+
+	public Vector3D getDesignPosition() {
+		return designPosition;
+	}
+
+	public void setDesignPosition(Vector3D designPosition) {
+		this.designPosition = designPosition;
+	}
+
 	public boolean isShowEdges() {
 		return showEdges;
 	}
@@ -440,6 +572,11 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 		Vector3D
 			axialSpanVector = w.getProductWith(starLength),
 			topCorner = Vector3D.sum(centre, w.getProductWith(-starLength/2));
+		
+		Vector3D objectPosition, imagePosition;
+		
+		objectPosition = designPosition;
+		imagePosition = null;
 
 		for(int i=0; i<numberOfLenses; i++)
 		{
@@ -470,29 +607,68 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 //					+", show="+show
 //				);
 			
+			SurfaceProperty surface;
+			
+			if((thinLensType == ThinLensType.LENS_HOLOGRAM) && (designPosition != null))
+			{
+				// create a glens surface with the same imaging properties as the lens...
+				GlensSurface g =
+						new GlensSurface(
+								Vector3D.sum(u.getProductWith(-sin), v.getProductWith(cos)),	// opticalAxisDirectionPos
+								Vector3D.sum(
+										centre,
+										radialUnitVector.getProductWith(principalPointDistance)
+										),	// principalPoint
+								-focalLength,	// focalLengthNeg
+								focalLength,	// focalLengthPos
+								lensTransmissionCoefficient,	// transmissionCoefficient
+								lensesShadowThrowing	// shadowThrowing
+								);
+				
+				// ... and use it to calculate the image of the latest object position
+				imagePosition = g.getFiniteImagePosition(objectPosition, ImagingDirection.NEG2POS);
+				
+				System.out.println("EditableLensStar::populateLensesAndEdges: objectPosition = "+objectPosition+", imagePosition = "+imagePosition);
+
+				surface = new Point2PointImagingPhaseHologram(
+						objectPosition,	// insideSpacePoint
+						imagePosition,	// outsideSpacePoint
+						lensTransmissionCoefficient,	// throughputCoefficient
+						false,	// reflective
+						lensesShadowThrowing	// shadowThrowing
+					);
+				
+				// the image position of this lens is the next lens's object position
+				objectPosition = imagePosition;
+			}
+			else
+			{
+				surface = ThinLensType.createThinLensSurface(
+						thinLensType,	// thinLensType
+						focalLength,	// focalLength
+						Vector3D.sum(
+								centre,
+								radialUnitVector.getProductWith(principalPointDistance)
+						),	// principalPoint
+						Vector3D.sum(u.getProductWith(-sin), v.getProductWith(cos)),	// opticalAxisDirectionPos
+						lensTransmissionCoefficient,	// transmissionCoefficient
+						lensesShadowThrowing	// shadowThrowing
+					);
+			}
+
 			lenses.addSceneObject(
 					new EditableScaledParametrisedParallelogram(
 							"Lens "+(i+1),	// description
 							topCorner,	// corner 
 							axialSpanVector,	// spanVector1
 							radialUnitVector.getProductWith(starRadius),	// spanVector2
-							new GlensSurface(
-									Vector3D.sum(u.getProductWith(-sin), v.getProductWith(cos)),	// opticalAxisDirectionPos
-									Vector3D.sum(
-											centre,
-											radialUnitVector.getProductWith(principalPointDistance)
-									),	// principalPoint
-									-focalLength,	// focalLengthNeg
-									focalLength,	// focalLengthPos
-									lensTransmissionCoefficient,	// transmissionCoefficient
-									true	// shadowThrowing
-									),	// surfaceProperty
+							surface,
 							lenses,	// parent
 							getStudio()
 						),
 					show	// visible
 				);
-			
+						
 			edges.addSceneObject(
 					new EditableParametrisedCylinder(
 							"Top edge of lens #"+(i+1),
@@ -587,6 +763,25 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 		addSceneObject(lenses);
 		addSceneObject(edges, showEdges);
 	}
+	
+	
+	
+	
+	// GUI panels
+	private LabelledIntPanel numberOfLensesPanel, numberOfShownLensesPanel, shownLensesStartIndexPanel;
+	private LabelledDoublePanel focalLengthPanel, principalPointDistancePanel, starRadiusPanel, starLengthPanel, lensTransmissionCoefficientPanel, edgeRadiusPanel;
+	private LabelledVector3DPanel centrePanel, intersectionDirectionPanel, pointOnLens1Panel;
+	private JComboBox<ThinLensType> thinLensTypeComboBox;
+	private JCheckBox showEdgesCheckBox, showAllLensesCheckBox, lensesShadowThrowingCheckBox;
+	private SurfacePropertyPanel edgeSurfacePropertyPanel;
+	private JButton convertButton;
+	
+//	private LabelledDoublePanel frameRadiusLine;
+//	private JCheckBox showFramesCheckBox;
+//	private SurfacePropertyPanel frameSurfacePropertyPanel;
+	
+	
+
 
 	/**
 	 * initialise the edit panel
@@ -649,6 +844,14 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 		lensTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient of each lens");
 		basicParametersPanel.add(lensTransmissionCoefficientPanel, "wrap");
 		
+		lensesShadowThrowingCheckBox = new JCheckBox("Lenses shadow throwing?");
+		basicParametersPanel.add(lensesShadowThrowingCheckBox);
+		
+		thinLensTypeComboBox = new JComboBox<ThinLensType>(ThinLensType.values());
+		thinLensTypeComboBox.setSelectedItem(thinLensType);
+		basicParametersPanel.add(GUIBitsAndBobs.makeRow("Lens type", thinLensTypeComboBox), "span");
+
+		
 		editPanel.add(basicParametersPanel, "wrap");
 
 		// tabbedPane.addTab("Basic parameters", basicParametersPanel);
@@ -707,9 +910,11 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 		starRadiusPanel.setNumber(starRadius);
 		starLengthPanel.setNumber(starLength);
 		lensTransmissionCoefficientPanel.setNumber(lensTransmissionCoefficient);
+		lensesShadowThrowingCheckBox.setSelected(lensesShadowThrowing);
 		showEdgesCheckBox.setSelected(showEdges);
 		edgeRadiusPanel.setNumber(edgeRadius);
-		edgeSurfacePropertyPanel.setSurfaceProperty(edgeSurfaceProperty);		
+		edgeSurfacePropertyPanel.setSurfaceProperty(edgeSurfaceProperty);
+		thinLensTypeComboBox.setSelectedItem(thinLensType);
 	}
 
 	/* (non-Javadoc)
@@ -731,10 +936,12 @@ public class EditableLensStar extends EditableSceneObjectCollection implements A
 		setStarRadius(starRadiusPanel.getNumber());
 		setStarLength(starLengthPanel.getNumber());
 		setLensTransmissionCoefficient(lensTransmissionCoefficientPanel.getNumber());
+		setLensesShadowThrowing(lensesShadowThrowingCheckBox.isSelected());
 		setShowEdges(showEdgesCheckBox.isSelected());
 		setEdgeRadius(edgeRadiusPanel.getNumber());
 		setEdgeSurfaceProperty(edgeSurfacePropertyPanel.getSurfaceProperty());
-
+		thinLensType = (ThinLensType)(thinLensTypeComboBox.getSelectedItem());
+		
 		// add the objects
 		populateSceneObjectCollection();
 		

@@ -1,18 +1,18 @@
 package optics.raytrace.surfaces;
 
-import math.MyMath;
 import math.Vector3D;
 import optics.raytrace.core.Orientation;
 import optics.raytrace.utility.SingleSlitDiffraction;
 
 /**
- * A phase hologram of a rectangular array of lenslets of focal length f.
+ * A phase hologram of a rectangular array of Lohmann lens parts.
+ * (Two Lohmann lens parts, in combination, act like a lens, and the transverse offset between the lens parts determines the focal length.)
  * 
  * This class does not require the associated scene object to be parametrised.
  * 
  * @author johannes
  */
-public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
+public class PhaseHologramOfRectangularAlvarezLensPartArray extends PhaseHologram
 {
 	private static final long serialVersionUID = 5709331854362381231L;
 
@@ -29,9 +29,11 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 	private Vector3D vHat;
 
 	/**
-	 * focal length of each lenslet; the phase cross-section of the lens is Phi(r) = (pi r^2)(lambda f), where r is the distance from the lens centre
+	 * the a parameter of each Lohmann-lens part;
+	 * if two Lohmann-lens parts are combined, one with parameter +a, the other with -a, and offset relative to each other in the u direction by deltaU,
+	 * then a is the focal power of the resulting lens per offset between the parts, i.e. a = (1/f) / deltaU
 	 */
-	private double focalLength;
+	private double focalPowerOverDeltaU;
 	
 	/**
 	 * period in u direction
@@ -44,12 +46,12 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 	private double vPeriod;
 
 	/**
-	 * offset in u direction
+	 * offset of the part centre within the unit cell in u direction
 	 */
 	private double uOffset;
 
 	/**
-	 * offset in v direction
+	 * offset of the part centre within the unit cell in v direction
 	 */
 	private double vOffset;
 	
@@ -68,11 +70,27 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 	// constructors etc.
 	//
 
-	public PhaseHologramOfRectangularLensletArray(
+	/**
+	 * This only works if the basis vectors uHat and vHat actually span the surface, i.e. they must be perpendicular to the surface normal at every point
+	 * @param centre
+	 * @param uHat	
+	 * @param vHat
+	 * @param focalPowerOverDeltaU
+	 * @param uPeriod
+	 * @param vPeriod
+	 * @param uOffset
+	 * @param vOffset
+	 * @param simulateDiffractiveBlur
+	 * @param lambda
+	 * @param throughputCoefficient
+	 * @param reflective
+	 * @param shadowThrowing
+	 */
+	public PhaseHologramOfRectangularAlvarezLensPartArray(
 			Vector3D centre,
 			Vector3D uHat,
 			Vector3D vHat,
-			double focalLength,
+			double focalPowerOverDeltaU,
 			double uPeriod,
 			double vPeriod,
 			double uOffset,
@@ -80,15 +98,14 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 			boolean simulateDiffractiveBlur,
 			double lambda,
 			double throughputCoefficient,
-			boolean reflective,
 			boolean shadowThrowing
 		)
 	{
-		super(throughputCoefficient, reflective, shadowThrowing);
+		super(throughputCoefficient, false, shadowThrowing);
 		this.centre = centre;
 		this.uHat = uHat;
 		this.vHat = vHat;
-		this.focalLength = focalLength;
+		this.focalPowerOverDeltaU = focalPowerOverDeltaU;
 		this.uPeriod = uPeriod;
 		this.vPeriod = vPeriod;
 		this.uOffset = uOffset;
@@ -100,13 +117,13 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 	/**
 	 * @param original
 	 */
-	public PhaseHologramOfRectangularLensletArray(PhaseHologramOfRectangularLensletArray original)
+	public PhaseHologramOfRectangularAlvarezLensPartArray(PhaseHologramOfRectangularAlvarezLensPartArray original)
 	{
 		this(
 				original.getCentre(),
 				original.getuHat(),
 				original.getvHat(),
-				original.getFocalLength(),
+				original.getFocalPowerOverDeltaU(),
 				original.getuPeriod(),
 				original.getvPeriod(),
 				original.getuOffset(),
@@ -114,15 +131,14 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 				original.isSimulateDiffractiveBlur(),
 				original.getLambda(),
 				original.getTransmissionCoefficient(),
-				original.isReflective(),
 				original.isShadowThrowing()
 			);
 	}
 	
 	@Override
-	public PhaseHologramOfRectangularLensletArray clone()
+	public PhaseHologramOfRectangularAlvarezLensPartArray clone()
 	{
-		return new PhaseHologramOfRectangularLensletArray(this);
+		return new PhaseHologramOfRectangularAlvarezLensPartArray(this);
 	}
 
 
@@ -151,15 +167,15 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 	}
 
 	public void setvHat(Vector3D vHat) {
-		this.vHat = vHat;
+		this.vHat = vHat.getNormalised();
 	}
 
-	public double getFocalLength() {
-		return focalLength;
+	public double getFocalPowerOverDeltaU() {
+		return focalPowerOverDeltaU;
 	}
 
-	public void setFocalLength(double focalLength) {
-		this.focalLength = focalLength;
+	public void setFocalPowerOverDeltaU(double focalPowerOverDeltaU) {
+		this.focalPowerOverDeltaU = focalPowerOverDeltaU;
 	}
 
 	public double getuPeriod() {
@@ -220,29 +236,38 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 		return uPeriod*Math.floor((u-uOffset)/uPeriod+0.5)+uOffset;
 	}
 	
-	public double lensHeight(double x, double y)
-	{
-		return
-				MyMath.square((x-uOffset)-uPeriod*Math.floor((x-uOffset)/uPeriod + 0.5)) + 
-				MyMath.square((y-vOffset)-vPeriod*Math.floor((y-vOffset)/vPeriod + 0.5));
-	}
+//	public double lensHeight(double x, double y)
+//	{
+//		return
+//				MyMath.square((x-uOffset)-uPeriod*Math.floor((x-uOffset)/uPeriod + 0.5)) + 
+//				MyMath.square((y-vOffset)-vPeriod*Math.floor((y-vOffset)/vPeriod + 0.5));
+//	}
 	
 	@Override
 	public Vector3D getTangentialDirectionComponentChangeTransmissive(Vector3D surfacePosition,
 			Vector3D surfaceNormal)
 	{	
 		// calculate the u and v coordinates of the position
-		Vector3D uBasisVector = uHat.getPartPerpendicularTo(surfaceNormal);	// .getNormalised();
-		Vector3D vBasisVector = vHat.getPartPerpendicularTo(surfaceNormal);	// Vector3D.crossProduct(surfaceNormal, uBasisVector).getNormalised();
+		// uHat, vHat and surfaceNormal must all be orthogonal to each other!!!
 		Vector3D r = Vector3D.difference(surfacePosition, centre);
-		Vector3D rUVN = r.toBasis(uBasisVector, vBasisVector, surfaceNormal);
-		double u = rUVN.x;	// Vector3D.scalarProduct(r, uBasisVector);
-		double v = rUVN.y;	// Vector3D.scalarProduct(r, vBasisVector);
 		
-		double xDerivative = (u-uOffset)-findLensletCentreCoordinate(u, uPeriod, uOffset);
-		double yDerivative = (v-vOffset)-findLensletCentreCoordinate(v, vPeriod, vOffset);
+		// the u and v coordinates on the surface...
+		double u = Vector3D.scalarProduct(r, uHat);
+		double v = Vector3D.scalarProduct(r, vHat);
 		
-		Vector3D newRayDirection = Vector3D.sum(uBasisVector.getProductWith(-xDerivative/focalLength), vBasisVector.getProductWith(-yDerivative/focalLength));
+		// ... and the "local" u and v coordinates of the current Lohmann lens part, which is centred at (uL, vL) = (0, 0)
+		// either shift the whole array...
+//		double uL = (u-uOffset)-findLensletCentreCoordinate(u, uPeriod, uOffset);
+//		double vL = (v-vOffset)-findLensletCentreCoordinate(v, vPeriod, vOffset);
+		// ... or shift the lens parts within the unit cell
+		double uL = u-findLensletCentreCoordinate(u, uPeriod, 0) - uOffset;
+		double vL = v-findLensletCentreCoordinate(v, vPeriod, 0) - vOffset;
+
+		// see PhaseHologramOfLohmannLensPart.getTangentialDirectionComponentChangeTransmissive
+		Vector3D newRayDirection = Vector3D.sum(
+				uHat.getProductWith(0.5*focalPowerOverDeltaU*(uL*uL+vL*vL)),
+				vHat.getProductWith(focalPowerOverDeltaU*uL*vL)
+			);
 		
 		if(simulateDiffractiveBlur)
 		{
@@ -250,8 +275,8 @@ public class PhaseHologramOfRectangularLensletArray extends PhaseHologram
 						lambda,
 						uPeriod,	// pixelSideLengthU
 						vPeriod,	// pixelSideLengthV
-						uBasisVector,	// uHat
-						vBasisVector	// vHat
+						uHat,	// uHat
+						vHat	// vHat
 					));
 		}
 		

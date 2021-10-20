@@ -13,6 +13,7 @@ import optics.raytrace.GUI.cameras.QualityType;
 import optics.raytrace.GUI.nonInteractive.PhotoCanvas;
 import optics.raytrace.GUI.nonInteractive.PhotoFrame;
 import optics.raytrace.GUI.sceneObjects.EditableRayTrajectory;
+import optics.raytrace.GUI.sceneObjects.ThinLensType;
 import optics.raytrace.GUI.sceneObjects.EditableLensStar;
 
 
@@ -26,7 +27,7 @@ public class LensStarPointLightSourceTrajectoryPlotter
 	public static final int NUMBER_OF_LENSES = 64;	// works only for multiples of four
 	public static final boolean SHOW_LENS_EDGES = true;
 	public static final int NUMBER_OF_RAYS = 30;
-	public static final double POINT_LIGHT_SOURCE_DISTANCE = .4;
+	public static final double POINT_LIGHT_SOURCE_DISTANCE = 1;
 
 	/**
 	 * Filename under which main saves the rendered image.
@@ -107,6 +108,8 @@ public class LensStarPointLightSourceTrajectoryPlotter
 				MyMath.HUGE,	// starRadius,
 				2,	// starLength,
 				0.7,	// lensTransmissionCoefficient
+				true,	// lensesShadowThrowing
+				ThinLensType.IDEAL_THIN_LENS,	// thinLensType
 				SHOW_LENS_EDGES,	// showEdges,
 				0.005,	// edgeRadius
 				SurfaceColour.GREY50_MATT,	// edgeSurfaceProperty
@@ -189,7 +192,7 @@ public class LensStarPointLightSourceTrajectoryPlotter
 				pixelsX,	// imagePixelsHorizontal
 				pixelsY,	// imagePixelsVertical
 				100,	// maxTraceLevel
-				QualityType.GOOD	// antiAliasingQuality	
+				QualityType.NORMAL	// antiAliasingQuality	
 			);
 
 		studio.setLights(LightSource.getStandardLightsFromBehind());

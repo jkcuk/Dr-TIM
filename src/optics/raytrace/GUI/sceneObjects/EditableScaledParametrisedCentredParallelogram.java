@@ -18,6 +18,7 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.sceneObjects.ScaledParametrisedCentredParallelogram;
+import optics.raytrace.surfaces.SurfaceColour;
 
 
 /**
@@ -71,6 +72,27 @@ implements Serializable, IPanelComponent
 		)
 	{
 		this(description, centre, spanVector1, spanVector2, 0, 1, 0, 1, surfaceProperty, parent, studio);
+	}
+
+	/**
+	 * @param parent
+	 * @param studio
+	 */
+	public EditableScaledParametrisedCentredParallelogram(
+			SceneObject parent, Studio studio
+		)
+	{
+		this(
+				"Parallelogram",	// description
+				new Vector3D(0, 0, 10),	// centre
+				new Vector3D(1, 0, 0),	// spanVector1
+				new Vector3D(0, 1, 0),	// spanVector2
+				0, 1,	// suMin, suMax
+				0, 1,	// svMin, svMax
+				SurfaceColour.GREEN_SHINY,	// surfaceProperty
+				parent,
+				studio
+			);
 	}
 
 	/**

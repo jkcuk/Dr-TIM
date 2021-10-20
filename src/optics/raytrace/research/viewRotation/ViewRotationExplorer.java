@@ -15,7 +15,7 @@ import optics.raytrace.surfaces.IdealThinCylindricalLensSurfaceSimple;
 import optics.raytrace.surfaces.IdealisedDovePrismArray;
 import optics.raytrace.surfaces.PhaseHologramOfCylindricalLens;
 import optics.raytrace.surfaces.PhaseHologramOfRadialLenticularArray;
-import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArraySimple;
+import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArray;
 import optics.raytrace.surfaces.RotationallySymmetricPhaseHologram;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
@@ -370,7 +370,7 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 							centre1,	// centre
 							Vector3D.Z,	// normal
 							1,	// radius
-							new PhaseHologramOfRectangularLensletArraySimple(
+							new PhaseHologramOfRectangularLensletArray(
 									centre1,
 									Vector3D.X,	// uHat
 									Vector3D.Y,	// vHat
@@ -398,7 +398,7 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 							centre2,	// centre
 							Vector3D.Z,	// normal
 							1,	// radius
-							new PhaseHologramOfRectangularLensletArraySimple(
+							new PhaseHologramOfRectangularLensletArray(
 									centre2,
 									Vector3D.sum(
 											Vector3D.X.getProductWith(Math.cos(MyMath.deg2rad(mmDeltaPhiDeg))),

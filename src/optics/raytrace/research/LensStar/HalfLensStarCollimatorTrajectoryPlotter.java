@@ -13,6 +13,7 @@ import optics.raytrace.GUI.cameras.QualityType;
 import optics.raytrace.GUI.nonInteractive.PhotoCanvas;
 import optics.raytrace.GUI.nonInteractive.PhotoFrame;
 import optics.raytrace.GUI.sceneObjects.EditableRayTrajectory;
+import optics.raytrace.GUI.sceneObjects.ThinLensType;
 import optics.raytrace.GUI.sceneObjects.EditableLensStar;
 
 
@@ -25,9 +26,13 @@ import optics.raytrace.GUI.sceneObjects.EditableLensStar;
  */
 public class HalfLensStarCollimatorTrajectoryPlotter
 {
-	public static final int NUMBER_OF_LENSES = 60;	// works only for multiples of four
+	public static final int NUMBER_OF_LENSES_IN_QUARTER_LENS_STAR = 5;
 	public static final boolean SHOW_LENS_EDGES = true;
 	public static final int NUMBER_OF_RAYS = 30;
+	public static final ThinLensType THIN_LENS_TYPE = 
+			// ThinLensType.IDEAL_THIN_LENS;
+			ThinLensType.LENS_HOLOGRAM;
+	public static final Vector3D DESIGNED_FOR_OBJECT_POSITION = new Vector3D(0, 0, 1.2);	// ray trajectories start at (0, 0, 1)
 
 	/**
 	 * Filename under which main saves the rendered image.
@@ -37,9 +42,11 @@ public class HalfLensStarCollimatorTrajectoryPlotter
 	public static String getFilename()
 	{
 		return "HalfLensStarCollimatorTrajectory"	// the name
-			+ " number of lenses "+NUMBER_OF_LENSES
+			+ " number of lenses in quarter lens-star "+NUMBER_OF_LENSES_IN_QUARTER_LENS_STAR
 			+ " lens edges " + (SHOW_LENS_EDGES?"on":"off")
 			+ " number of rays "+NUMBER_OF_RAYS
+			+ " " + THIN_LENS_TYPE.toString()
+			+ ((THIN_LENS_TYPE == ThinLensType.LENS_HOLOGRAM)?(" obj. pos. "+DESIGNED_FOR_OBJECT_POSITION):"")
 		    +".bmp";	// the extension
 	}
 	
@@ -61,7 +68,7 @@ public class HalfLensStarCollimatorTrajectoryPlotter
 				direction,	// initial direction
 				0.02,	// radius
 				new SurfaceColourLightSourceIndependent(colour, true),
-				2*NUMBER_OF_LENSES,	// max trace level
+				8*NUMBER_OF_LENSES_IN_QUARTER_LENS_STAR,	// max trace level
 				false,	// reportToConsole
 				scene,
 				studio
@@ -86,35 +93,68 @@ public class HalfLensStarCollimatorTrajectoryPlotter
 		// scene.addSceneObject(SceneObjectClass.getChequerboardFloor(scene, studio));
 				
 		// add any other scene objects
-		
-		// the lens star
-		double azimuthalAngleOfLens1 = (Math.floorMod(NUMBER_OF_LENSES,2)==1)?0:Math.PI/NUMBER_OF_LENSES;
-		EditableLensStar lensStar = new EditableLensStar(
-				"Half lens star",	// description
-				NUMBER_OF_LENSES,	// numberOfLenses
+				
+		// one half of the half lens star
+		double azimuthalAngleOfLens1 = Math.PI/(4*NUMBER_OF_LENSES_IN_QUARTER_LENS_STAR);
+		EditableLensStar lensStar1 = new EditableLensStar(
+				"First quarter lens star",	// description
+				4*NUMBER_OF_LENSES_IN_QUARTER_LENS_STAR,	// numberOfLenses
 				false,	// show all lenses
-				NUMBER_OF_LENSES / 2,	// number of shown lenses; -1 for all
-				NUMBER_OF_LENSES / 4,	// start index of shown lenses
+				NUMBER_OF_LENSES_IN_QUARTER_LENS_STAR,	// number of shown lenses; -1 for all
+				0,	// start index of shown lenses
 				EditableLensStar.getFocalLengthForRadiusOfRegularPolygonTrajectory(
-						NUMBER_OF_LENSES,	// numberOfLenses
+						4*NUMBER_OF_LENSES_IN_QUARTER_LENS_STAR,	// numberOfLenses
 						1	// radiusOfRegularPolygonTrajectory
 					),	// focalLength
 				0,	// principalPointDistance
 				new Vector3D(0, 0, 0),	// centre
 				new Vector3D(0, 1, 0),	// intersectionDirection
-				new Vector3D(-Math.sin(azimuthalAngleOfLens1), 0, -Math.cos(azimuthalAngleOfLens1)),	// pointOnLens1
+				new Vector3D(Math.sin(azimuthalAngleOfLens1), 0, Math.cos(azimuthalAngleOfLens1)),	// pointOnLens1
 				// (Math.floorMod(NUMBER_OF_LENSES,2)==1)?new Vector3D(0,0,-1):new Vector3D(1, 0, 0),	// pointOnLens1
 				MyMath.HUGE,	// starRadius,
 				2,	// starLength,
 				0.7,	// lensTransmissionCoefficient
+				true,	// lensesShadowThrowing
+				THIN_LENS_TYPE,	// thinLensType
+				DESIGNED_FOR_OBJECT_POSITION,	// designPosition = start point of the trajectories
 				SHOW_LENS_EDGES,	// showEdges,
 				0.005,	// edgeRadius
 				SurfaceColour.GREY50_MATT,	// edgeSurfaceProperty
 				scene,	// parent,
 				studio
 			);
-		scene.addSceneObject(lensStar);
-		
+		scene.addSceneObject(lensStar1);
+
+		// the other half of the half lens star
+		EditableLensStar lensStar2 = new EditableLensStar(
+				"Second quarter lens star",	// description
+				4*NUMBER_OF_LENSES_IN_QUARTER_LENS_STAR,	// numberOfLenses
+				false,	// show all lenses
+				NUMBER_OF_LENSES_IN_QUARTER_LENS_STAR,	// number of shown lenses; -1 for all
+				0,	// start index of shown lenses
+				EditableLensStar.getFocalLengthForRadiusOfRegularPolygonTrajectory(
+						4*NUMBER_OF_LENSES_IN_QUARTER_LENS_STAR,	// numberOfLenses
+						1	// radiusOfRegularPolygonTrajectory
+					),	// focalLength
+				0,	// principalPointDistance
+				new Vector3D(0, 0, 0),	// centre
+				new Vector3D(0, -1, 0),	// intersectionDirection
+				new Vector3D(Math.sin(-azimuthalAngleOfLens1), 0, Math.cos(-azimuthalAngleOfLens1)),	// pointOnLens1
+				// (Math.floorMod(NUMBER_OF_LENSES,2)==1)?new Vector3D(0,0,-1):new Vector3D(1, 0, 0),	// pointOnLens1
+				MyMath.HUGE,	// starRadius,
+				2,	// starLength,
+				0.7,	// lensTransmissionCoefficient
+				true,	// lensesShadowThrowing
+				THIN_LENS_TYPE,	// thinLensType
+				DESIGNED_FOR_OBJECT_POSITION,	// designPosition = start point of the trajectories
+				SHOW_LENS_EDGES,	// showEdges,
+				0.005,	// edgeRadius
+				SurfaceColour.GREY50_MATT,	// edgeSurfaceProperty
+				scene,	// parent,
+				studio
+			);
+		scene.addSceneObject(lensStar2);
+
 		// a bunch of trajectories
 		for(int i=0; i<NUMBER_OF_RAYS; i++)
 		{
@@ -135,8 +175,8 @@ public class HalfLensStarCollimatorTrajectoryPlotter
 		// scene.removeSceneObject(starOfLenses);
 		
 		// make the lenses effectively plane bits of glass
-		lensStar.setFocalLength(MyMath.HUGE);
-		lensStar.populateSceneObjectCollection();
+		// lensStar.setFocalLength(MyMath.HUGE);
+		// lensStar.populateSceneObjectCollection();
 
 
 		// define the camera
@@ -189,7 +229,7 @@ public class HalfLensStarCollimatorTrajectoryPlotter
 				pixelsX,	// imagePixelsHorizontal
 				pixelsY,	// imagePixelsVertical
 				100,	// maxTraceLevel
-				QualityType.GOOD	// antiAliasingQuality	
+				QualityType.GREAT	// antiAliasingQuality	
 			);
 
 		studio.setLights(LightSource.getStandardLightsFromBehind());

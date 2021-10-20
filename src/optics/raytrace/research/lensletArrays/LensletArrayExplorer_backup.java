@@ -7,6 +7,7 @@ import javax.swing.JTabbedPane;
 
 import math.*;
 import net.miginfocom.swing.MigLayout;
+import optics.raytrace.sceneObjects.LensType;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
@@ -204,6 +205,7 @@ public class LensletArrayExplorer_backup extends NonInteractiveTIMEngine
 				pitch1,	// yPeriod
 				0,	// xOffset
 				0,	// yOffset
+				LensType.IDEAL_THIN_LENS,
 				0.96,	// throughputCoefficient
 				false,	// reflective
 				true,	// shadowThrowing
@@ -230,6 +232,7 @@ public class LensletArrayExplorer_backup extends NonInteractiveTIMEngine
 				pitch2,	// yPeriod
 				0,	// xOffset
 				0,	// yOffset
+				LensType.IDEAL_THIN_LENS,
 				0.96,	// throughputCoefficient
 				false,	// reflective
 				true,	// shadowThrowing

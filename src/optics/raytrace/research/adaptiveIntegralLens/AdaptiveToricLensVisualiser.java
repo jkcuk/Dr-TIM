@@ -15,7 +15,7 @@ import optics.raytrace.sceneObjects.ParametrisedDisc.DiscParametrisationType;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.PhaseHologramOfCrossedLinearPowerLenticularArrays;
 import optics.raytrace.surfaces.PhaseHologramOfLens;
-import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArraySimple;
+import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArray;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
@@ -290,7 +290,7 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 				);
 			Vector3D xUVZ = Vector3D.X.toBasis(uHat, vHat, Vector3D.Z);
 			Vector3D yUVZ = Vector3D.Y.toBasis(uHat, vHat, Vector3D.Z);
-			component1SurfaceProperty = new PhaseHologramOfRectangularLensletArraySimple(
+			component1SurfaceProperty = new PhaseHologramOfRectangularLensletArray(
 					component1Centre,	// centre
 					Vector3D.sum(uHat.getProductWith(xUVZ.x*stretchFactorU), vHat.getProductWith(xUVZ.y*stretchFactorV)),	// uHat
 					Vector3D.sum(uHat.getProductWith(yUVZ.x*stretchFactorU), vHat.getProductWith(yUVZ.y*stretchFactorV)),	// vHat
@@ -309,7 +309,7 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 					centre,
 					new Vector3D(0, 0, +0.5*distanceBetweenComponents)
 				);
-			component2SurfaceProperty = new PhaseHologramOfRectangularLensletArraySimple(
+			component2SurfaceProperty = new PhaseHologramOfRectangularLensletArray(
 					component2Centre,	// centre
 					rotatedX,	// uHat
 					rotatedY,	// vHat

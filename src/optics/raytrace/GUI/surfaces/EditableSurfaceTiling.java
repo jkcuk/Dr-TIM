@@ -72,7 +72,7 @@ public class EditableSurfaceTiling extends SurfaceTiling implements IPanelCompon
 		surfacePropertyPanel1.setIPanel(iPanel);
 
 		surfacePropertyPanel2 = new SurfacePropertyPanel(getScene());
-		surfacePropertyPanel1.addButtonsActionListener(new SurfacePropertyPanelListener(surfacePropertyPanel2));
+		surfacePropertyPanel2.addButtonsActionListener(new SurfacePropertyPanelListener(surfacePropertyPanel2));
 		surfacePropertyPanel2.setBorder(GUIBitsAndBobs.getTitledBorder("Tile type 2"));
 		editPanel.add(surfacePropertyPanel2);
 		surfacePropertyPanel2.setIPanel(iPanel);

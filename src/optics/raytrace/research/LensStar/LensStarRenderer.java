@@ -19,6 +19,7 @@ import optics.raytrace.GUI.nonInteractive.PhotoFrame;
 import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
 import optics.raytrace.GUI.sceneObjects.EditableLensStar;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedSphere;
+import optics.raytrace.GUI.sceneObjects.ThinLensType;
 
 
 /**
@@ -42,6 +43,7 @@ public class LensStarRenderer
 	
 	public static final int NUMBER_OF_LENSES = 5;
 	public static final boolean SHOW_LENS_EDGES = true;
+	public static final boolean LENSES_SHADOW_THROWING = false;
 	public static final boolean SHOW_SPHERE = true;
 	public static final double SPHERE_DISTANCE = 1;
 	public static final LensStarRendererCameraPositionType
@@ -61,6 +63,7 @@ public class LensStarRenderer
 		return "LensStar"	// the name
 			+ " number of lenses "+NUMBER_OF_LENSES
 			+ " lens edges " + (SHOW_LENS_EDGES?"on":"off")
+			+ " lenses shadow throwing "+LENSES_SHADOW_THROWING
 			+ (SHOW_SPHERE?" sphere distance "+SPHERE_DISTANCE:"")
 			+ " ("+CAMERA_POSITION.getDescription()+")"
 			+ (TEST?" (test)":"")
@@ -87,7 +90,7 @@ public class LensStarRenderer
 		scene.addSceneObject(SceneObjectClass.getLighterChequerboardFloor(-starLength/2 - edgeRadius, scene, studio));
 				
 		// add any other scene objects
-		
+				
 		// the lens star
 		EditableLensStar lensStar = new EditableLensStar(
 				"Lens star",	// description
@@ -107,9 +110,11 @@ public class LensStarRenderer
 				1.5,	// starRadius,
 				starLength,	// starLength,
 				0.99,	// lensTransmissionCoefficient
+				LENSES_SHADOW_THROWING,	// lensesShadowThrowing
+				ThinLensType.IDEAL_THIN_LENS,	// thinLensType
 				SHOW_LENS_EDGES,	// showEdges,
 				edgeRadius,	// edgeRadius
-				SurfaceColour.GREY50_MATT,	// edgeSurfaceProperty
+				new SurfaceColour(DoubleColour.GREY50, DoubleColour.BLACK, LENSES_SHADOW_THROWING),	// edgeSurfaceProperty
 				scene,	// parent,
 				studio
 			);
@@ -121,7 +126,7 @@ public class LensStarRenderer
 					"Simulated point light source",	// description,
 					new Vector3D(0, 0, SPHERE_DISTANCE),	// centre,
 					0.05,	// radius,
-					SurfaceColour.RED_SHINY,	// surfaceProperty,
+					new SurfaceColour(DoubleColour.RED, DoubleColour.WHITE, LENSES_SHADOW_THROWING),	// surfaceProperty,
 					scene,	// parent, 
 					studio
 				));
@@ -203,7 +208,7 @@ public class LensStarRenderer
 				new Vector3D(0, 0, 0),	// beta
 				pixelsX, pixelsY,	// logical number of pixels
 				ExposureCompensationType.EC0,	// exposure compensation +0
-				20,	// maxTraceLevel
+				100,	// maxTraceLevel
 				focusScene,
 				null,	// cameraFrameScene,
 				apertureSize,	// aperture size

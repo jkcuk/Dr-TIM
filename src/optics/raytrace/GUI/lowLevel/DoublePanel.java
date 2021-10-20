@@ -68,7 +68,7 @@ public class DoublePanel extends JTextField implements KeyListener, ActionListen
 //		setText(format.format(number));
 //		setText(String.format(numberFormat, number));
 		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMaximumFractionDigits(10);
+		nf.setMaximumFractionDigits(8);
 		setText(nf.format(number));
 		parsable = true;
 		fireChangeEvent();

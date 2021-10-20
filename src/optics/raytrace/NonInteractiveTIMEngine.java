@@ -684,6 +684,18 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 //	protected PhotoCanvas photoCanvas;
 	protected RaytracingImageCanvas raytracingImageCanvas;
 	
+    /**
+	 * when the user clicks on the image, a ray is traced backwards from the camera in the direction of the click position;
+	 * this method returns the first intersection between the ray and the scene for the last click
+	 * 
+     * @return the closest intersection with the scene along the line of sight in which the click position is seen
+     */
+	public RaySceneObjectIntersection getLastClickIntersection()
+	{
+		if(raytracingImageCanvas != null) return raytracingImageCanvas.getLastClickIntersection();
+		else return null;
+	}
+	
 	/**
 	 * the control panel (interactive only)
 	 */

@@ -70,6 +70,7 @@ public class MyMath
 	}
 	
 	/**
+	 * basically a Heaviside step function
 	 * @param d
 	 * @return	signum(d) if d != 0, otherwise 1
 	 */

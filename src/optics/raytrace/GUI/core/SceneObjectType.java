@@ -26,9 +26,9 @@ import optics.raytrace.GUI.sceneObjects.EditableGCLAsTardisWindow;
 import optics.raytrace.GUI.sceneObjects.EditableGGRINLens;
 import optics.raytrace.GUI.sceneObjects.EditableGlens;
 import optics.raytrace.GUI.sceneObjects.EditableHomogeneousPlanarImagingSurfaceSimplicialComplex;
-import optics.raytrace.GUI.sceneObjects.EditableIdealLensCloak;
 import optics.raytrace.GUI.sceneObjects.EditableLensSimplicialComplex;
 import optics.raytrace.GUI.sceneObjects.EditableLensStar;
+import optics.raytrace.GUI.sceneObjects.EditableLensletArrayForGaborSupererLens;
 import optics.raytrace.GUI.sceneObjects.EditableLuneburgLens;
 import optics.raytrace.GUI.sceneObjects.EditableLuneburgLensMetric;
 import optics.raytrace.GUI.sceneObjects.EditableMaxwellFisheyeLens;
@@ -119,7 +119,8 @@ public enum SceneObjectType
 	// LENS("Lens"),
 	LENS_STAR("Lens star"),
 	LENS_TO_SIMPLICIAL_COMPLEX("Lens TO simplicial complex"),
-	LENSLET_ARRAY_HOLOGRAM("Lenslet-array hologram"),
+	LENSLET_ARRAY("Lenslet array"),
+	LENSLET_ARRAY_FOR_GABOR_SUPERER_LENS("Lenslet array for Gabor super-er lens"),
 	LUNEBURG_LENS("Luneburg lens"),
 	LUNEBURG_LENS_METRIC("Luneburg lens (metric)"),
 	MAXWELL_FISHEYE_LENS("Maxwell fisheye lens"),
@@ -396,8 +397,10 @@ public enum SceneObjectType
 					parent,	// parent
 					studio
 				));
-		case LENSLET_ARRAY_HOLOGRAM:
+		case LENSLET_ARRAY:
 			return new EditableRectangularLensletArray(parent, studio);
+		case LENSLET_ARRAY_FOR_GABOR_SUPERER_LENS:
+			return new EditableLensletArrayForGaborSupererLens(parent, studio);
 		case LUNEBURG_LENS:
 			return(new EditableLuneburgLens(
 					"Luneburg lens",	// description

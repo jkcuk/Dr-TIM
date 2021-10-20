@@ -124,8 +124,9 @@ public class PlatonicLensTrajectoryPlotter
 				platonicSolid,
 				1.0/getScaleFactor(PLATONIC_SOLID_TYPE),	// focalLength
 				0.7,	// lensTransmissionCoefficient
+				false,	// lensShadowThrowing
 				false,	// showPlatonicSolid
-				false,	// showPyramidalCaps
+				// false,	// showPyramidalCaps
 				false,	// showLensEdges
 				scene,	// parent,
 				studio

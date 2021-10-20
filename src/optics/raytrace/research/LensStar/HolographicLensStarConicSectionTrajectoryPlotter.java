@@ -24,24 +24,32 @@ import optics.raytrace.GUI.sceneObjects.EditableLensStar;
  * 
  * @author Johannes Courtial
  */
-public class LensStarConicSectionTrajectoryPlotter
+public class HolographicLensStarConicSectionTrajectoryPlotter
 {
-	public static final boolean SHOW_CIRCLE_TRAJECTORY = true;
-	public static final boolean SHOW_ELLIPTIC_TRAJECTORY = true;
+	public static final boolean SHOW_CIRCLE_TRAJECTORY = false;
+	public static final boolean SHOW_ELLIPTIC_TRAJECTORY = false;
 	public static final boolean SHOW_PARABOLIC_TRAJECTORY = true;
-	public static final boolean SHOW_HYPERBOLIC_TRAJECTORY = true;
+	public static final boolean SHOW_HYPERBOLIC_TRAJECTORY = false;
 
-	// Lens star 1 / 2
-	public static final int[] NUMBER_OF_LENSES = {5, 499};
-	public static final boolean[] SHOW_LENS_EDGES = {true, false};
-	public static final ThinLensType THIN_LENS_TYPE = ThinLensType.IDEAL_THIN_LENS;
-	public static final Vector3D DESIGNED_FOR_OBJECT_POSITION = new Vector3D(0, 0, 1);	// ray trajectories start at (0, 0, 1)
-	public static final boolean[] STRIPED_TRAJECTORIES = {true, false};
-	public static final boolean[] SHOW_TRAJECTORIES = {true, true};
+	// trajectories
+	public static final Vector3D[] TRAJECTORY_START_POSITION = {new Vector3D(0, 0, 1), new Vector3D(0, 0, 1.5)};
+	public static final boolean[] STRIPED_TRAJECTORIES = {true, false};	// {true, false};
+	public static final boolean[] SHOW_TRAJECTORIES = {true, true};	// {true, true};
+
+	// Lens star
+	public static final int NUMBER_OF_LENSES = 32;
+	public static final boolean SHOW_LENS_EDGES = true;
+	public static final ThinLensType THIN_LENS_TYPE =
+			ThinLensType.IDEAL_THIN_LENS;
+//			ThinLensType.LENS_HOLOGRAM;
+	public static final Vector3D DESIGNED_FOR_OBJECT_POSITION = 
+ 			null;
+//			TRAJECTORY_START_POSITION[0];
 	
 	// camera
-	public static final double IMAGE_WIDTH = 10;
-	public static final double IMAGE_SHIFT_V = 2;
+	public static final double IMAGE_WIDTH = 12;
+	public static final double IMAGE_SHIFT_V = 0;	// 2;
+	public static final QualityType ANTI_ALIASING_QUALITY = QualityType.GREAT;
 
 	/**
 	 * Filename under which main saves the rendered image.
@@ -51,23 +59,27 @@ public class LensStarConicSectionTrajectoryPlotter
 	public static String getFilename()
 	{
 		String name = 
-				"LensStarTrajectory "	// the name
+				"HolographicLensStarConicSectionTrajectoryPlotter "	// the name
 			+ (SHOW_CIRCLE_TRAJECTORY?"C":"")
 			+ (SHOW_ELLIPTIC_TRAJECTORY?"E":"")
 			+ (SHOW_PARABOLIC_TRAJECTORY?"P":"")
 			+ (SHOW_HYPERBOLIC_TRAJECTORY?"H":"")
-			+ (SHOW_TRAJECTORIES[0]?" #L="+NUMBER_OF_LENSES[0] + " E=" + (SHOW_LENS_EDGES[0]?"on":"off"):"")
-			+ (SHOW_TRAJECTORIES[1]?" #L="+NUMBER_OF_LENSES[1] + " E=" + (SHOW_LENS_EDGES[1]?"on":"off"):"")
+			+ " #L="+NUMBER_OF_LENSES
+			+ " E=" + (SHOW_LENS_EDGES?"on":"off")
+			+ (SHOW_TRAJECTORIES[0]?" S="+TRAJECTORY_START_POSITION[0] + " S=" + STRIPED_TRAJECTORIES[0]:"")
+			+ (SHOW_TRAJECTORIES[1]?" S="+TRAJECTORY_START_POSITION[1] + " S=" + STRIPED_TRAJECTORIES[1]:"")
 			+ " w="+IMAGE_WIDTH
 			+ " sv="+IMAGE_SHIFT_V
 			+ " " + THIN_LENS_TYPE.toString()
 			+ ((THIN_LENS_TYPE == ThinLensType.LENS_HOLOGRAM)?(" obj. pos. "+DESIGNED_FOR_OBJECT_POSITION):"")
+			+ " Q="+ANTI_ALIASING_QUALITY
 		    +".bmp";	// the extension
 		return name;
 	}
 	
 	private static void addTrajectory(
 			String name,
+			Vector3D trajectoryStartPosition,
 			double initialAngleWithCircularTrajectory,
 			DoubleColour colour,
 			boolean striped,
@@ -81,12 +93,19 @@ public class LensStarConicSectionTrajectoryPlotter
 		Vector3D direction = new Vector3D(Math.cos(initialAngleWithCircularTrajectory), 0, Math.sin(initialAngleWithCircularTrajectory));
 		
 		SurfaceColourLightSourceIndependent c = new SurfaceColourLightSourceIndependent(colour, true);
-		SurfaceProperty s = (striped?new Striped(c, SurfaceColourLightSourceIndependent.WHITE, .04*IMAGE_WIDTH/10.):c);
+		SurfaceProperty s = (striped?
+				new Striped(
+						c,
+						SurfaceColourLightSourceIndependent.WHITE,
+						2*radius // .04*IMAGE_WIDTH/10.
+					):
+				c
+			);
 		
 		// a ray trajectory in the positive direction...
 		scene.addSceneObject(new EditableRayTrajectory(
 				name + " positive direction",
-				new Vector3D(0, 0, 1),	// start point
+				trajectoryStartPosition,	// start point
 				0,	// start time
 				direction,	// initial direction
 				radius,	// radius
@@ -102,7 +121,7 @@ public class LensStarConicSectionTrajectoryPlotter
 		// ... and one in the negative direction
 		scene.addSceneObject(new EditableRayTrajectory(
 				name + " negative direction",
-				new Vector3D(0, 0, 1),	// start point
+				trajectoryStartPosition,	// start point
 				0,	// start time
 				direction.getReverse(),	// initial direction
 				radius,	// radius
@@ -115,20 +134,21 @@ public class LensStarConicSectionTrajectoryPlotter
 				);
 	}
 	
-	private static void addTrajectories(boolean striped, int numberOfLenses, SceneObjectContainer scene, Studio studio)
+	private static void addTrajectories(int index, SceneObjectContainer scene, Studio studio)
 	{
-		double radius = 0.025*IMAGE_WIDTH/10.;
+		double radius = 0.015*IMAGE_WIDTH/10.;
 		
 		// circular trajectory
 		if(SHOW_CIRCLE_TRAJECTORY)
 		addTrajectory(
 				"circle",	// name
-				0,	// initial direction
+				TRAJECTORY_START_POSITION[index],	// trajectoryStartPosition
+				180,	// initial direction
 				new DoubleColour(0, 0, 1),	// colour
-				striped,
+				STRIPED_TRAJECTORIES[index],
 				radius,
 				false,	// alsoLauchInOppositeDirection
-				2*numberOfLenses,
+				8*NUMBER_OF_LENSES,
 				scene,
 				studio
 			);
@@ -137,12 +157,13 @@ public class LensStarConicSectionTrajectoryPlotter
 		if(SHOW_ELLIPTIC_TRAJECTORY)
 		addTrajectory(
 				"elliptic",	// name
-				MyMath.deg2rad(0.5*45),	// initial direction
+				TRAJECTORY_START_POSITION[index],	// trajectoryStartPosition
+				MyMath.deg2rad(180+0.5*45),	// initial direction
 				new DoubleColour(0.33, 0, 0.66),	// colour
-				striped,
+				STRIPED_TRAJECTORIES[index],
 				radius,
 				false,	// alsoLauchInOppositeDirection
-				2*numberOfLenses,
+				4*NUMBER_OF_LENSES,
 				scene,
 				studio
 			);
@@ -151,12 +172,13 @@ public class LensStarConicSectionTrajectoryPlotter
 		if(SHOW_PARABOLIC_TRAJECTORY)
 		addTrajectory(
 				"parabola",	// name
-				MyMath.deg2rad(45),	// initial direction
+				TRAJECTORY_START_POSITION[index],	// trajectoryStartPosition
+				MyMath.deg2rad(180+45.1),	// initial direction; 45.1 to err on the side of a hyperbola
 				new DoubleColour(0.66, 0, 0.33),	// colour
-				striped,
+				STRIPED_TRAJECTORIES[index],
 				radius,
-				true,	// alsoLauchInOppositeDirection
-				2*numberOfLenses,
+				false,	// alsoLauchInOppositeDirection
+				4*NUMBER_OF_LENSES,
 				scene,
 				studio
 			);
@@ -165,12 +187,13 @@ public class LensStarConicSectionTrajectoryPlotter
 		if(SHOW_HYPERBOLIC_TRAJECTORY)
 		addTrajectory(
 				"hyperbola",	// name
-				MyMath.deg2rad(1.5*45),	// initial direction
+				TRAJECTORY_START_POSITION[index],	// trajectoryStartPosition
+				MyMath.deg2rad(180+1.5*45),	// initial direction
 				new DoubleColour(1, 0, 0),	// colour
-				striped,
+				STRIPED_TRAJECTORIES[index],
 				radius,
-				true,	// alsoLauchInOppositeDirection
-				2*numberOfLenses,
+				false,	// alsoLauchInOppositeDirection
+				2*NUMBER_OF_LENSES,
 				scene,
 				studio
 			);
@@ -239,18 +262,18 @@ public class LensStarConicSectionTrajectoryPlotter
 		// create a space where all the trajectories go
 		SceneObjectContainer trajectories = new SceneObjectContainer("ray trajectories", scene, studio); ;
 		
+		// add the lens star, without the edges
+		EditableLensStar lensStar = getLensStar(NUMBER_OF_LENSES, false, scene, studio);
+		scene.addSceneObject(lensStar);
+
 		for(int i=0; i<SHOW_TRAJECTORIES.length; i++)
 		{
 			// create the trajectories for lens star i		
 			if(SHOW_TRAJECTORIES[i])
 			{
-				// add the lens star, without the edges
-				EditableLensStar lensStar = getLensStar(NUMBER_OF_LENSES[i], false, scene, studio);
-				scene.addSceneObject(lensStar);
-
 				// set the trajectory starting points
 				SceneObjectContainer trajectoriesOfCurrentLensStar = new SceneObjectContainer("ray trajectories for lens star "+i, trajectories, studio); 
-				addTrajectories(STRIPED_TRAJECTORIES[i], NUMBER_OF_LENSES[i], trajectoriesOfCurrentLensStar, studio);
+				addTrajectories(i, trajectoriesOfCurrentLensStar, studio);
 				scene.addSceneObject(trajectoriesOfCurrentLensStar);
 
 				// trace the rays with trajectory through the lens star
@@ -258,22 +281,18 @@ public class LensStarConicSectionTrajectoryPlotter
 				
 				// add the trajectories of the current lens star to the trajectories
 				trajectories.addSceneObject(trajectoriesOfCurrentLensStar);
-
-				// remove the lens star and the previously calculated trajectories so that ray tracing through the second lens star works okay
-				scene.removeSceneObject(lensStar);
 				scene.removeSceneObject(trajectoriesOfCurrentLensStar);
 			}
 		}
 
+		// remove the lens star and the previously calculated trajectories so that ray tracing through the second lens star works okay
+		scene.removeSceneObject(lensStar);
+
 		scene.addSceneObject(trajectories);
 		
-		// add the lens star edges again
-		for(int i=0; i<SHOW_TRAJECTORIES.length; i++)
-		{
-			// add the lens star
-			EditableLensStar lensStar = getLensStar(NUMBER_OF_LENSES[i], SHOW_LENS_EDGES[i], scene, studio);
-			scene.addSceneObject(lensStar);
-		}
+		// add the lens star
+		lensStar = getLensStar(NUMBER_OF_LENSES, SHOW_LENS_EDGES, scene, studio);
+		scene.addSceneObject(lensStar);
 
 
 		// define the camera
@@ -324,7 +343,7 @@ public class LensStarConicSectionTrajectoryPlotter
 				pixelsX,	// imagePixelsHorizontal
 				pixelsY,	// imagePixelsVertical
 				100,	// maxTraceLevel
-				QualityType.NORMAL	// antiAliasingQuality	
+				ANTI_ALIASING_QUALITY	// antiAliasingQuality	
 			);
 
 		studio.setLights(LightSource.getStandardLightsFromBehind());

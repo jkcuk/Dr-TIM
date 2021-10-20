@@ -73,16 +73,6 @@ public class EditablePlatonicSolid extends EditableSceneObjectCollection impleme
 	private EditableSceneObjectCollection vertices, edges, faces;
 
 
-	// GUI panels
-	private JComboBox<PlatonicSolidType> platonicSolidComboBox;
-	private LabelledDoublePanel radiusPanel, vertexRadiusPanel, edgeRadiusPanel;
-	private LabelledVector3DPanel centrePanel;
-	private JButton convertButton;
-	private JCheckBox showVerticesCheckBox, showEdgesCheckBox, showFacesCheckBox;
-	private SurfacePropertyPanel
-		// vertexSurfacePropertyPanel, edgeSurfacePropertyPanel, 
-		faceSurfacePropertyPanel;
-	
 	/**
 	 * @param description
 	 * @param platonicSolid
@@ -470,6 +460,22 @@ public class EditablePlatonicSolid extends EditableSceneObjectCollection impleme
 		addSceneObject(edges, showEdges);
 		addSceneObject(faces, showFaces);
 	}
+	
+	
+	
+	
+	// GUI panels
+	private JComboBox<PlatonicSolidType> platonicSolidComboBox;
+	private LabelledDoublePanel radiusPanel, vertexRadiusPanel, edgeRadiusPanel;
+	private LabelledVector3DPanel centrePanel;
+	private JButton convertButton;
+	private JCheckBox showVerticesCheckBox, showEdgesCheckBox, showFacesCheckBox;
+	private SurfacePropertyPanel
+		vertexSurfacePropertyPanel, 
+		edgeSurfacePropertyPanel, 
+		faceSurfacePropertyPanel,
+		beingEdited;
+	
 
 	/**
 	 * initialise the edit panel
@@ -518,12 +524,6 @@ public class EditablePlatonicSolid extends EditableSceneObjectCollection impleme
 		showVerticesCheckBox = new JCheckBox("Show vertices");
 		basicParametersPanel.add(showVerticesCheckBox, "wrap");
 
-		showEdgesCheckBox = new JCheckBox("Show edges");
-		basicParametersPanel.add(showEdgesCheckBox, "wrap");
-
-		showFacesCheckBox = new JCheckBox("Show faces");
-		basicParametersPanel.add(showFacesCheckBox, "wrap");
-		
 //		tabbedPane.addTab("Basic parameters", basicParametersPanel);
 
 		
@@ -537,10 +537,12 @@ public class EditablePlatonicSolid extends EditableSceneObjectCollection impleme
 		vertexRadiusPanel = new LabelledDoublePanel("Vertex radius");
 		basicParametersPanel.add(vertexRadiusPanel, "wrap");
 
-//		vertexSurfacePropertyPanel = new SurfacePropertyPanel(getStudio().getScene());
-//		// frameSurfacePropertyPanel.addButtonsActionListener(new SurfacePropertyPanelListener(frameSurfacePropertyPanel));
-//		vertexPanel.add(vertexSurfacePropertyPanel, "wrap");
-//		vertexSurfacePropertyPanel.setIPanel(iPanel);
+		vertexSurfacePropertyPanel = new SurfacePropertyPanel(getStudio().getScene());
+		// frameSurfacePropertyPanel.addButtonsActionListener(new SurfacePropertyPanelListener(frameSurfacePropertyPanel));
+		vertexSurfacePropertyPanel.addButtonsActionListener(new SurfacePropertyPanelListener(vertexSurfacePropertyPanel));
+		vertexSurfacePropertyPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Vertex surface property"));
+		basicParametersPanel.add(vertexSurfacePropertyPanel, "wrap");
+		vertexSurfacePropertyPanel.setIPanel(iPanel);
 
 //		tabbedPane.addTab("Vertex parameters", vertexPanel);
 		
@@ -552,13 +554,18 @@ public class EditablePlatonicSolid extends EditableSceneObjectCollection impleme
 //		JPanel edgePanel = new JPanel();
 //		edgePanel.setLayout(new MigLayout("insets 0"));
 		
+		showEdgesCheckBox = new JCheckBox("Show edges");
+		basicParametersPanel.add(showEdgesCheckBox, "wrap");
+
 		edgeRadiusPanel = new LabelledDoublePanel("Edge radius");
 		basicParametersPanel.add(edgeRadiusPanel, "wrap");
 
-//		edgeSurfacePropertyPanel = new SurfacePropertyPanel(getStudio().getScene());
-//		// frameSurfacePropertyPanel.addButtonsActionListener(new SurfacePropertyPanelListener(frameSurfacePropertyPanel));
-//		basicParametersPanel.add(edgeSurfacePropertyPanel, "wrap");
-//		edgeSurfacePropertyPanel.setIPanel(iPanel);
+		edgeSurfacePropertyPanel = new SurfacePropertyPanel(getStudio().getScene());
+		// frameSurfacePropertyPanel.addButtonsActionListener(new SurfacePropertyPanelListener(frameSurfacePropertyPanel));
+		edgeSurfacePropertyPanel.addButtonsActionListener(new SurfacePropertyPanelListener(edgeSurfacePropertyPanel));
+		edgeSurfacePropertyPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Edge surface property"));
+		basicParametersPanel.add(edgeSurfacePropertyPanel, "wrap");
+		edgeSurfacePropertyPanel.setIPanel(iPanel);
 
 //		tabbedPane.addTab("Edge parameters", edgePanel);
 		
@@ -566,12 +573,18 @@ public class EditablePlatonicSolid extends EditableSceneObjectCollection impleme
 		//
 		// the face panel
 		// 
+
+		showFacesCheckBox = new JCheckBox("Show faces");
+		basicParametersPanel.add(showFacesCheckBox, "wrap");
 		
+
 //		JPanel facePanel = new JPanel();
 //		facePanel.setLayout(new MigLayout("insets 0"));
 		
 		faceSurfacePropertyPanel = new SurfacePropertyPanel(getStudio().getScene());
 		// frameSurfacePropertyPanel.addButtonsActionListener(new SurfacePropertyPanelListener(frameSurfacePropertyPanel));
+		faceSurfacePropertyPanel.addButtonsActionListener(new SurfacePropertyPanelListener(faceSurfacePropertyPanel));
+		faceSurfacePropertyPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Face surface property"));
 		basicParametersPanel.add(faceSurfacePropertyPanel, "wrap");
 		faceSurfacePropertyPanel.setIPanel(iPanel);
 
@@ -627,8 +640,8 @@ public class EditablePlatonicSolid extends EditableSceneObjectCollection impleme
 		showFacesCheckBox.setSelected(showFaces);
 		vertexRadiusPanel.setNumber(vertexRadius);
 		edgeRadiusPanel.setNumber(edgeRadius);
-//		vertexSurfacePropertyPanel.setSurfaceProperty(vertexSurfaceProperty);		
-//		edgeSurfacePropertyPanel.setSurfaceProperty(edgeSurfaceProperty);		
+		vertexSurfacePropertyPanel.setSurfaceProperty(vertexSurfaceProperty);		
+		edgeSurfacePropertyPanel.setSurfaceProperty(edgeSurfaceProperty);		
 		faceSurfacePropertyPanel.setSurfaceProperty(faceSurfaceProperty);		
 	}
 
@@ -648,8 +661,8 @@ public class EditablePlatonicSolid extends EditableSceneObjectCollection impleme
 		setShowFaces(showFacesCheckBox.isSelected());
 		setVertexRadius(vertexRadiusPanel.getNumber());
 		setEdgeRadius(edgeRadiusPanel.getNumber());
-//		setVertexSurfaceProperty(vertexSurfacePropertyPanel.getSurfaceProperty());
-//		setEdgeSurfaceProperty(edgeSurfacePropertyPanel.getSurfaceProperty());
+		setVertexSurfaceProperty(vertexSurfacePropertyPanel.getSurfaceProperty());
+		setEdgeSurfaceProperty(edgeSurfacePropertyPanel.getSurfaceProperty());
 		setFaceSurfaceProperty(faceSurfacePropertyPanel.getSurfaceProperty());
 
 		// add the objects
@@ -667,15 +680,63 @@ public class EditablePlatonicSolid extends EditableSceneObjectCollection impleme
 		container.setValuesInEditPanel();
 	}
 	
+//	@Override
+//	public void backToFront(IPanelComponent edited)
+//	{
+//		if(edited instanceof SurfaceProperty)
+//		{
+//			// face surface property has been edited
+//			// setFaceSurfaceProperty((SurfaceProperty)edited);
+//			// faceSurfacePropertyPanel.setSurfaceProperty(getFaceSurfaceProperty());
+//			faceSurfacePropertyPanel.setSurfaceProperty((SurfaceProperty)edited);
+//		}
+//	}
+	
+	// from EditableSurfaceTiling
+	
 	@Override
 	public void backToFront(IPanelComponent edited)
 	{
-		if(edited instanceof SurfaceProperty)
+			if(edited instanceof SurfaceProperty)
+			{
+				if(beingEdited == faceSurfacePropertyPanel)
+				{
+					// face surface property has been edited
+					setFaceSurfaceProperty((SurfaceProperty)edited);
+					faceSurfacePropertyPanel.setSurfaceProperty(getFaceSurfaceProperty());
+				}
+				if(beingEdited == vertexSurfacePropertyPanel)
+				{
+					// vertex surface property has been edited
+					setVertexSurfaceProperty((SurfaceProperty)edited);
+					vertexSurfacePropertyPanel.setSurfaceProperty(getVertexSurfaceProperty());
+				}
+				if(beingEdited == edgeSurfacePropertyPanel)
+				{
+					// edge surface property has been edited
+					setEdgeSurfaceProperty((SurfaceProperty)edited);
+					edgeSurfacePropertyPanel.setSurfaceProperty(getEdgeSurfaceProperty());
+				}
+			}
+	}
+
+	class SurfacePropertyPanelListener implements ActionListener
+	{
+		private SurfacePropertyPanel surfacePropertyPanel;
+		
+		public SurfacePropertyPanelListener(SurfacePropertyPanel surfacePropertyPanel)
 		{
-			// face surface property has been edited
-			// setFaceSurfaceProperty((SurfaceProperty)edited);
-			// faceSurfacePropertyPanel.setSurfaceProperty(getFaceSurfaceProperty());
-			faceSurfacePropertyPanel.setSurfaceProperty((SurfaceProperty)edited);
+			this.surfacePropertyPanel = surfacePropertyPanel;
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			if(e.getActionCommand().equals(SurfacePropertyPanel.TILING_PARAMS_BUTTON_TEXT))
+			{
+				beingEdited = surfacePropertyPanel;
+			}
 		}
 	}
+
 }

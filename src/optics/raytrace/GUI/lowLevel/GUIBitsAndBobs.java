@@ -160,6 +160,24 @@ public class GUIBitsAndBobs
 	}
 
 	/**
+	 * Creates a combined text label and three components.
+	 */
+	public static JPanel makeRow(String text, Component field1, Component field2, Component field3)
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("insets 0"));
+
+		// panel.setLayout(new FlowLayout());
+
+		panel.add(new JLabel(text)); 
+		panel.add(field1);
+		panel.add(field2);
+		panel.add(field3);
+
+		return panel;
+	}
+
+	/**
 	 * @param title
 	 * @return	a titled border which can be added to a component
 	 */

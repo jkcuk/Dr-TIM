@@ -21,7 +21,7 @@ import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.surfaces.IdealThinLensSurfaceSimple;
 import optics.raytrace.surfaces.PhaseHologramOfLens;
-import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArraySimple;
+import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArray;
 import optics.raytrace.surfaces.RectangularIdealThinLensletArray;
 import optics.raytrace.surfaces.SemiTransparent;
 import optics.raytrace.surfaces.SurfaceOfVolumeWithColouredVoxelBoundaries;
@@ -81,7 +81,7 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 	/**
 	 * type of lenses that make up the array
 	 */
-	private LensType lensletArrayType;
+	private ThinLensType lensletArrayType;
 	
 	/**
 	 * if true, show baffles
@@ -111,7 +111,7 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 	/**
 	 * type of channeling lenses
 	 */
-	private LensType channelingLensesType;
+	private ThinLensType channelingLensesType;
 	
 	/**
 	 * if true, add a random angle that represents diffractive blur to the direction of the outgoing light ray
@@ -160,13 +160,13 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 			double f2,
 			double periodU,
 			double periodV,
-			LensType lensletArrayType,
+			ThinLensType lensletArrayType,
 			boolean showBaffles,
 			boolean showChannelingLens1,
 			boolean showChannelingLens2,
 			double channelingLens1F,
 			double channelingLens2F,
-			LensType channelingLensType,
+			ThinLensType channelingLensType,
 			boolean simulateDiffractiveBlur,
 			double lambda,
 			SceneObject parent, 
@@ -218,13 +218,13 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 				0.1,	// f2,
 				0.1,	// periodU
 				0.1,	// periodV
-				LensType.IDEAL_THIN_LENS,	// lensletArrayType
+				ThinLensType.IDEAL_THIN_LENS,	// lensletArrayType
 				true,	// showBaffles
 				false, 	// showChannelingLens1
 				false,	// showChannelingLens2
 				1,	// channelingLens1F
 				1,	// channelingLens2F
-				LensType.IDEAL_THIN_LENS,	// channelingLensType
+				ThinLensType.IDEAL_THIN_LENS,	// channelingLensType
 				false,	// simulateDiffractiveBlur
 				633e-9,	// lambda
 				parent,
@@ -337,11 +337,11 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 		this.periodV = periodV;
 	}
 
-	public LensType getLensletArrayType() {
+	public ThinLensType getLensletArrayType() {
 		return lensletArrayType;
 	}
 
-	public void setLensletArrayType(LensType lensletArrayType) {
+	public void setLensletArrayType(ThinLensType lensletArrayType) {
 		this.lensletArrayType = lensletArrayType;
 	}
 
@@ -385,11 +385,11 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 		this.channelingLens2F = channelingLens2F;
 	}
 
-	public LensType getChannelingLensType() {
+	public ThinLensType getChannelingLensType() {
 		return channelingLensesType;
 	}
 
-	public void setChannelingLensType(LensType channelingLensType) {
+	public void setChannelingLensType(ThinLensType channelingLensType) {
 		this.channelingLensesType = channelingLensType;
 	}
 
@@ -428,7 +428,7 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 		switch(lensletArrayType)
 		{
 		case LENS_HOLOGRAM:
-			surfacePropertyRepresentingLA1 = new PhaseHologramOfRectangularLensletArraySimple(
+			surfacePropertyRepresentingLA1 = new PhaseHologramOfRectangularLensletArray(
 					la1Centre,	// centre
 					uVector.getNormalised(),	// v1
 					vVector.getNormalised(),	// v2
@@ -443,7 +443,7 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 					false,	// reflective
 					false	// shadowThrowing
 					);
-			surfacePropertyRepresentingLA2 = new PhaseHologramOfRectangularLensletArraySimple(
+			surfacePropertyRepresentingLA2 = new PhaseHologramOfRectangularLensletArray(
 					la2Centre,	// centre
 					uVector.getNormalised(),	// v1
 					vVector.getNormalised(),	// v2
@@ -653,7 +653,7 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 
 	// lenslet arrays
 	private LabelledDoublePanel f1Panel, f2Panel, periodUPanel, periodVPanel;
-	private JComboBox<LensType> lensletArrayTypeComboBox;
+	private JComboBox<ThinLensType> lensletArrayTypeComboBox;
 	
 	// baffles
 	private JCheckBox showBafflesCheckBox;
@@ -661,7 +661,7 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 	// channeling lenses
 	private JCheckBox showChannelingLens1CheckBox, showChannelingLens2CheckBox;
 	private LabelledDoublePanel channelingLens1FPanel, channelingLens2FPanel;
-	private JComboBox<LensType> channelingLensesTypeComboBox;
+	private JComboBox<ThinLensType> channelingLensesTypeComboBox;
 
 	private JButton convertButton;
 
@@ -714,7 +714,7 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 		periodVPanel = new LabelledDoublePanel("Period in v direction");
 		lensletArraysPanel.add(periodVPanel, "wrap");
 
-		lensletArrayTypeComboBox = new JComboBox<LensType>(LensType.values());
+		lensletArrayTypeComboBox = new JComboBox<ThinLensType>(ThinLensType.values());
 		lensletArraysPanel.add(lensletArrayTypeComboBox, "wrap");
 
 		
@@ -743,7 +743,7 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 		channelingLens2FPanel = new LabelledDoublePanel("Focal length of channeling lens 2");
 		channelingLensesPanel.add(channelingLens2FPanel, "wrap");
 
-		channelingLensesTypeComboBox = new JComboBox<LensType>(LensType.values());
+		channelingLensesTypeComboBox = new JComboBox<ThinLensType>(ThinLensType.values());
 		channelingLensesPanel.add(channelingLensesTypeComboBox, "wrap");
 		
 
@@ -807,7 +807,7 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 		f2 = f2Panel.getNumber();
 		periodU = periodUPanel.getNumber();
 		periodV = periodVPanel.getNumber();
-		lensletArrayType = (LensType)(lensletArrayTypeComboBox.getSelectedItem());
+		lensletArrayType = (ThinLensType)(lensletArrayTypeComboBox.getSelectedItem());
 		
 		// baffles
 		showBaffles = showBafflesCheckBox.isSelected();
@@ -817,7 +817,7 @@ public class EditableCLAs extends EditableSceneObjectCollection implements Actio
 		showChannelingLens2 = showChannelingLens2CheckBox.isSelected();
 		channelingLens1F = channelingLens1FPanel.getNumber();
 		channelingLens2F = channelingLens2FPanel.getNumber();
-		channelingLensesType = (LensType)(channelingLensesTypeComboBox.getSelectedItem());
+		channelingLensesType = (ThinLensType)(channelingLensesTypeComboBox.getSelectedItem());
 
 		// get rid of anything that's in this SceneObjectContainer at the moment...
 		clear();
