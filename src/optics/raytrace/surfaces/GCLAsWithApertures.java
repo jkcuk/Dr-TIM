@@ -32,10 +32,6 @@ import optics.raytrace.utility.CoordinateSystems.GlobalOrLocalCoordinateSystemTy
  * 
  * @author Johannes Courtial
  */
-/**
- * @author johannes
- *
- */
 public class GCLAsWithApertures extends SurfacePropertyPrimitive
 {	
 	private static final long serialVersionUID = -3615618303389218702L;
