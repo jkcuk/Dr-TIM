@@ -252,7 +252,7 @@ public class PhaseHologramOfLensletArrayForGaborSupererLens extends PhaseHologra
 	public Vector3D getTangentialDirectionComponentChangeTransmissive(Vector3D surfacePosition,
 			Vector3D surfaceNormal)
 	{	
-		System.out.println("Bla");
+		// System.out.println("Bla");
 		
 		// calculate the u and v coordinates of the position
 		Vector3D uBasisVector = uHat.getPartPerpendicularTo(surfaceNormal).getNormalised();

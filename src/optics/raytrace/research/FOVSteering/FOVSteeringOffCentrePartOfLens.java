@@ -40,6 +40,7 @@ public class FOVSteeringOffCentrePartOfLens
 {
 	public static final boolean TEST = false;
 	public static final boolean SHOW_OPTICAL_AXIS = false;
+	public static final boolean SHOW_ENTIRE_LENS = true;
 
 	/**
 	 * Filename under which main saves the rendered image.
@@ -120,42 +121,58 @@ public class FOVSteeringOffCentrePartOfLens
 						partOfLens,	// parent
 						studio
 				));
-		partOfLens.addSceneObject(
-				new ParametrisedPlane(
-						"Right",	// description
-						new Vector3D(squareCentreOffsetX+0.5*squareWidth, 0, 0),	// pointOnPlane
-						Vector3D.X,	// normal
-						partOfLensSurface,	// tinted,	// surfaceProperty
-						partOfLens,	// parent
-						studio
+		if(SHOW_ENTIRE_LENS)
+		{
+			partOfLens.addSceneObject(
+					new ParametrisedCylinderMantle(
+					"Edge of lens",	// description
+					new Vector3D(0, 0, -centreDistance),	// startPoint
+					new Vector3D(0, 0, centreDistance),	// endPoint
+					apertureRadius,	// radius,
+					partOfLensSurface,	// surfaceProperty
+					partOfLens,	// parent
+					studio
 					));
-		partOfLens.addSceneObject(
-				new ParametrisedPlane(
-						"Left",	// description
-						new Vector3D(squareCentreOffsetX-0.5*squareWidth, 0, 0),	// pointOnPlane
-						Vector3D.X.getReverse(),	// normal
-						partOfLensSurface,	// tinted,	// surfaceProperty
-						partOfLens,	// parent
-						studio
-					));
-		partOfLens.addSceneObject(
-				new ParametrisedPlane(
-						"Top",	// description
-						new Vector3D(0, squareCentreOffsetY+0.5*squareWidth, 0),	// pointOnPlane
-						Vector3D.Y,	// normal
-						partOfLensSurface,	// tinted,	// surfaceProperty
-						partOfLens,	// parent
-						studio
-					));
-		partOfLens.addSceneObject(
-				new ParametrisedPlane(
-						"Bottom",	// description
-						new Vector3D(0, squareCentreOffsetY-0.5*squareWidth, 0),	// pointOnPlane
-						Vector3D.Y.getReverse(),	// normal
-						partOfLensSurface,	// tinted,	// surfaceProperty
-						partOfLens,	// parent
-						studio
-					));
+		}
+		else
+		{
+			partOfLens.addSceneObject(
+					new ParametrisedPlane(
+							"Right",	// description
+							new Vector3D(squareCentreOffsetX+0.5*squareWidth, 0, 0),	// pointOnPlane
+							Vector3D.X,	// normal
+							partOfLensSurface,	// tinted,	// surfaceProperty
+							partOfLens,	// parent
+							studio
+							));
+			partOfLens.addSceneObject(
+					new ParametrisedPlane(
+							"Left",	// description
+							new Vector3D(squareCentreOffsetX-0.5*squareWidth, 0, 0),	// pointOnPlane
+							Vector3D.X.getReverse(),	// normal
+							partOfLensSurface,	// tinted,	// surfaceProperty
+							partOfLens,	// parent
+							studio
+							));
+			partOfLens.addSceneObject(
+					new ParametrisedPlane(
+							"Top",	// description
+							new Vector3D(0, squareCentreOffsetY+0.5*squareWidth, 0),	// pointOnPlane
+							Vector3D.Y,	// normal
+							partOfLensSurface,	// tinted,	// surfaceProperty
+							partOfLens,	// parent
+							studio
+							));
+			partOfLens.addSceneObject(
+					new ParametrisedPlane(
+							"Bottom",	// description
+							new Vector3D(0, squareCentreOffsetY-0.5*squareWidth, 0),	// pointOnPlane
+							Vector3D.Y.getReverse(),	// normal
+							partOfLensSurface,	// tinted,	// surfaceProperty
+							partOfLens,	// parent
+							studio
+							));
+		}
 
 		scene.addSceneObject(partOfLens);
 
@@ -218,8 +235,7 @@ public class FOVSteeringOffCentrePartOfLens
 				studio
 				));
 		
-		scene.addSceneObject(completeLens);
-		
+		scene.addSceneObject(completeLens, !SHOW_ENTIRE_LENS);
 		
 		// optical axis
 		EditableParametrisedCylinder opticalAxis = new EditableParametrisedCylinder(

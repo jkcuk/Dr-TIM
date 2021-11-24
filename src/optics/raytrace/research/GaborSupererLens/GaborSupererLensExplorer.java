@@ -165,13 +165,13 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		renderQuality = RenderQualityEnum.DRAFT;
 		
 		// lenslet-array parameters
-		f1 = 0.1;
-		f2 = -f1;
+		f1 = 0.003;
+		f2 = f1;
 		minimumZSeparation = 0.00001;
-		aperturesPeriod1 = 0.01;
-		aperturesPeriod2 = 0.0099;
-		principalPointsPeriod1 = 0.01;
-		principalPointsPeriod2 = 0.0099;
+		aperturesPeriod1 = 0.001;
+		aperturesPeriod2 = 0.000997;
+		principalPointsPeriod1 = 0.001;
+		principalPointsPeriod2 = 0.000997;
 		xyOffsetPrincipalPointArray1 = new Vector2D(0, 0);
 		xyOffsetPrincipalPointArray2 = new Vector2D(0, 0);
 		xyOffsetClearApertureArray1 = xyOffsetPrincipalPointArray1;
