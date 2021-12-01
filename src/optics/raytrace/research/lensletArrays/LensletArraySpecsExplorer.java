@@ -36,7 +36,7 @@ import optics.raytrace.core.StudioInitialisationType;
 /**
  * Simulate the visual appearance of combinations of lenslet arrays, and the view through them.
  * Additionally, floor tiles were converted to metric units such that 1 floor tile = 1 meter.
- * For ease of conversion, everything will be set to cm base units in the interactive panel.
+ * For ease of conversion, everything will be set to cm base units in the interactive panel
  * 
  * @author Johannes Courtial, Maik Locher
  */
@@ -211,7 +211,7 @@ public class LensletArraySpecsExplorer extends NonInteractiveTIMEngine implement
 		apertureHeight1 =1*100;
 		apertureWidth2 = 1*100;
 		apertureHeight2 =1*100;
-		f1 = 0.1*100;
+		f1 = 10;
 		f2 = -f1;
 		minimumZSeparation = 0.00001*cmToM;
 		period1 = 0.01*100;
@@ -227,7 +227,7 @@ public class LensletArraySpecsExplorer extends NonInteractiveTIMEngine implement
 		showLensletArray2 = true;
 		focusOnObjectZ = false;
 		objectZ = 8.95; // in m
-		simulateDiffractiveBlur = true;
+		simulateDiffractiveBlur = false;
 		lambdaNM = 632.8;
 		
 		//lenslet centre and other orientation params
@@ -250,7 +250,7 @@ public class LensletArraySpecsExplorer extends NonInteractiveTIMEngine implement
 		
 
 		// mounting the camera to an eye ball
-		eyeRadius = 1.25; //average eye radius.
+		eyeRadius = 1.25*cmToM; //average eye radius.
 		cameraDistanceCm = 10*100;
 		cameraApertureSize = ApertureSizeType.PINHOLE;
 		upAngle = 0;
@@ -475,7 +475,8 @@ public class LensletArraySpecsExplorer extends NonInteractiveTIMEngine implement
 			), 
 			showLensletArray1
 		);
-
+		
+		System.out.println(zSeparation);
 
 		if (lensLock) {
 			
@@ -577,7 +578,7 @@ public class LensletArraySpecsExplorer extends NonInteractiveTIMEngine implement
 		// the camera
 		// cameraFocussingDistance 
 		cameraDistance = cmToM*cameraDistanceCm; 
-		double allRadius = (cmToM*eyeRadius+cameraDistance);
+		double allRadius = (eyeRadius+cameraDistance);
 		//makes it so the camera is always looking at the lenslet array along its surface normal. i.e 90 degrees to lenslet.
 		if (viewingLock) {
 			sideAngle = theta1Deg;
@@ -1085,11 +1086,11 @@ public class LensletArraySpecsExplorer extends NonInteractiveTIMEngine implement
 	private void gaborInitialisation()
 	{
 		// lenslet-array parameters
-		f1Panel.setNumber(0.1*100);
-		f2Panel.setNumber(-0.1*100);
-		minimumZSeprarationPanel.setNumber(0.00001*100);
-		period1Panel.setNumber(0.0099*100);
-		period2Panel.setNumber(0.01*100);
+		f1Panel.setNumber(0.1);
+		f2Panel.setNumber(-0.1);
+		minimumZSeprarationPanel.setNumber(0.00001);
+		period1Panel.setNumber(0.0099);
+		period2Panel.setNumber(0.01);
 		theta1DegPanel.setNumber(0);
 		theta2DegPanel.setNumber(0);
 		phi1DegPanel.setNumber(0);
@@ -1105,11 +1106,11 @@ public class LensletArraySpecsExplorer extends NonInteractiveTIMEngine implement
 	private void moireInitialisation()
 	{
 		// lenslet-array parameters
-		f1Panel.setNumber(-0.1*100);
-		f2Panel.setNumber(0.1*100);
-		minimumZSeprarationPanel.setNumber(0.00001*100);
-		period1Panel.setNumber(0.01*100);
-		period2Panel.setNumber(0.01*100);
+		f1Panel.setNumber(-0.1);
+		f2Panel.setNumber(0.1);
+		minimumZSeprarationPanel.setNumber(0.00001);
+		period1Panel.setNumber(0.01);
+		period2Panel.setNumber(0.01);
 		theta1DegPanel.setNumber(0);
 		theta2DegPanel.setNumber(0);
 		phi1DegPanel.setNumber(0);
@@ -1125,11 +1126,11 @@ public class LensletArraySpecsExplorer extends NonInteractiveTIMEngine implement
 	private void clasInitialisation()
 	{
 		// lenslet-array parameters
-		f1Panel.setNumber(-0.05*100);
-		f2Panel.setNumber(0.1*100);
-		minimumZSeprarationPanel.setNumber(0.00001*100);
-		period1Panel.setNumber(0.01*100);
-		period2Panel.setNumber(0.01*100);
+		f1Panel.setNumber(-0.05);
+		f2Panel.setNumber(0.1);
+		minimumZSeprarationPanel.setNumber(0.00001);
+		period1Panel.setNumber(0.01);
+		period2Panel.setNumber(0.01);
 		theta1DegPanel.setNumber(0);
 		theta2DegPanel.setNumber(0);
 		phi1DegPanel.setNumber(0);
