@@ -29,11 +29,15 @@ public enum ApertureSizeType
 	/**
 	 * Describes a huge disk-shaped aperture of radius 0.2
 	 */
-	HUGE("Huge", 0.2);
+	HUGE("Huge", 0.2),
 	/**
 	 * Describes a disk-shaped aperture of radius 0.4, useful when a "Huge" aperture is simply not large enough
 	 */
 	// HUGER("Huger", 0.4);	// for specialist purposes
+	/**
+	 * Describes a disk-shaped aperture of radius 2mm or 0.002 floor tiles. Useful when simulating the view through an eye.
+	 */
+	EYE("Pupil", 0.002);
 
 	private String description;
 	private double apertureRadius;
