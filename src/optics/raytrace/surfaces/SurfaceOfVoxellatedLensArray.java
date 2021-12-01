@@ -9,6 +9,7 @@ import optics.raytrace.core.RaySceneObjectIntersection;
 import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.exceptions.RayTraceException;
+import optics.raytrace.sceneObjects.RefractiveBoxLens;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.voxellations.Voxellation;
 

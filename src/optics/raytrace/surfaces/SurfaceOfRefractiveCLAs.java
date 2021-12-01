@@ -2,6 +2,7 @@ package optics.raytrace.surfaces;
 
 import math.Vector3D;
 import optics.raytrace.core.SceneObject;
+import optics.raytrace.sceneObjects.RefractiveBoxLens;
 import optics.raytrace.voxellations.SetOfEquidistantParallelPlanes;
 import optics.raytrace.voxellations.Voxellation;
 
