@@ -35,7 +35,7 @@ public enum ApertureSizeType
 	 */
 	// HUGER("Huger", 0.4);	// for specialist purposes
 	/**
-	 * Describes a disk-shaped aperture of radius 2mm or 0.002 floor tiles. Useful when simulating the view through an eye.
+	 * Describes a disk-shaped aperture of radius 2mm or 0.002 floor tiles. useful when simulating the view through an eye.
 	 */
 	EYE("Pupil", 0.002);
 

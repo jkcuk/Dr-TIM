@@ -36,7 +36,7 @@ import optics.raytrace.core.StudioInitialisationType;
 /**
  * Simulate the visual appearance of combinations of lenslet arrays, and the view through them.
  * Additionally, floor tiles were converted to metric units such that 1 floor tile = 1 meter.
- * For ease of conversion, everything will be set to cm base units in the interactive panel.
+ * For ease of conversion, everything will be set to cm base units in the interactive panel
  * 
  * @author Johannes Courtial, Maik Locher
  */
