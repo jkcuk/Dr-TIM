@@ -15,7 +15,7 @@ import optics.raytrace.surfaces.SurfaceColour;
  * A selection of basic refractive lenses .
  * @author Maik Locher
  */
-public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitations: refractive index>1 only(warning will appear), Default constructor needs type casing
+public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list of limitations: refractive index>1 only(warning will appear), Default constructor needs type casing
 {
 	private static final long serialVersionUID = -2820166386195413792L;
 	
@@ -44,9 +44,12 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 	 * 3 = Plano Converging, -3 = Plano diverging
 	 * 404 = error case in which a message will appear
 	 */
+	private Boolean addSideSurfaces = true;
 	
 	//height and width should be less than radius of curvature
 	private Vector3D centre, frontDirection, windowCentre;
+	
+	
 	private SurfaceProperty surface_N, surfaceN;
 	private EditableScaledParametrisedSphere frontSphere, backSphere;
 	private ParametrisedCylinderMantle lensCylinder, cross2;
@@ -407,8 +410,8 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 		this.radiusOfCurvatureBack = (-2*focalLength*(refractiveIndex - 1));
 		this.centre = centre;
 		this.frontDirection = frontDirection;
-		SurfaceProperty surfaceN = new Refractive(refractiveIndex, 1, true);
-		SurfaceProperty surface_N = new Refractive(1/refractiveIndex, 1, true);
+		SurfaceProperty surfaceN = SurfaceColour.RED_MATT;//new Refractive(refractiveIndex, 1, true);
+		SurfaceProperty surface_N = SurfaceColour.RED_MATT;//new Refractive(1/refractiveIndex, 1, true);
 		this.surfaceN = surfaceN;
 		this.surface_N = surface_N;
 		if (focalLength == 0) {
@@ -879,6 +882,14 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 		this.surface_N = surface_N;
 	}
 	
+	public Boolean getAddSideSurfaces() {
+		return addSideSurfaces;
+	}
+	
+	public void setAddSideSurfaces(Boolean addSideSurfaces) {
+		this.addSideSurfaces = addSideSurfaces;
+	}
+	
 	private void addElements()
 	{
 		/**
@@ -886,27 +897,29 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 		 */
 		double apertureRadius = Math.sqrt(0.25*(apertureHeight*apertureHeight + apertureWidth*apertureWidth));
 		//create a scene intersection to which all the components will be added
-		SceneObjectPrimitiveIntersection refractiveBoxLens = new SceneObjectPrimitiveIntersection(
-				"Component which tracks, adds and subtracts all the components",	// description,
-				this,	// parent
-				getStudio()	// studio
-				);
+//		SceneObjectPrimitiveIntersection refractiveBoxLens = new SceneObjectPrimitiveIntersection(
+//				"Component which tracks, adds and subtracts all the components",	// description,
+//				this,	// parent
+//				getStudio()	// studio
+//				);
+// 		SceneObjectPrimitiveIntersection refractiveBoxLens = this;
 
 		//Distinguish between the cases:
 		if (type_case == 0) {
 			if (focalLength>0) {	//Biconvex
 				
-				// front sphere, here referring to the sphere which creates the first surface a ray meets
-				frontSphere = new EditableScaledParametrisedSphere("front surface",
-						centre.getSumWith(
+				Vector3D frontSphereCentre = centre.getSumWith(
 							frontDirection.getWithLength(
 								Math.sqrt(
 									radiusOfCurvatureFront*radiusOfCurvatureFront
 									-(0.25*(apertureHeight*apertureHeight + apertureWidth*apertureWidth) - minMath/2) //note minMath used as it creates a lens which has minimum but not 0 thickness at thinnest part
 								)
 							)
-						)
-						,	// centre of sphere	
+						);
+				
+				// front sphere, here referring to the sphere which creates the first surface a ray meets
+				frontSphere = new EditableScaledParametrisedSphere("front surface",
+						frontSphereCentre,	// centre of sphere	
 					Math.abs(radiusOfCurvatureFront),
 					surfaceN,
 					this,
@@ -914,30 +927,32 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 				);
 				
 				// make the direction to the front the direction to the pole
-				frontSphere.setDirections(frontDirection);
-				refractiveBoxLens.addPositiveSceneObjectPrimitive(frontSphere);
+				// frontSphere.setDirections(frontDirection);
+				addPositiveSceneObjectPrimitive(frontSphere);
 				
 				//back sphere, here referring to the sphere which forms the end of the lens
 				
-				backSphere = new EditableScaledParametrisedSphere("back surface",
-					centre.getSumWith(
+				Vector3D backSphereCentre = centre.getSumWith(
 						frontDirection.getWithLength(-
-							Math.sqrt(
-								radiusOfCurvatureBack*radiusOfCurvatureBack
-								-(0.25*(apertureHeight*apertureHeight + apertureWidth*apertureWidth) - minMath/2) //note minMath used as it creates a lens which has minimum but not 0 thickness at thinnest part
+								Math.sqrt(
+									radiusOfCurvatureBack*radiusOfCurvatureBack
+									-(0.25*(apertureHeight*apertureHeight + apertureWidth*apertureWidth) - minMath/2) //note minMath used as it creates a lens which has minimum but not 0 thickness at thinnest part
+								)
 							)
-						)
-					)
-					,	// centre of sphere	
+						);
+				
+				backSphere = new EditableScaledParametrisedSphere("back surface",
+					backSphereCentre,	// centre of sphere	
 					Math.abs(radiusOfCurvatureBack),
 					surfaceN,
 					this,
 					getStudio()
 				);
 				//setting direction
-				backSphere.setDirections(frontDirection);
-				refractiveBoxLens.addPositiveSceneObjectPrimitive(backSphere);
+				// backSphere.setDirections(frontDirection);
+				addPositiveSceneObjectPrimitive(backSphere);
 				
+				System.out.println("frontSpheresCentre = "+frontSphereCentre+", backSphereCentre = "+backSphereCentre+", frontSphereRadius = "+radiusOfCurvatureFront+", backSphereRadius = "+radiusOfCurvatureBack);
 			}
 			if (focalLength<0) {	//Biconcave
 				
@@ -959,7 +974,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 						this,
 						getStudio()
 						);
-				refractiveBoxLens.addPositiveSceneObjectPrimitive(lensCylinder);
+				addPositiveSceneObjectPrimitive(lensCylinder);
 				
 				//front sphere to remove the front part of the lens
 				frontSphere = new EditableScaledParametrisedSphere("front negative surface",
@@ -976,7 +991,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 				
 				// make the direction to the front the direction to the pole
 				frontSphere.setDirections(frontDirection);
-				refractiveBoxLens.addNegativeSceneObjectPrimitive(frontSphere);
+				addNegativeSceneObjectPrimitive(frontSphere);
 
 				//back sphere to remove back part of lens
 				backSphere = new EditableScaledParametrisedSphere("back negative surface",
@@ -991,7 +1006,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					getStudio()
 				);
 				backSphere.setDirections(frontDirection);
-				refractiveBoxLens.addNegativeSceneObjectPrimitive(backSphere);	
+				addNegativeSceneObjectPrimitive(backSphere);	
 				
 			}
 		}
@@ -1006,7 +1021,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					this,
 					getStudio()
 					);
-			refractiveBoxLens.addNegativeSceneObjectPrimitive(lensPlane);
+			addNegativeSceneObjectPrimitive(lensPlane);
 			
 			//sphere which is the front of the lens
 			frontSphere = new EditableScaledParametrisedSphere("front surface",
@@ -1024,7 +1039,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 			);
 			
 			frontSphere.setDirections(frontDirection);
-			refractiveBoxLens.addPositiveSceneObjectPrimitive(frontSphere);
+			addPositiveSceneObjectPrimitive(frontSphere);
 			
 		}
 
@@ -1038,7 +1053,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					this,
 					getStudio()
 					);
-			refractiveBoxLens.addPositiveSceneObjectPrimitive(lensPlane);
+			addPositiveSceneObjectPrimitive(lensPlane);
 			
 			//the sides and interior of the lens
 			lensCylinder = new ParametrisedCylinderMantle(
@@ -1054,7 +1069,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					this,
 					getStudio()
 					);
-			refractiveBoxLens.addPositiveSceneObjectPrimitive(lensCylinder);
+			addPositiveSceneObjectPrimitive(lensCylinder);
 			
 			//the front a negative sphere which cuts out the diverging part of the lens
 			frontSphere = new EditableScaledParametrisedSphere("Sphere to cut out concave shape",
@@ -1070,7 +1085,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 			);
 			
 			frontSphere.setDirections(frontDirection);
-			refractiveBoxLens.addNegativeSceneObjectPrimitive(frontSphere);
+			addNegativeSceneObjectPrimitive(frontSphere);
 		}
 		
 		if (type_case == 3) { //plano converging lens
@@ -1083,7 +1098,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					this,
 					getStudio()
 					);
-			refractiveBoxLens.addNegativeSceneObjectPrimitive(lensPlane);
+			addNegativeSceneObjectPrimitive(lensPlane);
 			
 			//sphere whihc is the front of the lens
 			backSphere = new EditableScaledParametrisedSphere("back surface",
@@ -1101,7 +1116,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 			);
 			
 			backSphere.setDirections(frontDirection);
-			refractiveBoxLens.addPositiveSceneObjectPrimitive(backSphere);
+			addPositiveSceneObjectPrimitive(backSphere);
 		}
 		
 		if (type_case == -3) { 	//plano diverging lens
@@ -1114,7 +1129,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					this,
 					getStudio()
 					);
-			refractiveBoxLens.addPositiveSceneObjectPrimitive(lensPlane);
+			addPositiveSceneObjectPrimitive(lensPlane);
 			
 			//the sides and interior of the lens
 			lensCylinder = new ParametrisedCylinderMantle(
@@ -1130,7 +1145,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					this,
 					getStudio()
 					);
-			refractiveBoxLens.addPositiveSceneObjectPrimitive(lensCylinder);
+			addPositiveSceneObjectPrimitive(lensCylinder);
 			
 			//the back a negative sphere which cuts out the diverging part of the lens
 			backSphere = new EditableScaledParametrisedSphere("Sphere to cut out concave shape",
@@ -1146,7 +1161,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 			);
 			
 			backSphere.setDirections(frontDirection);
-			refractiveBoxLens.addNegativeSceneObjectPrimitive(backSphere);
+			addNegativeSceneObjectPrimitive(backSphere);
 		}
 		
 
@@ -1167,7 +1182,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 				getStudio()
 			);
 			frontSphere.setDirections(frontDirection);
-			refractiveBoxLens.addNegativeSceneObjectPrimitive(frontSphere);
+			addNegativeSceneObjectPrimitive(frontSphere);
 			
 			//create the back sphere negatively, which will cut out part of the front sphere
 			backSphere = new EditableScaledParametrisedSphere("back surface",
@@ -1185,7 +1200,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					getStudio()
 				);
 				backSphere.setDirections(frontDirection);
-				refractiveBoxLens.addPositiveSceneObjectPrimitive(backSphere);
+				addPositiveSceneObjectPrimitive(backSphere);
 		}
 		
 		if (type_case == -2.1) { //meniscus diverging lens
@@ -1207,7 +1222,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					getStudio()
 				);
 			frontSphere.setDirections(frontDirection);
-			refractiveBoxLens.addPositiveSceneObjectPrimitive(frontSphere);
+			addPositiveSceneObjectPrimitive(frontSphere);
 			
 			//add cylinder to limit aperture size as back sphere is smaller
 			lensCylinder = new 	ParametrisedCylinderMantle(
@@ -1229,7 +1244,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					this,
 					getStudio()
 					);
-			refractiveBoxLens.addPositiveSceneObjectPrimitive(lensCylinder);
+			addPositiveSceneObjectPrimitive(lensCylinder);
 			
 				// back sphere to shape the inner part of the lens negatively
 				backSphere = new EditableScaledParametrisedSphere("back surface",
@@ -1250,7 +1265,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 				
 				// make the direction to the front the direction to the pole
 				backSphere.setDirections(frontDirection);
-				refractiveBoxLens.addNegativeSceneObjectPrimitive(backSphere);			
+				addNegativeSceneObjectPrimitive(backSphere);			
 		}
 		
 		if (type_case == 2.2) { //meniscus converging lens
@@ -1270,7 +1285,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 				getStudio()
 			);
 			frontSphere.setDirections(frontDirection);
-			refractiveBoxLens.addPositiveSceneObjectPrimitive(frontSphere);
+			addPositiveSceneObjectPrimitive(frontSphere);
 			
 			//create the back sphere negatively, which will cut out part of the front sphere
 			backSphere = new EditableScaledParametrisedSphere("back surface",
@@ -1288,7 +1303,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					getStudio()
 				);
 				backSphere.setDirections(frontDirection);
-				refractiveBoxLens.addNegativeSceneObjectPrimitive(backSphere);
+				addNegativeSceneObjectPrimitive(backSphere);
 		}
 		
 		if (type_case == -2.2) { //meniscus diverging lens
@@ -1309,7 +1324,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					getStudio()
 				);
 			frontSphere.setDirections(frontDirection);
-			refractiveBoxLens.addNegativeSceneObjectPrimitive(frontSphere);
+			addNegativeSceneObjectPrimitive(frontSphere);
 			
 			//add cylinder to limit aperture size as back sphere is smaller
 			lensCylinder = new 	ParametrisedCylinderMantle(
@@ -1330,7 +1345,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					this,
 					getStudio()
 					);
-			refractiveBoxLens.addPositiveSceneObjectPrimitive(lensCylinder);
+			addPositiveSceneObjectPrimitive(lensCylinder);
 			
 			// back sphere to shape the inner part of the lens negatively
 			backSphere = new EditableScaledParametrisedSphere("back surface",
@@ -1349,7 +1364,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 				
 			// make the direction to the front the direction to the pole
 			backSphere.setDirections(frontDirection);
-			refractiveBoxLens.addPositiveSceneObjectPrimitive(backSphere);
+			addPositiveSceneObjectPrimitive(backSphere);
 		}
 		
 		if (type_case == 404) {
@@ -1376,7 +1391,7 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 					);
 			
 //			addSceneObject(cross1);
-			addSceneObject(cross2);
+// 			addSceneObject(cross2);
 			System.out.println("The lens you are trying to make cannot be created");		
 		}
 		
@@ -1422,13 +1437,16 @@ public class RefractiveBoxLens extends SceneObjectIntersection	//list of limitat
 				this,
 				getStudio()
 				);
-		refractiveBoxLens.addNegativeSceneObjectPrimitive(topPlane);
-		refractiveBoxLens.addNegativeSceneObjectPrimitive(bottomPlane);
-		refractiveBoxLens.addNegativeSceneObjectPrimitive(leftPlane);
-		refractiveBoxLens.addNegativeSceneObjectPrimitive(rightPlane);	
+		if(addSideSurfaces)
+		{
+			addNegativeSceneObjectPrimitive(topPlane);
+			addNegativeSceneObjectPrimitive(bottomPlane);
+			addNegativeSceneObjectPrimitive(leftPlane);
+			addNegativeSceneObjectPrimitive(rightPlane);
+		}
 
 		//adding the composite object i.e the concave lens as a scene object
-		addSceneObject(refractiveBoxLens);
+// 		addSceneObject(refractiveBoxLens);
 	}
 	
 	
