@@ -22,6 +22,7 @@ public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 	Vector3D uPeriodPrincipalPoint;
 	Vector3D vPeriodPrincipalPoint;
 	
+
 	Vector3D uPeriodclearAperture;
 	Vector3D vPeriodclearAperture;
 	
@@ -210,4 +211,5 @@ public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 		}
 		return thickness;
 	}
+
 }

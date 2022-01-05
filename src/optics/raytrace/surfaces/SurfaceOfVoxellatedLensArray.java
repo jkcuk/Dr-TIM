@@ -85,7 +85,8 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 	public DoubleColour getColourUponStartingWithinVolume(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int stepsLeft, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	throws RayTraceException
 	{
-		if(stepsLeft < 0) return DoubleColour.BLACK;
+		if(stepsLeft < 0) 
+			return DoubleColour.BLACK; //TODO
 	
 		// calculate the voxel indices of the voxel that's ahead
 		int[] voxelIndices = getVoxelIndicesInFront(r, i);
@@ -111,16 +112,19 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 		// Ray rA = r.getAdvancedRay(MyMath.TINY);
 		
 		// if(planeSets != null)	// planeSets simply mustn't be null!
+		SceneObjectContainer v = new SceneObjectContainer(null, null, null);
+		
 		for(Voxellation voxellation : voxellations)
 		{
 			try {
-				s.addSceneObject(voxellation.getSurfaceOfVoxel(voxellation.getVoxelIndex(r.getP())));
+				v.addSceneObject(voxellation.getSurfaceOfVoxel(voxellation.getVoxelIndex(r.getP())));
 			} catch (Exception e) {
 				// not sure under which circumstances this would happen; print the stack trace
 				System.err.println("SurfaceOfVoxellatedLensArray::getColourUponStartingWithinVolume: exception?!");
 				e.printStackTrace();
 			}
 		}
+		s.addSceneObject(v);
 		
 		// add the lens corresponding to this voxel
 		RefractiveBoxLens lens = getRefractiveLens(voxelIndices);
@@ -134,7 +138,7 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 			if(i == RaySceneObjectIntersection.NO_INTERSECTION)
 			{
 				// this shouldn't happen
-				return DoubleColour.LIGHT_RED;
+				throw new RayTraceException("No intersection!?");
 			}
 
 			// deal with the intersection
@@ -148,30 +152,38 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 			}
 			else if(lens.getSceneObjectPrimitives().contains(i.o))	// is the intersection with the lens?
 			{
-				// intersection is with the lens
-				RefractiveSimple refractiveSurfaceProperty = (RefractiveSimple)(i.o.getSurfaceProperty());
+				return DoubleColour.GREEN;
 				
-				// calculate the refracted light-ray direction
-				Vector3D newRayDirection = RefractiveSimple.getRefractedLightRayDirection(
-						r.getD(),	// incidentLightRayDirection
-						i.getNormalisedOutwardsSurfaceNormal(),	// surfaceNormal
-						refractiveSurfaceProperty.getInsideOutsideRefractiveIndexRatio()	// refractiveIndexRatio
-					);
-
-				// start a new ray from the intersection point, with the new light-ray direction
-				r = r.getBranchRay(
-						i.p,
-						r.getD(),
-						i.t
-				);
+				// intersection is with the lens
+//				RefractiveSimple refractiveSurfaceProperty = (RefractiveSimple)(i.o.getSurfaceProperty());
+//				
+//				// calculate the refracted light-ray direction
+//				Vector3D newRayDirection = RefractiveSimple.getRefractedLightRayDirection(
+//						r.getD(),	// incidentLightRayDirection
+//						i.getNormalisedOutwardsSurfaceNormal(),	// surfaceNormal
+//						refractiveSurfaceProperty.getInsideOutsideRefractiveIndexRatio()	// refractiveIndexRatio
+//					);
+//
+//				// start a new ray from the intersection point, with the new light-ray direction
+//				r = r.getBranchRay(
+//						i.p,
+//						r.getD(),
+//						i.t
+//				);
 			}
-			else
+			else if(v.getSceneObjectPrimitives().contains(i.o))	// is the intersection with the voxellation surfaces?
 			{
 				// the intersection is with one of the surfaces separating neighbouring voxels
 				
 				// trace through the next voxel
 				//System.out.println("SurfaceOfVoxellatedLensArray::getColourUponStartingWithinVolume: i.p="+i);
-				return getColourUponStartingWithinVolume(r.getAdvancedRay(MyMath.TINY), i, scene, l, stepsLeft-1, traceLevel, raytraceExceptionHandler);
+				return DoubleColour.CYAN;
+				//return getColourUponStartingWithinVolume(r.getAdvancedRay(MyMath.TINY), i, scene, l, stepsLeft-1, traceLevel, raytraceExceptionHandler);
+			}
+			else
+			{
+				// Don't know what is happening here
+				throw new RayTraceException("Ray intersects with nothing!?");
 			}
 			
 			// if this code is reached, the intersection was with the lens;

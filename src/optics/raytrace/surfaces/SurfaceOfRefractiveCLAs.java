@@ -137,7 +137,7 @@ public class SurfaceOfRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 				vPeriod.getLength()	// separation
 			);
 		
-		return voxellations;
+		return voxellations; 
 	}
 
 }

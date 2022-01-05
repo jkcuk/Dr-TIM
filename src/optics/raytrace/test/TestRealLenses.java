@@ -57,6 +57,7 @@ public class TestRealLenses extends NonInteractiveTIMEngine implements ActionLis
 	private double cameraAngle; // the angle at which the camera will face towards (0,0,0), + to go left - to go right 
 	private double cameraUpAngle; //define an angle with which the camera will view the origin
 	private double cameraFOV; //set the focus and thus zoom of camera	
+
 	private double cameraDistance; //set camera distance from (0,0,0) 
 	
 	private Vector3D lensclearApertureCentre, principalPointCentre, uPeriodclearAperture,	vPeriodclearAperture, uPeriodPrincipalPoint, vPeriodPrincipalPoint;
