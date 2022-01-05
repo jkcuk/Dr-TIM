@@ -167,7 +167,7 @@ public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 						"Lens #"+ voxelIndices[0]+", "+voxelIndices[1],	// description
 						vPeriodclearAperture, //clearApertureHeight
 						uPeriodclearAperture, //clearApertureWidth
-						focalLength, //focalLength
+						focalLength, // focalLength
 						refractiveIndex, //refractiveIndex
 						centrePrincipalPoint, //centre
 						centreclearAperture, //clearApertureCentre

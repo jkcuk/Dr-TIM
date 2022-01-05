@@ -214,7 +214,7 @@ public class Vector3D implements Serializable, Cloneable
 	
 	/**
 	 * Calculate the absolute value of the vector.
-	 * returns a vector where all componets are positive (absolute)
+	 * @return a vector where all componets are positive (absolute)
 	 */	
 	public Vector3D getAbs()
 	{

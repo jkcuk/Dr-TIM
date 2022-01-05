@@ -1344,7 +1344,6 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 				"the planes which will cut the lens into a box",
 				clearApertureCentre.getSumWith(clearApertureHeight.getProductWith(0.5)), //point on top plane
 				clearApertureHeight.getWithLength(-1), //"outside" direction
-				//new Refractive(1, 1, true),
 				surface_N,
 				this,
 				getStudio()
@@ -1353,7 +1352,6 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 				"the planes which will cut the lens into a box",
 				clearApertureCentre.getSumWith(clearApertureHeight.getProductWith(-0.5)), //point on bottom plane
 				clearApertureHeight.getWithLength(1), //"outside" direction
-//				new Refractive(1, 1, true),
 				surface_N,
 				this,
 				getStudio()
@@ -1362,7 +1360,6 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 				"the planes which will cut the lens into a box",
 				clearApertureCentre.getSumWith(clearApertureWidth.getProductWith(0.5)), //point on left plane
 				clearApertureWidth.getWithLength(-1), //"outside" direction
-//				new Refractive(1, 1, true),
 				surface_N,
 				this,
 				getStudio()
@@ -1371,7 +1368,6 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 				"the planes which will cut the lens into a box",
 				clearApertureCentre.getSumWith(clearApertureWidth.getProductWith(-0.5)), //point on right plane
 				clearApertureWidth.getWithLength(1), //"outside" direction
-//				new Refractive(1, 1, true),
 				surface_N,
 				this,
 				getStudio()

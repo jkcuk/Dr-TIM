@@ -109,7 +109,7 @@ public class SurfaceOfRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 		
 		return new RefractiveBoxLens(
 						"Lens #"+ voxelIndices[0]+", "+voxelIndices[1],	// description
-						vPeriod, // clearApertureHeight
+						vPeriod,  // clearApertureHeight
 						uPeriod, // clearApertureWidth
 						focalLength,
 						refractiveIndex,

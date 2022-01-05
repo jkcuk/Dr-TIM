@@ -403,7 +403,7 @@ public class TestRealLenses extends NonInteractiveTIMEngine implements ActionLis
 //	{
 //		if(focalLength > 0) {
 ////			scene.removeSceneObject(RealLensConvex);
-////			scene.removeSceneObject(PlanoConvexLens);
+////			scene.removeSceneObject(PlanoConvexLens );
 ////			scene.removeSceneObject(RealBoxLensConvex);
 ////			scene.removeSceneObject(PlanoConvexBoxLens);
 ////			scene.removeSceneObject(meniscusLens);

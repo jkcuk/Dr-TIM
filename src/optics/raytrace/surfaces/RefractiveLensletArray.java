@@ -315,7 +315,7 @@ public class RefractiveLensletArray extends Parallelepiped2
 //	}
 //
 //
-//	public void setFocalLength(double focalLength) {
+//	public void setFocalLength(double focalLength ) {
 //		this.focalLength = focalLength;
 //	}
 //
