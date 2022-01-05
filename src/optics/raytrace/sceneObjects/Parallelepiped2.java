@@ -66,6 +66,15 @@ implements Serializable	// , AnisotropicSurface, ParametrisedObject
 			);
 	}
 
+	
+	public Vector3D getCentre() {
+		return centre;
+	}
+
+	public void setCentre(Vector3D centre) {
+		this.centre = centre;
+	}
+
 	public Vector3D getU() {
 		return u;
 	}

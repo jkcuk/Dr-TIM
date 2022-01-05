@@ -109,13 +109,12 @@ public class SurfaceOfRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 		
 		return new RefractiveBoxLens(
 						"Lens #"+ voxelIndices[0]+", "+voxelIndices[1],	// description
-						vPeriod.getLength(),	// windowHeight
-						uPeriod.getLength(),	// windowWidth
+						vPeriod,	// windowHeight
+						uPeriod,	// windowWidth
 						focalLength,
 						refractiveIndex,
 						centre,	// optical axis passes through here
 						centre,	// windowCentre, i.e. clear-aperture centre
-						Vector3D.crossProduct(uPeriod, vPeriod),	// frontDirection
 						surface,	// parent
 						surface.getStudio()	// studio
 			);

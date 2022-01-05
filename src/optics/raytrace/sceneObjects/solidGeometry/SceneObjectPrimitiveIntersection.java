@@ -657,8 +657,8 @@ implements Serializable
 		
 		if(positiveSceneObjectPrimitives != null) SOPs.addAll(positiveSceneObjectPrimitives);
 		if(negativeSceneObjectPrimitives != null) SOPs.addAll(negativeSceneObjectPrimitives);	// TODO add the SceneObjectPrimitiveInverse of each of these
-		// SOPs.addAll(invisiblePositiveSceneObjectPrimitives);
-		// SOPs.addAll(invisibleNegativeSceneObjectPrimitives);
+		// if(invisiblePositiveSceneObjectPrimitives != null) SOPs.addAll(invisiblePositiveSceneObjectPrimitives);
+		// if(invisibleNegativeSceneObjectPrimitives != null) SOPs.addAll(invisibleNegativeSceneObjectPrimitives);
 		if(clippedSceneObjectPrimitives != null) SOPs.addAll(clippedSceneObjectPrimitives);
 
 		return SOPs;

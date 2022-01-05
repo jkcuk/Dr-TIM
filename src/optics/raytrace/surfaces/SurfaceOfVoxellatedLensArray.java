@@ -170,7 +170,8 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 				// the intersection is with one of the surfaces separating neighbouring voxels
 				
 				// trace through the next voxel
-				return getColourUponStartingWithinVolume(r, i, scene, l, stepsLeft, traceLevel, raytraceExceptionHandler);
+				//System.out.println("SurfaceOfVoxellatedLensArray::getColourUponStartingWithinVolume: i.p="+i);
+				return getColourUponStartingWithinVolume(r.getAdvancedRay(MyMath.TINY), i, scene, l, stepsLeft-1, traceLevel, raytraceExceptionHandler);
 			}
 			
 			// if this code is reached, the intersection was with the lens;
