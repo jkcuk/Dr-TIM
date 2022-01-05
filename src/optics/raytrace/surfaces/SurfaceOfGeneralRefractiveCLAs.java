@@ -22,27 +22,27 @@ public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 	Vector3D uPeriodPrincipalPoint;
 	Vector3D vPeriodPrincipalPoint;
 	
-	Vector3D uPeriodWindow;
-	Vector3D vPeriodWindow;
+	Vector3D uPeriodclearAperture;
+	Vector3D vPeriodclearAperture;
 	
-	Vector3D centreOfLensWindow00;
+	Vector3D centreOfLensclearAperture00;
 	Vector3D centreOfLensPrincipalPoint00;
 	
-	public SurfaceOfGeneralRefractiveCLAs(Vector3D uPeriodWindow, Vector3D vPeriodWindow, Vector3D uPeriodPrincipalPoint, Vector3D vPeriodPrincipalPoint, Vector3D centreOfLensWindow00, Vector3D centreOfLensPrincipalPoint00,
+	public SurfaceOfGeneralRefractiveCLAs(Vector3D uPeriodclearAperture, Vector3D vPeriodclearAperture, Vector3D uPeriodPrincipalPoint, Vector3D vPeriodPrincipalPoint, Vector3D centreOfLensclearAperture00, Vector3D centreOfLensPrincipalPoint00,
 			double focalLength, double refractiveIndex, SceneObject surface, int maxSteps, double transmissionCoefficient, boolean shadowThrowing)
 	{
 		super(
-				createVoxellations(uPeriodWindow, vPeriodWindow, centreOfLensWindow00),	// voxellations
+				createVoxellations(uPeriodclearAperture, vPeriodclearAperture, centreOfLensclearAperture00),	// voxellations
 				surface, maxSteps, transmissionCoefficient, shadowThrowing
 			);
 		
 		this.focalLength = focalLength;
 		this.refractiveIndex = refractiveIndex;
-		this.uPeriodWindow = uPeriodWindow;
-		this.vPeriodWindow = vPeriodWindow;
+		this.uPeriodclearAperture = uPeriodclearAperture;
+		this.vPeriodclearAperture = vPeriodclearAperture;
 		this.uPeriodPrincipalPoint = uPeriodPrincipalPoint;
 		this.vPeriodPrincipalPoint = vPeriodPrincipalPoint;
-		this.centreOfLensWindow00 = centreOfLensWindow00;
+		this.centreOfLensclearAperture00 = centreOfLensclearAperture00;
 		this.centreOfLensPrincipalPoint00 = centreOfLensPrincipalPoint00;
 		
 	}
@@ -56,11 +56,11 @@ public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 		
 		this.focalLength = focalLength;
 		this.refractiveIndex = refractiveIndex;
-		this.uPeriodWindow = uPeriod;
-		this.vPeriodWindow = vPeriod;
+		this.uPeriodclearAperture = uPeriod;
+		this.vPeriodclearAperture = vPeriod;
 		this.uPeriodPrincipalPoint = uPeriod;
 		this.vPeriodPrincipalPoint = vPeriod;
-		this.centreOfLensWindow00 = centreOfLens00;
+		this.centreOfLensclearAperture00 = centreOfLens00;
 		this.centreOfLensPrincipalPoint00 = centreOfLens00;
 		
 	}
@@ -70,11 +70,11 @@ public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 	public SurfaceOfGeneralRefractiveCLAs(SurfaceOfGeneralRefractiveCLAs o)
 	{
 		this(
-				o.getuPeriodWindow(),
-				o.getvPeriodWindow(),
+				o.getuPeriodclearAperture(),
+				o.getvPeriodclearAperture(),
 				o.getuPeriodPrincipalPoint(),
 				o.getvPeriodPrincipalPoint(),
-				o.getCentreOfLensWindow00(),
+				o.getCentreOfLensclearAperture00(),
 				o.getCentreOfLensPrincipalPoint00(),
 				o.getFocalLength(),
 				o.getRefractiveIndex(),
@@ -125,28 +125,28 @@ public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 		this.vPeriodPrincipalPoint = vPeriodPrincipalPoint;
 	}
 
-	public Vector3D getuPeriodWindow() {
-		return uPeriodWindow;
+	public Vector3D getuPeriodclearAperture() {
+		return uPeriodclearAperture;
 	}
 
-	public void setuPeriodWindow(Vector3D uPeriodWindow) {
-		this.uPeriodWindow = uPeriodWindow;
+	public void setuPeriodclearAperture(Vector3D uPeriodclearAperture) {
+		this.uPeriodclearAperture = uPeriodclearAperture;
 	}
 
-	public Vector3D getvPeriodWindow() {
-		return vPeriodWindow;
+	public Vector3D getvPeriodclearAperture() {
+		return vPeriodclearAperture;
 	}
 
-	public void setvPeriodWindow(Vector3D vPeriodWindow) {
-		this.vPeriodWindow = vPeriodWindow;
+	public void setvPeriodclearAperture(Vector3D vPeriodclearAperture) {
+		this.vPeriodclearAperture = vPeriodclearAperture;
 	}
 
-	public Vector3D getCentreOfLensWindow00() {
-		return centreOfLensWindow00;
+	public Vector3D getCentreOfLensclearAperture00() {
+		return centreOfLensclearAperture00;
 	}
 
-	public void setCentreOfLensWindow00(Vector3D centreOfLensWindow00) {
-		this.centreOfLensWindow00 = centreOfLensWindow00;
+	public void setCentreOfLensclearAperture00(Vector3D centreOfLensclearAperture00) {
+		this.centreOfLensclearAperture00 = centreOfLensclearAperture00;
 	}
 
 	public Vector3D getCentreOfLensPrincipalPoint00() {
@@ -160,17 +160,17 @@ public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 	// the vaguely fascinating bits
 	@Override
 	public RefractiveBoxLens getRefractiveLens(int[] voxelIndices) {
-		Vector3D centreWindow = Vector3D.sum(centreOfLensWindow00, uPeriodWindow.getProductWith(voxelIndices[0]), vPeriodWindow.getProductWith(voxelIndices[1]));
+		Vector3D centreclearAperture = Vector3D.sum(centreOfLensclearAperture00, uPeriodclearAperture.getProductWith(voxelIndices[0]), vPeriodclearAperture.getProductWith(voxelIndices[1]));
 		Vector3D centrePrincipalPoint = Vector3D.sum(centreOfLensPrincipalPoint00, uPeriodPrincipalPoint.getProductWith(voxelIndices[0]), vPeriodPrincipalPoint.getProductWith(voxelIndices[1]));
 		
 		RefractiveBoxLens l = new RefractiveBoxLens(
 						"Lens #"+ voxelIndices[0]+", "+voxelIndices[1],	// description
-						vPeriodWindow, //windowHeight
-						uPeriodWindow, //windowWidth
+						vPeriodclearAperture, //clearApertureHeight
+						uPeriodclearAperture, //clearApertureWidth
 						focalLength, //focalLength
 						refractiveIndex, //refractiveIndex
 						centrePrincipalPoint, //centre
-						centreWindow, //windowCentre
+						centreclearAperture, //clearApertureCentre
 						surface,	// parent
 						surface.getStudio()	// studio
 			);
@@ -199,7 +199,7 @@ public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 	}
 	/**
 	 * TODO
-	 * return the thickness needed for a given lens. (upper bound i.e could be less but complicated and unnecessary.)
+	 * return the thickness needed for a given lens. (upper bound i.e could be less but complicated and unnecessary)
 	 */
 	public double getThickness(int[] voxelIndices) {
 		double thickness;

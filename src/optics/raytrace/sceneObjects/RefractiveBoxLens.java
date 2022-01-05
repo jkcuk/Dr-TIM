@@ -30,7 +30,7 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 	 */
 	
 
-	private Vector3D apertureWidth, apertureHeight, windowHeight, windowWidth;
+	private Vector3D apertureWidth, apertureHeight, clearApertureHeight, clearApertureWidth;
 	private double apertureRadius;
 	private double apertureRadius2;
 	private double thickness, radiusOfCurvatureFront, radiusOfCurvatureBack, focalLength,refractiveIndex; 
@@ -48,7 +48,7 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 	private Boolean addSideSurfaces = true;
 	
 	//height and width should be less than radius of curvature
-	private Vector3D centre, windowCentre;
+	private Vector3D centre, clearApertureCentre;
 	
 	
 	private SurfaceProperty surface_N, surfaceN;
@@ -62,13 +62,13 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 	 * @param description
 	 * @param apertureHeight
 	 * @param apertureWidth
-	 * @param windowWidth
-	 * @param windowHeight
+	 * @param clearApertureWidth
+	 * @param clearApertureHeight
 	 * @param radiusOfCurvatureFront
 	 * @param radiusOfCurvatureBack
 	 * @param thickness
 	 * @param centre
-	 * @param windowCentre
+	 * @param clearApertureCentre
 	 * @param frontDirection
 	 * @param surfaceProperty
 	 * @param parent
@@ -79,14 +79,14 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 			String description,
 			Vector3D apertureHeight,
 			Vector3D apertureWidth,
-			Vector3D windowWidth,
-			Vector3D windowHeight,
+			Vector3D clearApertureWidth,
+			Vector3D clearApertureHeight,
 			double radiusOfCurvatureFront,
 			double radiusOfCurvatureBack,
 			double thickness,
 			double refractiveIndex,
 			Vector3D centre,
-			Vector3D windowCentre,
+			Vector3D clearApertureCentre,
 			SurfaceProperty surfaceProperty,
 			SceneObject parent,
 			Studio studio
@@ -96,15 +96,15 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		super(description, parent, studio);
 		this.apertureHeight = apertureHeight;
 		this.apertureWidth = apertureWidth;
-		this.windowWidth = windowWidth;
-		this.windowHeight = windowHeight;
+		this.clearApertureWidth = clearApertureWidth;
+		this.clearApertureHeight = clearApertureHeight;
 		this.radiusOfCurvatureFront = radiusOfCurvatureFront;
 		this.radiusOfCurvatureBack = radiusOfCurvatureBack;
 		this.thickness = thickness;
 		this.centre = centre;
 		this.refractiveIndex = refractiveIndex;
 		this.focalLength = 1/((refractiveIndex-1)*((1/radiusOfCurvatureFront)-(1/radiusOfCurvatureBack)));
-		this.windowCentre = windowCentre;
+		this.clearApertureCentre = clearApertureCentre;
 		this.surface_N = surfaceProperty;
 		this.type_case = 10; //not right for now
 
@@ -145,8 +145,8 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		// copy the parameters into this instance's variables
 		this.apertureHeight = apertureHeight;
 		this.apertureWidth = apertureWidth;
-		this.windowWidth = apertureHeight;
-		this.windowHeight = apertureWidth;
+		this.clearApertureWidth = apertureHeight;
+		this.clearApertureHeight = apertureWidth;
 		this.apertureRadius= Math.sqrt(0.25*(apertureHeight.getModSquared() + apertureWidth.getModSquared()));
 		this.apertureRadius2 = (0.25*(apertureHeight.getModSquared() + apertureWidth.getModSquared()));
 		this.focalLength = focalLength;
@@ -155,7 +155,7 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		this.radiusOfCurvatureBack = (-2*focalLength*(refractiveIndex - 1));
 		this.thickness = thickness;
 		this.centre = centre;
-		this.windowCentre = centre;
+		this.clearApertureCentre = centre;
 		SurfaceProperty surfaceN = new Refractive(refractiveIndex, 1, true); //N standing for a refractive index of n
 		SurfaceProperty surface_N = new Refractive(1/refractiveIndex, 1, true);//_N standing for a refractive index of 1/n
 		this.surfaceN = surfaceN;
@@ -208,8 +208,8 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		// copy the parameters into this instance's variables
 		this.apertureHeight = apertureHeight;
 		this.apertureWidth = apertureWidth;
-		this.windowWidth = apertureHeight;
-		this.windowHeight = apertureWidth;
+		this.clearApertureWidth = apertureHeight;
+		this.clearApertureHeight = apertureWidth;
 		this.apertureRadius= Math.sqrt(0.25*(apertureHeight.getModSquared() + apertureWidth.getModSquared()));
 		this.apertureRadius2 = (0.25*(apertureHeight.getModSquared() + apertureWidth.getModSquared()));
 		this.focalLength = focalLength;
@@ -218,7 +218,7 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		this.radiusOfCurvatureBack = (-radiusOfCurvatureFront*focalLength*(refractiveIndex - 1))/(radiusOfCurvatureFront-focalLength*(refractiveIndex - 1));
 		this.thickness = thickness;
 		this.centre = centre;
-		this.windowCentre = centre;
+		this.clearApertureCentre = centre;
 		SurfaceProperty surfaceN = new Refractive(refractiveIndex, 1, true);
 		SurfaceProperty surface_N = new Refractive(1/refractiveIndex, 1, true);
 		this.surfaceN = surfaceN;
@@ -303,8 +303,8 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		// copy the parameters into this instance's variables
 		this.apertureHeight = apertureHeight;
 		this.apertureWidth = apertureWidth;
-		this.windowWidth = apertureHeight;
-		this.windowHeight = apertureWidth;
+		this.clearApertureWidth = apertureHeight;
+		this.clearApertureHeight = apertureWidth;
 		this.apertureRadius= Math.sqrt(0.25*(apertureHeight.getModSquared() + apertureWidth.getModSquared()));
 		this.apertureRadius2 = (0.25*(apertureHeight.getModSquared() + apertureWidth.getModSquared()));
 		this.focalLength = focalLength;
@@ -313,7 +313,7 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		this.radiusOfCurvatureBack = radiusOfCurvatureBack;
 		this.thickness = thickness;
 		this.centre = centre;
-		this.windowCentre = centre;
+		this.clearApertureCentre = centre;
 		SurfaceProperty surfaceN = new Refractive(refractiveIndex, 1, true); 
 		SurfaceProperty surface_N = new Refractive(1/refractiveIndex, 1, true);
 		this.surfaceN = surfaceN;
@@ -367,27 +367,27 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 	
 	
 	/**
-	 * Constructor that creates an off centred window as part of a lens at the centre of min. thickness of equal radii. 
+	 * Constructor that creates an off centred clearAperture as part of a lens at the centre of min. thickness of equal radii. 
 	 * 
 	 * @param description
-	 * @param windowWidth
-	 * @param windowHeight
+	 * @param clearApertureWidth
+	 * @param clearApertureHeight
 	 * @param focalLength
 	 * @param refractiveIndex
 	 * @param centre
-	 * @param windowCentre
+	 * @param clearApertureCentre
 	 * @param frontDirection
 	 * @param parent
 	 * @param studio
 	 */
 	public RefractiveBoxLens(
 			String description,
-			Vector3D windowHeight,
-			Vector3D windowWidth,
+			Vector3D clearApertureHeight,
+			Vector3D clearApertureWidth,
 			double focalLength,
 			double refractiveIndex,
 			Vector3D centre,
-			Vector3D windowCentre,
+			Vector3D clearApertureCentre,
 			SceneObject parent, 
 			Studio studio
 	)
@@ -396,14 +396,14 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		super(description, parent, studio);
 		
 		// copy the parameters into this instance's variables
-		this.apertureRadius = ((((windowHeight.getAbs().getSumWith(windowWidth.getAbs())).getProductWith(0.5)).getAbs()).getSumWith((centre.getDifferenceWith(windowCentre)).getAbs())).getLength();
+		this.apertureRadius = ((((clearApertureHeight.getAbs().getSumWith(clearApertureWidth.getAbs())).getProductWith(0.5)).getAbs()).getSumWith((centre.getDifferenceWith(clearApertureCentre)).getAbs())).getLength();
 		this.apertureRadius2 = apertureRadius*apertureRadius;
-		//lens radius needed to fill window. 
-		this.windowCentre = windowCentre; //will be used to cut out the remainder of the lens		
-		this.windowWidth = windowWidth;
-		this.windowHeight = windowHeight;
-		this.apertureHeight = windowHeight.getNormalised();
-		this.apertureWidth = windowWidth.getNormalised();
+		//lens radius needed to fill clearAperture. 
+		this.clearApertureCentre = clearApertureCentre; //will be used to cut out the remainder of the lens		
+		this.clearApertureWidth = clearApertureWidth;
+		this.clearApertureHeight = clearApertureHeight;
+		this.apertureHeight = clearApertureHeight.getNormalised();
+		this.apertureWidth = clearApertureWidth.getNormalised();
 		this.focalLength = focalLength;
 		this.refractiveIndex = refractiveIndex;
 		this.radiusOfCurvatureFront = (2*focalLength*(refractiveIndex - 1));
@@ -427,22 +427,22 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		
 		//define the locations of the corners of the box and an equation of the lines
 		double rad2; //allowed aperture radius squared such that it is min at closest point
-		double u,v; //parameters describing the shift from centre to windowCentre
-		v = centre.getDifferenceWith(windowCentre).y;
-		u = centre.getDifferenceWith(windowCentre).x;
+		double u,v; //parameters describing the shift from centre to clearApertureCentre
+		v = centre.getDifferenceWith(clearApertureCentre).y;
+		u = centre.getDifferenceWith(clearApertureCentre).x;
 		double t12,t23,t34,t41; //parameter to quantify the lines at min distance: between 0 and 1
-		t12 = 0.5-(u/windowWidth.getLength());
-		t23 = 0.5+(v/windowHeight.getLength());
-		t34 = 0.5+(u/windowWidth.getLength());
-		t41 = 0.5-(v/windowHeight.getLength());
+		t12 = 0.5-(u/clearApertureWidth.getLength());
+		t23 = 0.5+(v/clearApertureHeight.getLength());
+		t34 = 0.5+(u/clearApertureWidth.getLength());
+		t41 = 0.5-(v/clearApertureHeight.getLength());
 		Vector3D c1,c2,c3,c4; //corners. To make more sense, drawing on one note.
-		c1 = windowCentre.getSumWith(new Vector3D(-windowWidth.getLength()/2, windowHeight.getLength()/2, 0));
+		c1 = clearApertureCentre.getSumWith(new Vector3D(-clearApertureWidth.getLength()/2, clearApertureHeight.getLength()/2, 0));
 		//top right corner
-		c2 = windowCentre.getSumWith(new Vector3D(windowWidth.getLength()/2, windowHeight.getLength()/2, 0));
+		c2 = clearApertureCentre.getSumWith(new Vector3D(clearApertureWidth.getLength()/2, clearApertureHeight.getLength()/2, 0));
 		//bottom right corner
-		c3 = windowCentre.getSumWith(new Vector3D(windowWidth.getLength()/2, -windowHeight.getLength()/2, 0));
+		c3 = clearApertureCentre.getSumWith(new Vector3D(clearApertureWidth.getLength()/2, -clearApertureHeight.getLength()/2, 0));
 		//bottom left corner
-		c4 = windowCentre.getSumWith(new Vector3D(-windowWidth.getLength()/2, -windowHeight.getLength()/2, 0));
+		c4 = clearApertureCentre.getSumWith(new Vector3D(-clearApertureWidth.getLength()/2, -clearApertureHeight.getLength()/2, 0));
 		
 		Vector3D l12,l23,l34,l41;//lines, which are a point when t is defined as above
 		//line between c1 and c2
@@ -453,7 +453,7 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		l34 = c3.getSumWith((c4.getDifferenceWith(c3)).getWithLength(t34));
 		//line between c4 and c1
 		l41 = c4.getSumWith((c1.getDifferenceWith(c4)).getWithLength(t41));
-		//now, as all those are set, define regions around the lens window using if functions. This is split into 9 regions.
+		//now, as all those are set, define regions around the lens clearAperture using if functions. This is split into 9 regions.
 		
 		
 		//first case for a diverging (focal length less than 0) lens
@@ -465,17 +465,17 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 			 *  ......c1:___________________:c2..........
 			 *  		|					|
 			 * region 8	| 		region 9	| 	region 4
-			 *  		|	(lens window)	|
+			 *  		|(clearAperture)	|
 			 * .......c4|___________________|c3..........
 			 *  		:					:
 			 * region 7 :		region 6	:	region 5
 			 * 			:					:
 			 */
 			//start with region 9 and define anything inside or on the lines
-			if (centre.x>= (windowCentre.x-0.5*windowWidth.getLength()) && 
-					centre.x<= (windowCentre.x+0.5*windowWidth.getLength()) && 
-					centre.y <= (windowCentre.y+0.5*windowHeight.getLength())&&
-					centre.y >= (windowCentre.y-0.5*windowHeight.getLength())
+			if (centre.x>= (clearApertureCentre.x-0.5*clearApertureWidth.getLength()) && 
+					centre.x<= (clearApertureCentre.x+0.5*clearApertureWidth.getLength()) && 
+					centre.y <= (clearApertureCentre.y+0.5*clearApertureHeight.getLength())&&
+					centre.y >= (clearApertureCentre.y-0.5*clearApertureHeight.getLength())
 					) {
 				this.thickness = 0;
 
@@ -483,42 +483,42 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 				
 			}else {
 				//region 1 first
-				if (centre.x<= (windowCentre.x-0.5*windowWidth.getLength()) && centre.y >= (windowCentre.y+0.5*windowHeight.getLength())) {
+				if (centre.x<= (clearApertureCentre.x-0.5*clearApertureWidth.getLength()) && centre.y >= (clearApertureCentre.y+0.5*clearApertureHeight.getLength())) {
 					rad2 = centre.getDifferenceWith(c1).getModSquared();
 					this.thickness = -2*(sphereRadius-Math.sqrt(sphereRadius*sphereRadius - rad2));
 				}
 				//region 2
-				if (centre.x>(windowCentre.x-0.5*windowWidth.getLength()) && centre.x<(windowCentre.x+0.5*windowWidth.getLength()) && centre.y>(windowCentre.y+0.5*windowHeight.getLength())) {
+				if (centre.x>(clearApertureCentre.x-0.5*clearApertureWidth.getLength()) && centre.x<(clearApertureCentre.x+0.5*clearApertureWidth.getLength()) && centre.y>(clearApertureCentre.y+0.5*clearApertureHeight.getLength())) {
 					rad2 = centre.getDifferenceWith(l12).getModSquared();
 					this.thickness = -2*(sphereRadius-Math.sqrt(sphereRadius*sphereRadius - rad2));
 				}	
 				//region 3
-				if (centre.x>=(windowCentre.x+0.5*windowWidth.getLength()) && centre.y>=(windowCentre.y+0.5*windowHeight.getLength())) {
+				if (centre.x>=(clearApertureCentre.x+0.5*clearApertureWidth.getLength()) && centre.y>=(clearApertureCentre.y+0.5*clearApertureHeight.getLength())) {
 					rad2 = centre.getDifferenceWith(c2).getModSquared();
 					this.thickness = -2*(sphereRadius-Math.sqrt(sphereRadius*sphereRadius - rad2));
 				}
 				//region 4
-				if (centre.x>(windowCentre.x+0.5*windowWidth.getLength()) && centre.y<(windowCentre.y+0.5*windowHeight.getLength()) && centre.y>(windowCentre.y-0.5*windowHeight.getLength())) {
+				if (centre.x>(clearApertureCentre.x+0.5*clearApertureWidth.getLength()) && centre.y<(clearApertureCentre.y+0.5*clearApertureHeight.getLength()) && centre.y>(clearApertureCentre.y-0.5*clearApertureHeight.getLength())) {
 					rad2 = centre.getDifferenceWith(l23).getModSquared();
 					this.thickness = -2*(sphereRadius-Math.sqrt(sphereRadius*sphereRadius - rad2));
 				}
 				//region 5
-				if (centre.x>=(windowCentre.x+0.5*windowWidth.getLength()) && centre.y<=(windowCentre.y-0.5*windowHeight.getLength())) {
+				if (centre.x>=(clearApertureCentre.x+0.5*clearApertureWidth.getLength()) && centre.y<=(clearApertureCentre.y-0.5*clearApertureHeight.getLength())) {
 					rad2 = centre.getDifferenceWith(c3).getModSquared();
 					this.thickness = -2*(sphereRadius-Math.sqrt(sphereRadius*sphereRadius - rad2));
 				}
 				//region 6
-				if (centre.x<(windowCentre.x+0.5*windowWidth.getLength()) && centre.x>(windowCentre.x-0.5*windowWidth.getLength()) && centre.y<(windowCentre.y-0.5*windowHeight.getLength())) {
+				if (centre.x<(clearApertureCentre.x+0.5*clearApertureWidth.getLength()) && centre.x>(clearApertureCentre.x-0.5*clearApertureWidth.getLength()) && centre.y<(clearApertureCentre.y-0.5*clearApertureHeight.getLength())) {
 					rad2 = centre.getDifferenceWith(l34).getModSquared();
 					this.thickness = -2*(sphereRadius-Math.sqrt(sphereRadius*sphereRadius - rad2));
 				}
 				//region 7
-				if (centre.x<=(windowCentre.x-0.5*windowWidth.getLength()) && centre.y<=(windowCentre.y-0.5*windowHeight.getLength())) {
+				if (centre.x<=(clearApertureCentre.x-0.5*clearApertureWidth.getLength()) && centre.y<=(clearApertureCentre.y-0.5*clearApertureHeight.getLength())) {
 					rad2 = centre.getDifferenceWith(c4).getModSquared();
 					this.thickness = -2*(sphereRadius-Math.sqrt(sphereRadius*sphereRadius - rad2));
 				}
 				//region 8
-				if (centre.x<(windowCentre.x-0.5*windowWidth.getLength()) && centre.y<(windowCentre.y+0.5*windowHeight.getLength()) && centre.y>(windowCentre.y-0.5*windowHeight.getLength())) {
+				if (centre.x<(clearApertureCentre.x-0.5*clearApertureWidth.getLength()) && centre.y<(clearApertureCentre.y+0.5*clearApertureHeight.getLength()) && centre.y>(clearApertureCentre.y-0.5*clearApertureHeight.getLength())) {
 					rad2 = centre.getDifferenceWith(l41).getModSquared();
 					this.thickness = -2*(sphereRadius-Math.sqrt(sphereRadius*sphereRadius - rad2));
 				}
@@ -537,29 +537,29 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 	
 	
 	/**
-	 * Constructor that creates an off centred window as part of a lens at the centre regardless of lens type. Note; may not be min thickness. Here the front radius is provided 
+	 * Constructor that creates an off centred clearAperture as part of a lens at the centre regardless of lens type. Note; may not be min thickness. Here the front radius is provided 
 	 * 
 	 * @param description
-	 * @param windowWidth
-	 * @param windowHeight
+	 * @param clearApertureWidth
+	 * @param clearApertureHeight
 	 * @param focalLength
 	 * @param refractiveIndex
 	 * @param centre
-	 * @param windowCentre
+	 * @param clearApertureCentre
 	 * @param frontDirection
 	 * @param parent
 	 * @param studio
 	 */
 	public RefractiveBoxLens(
 			String description,
-			Vector3D windowHeight,
-			Vector3D windowWidth,
+			Vector3D clearApertureHeight,
+			Vector3D clearApertureWidth,
 			double focalLength,
 			double refractiveIndex,
 			double thickness,
 			double radiusOfCurvatureFront,
 			Vector3D centre,
-			Vector3D windowCentre,
+			Vector3D clearApertureCentre,
 			SceneObject parent, 
 			Studio studio
 	)
@@ -568,13 +568,13 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		super(description, parent, studio);
 		
 		// copy the parameters into this instance's variables
-		this.apertureRadius = (((windowHeight.getProductWith(0.5)).getAbs()).getSumWith((centre.getDifferenceWith(windowCentre)).getAbs())).getLength();
+		this.apertureRadius = ((((clearApertureHeight.getAbs().getSumWith(clearApertureWidth.getAbs())).getProductWith(0.5)).getAbs()).getSumWith((centre.getDifferenceWith(clearApertureCentre)).getAbs())).getLength();
 		this.apertureRadius2 = apertureRadius*apertureRadius;
-		this.windowCentre = windowCentre; //will be used to cut out the remainder of the lens		
-		this.windowWidth = windowWidth;
-		this.windowHeight = windowHeight;
-		this.apertureHeight = windowHeight.getNormalised();
-		this.apertureWidth = windowWidth.getNormalised();
+		this.clearApertureCentre = clearApertureCentre; //will be used to cut out the remainder of the lens		
+		this.clearApertureWidth = clearApertureWidth;
+		this.clearApertureHeight = clearApertureHeight;
+		this.apertureHeight = clearApertureHeight.getNormalised();
+		this.apertureWidth = clearApertureWidth.getNormalised();
 		this.focalLength = focalLength;
 		this.refractiveIndex = refractiveIndex;
 		this.radiusOfCurvatureFront = (2*focalLength*(refractiveIndex - 1));
@@ -633,29 +633,29 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 	}
 	
 	/**
-	 * Constructor that creates an off centred window as part of a lens at the centre regardless of lens type. Note; may not be min thickness. Here the back radius is provided.
+	 * Constructor that creates an off centred clearAperture as part of a lens at the centre regardless of lens type. Note; may not be min thickness. Here the back radius is provided.
 	 * 
 	 * @param description
-	 * @param windowWidth
-	 * @param windowHeight
+	 * @param clearApertureWidth
+	 * @param clearApertureHeight
 	 * @param focalLength
 	 * @param refractiveIndex
 	 * @param centre
-	 * @param windowCentre
+	 * @param clearApertureCentre
 	 * @param frontDirection
 	 * @param parent
 	 * @param studio
 	 */
 	public RefractiveBoxLens(
 			String description,
-			Vector3D windowHeight,
-			Vector3D windowWidth,
+			Vector3D clearApertureHeight,
+			Vector3D clearApertureWidth,
 			double focalLength,
 			double refractiveIndex,
 			double thickness,
 			Vector3D centre,
 			double radiusOfCurvatureBack,
-			Vector3D windowCentre,
+			Vector3D clearApertureCentre,
 			SceneObject parent, 
 			Studio studio
 	)
@@ -664,11 +664,11 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		super(description, parent, studio);
 		
 		// copy the parameters into this instance's variables
-		this.apertureRadius = (((windowHeight.getProductWith(0.5)).getAbs()).getSumWith((centre.getDifferenceWith(windowCentre)).getAbs())).getLength();
+		this.apertureRadius = ((((clearApertureHeight.getAbs().getSumWith(clearApertureWidth.getAbs())).getProductWith(0.5)).getAbs()).getSumWith((centre.getDifferenceWith(clearApertureCentre)).getAbs())).getLength();
 		this.apertureRadius2 = apertureRadius*apertureRadius;
-		this.windowCentre = windowCentre; //will be used to cut out the remainder of the lens		
-		this.windowWidth = windowWidth;
-		this.windowHeight = windowHeight;
+		this.clearApertureCentre = clearApertureCentre; //will be used to cut out the remainder of the lens		
+		this.clearApertureWidth = clearApertureWidth;
+		this.clearApertureHeight = clearApertureHeight;
 		this.focalLength = focalLength;
 		this.refractiveIndex = refractiveIndex;
 		this.radiusOfCurvatureFront = (2*focalLength*(refractiveIndex - 1));
@@ -736,15 +736,15 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		// copy the original's parameters
 		this.apertureHeight = original.getApertureHeight();
 		this.apertureWidth = original.getApertureWidth();
-		this.windowHeight = original.getWindowHeight();
-		this.windowWidth = original.getWindowWidth();
+		this.clearApertureHeight = original.getclearApertureHeight();
+		this.clearApertureWidth = original.getclearApertureWidth();
 		this.radiusOfCurvatureFront = original.getRadiusOfCurvatureFront();
 		this.radiusOfCurvatureBack = original.getRadiusOfCurvatureBack();
 		this.thickness = original.getthickness();
 		this.focalLength = original.getFocalLength();
 		this.refractiveIndex = original.getRefractiveIndex();
 		this.centre = original.getCentre().clone();
-		this.windowCentre = original.getWindowCentre().clone();
+		this.clearApertureCentre = original.getclearApertureCentre().clone();
 		this.surfaceN = original.getsurfaceN();
 		this.surface_N = original.getsurface_N();
 //		this.type_case = o
@@ -779,20 +779,20 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		this.apertureWidth = apertureWidth;
 	}
 	
-	public Vector3D getWindowHeight() {
-		return windowHeight;
+	public Vector3D getclearApertureHeight() {
+		return clearApertureHeight;
 	}
 
-	public void setWindowHeight(Vector3D windowHeight) {
-		this.windowHeight = windowHeight;
+	public void setclearApertureHeight(Vector3D clearApertureHeight) {
+		this.clearApertureHeight = clearApertureHeight;
 	}
 	
-	public Vector3D getWindowWidth() {
-		return windowWidth;
+	public Vector3D getclearApertureWidth() {
+		return clearApertureWidth;
 	}
 
-	public void setWindowWidth(Vector3D windowWidth) {
-		this.windowWidth = windowWidth;
+	public void setclearApertureWidth(Vector3D clearApertureWidth) {
+		this.clearApertureWidth = clearApertureWidth;
 	}
 
 	public double getRadiusOfCurvatureFront() {
@@ -840,12 +840,12 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		this.centre = centre;
 	}
 	
-	public Vector3D getWindowCentre() {
-		return windowCentre;
+	public Vector3D getclearApertureCentre() {
+		return clearApertureCentre;
 	}
 	
-	public void setWindowCentre(Vector3D windowCentre) {
-		this.windowCentre = windowCentre;
+	public void setclearApertureCentre(Vector3D clearApertureCentre) {
+		this.clearApertureCentre = clearApertureCentre;
 	}
 
 
@@ -1342,8 +1342,8 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 		//adding the planes to make it a box shaped aperture
 		topPlane = new Plane(
 				"the planes which will cut the lens into a box",
-				windowCentre.getSumWith(windowHeight.getProductWith(0.5)), //point on top plane
-				windowHeight.getWithLength(-1), //"outside" direction
+				clearApertureCentre.getSumWith(clearApertureHeight.getProductWith(0.5)), //point on top plane
+				clearApertureHeight.getWithLength(-1), //"outside" direction
 				//new Refractive(1, 1, true),
 				surface_N,
 				this,
@@ -1351,8 +1351,8 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 				);
 		bottomPlane = new Plane(
 				"the planes which will cut the lens into a box",
-				windowCentre.getSumWith(windowHeight.getProductWith(-0.5)), //point on bottom plane
-				windowHeight.getWithLength(1), //"outside" direction
+				clearApertureCentre.getSumWith(clearApertureHeight.getProductWith(-0.5)), //point on bottom plane
+				clearApertureHeight.getWithLength(1), //"outside" direction
 //				new Refractive(1, 1, true),
 				surface_N,
 				this,
@@ -1360,8 +1360,8 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 				);
 		leftPlane = new Plane(
 				"the planes which will cut the lens into a box",
-				windowCentre.getSumWith(windowWidth.getProductWith(0.5)), //point on left plane
-				windowWidth.getWithLength(-1), //"outside" direction
+				clearApertureCentre.getSumWith(clearApertureWidth.getProductWith(0.5)), //point on left plane
+				clearApertureWidth.getWithLength(-1), //"outside" direction
 //				new Refractive(1, 1, true),
 				surface_N,
 				this,
@@ -1369,8 +1369,8 @@ public class RefractiveBoxLens extends SceneObjectPrimitiveIntersection	//list o
 				);
 		rightPlane = new Plane(
 				"the planes which will cut the lens into a box",
-				windowCentre.getSumWith(windowWidth.getProductWith(-0.5)), //point on right plane
-				windowWidth.getWithLength(1), //"outside" direction
+				clearApertureCentre.getSumWith(clearApertureWidth.getProductWith(-0.5)), //point on right plane
+				clearApertureWidth.getWithLength(1), //"outside" direction
 //				new Refractive(1, 1, true),
 				surface_N,
 				this,

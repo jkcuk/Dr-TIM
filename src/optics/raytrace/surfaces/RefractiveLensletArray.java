@@ -2,18 +2,16 @@ package optics.raytrace.surfaces;
 
 import math.Vector3D;
 
-import optics.raytrace.GUI.sceneObjects.EditableCuboid;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
-import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.sceneObjects.Parallelepiped2;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+
 
 /**
  * A rectangular array of lenslets, which all have the same focal length (to be confocal).
- * This will feature the ability to have a lens window or clear aperture, separate from the centre of the lens.
+ * This will feature the ability to have a lens clearAperture or clear aperture, separate from the centre of the lens.
  * To determine the central position of a specific lens index, periods in the u, v direction (which can be chosen) are used.
- * Two different types are used here, one for the Principal points, one for the lens windows.
+ * Two different types are used here, one for the Principal points, one for the lens clearApertures.
  * 
  * @author Maik
  */
@@ -42,17 +40,17 @@ public class RefractiveLensletArray extends Parallelepiped2
 //	 */
 //	SurfaceProperty surfaceLensletArray;
 //	
-//	//centre of the lens window, this will refer to the initial, central window
-//	private Vector3D lensWindowCentre;
+//	//centre of the lens clearAperture, this will refer to the initial, central clearAperture
+//	private Vector3D lensclearApertureCentre;
 //
 //	//centre of the lens Principal point, this will refer to the initial Principal point
 //	private Vector3D principalPointCentre;
 //
 //	/**
-//	 * setting the direction and length of lenslet windows
+//	 * setting the direction and length of lenslet clearApertures
 //	 */
-//	private Vector3D uPeriodWindow;
-//	private Vector3D vPeriodWindow;
+//	private Vector3D uPeriodclearAperture;
+//	private Vector3D vPeriodclearAperture;
 //	
 //	/**
 //	 * setting the direction and length of lenslet principal points
@@ -77,13 +75,13 @@ public class RefractiveLensletArray extends Parallelepiped2
 	/**
 	 * Constructor for the lenslet array
 	 * 
-	 * @param lensWindowCentre
+	 * @param lensclearApertureCentre
 	 * @param PrincipalPointCentre
 	 * @param uHat
 	 * @param vHat
 	 * @param focalLength
-	 * @param uPeriodWindows
-	 * @param vPeriodWindows
+	 * @param uPeriodclearApertures
+	 * @param vPeriodclearApertures
 	 * @param uPeriodPrincipalPoints
 	 * @param vPeriodPrincipalPoints
 //	 * @param simulateDiffractiveBlur
@@ -97,11 +95,11 @@ public class RefractiveLensletArray extends Parallelepiped2
 			double thickness,
 			Vector3D lensletArrayCentre, 
 			//set all the lenslet params
-			Vector3D uPeriodWindow, 
-			Vector3D vPeriodWindow,
+			Vector3D uPeriodclearAperture, 
+			Vector3D vPeriodclearAperture,
 			Vector3D uPeriodPrincipalPoint,
 			Vector3D vPeriodPrincipalPoint,
-			Vector3D lensWindowCentre, 
+			Vector3D lensclearApertureCentre, 
 			Vector3D principalPointCentre,
 			double focalLength, 
 			double refractiveIndex, 
@@ -115,22 +113,22 @@ public class RefractiveLensletArray extends Parallelepiped2
 		super(
 				"Box containing the lenslet array",// description, 
 				lensletArrayCentre, //centre, 
-				uPeriodWindow.getWithLength(width), // u, 
-				vPeriodWindow.getWithLength(height), // v, 
-				Vector3D.crossProduct(uPeriodWindow, vPeriodWindow).getWithLength(thickness), // w, 
-				new SurfaceOfGeneralRefractiveCLAs(uPeriodWindow, vPeriodWindow, uPeriodPrincipalPoint, vPeriodPrincipalPoint, lensWindowCentre, principalPointCentre,
+				uPeriodclearAperture.getWithLength(width), // u, 
+				vPeriodclearAperture.getWithLength(height), // v, 
+				Vector3D.crossProduct(uPeriodclearAperture, vPeriodclearAperture).getWithLength(thickness), // w, 
+				new SurfaceOfGeneralRefractiveCLAs(uPeriodclearAperture, vPeriodclearAperture, uPeriodPrincipalPoint, vPeriodPrincipalPoint, lensclearApertureCentre, principalPointCentre,
 						focalLength, refractiveIndex, parent,  maxSteps,  transmissionCoefficient,  shadowThrowing),
 				parent,	// parent, 
 				studio	// the studio
 				);
 
-//		if(uPeriodWindow==uPeriodPrincipalPoint && vPeriodWindow==vPeriodPrincipalPoint && lensWindowCentre==principalPointCentre)
+//		if(uPeriodclearAperture==uPeriodPrincipalPoint && vPeriodclearAperture==vPeriodPrincipalPoint && lensclearApertureCentre==principalPointCentre)
 //		{
-//			SurfaceProperty surfaceLensletArray = new SurfaceOfRefractiveCLAs(uPeriodWindow, vPeriodWindow, lensWindowCentre,
+//			SurfaceProperty surfaceLensletArray = new SurfaceOfRefractiveCLAs(uPeriodclearAperture, vPeriodclearAperture, lensclearApertureCentre,
 //			focalLength, refractiveIndex, parent, maxSteps, transmissionCoefficient, shadowThrowing); //parent correct??
 //			this.surfaceLensletArray = surfaceLensletArray;
 //		}else {
-//			SurfaceProperty surfaceLensletArray = new SurfaceOfGeneralRefractiveCLAs(uPeriodWindow, vPeriodWindow, uPeriodPrincipalPoint, vPeriodPrincipalPoint, lensWindowCentre, principalPointCentre,
+//			SurfaceProperty surfaceLensletArray = new SurfaceOfGeneralRefractiveCLAs(uPeriodclearAperture, vPeriodclearAperture, uPeriodPrincipalPoint, vPeriodPrincipalPoint, lensclearApertureCentre, principalPointCentre,
 //					focalLength, refractiveIndex, parent,  maxSteps,  transmissionCoefficient,  shadowThrowing);//parent correct??
 //			this.surfaceLensletArray = surfaceLensletArray;
 //		}
@@ -149,11 +147,11 @@ public class RefractiveLensletArray extends Parallelepiped2
 				original.getV().getLength(),
 				original.getW().getLength(),
 				original.getCentre(),
-				((SurfaceOfGeneralRefractiveCLAs)(original.getSurfaceProperty())).getuPeriodWindow(),
-				((SurfaceOfGeneralRefractiveCLAs)(original.getSurfaceProperty())).getvPeriodWindow(), 
+				((SurfaceOfGeneralRefractiveCLAs)(original.getSurfaceProperty())).getuPeriodclearAperture(),
+				((SurfaceOfGeneralRefractiveCLAs)(original.getSurfaceProperty())).getvPeriodclearAperture(), 
 				((SurfaceOfGeneralRefractiveCLAs)(original.getSurfaceProperty())).getuPeriodPrincipalPoint(),
 				((SurfaceOfGeneralRefractiveCLAs)(original.getSurfaceProperty())).getvPeriodPrincipalPoint(),
-				((SurfaceOfGeneralRefractiveCLAs)(original.getSurfaceProperty())).getCentreOfLensWindow00(), 
+				((SurfaceOfGeneralRefractiveCLAs)(original.getSurfaceProperty())).getCentreOfLensclearAperture00(), 
 				((SurfaceOfGeneralRefractiveCLAs)(original.getSurfaceProperty())).getCentreOfLensPrincipalPoint00(),
 				((SurfaceOfGeneralRefractiveCLAs)(original.getSurfaceProperty())).getFocalLength(),
 				((SurfaceOfGeneralRefractiveCLAs)(original.getSurfaceProperty())).getRefractiveIndex(), 
@@ -252,13 +250,13 @@ public class RefractiveLensletArray extends Parallelepiped2
 //	}
 //
 //
-//	public Vector3D getLensWindowCentre() {
-//		return lensWindowCentre;
+//	public Vector3D getLensclearApertureCentre() {
+//		return lensclearApertureCentre;
 //	}
 //
 //
-//	public void setLensWindowCentre(Vector3D lensWindowCentre) {
-//		this.lensWindowCentre = lensWindowCentre;
+//	public void setLensclearApertureCentre(Vector3D lensclearApertureCentre) {
+//		this.lensclearApertureCentre = lensclearApertureCentre;
 //	}
 //
 //
@@ -272,23 +270,23 @@ public class RefractiveLensletArray extends Parallelepiped2
 //	}
 //
 //
-//	public Vector3D getuPeriodWindow() {
-//		return uPeriodWindow;
+//	public Vector3D getuPeriodclearAperture() {
+//		return uPeriodclearAperture;
 //	}
 //
 //
-//	public void setuPeriodWindow(Vector3D uPeriodWindow) {
-//		this.uPeriodWindow = uPeriodWindow;
+//	public void setuPeriodclearAperture(Vector3D uPeriodclearAperture) {
+//		this.uPeriodclearAperture = uPeriodclearAperture;
 //	}
 //
 //
-//	public Vector3D getvPeriodWindow() {
-//		return vPeriodWindow;
+//	public Vector3D getvPeriodclearAperture() {
+//		return vPeriodclearAperture;
 //	}
 //
 //
-//	public void setvPeriodWindow(Vector3D vPeriodWindow) {
-//		this.vPeriodWindow = vPeriodWindow;
+//	public void setvPeriodclearAperture(Vector3D vPeriodclearAperture) {
+//		this.vPeriodclearAperture = vPeriodclearAperture;
 //	}
 //
 //

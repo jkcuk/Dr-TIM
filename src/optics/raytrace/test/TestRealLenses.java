@@ -57,9 +57,9 @@ public class TestRealLenses extends NonInteractiveTIMEngine implements ActionLis
 	private double cameraAngle; // the angle at which the camera will face towards (0,0,0), + to go left - to go right 
 	private double cameraUpAngle; //define an angle with which the camera will view the origin
 	private double cameraFOV; //set the focus and thus zoom of camera	
-	private double cameraDistance; //set camera distance from (0,0,0)
+	private double cameraDistance; //set camera distance from (0,0,0) 
 	
-	private Vector3D lensWindowCentre, principalPointCentre, uPeriodWindow,	vPeriodWindow, uPeriodPrincipalPoint, vPeriodPrincipalPoint;
+	private Vector3D lensclearApertureCentre, principalPointCentre, uPeriodclearAperture,	vPeriodclearAperture, uPeriodPrincipalPoint, vPeriodPrincipalPoint;
 	
 	
 	
@@ -86,12 +86,12 @@ public class TestRealLenses extends NonInteractiveTIMEngine implements ActionLis
 		nhat = new Vector3D(0,0,1); //optical axis direction vector 
 		phi0 = new Vector3D(1,0,0); // phi0Direction
 		
-		lensWindowCentre= new Vector3D(0,2,0);
+		lensclearApertureCentre= new Vector3D(0,2,0);
 		principalPointCentre= new Vector3D(0,2,0);
-		uPeriodWindow= new Vector3D(0.1,0,0);
-		vPeriodWindow= new Vector3D(0,0.1,0);
-		uPeriodPrincipalPoint= uPeriodWindow;//new Vector3D(0,0,0);
-		vPeriodPrincipalPoint= vPeriodWindow;//new Vector3D(0,0,0);
+		uPeriodclearAperture= new Vector3D(0.1,0,0);
+		vPeriodclearAperture= new Vector3D(0,0.1,0);
+		uPeriodPrincipalPoint= uPeriodclearAperture;//new Vector3D(0,0,0);
+		vPeriodPrincipalPoint= vPeriodclearAperture;//new Vector3D(0,0,0);
 		
 		
 		//boolean param to switch between ideal and real lens
@@ -139,11 +139,11 @@ public class TestRealLenses extends NonInteractiveTIMEngine implements ActionLis
 				height,
 				thickness,
 				centre,// lensletArrayCentre
-				uPeriodWindow, // uPeriod
-				vPeriodWindow, // vPeriod
+				uPeriodclearAperture, // uPeriod
+				vPeriodclearAperture, // vPeriod
 				uPeriodPrincipalPoint,
 				vPeriodPrincipalPoint,
-				lensWindowCentre, // lensWindowCentre
+				lensclearApertureCentre, // lensclearApertureCentre
 				principalPointCentre,
 				focalLength,
 				refractiveIndex,
@@ -167,10 +167,10 @@ public class TestRealLenses extends NonInteractiveTIMEngine implements ActionLis
 //				//set all the lenslet params
 //				focalLength,
 //				refractiveIndex,
-//				lensWindowCentre, // lensWindowCentre
+//				lensclearApertureCentre, // lensclearApertureCentre
 //				principalPointCentre, // principalPointCentre
-//				uPeriodWindow, // uPeriodWindow
-//				vPeriodWindow, // vPeriodWindow
+//				uPeriodclearAperture, // uPeriodclearAperture
+//				vPeriodclearAperture, // vPeriodclearAperture
 //				uPeriodPrincipalPoint, // uPeriodPrincipalPoint
 //				vPeriodPrincipalPoint, // vPeriodPrincipalPoint
 //				500, //max trace level
@@ -381,11 +381,11 @@ public class TestRealLenses extends NonInteractiveTIMEngine implements ActionLis
 			scene.addSceneObject(new EditableRectangularLensletArray(
 					"Equivilant ideal lens array",	// description
 					centre,	// centre
-					(uPeriodWindow.getNormalised()).getWithLength(width),	// spanVector1
-					(vPeriodWindow.getNormalised()).getWithLength(height),	// spanVector2
+					(uPeriodclearAperture.getNormalised()).getWithLength(width),	// spanVector1
+					(vPeriodclearAperture.getNormalised()).getWithLength(height),	// spanVector2
 					focalLength,	// focalLength
-					uPeriodWindow.getLength(),	// xPeriod
-					vPeriodWindow.getLength(),	// yPeriod
+					uPeriodclearAperture.getLength(),	// xPeriod
+					vPeriodclearAperture.getLength(),	// yPeriod
 					0,	// xOffset
 					0,	// yOffset
 					LensType.IDEAL_THIN_LENS,	// lensType
