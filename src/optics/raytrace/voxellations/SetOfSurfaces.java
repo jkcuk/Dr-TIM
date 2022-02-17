@@ -116,6 +116,8 @@ public abstract class SetOfSurfaces extends Voxellation
 			// System.out.println("getSurface(i-1)="+getSurface(i-1));
 			// System.out.println("getSurface(i)="+getSurface(i));
 			// if(i>0) 
+//			surface.addSceneObject(new SceneObjectPartOfVoxellation(getSurface(i-1), this, i-1));
+//			surface.addSceneObject(new SceneObjectPartOfVoxellation(getSurface(i), this, i));
 			surface.addSceneObject(getSurface(i-1));
 			surface.addSceneObject(getSurface(i));
 		} catch (Exception e) {
@@ -124,4 +126,28 @@ public abstract class SetOfSurfaces extends Voxellation
 		// System.exit(-1);
 		return surface;
 	}
+	
+//	@Override
+//	public SceneObject getSurfaceOfVoxelAvoidingSurface(int i, int avoidSurface)
+//	{		SceneObjectContainer surface = new SceneObjectContainer(
+//			"surface of voxel #" + i,
+//			null,	// parent
+//			null	// studio
+//		);
+//			
+//	// voxel #i is defined to lie between surface #i-1 and surface #i
+//	
+//	// System.out.println("i="+i);
+//	try {
+//		// System.out.println("getSurface(i-1)="+getSurface(i-1));
+//		// System.out.println("getSurface(i)="+getSurface(i));
+//		// if(i>0) 
+//		if(avoidSurface != i-1) surface.addSceneObject(new SceneObjectPartOfVoxellation(getSurface(i-1), this, i-1));
+//		if(avoidSurface != i) surface.addSceneObject(new SceneObjectPartOfVoxellation(getSurface(i), this, i));
+//	} catch (Exception e) {
+//		e.printStackTrace();
+//	}
+//	// System.exit(-1);
+//	return surface;
+//}	
 }

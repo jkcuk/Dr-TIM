@@ -130,6 +130,25 @@ public abstract class SurfaceOfVoxellatedVolume extends SurfacePropertyPrimitive
 	public abstract DoubleColour getColourUponStartingWithinVolume(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int stepsLeft, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	throws RayTraceException;
 	
+
+	/**
+	 * What to do upon starting inside the volume, but *not* on the <surfaceIndex>th surface of <voxellation>
+	 * Override to customise; an example can be found in SurfaceOfVoxellatedAbsorber.
+	 * @param r
+	 * @param voxellation
+	 * @param surfaceIndex
+	 * @param i
+	 * @param scene
+	 * @param l
+	 * @param stepsLeft
+	 * @param traceLevel
+	 * @param raytraceExceptionHandler
+	 * @return
+	 * @throws RayTraceException
+	 */
+//	public abstract DoubleColour getColourUponStartingWithinVolumeAvoidingVoxellationSurface(Ray r, Voxellation voxellation, int surfaceIndex, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int stepsLeft, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+//	throws RayTraceException;
+
 	
 	// it shouldn't normally be necessary to override the following methods
 	

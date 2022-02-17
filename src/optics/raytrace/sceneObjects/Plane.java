@@ -31,6 +31,37 @@ public class Plane extends SceneObjectPrimitive implements Serializable
 		setPointOnPlane(pointOnPlane);
 		setNormal(normal);
 	}
+	
+	/**
+	 * Creates a plane that passes through three given points, <b>p1</b>, <b>p2</b>, and <b>p3</b> (which mustn't lie on the same line).
+	 * The outwards-facing normal is calculated as (<b>p2</b>-<b>p1</b>) x (<b>p3</b>-<b>p1</b>).
+	 * 
+	 * @param description
+	 * @param point1OnPlane
+	 * @param point2OnPlane
+	 * @param point3OnPlane
+	 * @param surfaceProperty
+	 * @param parent
+	 * @param studio
+	 */
+	public Plane(
+			String description,
+			Vector3D point1OnPlane,
+			Vector3D point2OnPlane,
+			Vector3D point3OnPlane,
+			SurfaceProperty surfaceProperty,
+			SceneObject parent,
+			Studio studio
+		)
+	{
+		this(
+				description, 
+				point1OnPlane,	// pointOnPlane
+				getNormalToPlaneThroughPoints(point1OnPlane, point2OnPlane, point3OnPlane),	// normal				
+				surfaceProperty, parent, studio
+			);
+	}
+	
 
 //	public Plane(String description, SceneObject parent, Studio studio) {
 //		super(description, new SurfaceColour(DoubleColour.GREEN, DoubleColour.BLACK), parent, studio);
@@ -138,6 +169,19 @@ public class Plane extends SceneObjectPrimitive implements Serializable
 				parent,
 				studio
 		);
+	}
+	
+	
+	public static Vector3D getNormalToPlaneThroughPoints(
+			Vector3D point1,
+			Vector3D point2,
+			Vector3D point3
+		)
+	{
+		return Vector3D.crossProduct(
+				Vector3D.difference(point2, point1),
+				Vector3D.difference(point3, point1)
+			);
 	}
 	
 //	/**

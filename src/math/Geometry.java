@@ -244,6 +244,53 @@ public class Geometry
 	}
 	
 	/**
+	 * Calculate the intersection point of two straight lines.
+	 * If there is no such intersection, the zero vector is returned along with an error message.
+	 * See https://en.wikipedia.org/wiki/Line--line_intersection
+	 * @param pointOnLine1
+	 * @param directionOfLine1
+	 * @param pointOnLine2
+	 * @param directionOfLine2
+	 * @return	the point closest to both lines
+	 */
+	public static Vector3D lineLineIntersectionNoRayTraceException(
+			Vector3D pointOnLine1,	// p_1
+			Vector3D directionOfLine1,	// v_1
+			Vector3D pointOnLine2,
+			Vector3D directionOfLine2
+		)
+	{
+		Matrix
+			i = Jama.Matrix.identity(3, 3),	// identity matrix
+			v1 = directionOfLine1.getNormalised().toJamaColumnVector(),	//
+			v2 = directionOfLine2.getNormalised().toJamaColumnVector(),
+			n1 = i.minus(v1.times(v1.transpose())),	// I - v_1 v_1^T
+			// d1 = i.minus(Vector3D.outerProduct(directionOfLine1, directionOfLine1)),	// I - v_1 v_1^T
+			n2 = i.minus(v2.times(v2.transpose()));	// I - v_2 v_2^T
+			// d2 = i.minus(Vector3D.outerProduct(directionOfLine2, directionOfLine2));	// I - v_2 v_2^T
+		
+		Vector3D intersectionPoint = new Vector3D( 
+				n1.plus(n2).inverse().times(	// (sum_i I - v_i v_i^T)^{-1} *
+						n1.times(pointOnLine1.toJamaColumnVector()).plus(
+								n2.times(pointOnLine2.toJamaColumnVector())	// sum_i (I - v_i v_i^T) p_i
+							)
+					)
+				);
+		
+		// calculate the distance of this point to one of the lines
+		double distance = linePointDistance(pointOnLine1, directionOfLine1, intersectionPoint);
+		// if(distance != 0)
+		if(distance > MyMath.EPSILON)
+		{// The distance is non-zero / quite big
+			System.err.println("The lines do not intercept. Returns null");
+			intersectionPoint = null;
+		}
+
+		return intersectionPoint;
+	}
+	
+	
+	/**
 	 * Calculate the point closest (in a least-squares sense) to both lines.
 	 * If the lines intersect, then this is the intersection point
 	 * See https://en.wikipedia.org/wiki/Line--line_intersection

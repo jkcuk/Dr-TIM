@@ -472,31 +472,70 @@ implements Serializable
 		}
 	}
 	
-	/**
-	 * Set <i>currentlyBestIntersection</i> to a closer one, if possible
-	 * @param currentlyBestIntersection
-	 * @param sceneObjectPrimitive
-	 * @param ray
-	 * @param excludeObject
-	 */
+//	/**
+//	 * Set <i>currentlyBestIntersection</i> to a closer one, if possible
+//	 * @param currentlyBestIntersection
+//	 * @param sceneObjectPrimitive
+//	 * @param ray
+//	 * @param excludeObject
+//	 */
+//	private void lookForBetterIntersection(
+//			IntersectionAndDistance currentlyBestIntersection,
+//			SceneObjectPrimitive sceneObjectPrimitive,
+//			Ray ray,
+//			SceneObjectPrimitive excludeObject
+//		)
+//	{
+//		// calculate the intersection
+//		RaySceneObjectIntersection intersection = sceneObjectPrimitive.getClosestRayIntersectionAvoidingOrigin(ray, excludeObject);
+//
+//		// is there an intersection point?
+//		if(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
+//		{
+//			// yes
+//
+//			// calculate the distance (squared) to the intersection point
+//			double distance2 = Vector3D.getDistance2(intersection.p, ray.getP());	// intersection.p.getDifferenceWith(ray.getP()).getModSquared();
+//			
+//			// is the distance to this intersection point smaller than the smallest one so far?
+//			if(distance2 < currentlyBestIntersection.distance2)
+//			{
+//				// yes
+//
+//				// check that the intersection point is on the surface, i.e. inside all positive scene-object primitives other than the
+//				// one involved in the intersection and outside all negative scene-object primitives other then the one involved in the
+//				// intersection
+//				if(insideAllPositiveSceneObjectPrimitives(intersection) && outsideAllNegativeSceneObjectPrimitives(intersection))
+//				{
+//					// yes, so make the new intersection point the closest one so far
+//					currentlyBestIntersection.distance2 = distance2;
+//					currentlyBestIntersection.intersection = intersection;
+//					
+//					return;
+//				}
+//			}
+//		}
+//	}
+	
+	
 	private void lookForBetterIntersection(
 			IntersectionAndDistance currentlyBestIntersection,
 			SceneObjectPrimitive sceneObjectPrimitive,
 			Ray ray,
 			SceneObjectPrimitive excludeObject
-		)
+			)
 	{
-		// calculate the intersection
+		// calculate the closest intersection
 		RaySceneObjectIntersection intersection = sceneObjectPrimitive.getClosestRayIntersectionAvoidingOrigin(ray, excludeObject);
 
-		// is there an intersection point?
-		if(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
-		{
-			// yes
 
+		// while there is an intersection point...
+		while(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
+		{
 			// calculate the distance (squared) to the intersection point
-			double distance2 = Vector3D.getDistance2(intersection.p, ray.getP());	// intersection.p.getDifferenceWith(ray.getP()).getModSquared();
-			
+			double distance2 = Vector3D.getDistance2(intersection.p, ray.getP()); // intersection.p.getDifferenceWith(ray.getP()).getModSquared();
+
+
 			// is the distance to this intersection point smaller than the smallest one so far?
 			if(distance2 < currentlyBestIntersection.distance2)
 			{
@@ -510,12 +549,24 @@ implements Serializable
 					// yes, so make the new intersection point the closest one so far
 					currentlyBestIntersection.distance2 = distance2;
 					currentlyBestIntersection.intersection = intersection;
-					
+
+
 					return;
 				}
+
+
+				// it could be that the current intersection is clipped, but that the next one isn't;
+				intersection = sceneObjectPrimitive.getNextClosestRayIntersectionAvoidingOrigin(ray, excludeObject, intersection);
+			}
+			else {
+
+				// the distance to the intersection with this object is already greater than the distance of the closest intersection;
+				// no need to look for the next, even more distant, intersection
+				return;
 			}
 		}
 	}
+
 	
 	/* (non-Javadoc)
 	 * @see optics.raytrace.SceneObjectContainer#getClosestRayIntersectionAvoidingOrigin(optics.raytrace.Ray, optics.raytrace.SceneObject)
@@ -657,8 +708,8 @@ implements Serializable
 		
 		if(positiveSceneObjectPrimitives != null) SOPs.addAll(positiveSceneObjectPrimitives);
 		if(negativeSceneObjectPrimitives != null) SOPs.addAll(negativeSceneObjectPrimitives);	// TODO add the SceneObjectPrimitiveInverse of each of these
-		// if(invisiblePositiveSceneObjectPrimitives != null) SOPs.addAll(invisiblePositiveSceneObjectPrimitives);
-		// if(invisibleNegativeSceneObjectPrimitives != null) SOPs.addAll(invisibleNegativeSceneObjectPrimitives);
+		if(invisiblePositiveSceneObjectPrimitives != null) SOPs.addAll(invisiblePositiveSceneObjectPrimitives);
+		if(invisibleNegativeSceneObjectPrimitives != null) SOPs.addAll(invisibleNegativeSceneObjectPrimitives);
 		if(clippedSceneObjectPrimitives != null) SOPs.addAll(clippedSceneObjectPrimitives);
 
 		return SOPs;

@@ -30,4 +30,14 @@ public abstract class Voxellation implements Serializable
 	 */
 	public abstract SceneObject getSurfaceOfVoxel(int i)
 	throws IndexOutOfBoundsException;
+	
+	/**
+	 * Return the surface of voxel <i>i</i>, but don't include surface #<i>avoidSurface</i>
+	 * @param i
+	 * @return
+	 * @throws IndexOutOfBoundsException
+	 */
+//	public abstract SceneObject getSurfaceOfVoxelAvoidingSurface(int i, int avoidSurface)
+//	throws IndexOutOfBoundsException;
+	
 }

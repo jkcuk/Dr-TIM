@@ -1,6 +1,5 @@
 package optics.raytrace.surfaces;
 
-import math.MyMath;
 import math.Vector3D;
 import optics.DoubleColour;
 import optics.raytrace.core.LightSource;
@@ -9,7 +8,6 @@ import optics.raytrace.core.RaySceneObjectIntersection;
 import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.exceptions.RayTraceException;
-import optics.raytrace.sceneObjects.RefractiveBoxLens;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.voxellations.Voxellation;
 
@@ -28,9 +26,15 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 	 * @param planeSets	the sets of equidistant, parallel, planes that define the voxels
 	 * @param transmissionCoefficient	transmission coefficient on entering and exiting volume
 	 */
-	public SurfaceOfVoxellatedLensArray(Voxellation[] voxellations, SceneObject surface, int maxSteps, double transmissionCoefficient, boolean shadowThrowing)
+	public SurfaceOfVoxellatedLensArray(
+			Voxellation[] voxellations,
+			SceneObject boundingBox,
+			int maxSteps,
+			double transmissionCoefficient,
+			boolean shadowThrowing
+		)
 	{
-		super(voxellations, surface, maxSteps, transmissionCoefficient, shadowThrowing);
+		super(voxellations, boundingBox, maxSteps, transmissionCoefficient, shadowThrowing);
 	}
 	
 	/**
@@ -41,7 +45,7 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 	{
 		this(
 				original.getVoxellations(),
-				original.getSurface(),
+				original.getBoundingBox(),
 				original.getMaxSteps(),
 				original.getTransmissionCoefficient(),
 				original.isShadowThrowing()
@@ -64,10 +68,13 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 	 * @param voxelIndices
 	 * @return	the SceneObject representing the refractive lens corresponding to the voxel with the given voxelIndices
 	 */
-	public abstract RefractiveBoxLens getRefractiveLens(int[] voxelIndices);
-//	{
-//		return null;	// TODO
-//	}
+	public abstract SceneObject getRefractiveLens(int[] voxelIndices);
+
+	
+	public SceneObject getBoundingBox()
+	{
+		return super.getSurface();
+	}
 	
 	/**
 	 * What to do upon starting inside the volume.
@@ -81,12 +88,118 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 	 * @return
 	 * @throws RayTraceException
 	 */
+//	@Override
+//	public DoubleColour getColourUponStartingWithinVolumeAvoidingVoxellationSurface(Ray r, Voxellation voxellationToAvoid, int surfaceIndex, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int stepsLeft, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+//	throws RayTraceException
+//	{
+//		if(stepsLeft < 0) return DoubleColour.BLACK;
+//	
+//		// calculate the voxel indices of the voxel that's ahead
+//		int[] voxelIndices = getVoxelIndicesInFront(r, i);
+//		
+//		//
+//		// trace the ray through a collection of scene objects that includes the lens and the boundary of the voxel
+//		//
+//		
+//		// create a collection of scene objects...
+//		SceneObjectContainer s = new SceneObjectContainer(
+//				null,	// description
+//				null,	// parent
+//				null	// studio
+//			);
+//		
+//		// ... and populate it with the surface associated with this surface property...
+//		s.addSceneObject(getSurface());
+//		
+//		// ... and the surfaces of the voxel containing the ray's start position in each of the voxellations...
+//		
+//		// work with the advanced ray; in case we are starting on the surface of a voxel (as we usually are), this ensures
+//		// that we are then well inside the voxel
+//		// Ray rA = r.getAdvancedRay(MyMath.TINY);
+//		
+//		// if(planeSets != null)	// planeSets simply mustn't be null!
+//		for(Voxellation voxellation : voxellations)
+//		{
+//			try {
+//				if(voxellation == voxellationToAvoid)
+//					s.addSceneObject(voxellation.getSurfaceOfVoxelAvoidingSurface(voxellation.getVoxelIndex(r.getP()), surfaceIndex));
+//				else
+//					s.addSceneObject(voxellation.getSurfaceOfVoxel(voxellation.getVoxelIndex(r.getP())));
+//			} catch (Exception e) {
+//				// not sure under which circumstances this would happen; print the stack trace
+//				System.err.println("SurfaceOfVoxellatedLensArray::getColourUponStartingWithinVolume: exception?!");
+//				e.printStackTrace();
+//			}
+//		}
+//		
+//		// add the lens corresponding to this voxel
+//		RefractiveBoxLens lens = getRefractiveLens(voxelIndices);
+//		s.addSceneObject(lens);
+//
+//		for(; stepsLeft >= 0; stepsLeft--)
+//		{
+//			// now trace the ray through this collection of scene objects
+//			i = s.getClosestRayIntersectionAvoidingOrigin(r, i.o);
+//
+//			if(i == RaySceneObjectIntersection.NO_INTERSECTION)
+//			{
+//				// this shouldn't happen
+//				return DoubleColour.LIGHT_RED;
+//			}
+//
+//			// deal with the intersection
+//			if(surface.getSceneObjectPrimitives().contains(i.o))	// is this intersection with the boundary surface?
+//			{
+//				// the intersection is with the surface; leave the volume
+//				// (multiply by the transmission coefficient because of attenuation upon entering volume)
+//				return getColourUponLeavingVolume(
+//						r, // .getAdvancedRay(MyMath.TINY),	// advance the ray to avoid intersecting with the origin again
+//						i, scene, l, stepsLeft, traceLevel, raytraceExceptionHandler);
+//			}
+//			else if(lens.getSceneObjectPrimitives().contains(i.o))	// is the intersection with the lens?
+//			{
+//				// intersection is with the lens
+//				RefractiveSimple refractiveSurfaceProperty = (RefractiveSimple)(i.o.getSurfaceProperty());
+//				
+//				// calculate the refracted light-ray direction
+//				Vector3D newRayDirection = RefractiveSimple.getRefractedLightRayDirection(
+//						r.getD(),	// incidentLightRayDirection
+//						i.getNormalisedOutwardsSurfaceNormal(),	// surfaceNormal
+//						refractiveSurfaceProperty.getInsideOutsideRefractiveIndexRatio()	// refractiveIndexRatio
+//					);
+//
+//				// start a new ray from the intersection point, with the new light-ray direction
+//				r = r.getBranchRay(
+//						i.p,
+//						r.getD(),
+//						i.t
+//				);
+//			}
+//			else
+//			{
+//				// the intersection is with one of the surfaces separating neighbouring voxels
+//				
+//				// trace through the next voxel
+//				return getColourUponStartingWithinVolume(r, i, scene, l, stepsLeft, traceLevel, raytraceExceptionHandler);
+//			}
+//			
+//			// if this code is reached, the intersection was with the lens;
+//			// keep tracing through the voxel, starting from the intersection point, with the new light-ray direction
+//		}
+//
+//		// if this code is reached, we have run out of steps without hitting the voxel boundary;
+//		// return black
+//		return DoubleColour.BLACK;
+//	}
+
 	@Override
 	public DoubleColour getColourUponStartingWithinVolume(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int stepsLeft, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	throws RayTraceException
 	{
+		// return getColourUponStartingWithinVolumeAvoidingVoxellationSurface(r, null, 0, i, scene, l, stepsLeft, traceLevel, raytraceExceptionHandler);
+		
 		if(stepsLeft < 0) 
-			return DoubleColour.BLACK; //TODO
+			return DoubleColour.YELLOW; //TODO
 	
 		// calculate the voxel indices of the voxel that's ahead
 		int[] voxelIndices = getVoxelIndicesInFront(r, i);
@@ -127,11 +240,27 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 		s.addSceneObject(v);
 		
 		// add the lens corresponding to this voxel
-		RefractiveBoxLens lens = getRefractiveLens(voxelIndices);
+		SceneObject lens = getRefractiveLens(voxelIndices);
 		s.addSceneObject(lens);
+		
+//		return s.getColourAvoidingOrigin(
+//				r,
+//				i.o,	
+//				l,	// lights -- shouldn't matter
+//				s,	// scene
+//				stepsLeft,	// traceLevel,
+//				new SurfaceOfVoxellatedLensArrayRaytraceExceptionHandler(
+//						scene,	// normalScene,
+//						traceLevel,	// normalTraceLevel,
+//						raytraceExceptionHandler	// normalRaytraceExceptionHandler
+//					)	// raytraceExceptionHandler
+//			);
 
-		for(; stepsLeft >= 0; stepsLeft--)
+		// for(; stepsLeft >= 0; stepsLeft--)	// gives "dead code" warning, for some reason (?)
+		while(stepsLeft >= 0)
 		{
+			stepsLeft--;
+			
 			// now trace the ray through this collection of scene objects
 			i = s.getClosestRayIntersectionAvoidingOrigin(r, i.o);
 
@@ -152,33 +281,32 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 			}
 			else if(lens.getSceneObjectPrimitives().contains(i.o))	// is the intersection with the lens?
 			{
-				return DoubleColour.GREEN;
-				
 				// intersection is with the lens
-//				RefractiveSimple refractiveSurfaceProperty = (RefractiveSimple)(i.o.getSurfaceProperty());
-//				
-//				// calculate the refracted light-ray direction
-//				Vector3D newRayDirection = RefractiveSimple.getRefractedLightRayDirection(
-//						r.getD(),	// incidentLightRayDirection
-//						i.getNormalisedOutwardsSurfaceNormal(),	// surfaceNormal
-//						refractiveSurfaceProperty.getInsideOutsideRefractiveIndexRatio()	// refractiveIndexRatio
-//					);
-//
-//				// start a new ray from the intersection point, with the new light-ray direction
-//				r = r.getBranchRay(
-//						i.p,
-//						r.getD(),
-//						i.t
-//				);
+				// return DoubleColour.GREEN;
+				
+				RefractiveSimple refractiveSurfaceProperty = (RefractiveSimple)(i.o.getSurfaceProperty());
+				
+				// calculate the refracted light-ray direction
+				Vector3D newRayDirection = refractiveSurfaceProperty.getRefractedLightRayDirection(r, i);
+
+				// start a new ray from the intersection point, with the new light-ray direction
+				r = r.getBranchRay(
+						i.p,
+						newRayDirection,
+						i.t
+				);
 			}
 			else if(v.getSceneObjectPrimitives().contains(i.o))	// is the intersection with the voxellation surfaces?
 			{
 				// the intersection is with one of the surfaces separating neighbouring voxels
+				// return DoubleColour.CYAN;
 				
+				return getColourUponIntersectingWithVoxelBoundary(r, i, scene, l, stepsLeft, traceLevel, raytraceExceptionHandler);
+
 				// trace through the next voxel
+				// return getColourUponStartingWithinVolume(r, i, scene, l, stepsLeft-1, traceLevel, raytraceExceptionHandler);
 				//System.out.println("SurfaceOfVoxellatedLensArray::getColourUponStartingWithinVolume: i.p="+i);
-				return DoubleColour.CYAN;
-				//return getColourUponStartingWithinVolume(r.getAdvancedRay(MyMath.TINY), i, scene, l, stepsLeft-1, traceLevel, raytraceExceptionHandler);
+//				return getColourUponStartingWithinVolume(r.getAdvancedRay(MyMath.TINY), i, scene, l, stepsLeft, traceLevel, raytraceExceptionHandler);
 			}
 			else
 			{
@@ -192,9 +320,8 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 
 		// if this code is reached, we have run out of steps without hitting the voxel boundary;
 		// return black
-		return DoubleColour.BLACK;
+		return DoubleColour.RED;
 	}
-
 
 	/**
 	 * What to do upon entering the volume.
@@ -228,7 +355,7 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 	}
 
 	/**
-	 * What to do upon intersecting one of the planes inside the volume.
+	 * What to do upon intersecting one of the surfaces separating neighbouring voxels.
 	 * Override to customise.
 	 * @param r1
 	 * @param i1
@@ -239,7 +366,7 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 	 * @return
 	 * @throws RayTraceException
 	 */
-	public DoubleColour getColourUponIntersectingWithPlane(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int stepsLeft, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+	public DoubleColour getColourUponIntersectingWithVoxelBoundary(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int stepsLeft, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	throws RayTraceException
 	{
 		if(stepsLeft < 0) return DoubleColour.BLACK;
@@ -255,7 +382,7 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 		);
 		
 		// then do whatever rays do within the volume
-		return getColourUponStartingWithinVolume(r2, i, scene, l, stepsLeft-1, traceLevel, raytraceExceptionHandler);
+		return getColourUponStartingWithinVolume(r2, i, scene, l, stepsLeft, traceLevel, raytraceExceptionHandler);
 	}
 
 	/**

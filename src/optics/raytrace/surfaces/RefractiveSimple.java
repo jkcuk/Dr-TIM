@@ -61,28 +61,30 @@ public class RefractiveSimple extends SurfacePropertyPrimitive
 	{
 		if(traceLevel <= 0) return DoubleColour.BLACK;
 		
-		Vector3D rayDirection = ray.getD();
-		Vector3D outwardsNormal = i.getNormalisedOutwardsSurfaceNormal();
+//		Vector3D rayDirection = ray.getD();
+//		Vector3D outwardsNormal = i.getNormalisedOutwardsSurfaceNormal();
+//		
+//		double refractiveIndexRatio;
+//		
+//		switch(Orientation.getOrientation(rayDirection, outwardsNormal))
+//		{
+//		case INWARDS:
+//			// TODO check this!
+//			refractiveIndexRatio = 1./insideOutsideRefractiveIndexRatio;
+//			break;
+//		case OUTWARDS:
+//		default:
+//			// TODO check this!
+//			refractiveIndexRatio = insideOutsideRefractiveIndexRatio;
+//		}
+//		
+//		Vector3D newRayDirection = getRefractedLightRayDirection(
+//				rayDirection,	// incidentLightRayDirection
+//				outwardsNormal,	// surfaceNormal
+//				refractiveIndexRatio
+//			);
 		
-		double refractiveIndexRatio;
-		
-		switch(Orientation.getOrientation(rayDirection, outwardsNormal))
-		{
-		case INWARDS:
-			// TODO check this!
-			refractiveIndexRatio = 1./insideOutsideRefractiveIndexRatio;
-			break;
-		case OUTWARDS:
-		default:
-			// TODO check this!
-			refractiveIndexRatio = insideOutsideRefractiveIndexRatio;
-		}
-		
-		Vector3D newRayDirection = getRefractedLightRayDirection(
-				rayDirection,	// incidentLightRayDirection
-				outwardsNormal,	// surfaceNormal
-				refractiveIndexRatio
-			);
+		Vector3D newRayDirection = getRefractedLightRayDirection(ray, i);
 		
 		// System.out.println("RefractiveSimple::getColour: rayDirection="+rayDirection+", outwardsNormal="+outwardsNormal+", newRayDirection ="+newRayDirection);
 		
@@ -146,6 +148,33 @@ public class RefractiveSimple extends SurfacePropertyPrimitive
 			).getNormalised();
 	}
 	
+	public Vector3D getRefractedLightRayDirection(Ray ray, RaySceneObjectIntersection i)
+	throws EvanescentException
+	{
+		Vector3D rayDirection = ray.getD();
+		Vector3D outwardsNormal = i.getNormalisedOutwardsSurfaceNormal();
+		
+		double refractiveIndexRatio;
+		
+		switch(Orientation.getOrientation(rayDirection, outwardsNormal))
+		{
+		case INWARDS:
+			// TODO check this!
+			refractiveIndexRatio = 1./insideOutsideRefractiveIndexRatio;
+			break;
+		case OUTWARDS:
+		default:
+			// TODO check this!
+			refractiveIndexRatio = insideOutsideRefractiveIndexRatio;
+		}
+		
+		return getRefractedLightRayDirection(
+				rayDirection,	// incidentLightRayDirection
+				outwardsNormal,	// surfaceNormal
+				refractiveIndexRatio
+			);
+	}
+
 	/**
 	 * Calculate refraction according to Snell's law.
 	 * 
@@ -187,10 +216,10 @@ public class RefractiveSimple extends SurfacePropertyPrimitive
 		if(sinSquareAlphaPrime > 1)
 		{
 			// TIR
-			throw new EvanescentException("RefractionGeometry::refract: refracted ray is evanescent, TIR occurs");
+			//throw new EvanescentException("RefractionGeometry::refract: refracted ray is evanescent, TIR occurs");
 			
 			// --- return the reflected ray direction, i.e. simply invert the direction perpendicular to the surface
-			// return Vector3D.difference(dSurface, dNormal);
+			return Vector3D.difference(dSurface, dNormal);
 		}
 		
 		// the component perpendicular to the surface
