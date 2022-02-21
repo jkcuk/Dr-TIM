@@ -16,49 +16,39 @@ public class PhaseHologramOfLensletArrayForGaborSupererLens extends PhaseHologra
 	private static final long serialVersionUID = 5709331854362381231L;
 
 	/**
-	 * The centre of the clear-aperture array.  The clear aperture of the lenslet with indices (0, 0) is centred here.
-	 */
-	private Vector3D centreClearApertureArray;
-
-	/**
-	 * The centre of the principal-point array.  The principal point of the lenslet with indices (0, 0) is centred here.
-	 */
-	private Vector3D centrePrincipalPointArray;
-	
-	/**
-	 * the direction of the <i>u</i> direction
-	 */
-	private Vector3D uHat;
-
-	/**
-	 * the direction of the <i>v</i> direction
-	 */
-	private Vector3D vHat;
-
-	/**
 	 * focal length of each lenslet; the phase cross-section of the lens is Phi(r) = (pi r^2)(lambda f), where r is the distance from the lens centre
 	 */
 	private double focalLength;
 	
 	/**
-	 * period in u direction of the array of clear apertures
+	 * first lattice vector of the array of clear-aperture centres
 	 */
-	private double uPeriodApertures;
-
-	/**
-	 * period in v direction of the array of clear apertures
-	 */
-	private double vPeriodApertures;
+	private Vector3D aperturesLatticeVector1;
 	
 	/**
-	 * period in the u direction of the rectangular array of principal points
-	 */
-	private double uPeriodPrincipalPoints;
+	 * second lattice vector of the array of clear-aperture centres
+	 */	
+	private Vector3D aperturesLatticeVector2;
 
 	/**
-	 * period in the v direction of the rectangular array of principal points
+	 * first lattice vector of the array of principal points
+	 */	
+	private Vector3D principalPointsLatticeVector1;
+
+	/**
+	 * second lattice vector of the array of principal points
+	 */	
+	private Vector3D principalPointsLatticeVector2;
+	
+	/**
+	 * centre of the aperture with indices (0, 0)
 	 */
-	private double vPeriodPrincipalPoints;
+	private Vector3D aperture00Centre;
+	
+	/**
+	 * principal point with indices (0, 0)
+	 */
+	private Vector3D principalPoint00;
 	
 	/**
 	 * if true, add a random angle that represents diffractive blur to the direction of the outgoing light ray
@@ -76,15 +66,13 @@ public class PhaseHologramOfLensletArrayForGaborSupererLens extends PhaseHologra
 	//
 
 	public PhaseHologramOfLensletArrayForGaborSupererLens(
-			Vector3D centreClearApertureArray,
-			Vector3D centrePrincipalPointArray,
-			Vector3D uHat,
-			Vector3D vHat,
 			double focalLength,
-			double uPeriodApertures,
-			double vPeriodApertures,
-			double uPeriodPrincipalPoints,
-			double vPeriodPrincipalPoints,
+			Vector3D aperturesLatticeVector1,
+			Vector3D aperturesLatticeVector2,
+			Vector3D principalPointsLatticeVector1,
+			Vector3D principalPointsLatticeVector2,
+			Vector3D aperture00Centre,
+			Vector3D principalPoint00,
 			boolean simulateDiffractiveBlur,
 			double lambda,
 			double throughputCoefficient,
@@ -92,15 +80,13 @@ public class PhaseHologramOfLensletArrayForGaborSupererLens extends PhaseHologra
 		)
 	{
 		super(throughputCoefficient, false, shadowThrowing);
-		this.centreClearApertureArray = centreClearApertureArray;
-		this.centrePrincipalPointArray = centrePrincipalPointArray;
-		this.uHat = uHat;
-		this.vHat = vHat;
 		this.focalLength = focalLength;
-		this.uPeriodApertures = uPeriodApertures;
-		this.vPeriodApertures = vPeriodApertures;
-		this.uPeriodPrincipalPoints = uPeriodPrincipalPoints;
-		this.vPeriodPrincipalPoints = vPeriodPrincipalPoints;
+		this.aperturesLatticeVector1 = aperturesLatticeVector1;
+		this.aperturesLatticeVector2 = aperturesLatticeVector2;
+		this.principalPointsLatticeVector1 = principalPointsLatticeVector1;
+		this.principalPointsLatticeVector2 = principalPointsLatticeVector2;
+		this.aperture00Centre = aperture00Centre;
+		this.principalPoint00 = principalPoint00;
 		this.simulateDiffractiveBlur = simulateDiffractiveBlur;
 		this.lambda = lambda;
 	}
@@ -111,15 +97,13 @@ public class PhaseHologramOfLensletArrayForGaborSupererLens extends PhaseHologra
 	public PhaseHologramOfLensletArrayForGaborSupererLens(PhaseHologramOfLensletArrayForGaborSupererLens original)
 	{
 		this(
-				original.getCentreClearApertureArray(),
-				original.getCentrePrincipalPointArray(),
-				original.getuHat(),
-				original.getvHat(),
 				original.getFocalLength(),
-				original.getuPeriodApertures(),
-				original.getvPeriodApertures(),
-				original.getuPeriodPrincipalPoints(),
-				original.getvPeriodPrincipalPoints(),
+				original.getAperturesLatticeVector1(),
+				original.getAperturesLatticeVector2(),
+				original.getPrincipalPointsLatticeVector1(),
+				original.getPrincipalPointsLatticeVector2(),
+				original.getAperture00Centre(),
+				original.getPrincipalPoint00(),
 				original.isSimulateDiffractiveBlur(),
 				original.getLambda(),
 				original.getTransmissionCoefficient(),
@@ -138,37 +122,6 @@ public class PhaseHologramOfLensletArrayForGaborSupererLens extends PhaseHologra
 	// setters & getters
 	//
 	
-	public Vector3D getCentreClearApertureArray() {
-		return centreClearApertureArray;
-	}
-
-	public void setCentreClearApertureArray(Vector3D centreClearApertureArray) {
-		this.centreClearApertureArray = centreClearApertureArray;
-	}
-
-	public Vector3D getCentrePrincipalPointArray() {
-		return centrePrincipalPointArray;
-	}
-
-	public void setCentrePrincipalPointArray(Vector3D centrePrincipalPointArray) {
-		this.centrePrincipalPointArray = centrePrincipalPointArray;
-	}
-
-	public Vector3D getuHat() {
-		return uHat;
-	}
-
-	public void setuHat(Vector3D uHat) {
-		this.uHat = uHat.getNormalised();
-	}
-
-	public Vector3D getvHat() {
-		return vHat;
-	}
-
-	public void setvHat(Vector3D vHat) {
-		this.vHat = vHat;
-	}
 
 	public double getFocalLength() {
 		return focalLength;
@@ -178,36 +131,52 @@ public class PhaseHologramOfLensletArrayForGaborSupererLens extends PhaseHologra
 		this.focalLength = focalLength;
 	}
 
-	public double getuPeriodApertures() {
-		return uPeriodApertures;
+	public Vector3D getAperturesLatticeVector1() {
+		return aperturesLatticeVector1;
 	}
 
-	public void setuPeriodApertures(double uPeriodApertures) {
-		this.uPeriodApertures = uPeriodApertures;
+	public void setAperturesLatticeVector1(Vector3D aperturesLatticeVector1) {
+		this.aperturesLatticeVector1 = aperturesLatticeVector1;
 	}
 
-	public double getvPeriodApertures() {
-		return vPeriodApertures;
+	public Vector3D getAperturesLatticeVector2() {
+		return aperturesLatticeVector2;
 	}
 
-	public void setvPeriodApertures(double vPeriodApertures) {
-		this.vPeriodApertures = vPeriodApertures;
+	public void setAperturesLatticeVector2(Vector3D aperturesLatticeVector2) {
+		this.aperturesLatticeVector2 = aperturesLatticeVector2;
 	}
 
-	public double getuPeriodPrincipalPoints() {
-		return uPeriodPrincipalPoints;
+	public Vector3D getPrincipalPointsLatticeVector1() {
+		return principalPointsLatticeVector1;
 	}
 
-	public void setuPeriodPrincipalPoints(double uPeriodPrincipalPoints) {
-		this.uPeriodPrincipalPoints = uPeriodPrincipalPoints;
+	public void setPrincipalPointsLatticeVector1(Vector3D principalPointsLatticeVector1) {
+		this.principalPointsLatticeVector1 = principalPointsLatticeVector1;
 	}
 
-	public double getvPeriodPrincipalPoints() {
-		return vPeriodPrincipalPoints;
+	public Vector3D getPrincipalPointsLatticeVector2() {
+		return principalPointsLatticeVector2;
 	}
 
-	public void setvPeriodPrincipalPoints(double vPeriodPrincipalPoints) {
-		this.vPeriodPrincipalPoints = vPeriodPrincipalPoints;
+	public void setPrincipalPointsLatticeVector2(Vector3D principalPointsLatticeVector2) {
+		this.principalPointsLatticeVector2 = principalPointsLatticeVector2;
+	}
+
+	public Vector3D getAperture00Centre() {
+		return aperture00Centre;
+	}
+
+	public void setAperture00Centre(Vector3D aperture00Centre) {
+		this.aperture00Centre = aperture00Centre;
+	}
+
+	public Vector3D getPrincipalPoint00() {
+		return principalPoint00;
+	}
+
+	public void setPrincipalPoint00(Vector3D principalPoint00) {
+		this.principalPoint00 = principalPoint00;
 	}
 
 	public boolean isSimulateDiffractiveBlur() {
@@ -252,29 +221,36 @@ public class PhaseHologramOfLensletArrayForGaborSupererLens extends PhaseHologra
 	public Vector3D getTangentialDirectionComponentChangeTransmissive(Vector3D surfacePosition,
 			Vector3D surfaceNormal)
 	{	
-		// System.out.println("Bla");
+		// calculate the two indices of the lenslet that is being intersected...
+		Vector3D basisVector1 = aperturesLatticeVector1.getPartPerpendicularTo(surfaceNormal).getNormalised();
+		Vector3D basisVector2 = aperturesLatticeVector2.getPartPerpendicularTo(surfaceNormal).getNormalised();	// Vector3D.crossProduct(surfaceNormal, uBasisVector).getNormalised();
+		Vector3D r = Vector3D.difference(surfacePosition, aperture00Centre);
+		Vector3D rUVN = r.toBasis(basisVector1, basisVector2, surfaceNormal);
+		double index1 = findLensletIndex(rUVN.x, aperturesLatticeVector1.getLength());
+		double index2 = findLensletIndex(rUVN.y, aperturesLatticeVector2.getLength());
 		
-		// calculate the u and v coordinates of the position
-		Vector3D uBasisVector = uHat.getPartPerpendicularTo(surfaceNormal).getNormalised();
-		Vector3D vBasisVector = vHat.getPartPerpendicularTo(surfaceNormal).getNormalised();	// Vector3D.crossProduct(surfaceNormal, uBasisVector).getNormalised();
-		Vector3D r = Vector3D.difference(surfacePosition, centreClearApertureArray);
-		Vector3D rUVN = r.toBasis(uBasisVector, vBasisVector, surfaceNormal);
-		double u = rUVN.x;	// Vector3D.scalarProduct(r, uBasisVector);
-		double v = rUVN.y;	// Vector3D.scalarProduct(r, vBasisVector);
+		// ... and its principal point
+		Vector3D principalPoint = Vector3D.sum(
+				principalPoint00,
+				principalPointsLatticeVector1.getPartPerpendicularTo(surfaceNormal).getProductWith(index1),
+				principalPointsLatticeVector2.getPartPerpendicularTo(surfaceNormal).getProductWith(index2)
+			);
 		
-		double uDerivative = (Vector3D.scalarProduct(centreClearApertureArray, uBasisVector) + u)-(Vector3D.scalarProduct(centrePrincipalPointArray, uBasisVector) + findLensletIndex(u, uPeriodApertures)*uPeriodPrincipalPoints);
-		double vDerivative = (Vector3D.scalarProduct(centreClearApertureArray, vBasisVector) + v)-(Vector3D.scalarProduct(centrePrincipalPointArray, vBasisVector) + findLensletIndex(v, vPeriodApertures)*vPeriodPrincipalPoints);
-		
-		Vector3D rayDirectionChange = Vector3D.sum(uBasisVector.getProductWith(-uDerivative/focalLength), vBasisVector.getProductWith(-vDerivative/focalLength));
+		Vector3D rayDirectionChange = PhaseHologramOfLens.getTangentialDirectionComponentChange(
+				principalPoint,
+				focalLength,
+				surfacePosition,
+				surfaceNormal
+			);
 		
 		if(simulateDiffractiveBlur)
 		{
 				return Vector3D.sum(rayDirectionChange, SingleSlitDiffraction.getTangentialDirectionComponentChange(
 						lambda,
-						uPeriodApertures,	// pixelSideLengthU
-						vPeriodApertures,	// pixelSideLengthV
-						uBasisVector,	// uHat
-						vBasisVector	// vHat
+						aperturesLatticeVector1.getLength(),	// pixelSideLengthU
+						aperturesLatticeVector2.getLength(),	// pixelSideLengthV
+						aperturesLatticeVector1.getNormalised(),	// uHat
+						aperturesLatticeVector2.getNormalised()	// vHat
 					));
 		}
 		

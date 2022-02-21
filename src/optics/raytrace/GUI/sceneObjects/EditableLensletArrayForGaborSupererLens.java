@@ -16,7 +16,6 @@ import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledStringPanel;
-import optics.raytrace.GUI.lowLevel.LabelledVector2DPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
@@ -32,8 +31,8 @@ import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArrayParametris
  * In that rectangular lenslet array, all lenslets have the same focal length.
  * However, compared to the RectangularIdealThinLensletArraySimple, the array is generalised in that a lenslet's principal point
  * does not necessarily coincide with the centre of that lenslet's clear aperture.
- * Specifically, the clear apertures of the lenslets form a rectangular array, and so do the principal points,
- * but the periods of these two arrays are, in general, different.
+ * Specifically, the centres of the clear apertures of the lenslets form a rectangular array, and so do the principal points,
+ * but the lattice vectors of these two arrays are, in general, different.
  * The periods in the u and v directions of the array of principal points is given by uPeriodPrincipalPoints and vPeriodPrincipalPoints,
  * those of the array of clear apertures are given by uPeriodApertures and vPeriodApertures.
  * 
@@ -50,12 +49,37 @@ implements ActionListener
 
 	
 	private double focalLength;
-	private double uPeriodApertures;
-	private double vPeriodApertures;
-	private double uPeriodPrincipalPoints;
-	private double vPeriodPrincipalPoints;
-	private Vector3D centreClearApertureArray;
-	private Vector3D centrePrincipalPointArray;
+	
+	/**
+	 * first lattice vector of the array of clear-aperture centres
+	 */
+	private Vector3D aperturesLatticeVector1;
+	
+	/**
+	 * second lattice vector of the array of clear-aperture centres
+	 */	
+	private Vector3D aperturesLatticeVector2;
+
+	/**
+	 * first lattice vector of the array of principal points
+	 */	
+	private Vector3D principalPointsLatticeVector1;
+
+	/**
+	 * second lattice vector of the array of principal points
+	 */	
+	private Vector3D principalPointsLatticeVector2;
+	
+	/**
+	 * centre of the aperture with indices (0, 0)
+	 */
+	private Vector3D aperture00Centre;
+	
+	/**
+	 * principal point with indices (0, 0)
+	 */
+	private Vector3D principalPoint00;
+	
 	private LensType lensType;
 	private boolean simulateDiffractiveBlur;
 	private double lambda;
@@ -69,17 +93,16 @@ implements ActionListener
 	 * @param uSpanVector
 	 * @param vSpanVector
 	 * @param focalLength
-	 * @param uPeriodApertures
-	 * @param vPeriodApertures
-	 * @param uPeriodPrincipalPoints
-	 * @param vPeriodPrincipalPoints
-	 * @param centreClearApertureArray
-	 * @param centrePrincipalPointArray
+	 * @param aperturesLatticeVector1
+	 * @param aperturesLatticeVector2
+	 * @param principalPointsLatticeVector1
+	 * @param principalPointsLatticeVector2
+	 * @param aperture00Centre
+	 * @param principalPoint00
 	 * @param lensType
 	 * @param simulateDiffractiveBlur
 	 * @param lambda
 	 * @param throughputCoefficient
-	 * @param reflective
 	 * @param shadowThrowing
 	 * @param parent
 	 * @param studio
@@ -90,17 +113,16 @@ implements ActionListener
 			Vector3D uSpanVector,
 			Vector3D vSpanVector, 
 			double focalLength,
-			double uPeriodApertures,
-			double vPeriodApertures,
-			double uPeriodPrincipalPoints,
-			double vPeriodPrincipalPoints,
-			Vector3D centreClearApertureArray,
-			Vector3D centrePrincipalPointArray,
+			Vector3D aperturesLatticeVector1,
+			Vector3D aperturesLatticeVector2,
+			Vector3D principalPointsLatticeVector1,
+			Vector3D principalPointsLatticeVector2,
+			Vector3D aperture00Centre,
+			Vector3D principalPoint00,
 			LensType lensType,
 			boolean simulateDiffractiveBlur,
 			double lambda,
 			double throughputCoefficient,
-			boolean reflective,
 			boolean shadowThrowing,
 			SceneObject parent,
 			Studio studio
@@ -120,12 +142,12 @@ implements ActionListener
 //		setVScaling(-vSpanVector.getLength()/2, vSpanVector.getLength()/2);
 
 		this.focalLength = focalLength;
-		this.uPeriodApertures = uPeriodApertures;
-		this.vPeriodApertures = vPeriodApertures;
-		this.uPeriodPrincipalPoints = uPeriodPrincipalPoints;
-		this.vPeriodPrincipalPoints = vPeriodPrincipalPoints;
-		this.centreClearApertureArray = centreClearApertureArray;
-		this.centrePrincipalPointArray = centrePrincipalPointArray;
+		this.aperturesLatticeVector1 = aperturesLatticeVector1;
+		this.aperturesLatticeVector2 = aperturesLatticeVector2;
+		this.principalPointsLatticeVector1 = principalPointsLatticeVector1;
+		this.principalPointsLatticeVector2 = principalPointsLatticeVector2;
+		this.aperture00Centre = aperture00Centre;
+		this.principalPoint00 = principalPoint00;
 		this.lensType = lensType;
 		this.simulateDiffractiveBlur = simulateDiffractiveBlur;
 		this.lambda = lambda;
@@ -146,17 +168,16 @@ implements ActionListener
 				new Vector3D(1, 0, 0),	// spanVector1
 				new Vector3D(0, 1, 0),	// spanVector2
 				1,	// focalLength
-				0.1,	// uPeriodApertures
-				0.1,	// vPeriodApertures
-				0.1,	// uPeriodPrincipalPoints
-				0.1,	// vPeriodPrincipalPoints
-				new Vector3D(0, 0, 5),	// centre of clear-aperture array
-				new Vector3D(0, 0, 5),	// centre of principal-point array
+				new Vector3D(0.1, 0, 0),	// aperturesLatticeVector1
+				new Vector3D(0, 0.1, 0),	// aperturesLatticeVector2
+				new Vector3D(0.1, 0, 0),	// principalPointsLatticeVector1
+				new Vector3D(0, 0.1, 0),	// principalPointsLatticeVector2
+				new Vector3D(0, 0, 5),	// aperture00Centre
+				new Vector3D(0, 0, 5),	// principalPoint00
 				LensType.IDEAL_THIN_LENS,
 				true,	// simulateDiffractiveBlur
 				550e-9,	// lambda
 				SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
-				false,	// reflective
 				true,	// shadowThrowing
 				parent,
 				studio
@@ -187,18 +208,15 @@ implements ActionListener
 		switch(lensType)
 		{
 		case PHASE_HOLOGRAM_OF_LENS:
-			// TODO add the phase-hologram version
 			setSurfaceProperty(
 					new PhaseHologramOfLensletArrayForGaborSupererLens(
-							centreClearApertureArray,	// centreClearApertureArray,
-							centrePrincipalPointArray,
-							getSpanVector1(),	// uHat,
-							getSpanVector2(),	// vHat,
 							focalLength,
-							uPeriodApertures,
-							vPeriodApertures,
-							uPeriodPrincipalPoints,
-							vPeriodPrincipalPoints,
+							aperturesLatticeVector1,
+							aperturesLatticeVector2,
+							principalPointsLatticeVector1,
+							principalPointsLatticeVector2,
+							aperture00Centre,
+							principalPoint00,
 							simulateDiffractiveBlur,
 							lambda,
 							throughputCoefficient,
@@ -210,15 +228,13 @@ implements ActionListener
 		default:
 			setSurfaceProperty(
 					new IdealThinLensletArrayForGaborSupererLens(
-							centreClearApertureArray,	// centreClearApertureArray,
-							centrePrincipalPointArray,
-							getSpanVector1(),	// uHat,
-							getSpanVector2(),	// vHat,
 							focalLength,
-							uPeriodApertures,
-							vPeriodApertures,
-							uPeriodPrincipalPoints,
-							vPeriodPrincipalPoints,
+							aperturesLatticeVector1,
+							aperturesLatticeVector2,
+							principalPointsLatticeVector1,
+							principalPointsLatticeVector2,
+							aperture00Centre,
+							principalPoint00,
 							simulateDiffractiveBlur,
 							lambda,
 							throughputCoefficient,
@@ -242,9 +258,11 @@ implements ActionListener
 	 * variables
 	 */
 	
-	private LabelledVector3DPanel centreClearApertureArrayPanel, centrePrincipalPointArrayPanel;
 	private LabelledDoublePanel lensletArrayFocalLengthPanel, lensletArrayTransmissionCoefficientPanel;
-	private LabelledVector2DPanel aperturesPeriodPanel, principalPointsPeriodPanel;
+	private LabelledVector3DPanel
+		aperturesLatticeVector1Panel, aperturesLatticeVector2Panel,
+		principalPointsLatticeVector1Panel, principalPointsLatticeVector2Panel,
+		aperture00CentrePanel, principalPoint00Panel;
 	private JCheckBox simulateDiffractiveBlurCheckBox, shadowThrowingCheckBox;
 	private DoublePanel lambdaNMPanel;
 	private JComboBox<LensType> lensTypeComboBox;
@@ -294,14 +312,42 @@ implements ActionListener
 		lensletArrayPanel.setLayout(new MigLayout("insets 0"));
 		lensletArrayPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Lenslet array"));
 		editPanel.add(lensletArrayPanel, "wrap");
-
-		centreClearApertureArrayPanel = new LabelledVector3DPanel("Centre of clear-aperture array");
-		centreClearApertureArrayPanel.setVector3D(new Vector3D(0, 0, 0));
-		lensletArrayPanel.add(centreClearApertureArrayPanel, "span");
 		
-		centrePrincipalPointArrayPanel = new LabelledVector3DPanel("Centre of principal-point array");
-		centrePrincipalPointArrayPanel.setVector3D(new Vector3D(0, 0, 0));
-		lensletArrayPanel.add(centrePrincipalPointArrayPanel, "span");
+		
+		JPanel principalPointsArrayPanel = new JPanel();
+		principalPointsArrayPanel.setLayout(new MigLayout("insets 0"));
+		principalPointsArrayPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Array of principal points"));
+		lensletArrayPanel.add(principalPointsArrayPanel, "wrap");
+
+		principalPointsLatticeVector1Panel = new LabelledVector3DPanel("Lattice vector 1");
+		// principalPointsLatticeVector1Panel.setVector3D(principalPointsLatticeVector1);
+		principalPointsArrayPanel.add(principalPointsLatticeVector1Panel, "wrap");
+
+		principalPointsLatticeVector2Panel = new LabelledVector3DPanel("Lattice vector 2");
+		// principalPointsLatticeVector2Panel.setVector3D(principalPointsLatticeVector2);
+		principalPointsArrayPanel.add(principalPointsLatticeVector2Panel, "wrap");
+
+		principalPoint00Panel = new LabelledVector3DPanel("Principal point of lens (0, 0)");
+		// principalPoint00Panel.setVector3D(principalPoint00);
+		principalPointsArrayPanel.add(principalPoint00Panel, "wrap");
+
+
+		JPanel aperturesArrayPanel = new JPanel();
+		aperturesArrayPanel.setLayout(new MigLayout("insets 0"));
+		aperturesArrayPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Array of clear-aperture centres"));
+		lensletArrayPanel.add(aperturesArrayPanel, "wrap");
+
+		aperturesLatticeVector1Panel = new LabelledVector3DPanel("Lattice vector 1");
+		// aperturesLatticeVector1Panel.setVector3D(aperturesLatticeVector1);
+		aperturesArrayPanel.add(aperturesLatticeVector1Panel, "wrap");
+
+		aperturesLatticeVector2Panel = new LabelledVector3DPanel("Lattice vector 2");
+		// aperturesLatticeVector2Panel.setVector3D(aperturesLatticeVector2);
+		aperturesArrayPanel.add(aperturesLatticeVector2Panel, "wrap");
+
+		aperture00CentrePanel = new LabelledVector3DPanel("Clear-aperture centre of lens (0, 0)");
+		// aperture00CentrePanel.setVector3D(aperture00Centre);
+		aperturesArrayPanel.add(aperture00CentrePanel, "wrap");
 		
 		onRectangleButton = new JButton("Project into plane of rectangle");
 		onRectangleButton.addActionListener(this);
@@ -310,15 +356,7 @@ implements ActionListener
 		lensletArrayFocalLengthPanel = new LabelledDoublePanel("Focal length");
 		lensletArrayFocalLengthPanel.setNumber(1);
 		lensletArrayPanel.add(lensletArrayFocalLengthPanel, "span");
-		
-		aperturesPeriodPanel = new LabelledVector2DPanel("Period of clear-aperture array in (u,v)");
-		aperturesPeriodPanel.setVector2D(0.1, 0.1);
-		lensletArrayPanel.add(aperturesPeriodPanel, "span");
-		
-		principalPointsPeriodPanel = new LabelledVector2DPanel("Period of principal-point array in (u,v)");
-		principalPointsPeriodPanel.setVector2D(0.1, 0.1);
-		lensletArrayPanel.add(principalPointsPeriodPanel, "span");
-		
+				
 		lensletArrayTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient");
 		lensletArrayTransmissionCoefficientPanel.setNumber(SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT);
 		lensletArrayPanel.add(lensletArrayTransmissionCoefficientPanel, "span");;
@@ -352,11 +390,13 @@ implements ActionListener
 		heightVectorPanel.setVector3D(getSpanVector2());
 		
 		// initialize any fields
-		centreClearApertureArrayPanel.setVector3D(centreClearApertureArray);
-		centrePrincipalPointArrayPanel.setVector3D(centrePrincipalPointArray);
 		lensletArrayFocalLengthPanel.setNumber(focalLength);
-		aperturesPeriodPanel.setVector2D(uPeriodApertures, vPeriodApertures);
-		principalPointsPeriodPanel.setVector2D(uPeriodPrincipalPoints, vPeriodPrincipalPoints);
+		aperturesLatticeVector1Panel.setVector3D(aperturesLatticeVector1);
+		aperturesLatticeVector2Panel.setVector3D(aperturesLatticeVector2);
+		principalPointsLatticeVector1Panel.setVector3D(principalPointsLatticeVector1);
+		principalPointsLatticeVector2Panel.setVector3D(principalPointsLatticeVector2);
+		aperture00CentrePanel.setVector3D(aperture00Centre);
+		principalPoint00Panel.setVector3D(principalPoint00);
 		lensletArrayTransmissionCoefficientPanel.setNumber(throughputCoefficient);
 		lensTypeComboBox.setSelectedItem(lensType);
 		simulateDiffractiveBlurCheckBox.setSelected(simulateDiffractiveBlur);
@@ -380,13 +420,14 @@ implements ActionListener
 				heightVectorPanel.getVector3D()
 			);
 		
-		centreClearApertureArray = centreClearApertureArrayPanel.getVector3D();
-		centrePrincipalPointArray = centrePrincipalPointArrayPanel.getVector3D();
 		focalLength = lensletArrayFocalLengthPanel.getNumber();
-		uPeriodApertures = aperturesPeriodPanel.getVector2D().x;
-		vPeriodApertures = aperturesPeriodPanel.getVector2D().y;
-		uPeriodPrincipalPoints = principalPointsPeriodPanel.getVector2D().x;
-		vPeriodPrincipalPoints = principalPointsPeriodPanel.getVector2D().y;
+		aperturesLatticeVector1 = aperturesLatticeVector1Panel.getVector3D();
+		aperturesLatticeVector2 = aperturesLatticeVector2Panel.getVector3D();
+		principalPointsLatticeVector1 = principalPointsLatticeVector1Panel.getVector3D();
+		principalPointsLatticeVector2 = principalPointsLatticeVector2Panel.getVector3D();
+		aperture00Centre = aperture00CentrePanel.getVector3D();
+		principalPoint00 = principalPoint00Panel.getVector3D();
+
 		throughputCoefficient = lensletArrayTransmissionCoefficientPanel.getNumber();
 		lensType = (LensType)(lensTypeComboBox.getSelectedItem());
 		simulateDiffractiveBlur = simulateDiffractiveBlurCheckBox.isSelected();
@@ -408,19 +449,19 @@ implements ActionListener
 					heightVectorPanel.getVector3D()
 				);
 			
-			centreClearApertureArray = Geometry.getPointOnPlaneClosestToPoint(
+			aperture00Centre = Geometry.getPointOnPlaneClosestToPoint(
 					rectangleCentre,	// pointOnPlane
 					rectangleNormal,	// planeNormal
-					centreClearApertureArrayPanel.getVector3D()	// point
+					aperture00CentrePanel.getVector3D()	// point
 				);
-			centreClearApertureArrayPanel.setVector3D(centreClearApertureArray);
+			aperture00CentrePanel.setVector3D(aperture00Centre);
 
-			centrePrincipalPointArray = Geometry.getPointOnPlaneClosestToPoint(
+			principalPoint00 = Geometry.getPointOnPlaneClosestToPoint(
 					rectangleCentre,	// pointOnPlane
 					rectangleNormal,	// planeNormal
-					centrePrincipalPointArrayPanel.getVector3D()	// point
+					principalPoint00Panel.getVector3D()	// point
 				);
-			centrePrincipalPointArrayPanel.setVector3D(centrePrincipalPointArray);
+			principalPoint00Panel.setVector3D(principalPoint00);
 		}
 		
 	}

@@ -443,17 +443,16 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 						Vector3D.X,	// uSpanVector,
 						Vector3D.Y,	// vSpanVector, 
 						f1,	// focalLength,
-						aperturesPeriod1,	// uPeriodApertures,
-						aperturesPeriod1,	// vPeriodApertures,
-						principalPointsPeriod1,	// uPeriodPrincipalPoints,
-						principalPointsPeriod1,	// vPeriodPrincipalPoints,
+						new Vector3D(aperturesPeriod1, 0, 0),	// uPeriodApertures,
+						new Vector3D(0, aperturesPeriod1, 0),	// vPeriodApertures,
+						new Vector3D(principalPointsPeriod1, 0, 0),	// uPeriodPrincipalPoints,
+						new Vector3D(0, principalPointsPeriod1, 0),	// vPeriodPrincipalPoints,
 						centreOfClearApertureOfLenslet00OfLA1, // centreClearApertureArray
 						principalPointOfLenslet00OfLA1, // centrePrincipalPointArray
 						lensType,
 						simulateDiffractiveBlur,
 						lambdaNM*1e-9,	// lambda,
 						0.96,	// throughputCoefficient,
-						false,	// reflective,
 						true,	// shadowThrowing,
 						scene,	// parent,
 						studio
@@ -468,17 +467,16 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 						Vector3D.X,	// uSpanVector,
 						Vector3D.Y,	// vSpanVector, 
 						f2,	// focalLength,
-						aperturesPeriod2,	// uPeriodApertures,
-						aperturesPeriod2,	// vPeriodApertures,
-						principalPointsPeriod2,	// uPeriodPrincipalPoints,
-						principalPointsPeriod2,	// vPeriodPrincipalPoints,
+						new Vector3D(aperturesPeriod2, 0, 0),	// uPeriodApertures,
+						new Vector3D(0, aperturesPeriod2, 0),	// vPeriodApertures,
+						new Vector3D(principalPointsPeriod2, 0, 0),	// uPeriodPrincipalPoints,
+						new Vector3D(0, principalPointsPeriod2, 0),	// vPeriodPrincipalPoints,
 						centreOfClearApertureOfLenslet00OfLA2, // centreClearApertureArray
 						principalPointOfLenslet00OfLA2, // centrePrincipalPointArray
 						lensType,
 						simulateDiffractiveBlur,
 						lambdaNM*1e-9,	// lambda,
 						0.96,	// throughputCoefficient,
-						false,	// reflective,
 						true,	// shadowThrowing,
 						scene,	// parent,
 						studio

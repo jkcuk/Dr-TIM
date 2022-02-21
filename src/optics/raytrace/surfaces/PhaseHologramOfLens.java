@@ -27,7 +27,14 @@ public class PhaseHologramOfLens extends PhaseHologram
 	// constructors etc.
 	//
 
-	public PhaseHologramOfLens(double focalLength, Vector3D principalPoint, double throughputCoefficient, boolean reflective, boolean shadowThrowing) {
+	public PhaseHologramOfLens(
+			double focalLength,
+			Vector3D principalPoint,
+			double throughputCoefficient,
+			boolean reflective,
+			boolean shadowThrowing
+		)
+	{
 		super(throughputCoefficient, reflective, shadowThrowing);
 		setFocalLength(focalLength);
 		setPrincipalPoint(principalPoint);
@@ -65,18 +72,35 @@ public class PhaseHologramOfLens extends PhaseHologram
 	public void setPrincipalPoint(Vector3D principalPoint) {
 		this.principalPoint = principalPoint;
 	}
-
-	@Override
-	public Vector3D getTangentialDirectionComponentChangeTransmissive(Vector3D surfacePosition,
-			Vector3D surfaceNormal)
-	{	
+	
+	/**
+	 * @param principalPoint
+	 * @param focalLength
+	 * @param surfacePosition
+	 * @param surfaceNormal
+	 * @return	the tangential light-ray direction change experienced by a light ray hitting an ideal lens at the given surface position
+	 */
+	public static Vector3D getTangentialDirectionComponentChange(
+			Vector3D principalPoint,
+			double focalLength,
+			Vector3D surfacePosition,
+			Vector3D surfaceNormal
+		)
+	{
 		// A distance r from the principal point, the lens phase is given by Phi(r, phi) = -(pi r^2)(lambda f).
 		// This means that the phase gradient there is in the radial direction and of magnitude dPhi/dr = -2 r pi/(lambda f).
 		// This method needs to return the phase gradient divided by 2 pi/lambda, i.e. r / f.
 		
 		// Vector3D.difference(surfacePosition, principalPoint).getPartPerpendicularTo(surfaceNormal) gives a vector that is tangential to the surface
 		// and of length r
-		return Vector3D.difference(surfacePosition, principalPoint).getPartPerpendicularTo(surfaceNormal).getProductWith(-1/focalLength);
+		return Vector3D.difference(surfacePosition, principalPoint).getPartPerpendicularTo(surfaceNormal).getProductWith(-1./focalLength);
+	}
+
+	@Override
+	public Vector3D getTangentialDirectionComponentChangeTransmissive(Vector3D surfacePosition,
+			Vector3D surfaceNormal)
+	{	
+		return getTangentialDirectionComponentChange(principalPoint, focalLength, surfacePosition, surfaceNormal);
 	}
 
 	@Override

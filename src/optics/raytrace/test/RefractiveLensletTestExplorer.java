@@ -331,17 +331,17 @@ public class RefractiveLensletTestExplorer extends NonInteractiveTIMEngine imple
 				boundingBoxSpanVector1,//uPeriodPrincipalPointArray1.getNormalised().getWithLength(boundingBoxSpanVector1.getLength()),// boundingBoxSpanVector1,
 				boundingBoxSpanVector2,//vPeriodPrincipalPointArray1.getNormalised().getWithLength(boundingBoxSpanVector2.getLength()),// boundingBoxSpanVector2,
 				focalLengthArray1,	// focalLength
-				uPeriodClearApertureArray1.getLength(),// uPeriodApertures,
-				vPeriodClearApertureArray1.getLength(),// vPeriodApertures,
-				uPeriodPrincipalPointArray1.getLength(),// uPeriodPrincipalPoints,
-				vPeriodPrincipalPointArray1.getLength(),// vPeriodPrincipalPoints,
+				uPeriodClearApertureArray1,// uPeriodApertures,
+				vPeriodClearApertureArray1,// vPeriodApertures,
+				uPeriodPrincipalPointArray1,// uPeriodPrincipalPoints,
+				vPeriodPrincipalPointArray1,// vPeriodPrincipalPoints,
 				lensClearApertureCentreArray1,// centreClearApertureArray,
 				principalPointCentreArray1,// centrePrincipalPointArray,
 				LensType.IDEAL_THIN_LENS,	// lensType
-				false,
-				600*1e-9,
+				false,	// simulateDiffractiveBlur
+				600*1e-9,	// lambda
 				lensTrans,	// throughputCoefficient
-				false,	// reflective
+				// false,	// reflective
 				false,	// shadowThrowing
 				scene,	// parent
 				studio)
@@ -364,10 +364,10 @@ public class RefractiveLensletTestExplorer extends NonInteractiveTIMEngine imple
 				boundingBoxSpanVector1,//uPeriodPrincipalPointArray2.getNormalised().getWithLength(boundingBoxSpanVector1.getLength()),// boundingBoxSpanVector1,
 				boundingBoxSpanVector2,//vPeriodPrincipalPointArray2.getNormalised().getWithLength(boundingBoxSpanVector2.getLength()),// boundingBoxSpanVector2,
 				focalLengthArray2,	// focalLength
-				uPeriodClearApertureArray2.getLength(),// uPeriodApertures,
-				vPeriodClearApertureArray2.getLength(),// vPeriodApertures,
-				uPeriodPrincipalPointArray2.getLength(),// uPeriodPrincipalPoints,
-				vPeriodPrincipalPointArray2.getLength(),// vPeriodPrincipalPoints,
+				uPeriodClearApertureArray2,// uPeriodApertures,
+				vPeriodClearApertureArray2,// vPeriodApertures,
+				uPeriodPrincipalPointArray2,// uPeriodPrincipalPoints,
+				vPeriodPrincipalPointArray2,// vPeriodPrincipalPoints,
 				/**
 				 * TODO check if below works as calc in parts before
 				 */
@@ -377,7 +377,7 @@ public class RefractiveLensletTestExplorer extends NonInteractiveTIMEngine imple
 				false,
 				600*1e-9,
 				lensTrans,	// throughputCoefficient
-				false,	// reflective
+				// false,	// reflective
 				false,	// shadowThrowing
 				scene,	// parent
 				studio)

@@ -16,7 +16,7 @@ public class Vector2DPanel extends JPanel
 	
 	private DoublePanel xPanel, yPanel;
 
-	public Vector2DPanel()
+	public Vector2DPanel(String units)
 	{
 		super();
 		setLayout(new MigLayout("insets 0"));
@@ -32,7 +32,7 @@ public class Vector2DPanel extends JPanel
 		// add a bit of (non-stretchable) space between the image and the status/button line
 		// add(Box.createRigidArea(new Dimension(0, 0)));
 
-		add(new JLabel(","));
+		add(new JLabel(units+","));
 		
 		// add a bit of (non-stretchable) space between the image and the status/button line
 		// add(Box.createRigidArea(new Dimension(0, 0)));
@@ -43,8 +43,14 @@ public class Vector2DPanel extends JPanel
 		// add a bit of (non-stretchable) space between the image and the status/button line
 		// add(Box.createRigidArea(new Dimension(0, 0)));
 
-		add(new JLabel(")"));
+		add(new JLabel(units+")"));
 	}
+	
+	public Vector2DPanel()
+	{
+		this("");	// no units
+	}
+
 
 	public void setVector2D(Vector2D v)
 	{

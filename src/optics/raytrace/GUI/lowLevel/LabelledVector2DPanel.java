@@ -16,17 +16,23 @@ public class LabelledVector2DPanel extends JPanel
 	
 	private Vector2DPanel vector2DPanel;
 
-	public LabelledVector2DPanel(String text)
+	public LabelledVector2DPanel(String text, String units)
 	{
 		super();
 		setLayout(new MigLayout("insets 0"));
 
 		add(new JLabel(text));	// add a space to make it prettier!
 		// add(Box.createRigidArea(new Dimension(0,0)));
-		vector2DPanel = new Vector2DPanel();
+		vector2DPanel = new Vector2DPanel(units);
 		add(vector2DPanel);
 		// add(Box.createHorizontalGlue());
 	}
+	
+	public LabelledVector2DPanel(String text)
+	{
+		this(text, "");
+	}
+
 	
 	public void setVector2D(double x, double y)
 	{
