@@ -132,7 +132,7 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 
 		// set all parameters
 		
-		curvedSpaceSimulationType = GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS;
+		curvedSpaceSimulationType = GluingType.NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS;
 
 		showSpaceCancellingWedges = false;
 		showNetEdges = true;
@@ -325,9 +325,9 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		// ... and get it prepared for light-ray-trajectory tracing
 		switch(curvedSpaceSimulationType)
 		{
-		case SPACE_CANCELLING_WEDGES:
-		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
-		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case NEGATIVE_SPACE_WEDGES:
+		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
+		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
 		case PERFECT:
 			// showing the space-cancelling wedges but hiding all edges
 			net.setShowSpaceCancellingWedges(true);
@@ -390,9 +390,9 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 		net.setShowNetFaces(showNetFaces);
 		switch(curvedSpaceSimulationType)
 		{
-		case SPACE_CANCELLING_WEDGES:
-		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
-		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case NEGATIVE_SPACE_WEDGES:
+		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
+		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
 		case PERFECT:
 			net.setShowSpaceCancellingWedges(showSpaceCancellingWedges);
 			net.setShowSpaceCancellingWedgeEdges(showSpaceCancellingWedgeEdges);
@@ -705,7 +705,7 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	private void showOrHideControlPanels()
 	{
 		showSpaceCancellingWedgesCheckBox.setEnabled(curvedSpaceSimulationType != GluingType.MIRROR_APPROXIMATION);
-		spaceCancellingWedgeLegLengthFactorPanel.setEnabled((curvedSpaceSimulationType == GluingType.SPACE_CANCELLING_WEDGES) && (showSpaceCancellingWedges || showSpaceCancellingWedgeEdges));
+		spaceCancellingWedgeLegLengthFactorPanel.setEnabled((curvedSpaceSimulationType == GluingType.NEGATIVE_SPACE_WEDGES) && (showSpaceCancellingWedges || showSpaceCancellingWedgeEdges));
 		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.setEnabled(showSpaceCancellingWedges);
 		numberOfNegativeSpaceWedgesPanel.setEnabled((curvedSpaceSimulationType != GluingType.MIRROR_APPROXIMATION) && (showSpaceCancellingWedges || showSpaceCancellingWedgeEdges));
 		// gluingTypeComboBox.setEnabled(showSpaceCancellingWedges || showSpaceCancellingWedgeEdges);

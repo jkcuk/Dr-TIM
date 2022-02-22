@@ -129,6 +129,7 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 				0.96,	// refractingSurfaceTransmissionCoefficient
 				GluingType.PERFECT,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
+				1,	// distanceP1P2
 				true,	// showNetStructure
 				false,	// showSpaceCancellingWedgesStructure
 				SurfaceColour.GREY20_SHINY,	// netStructureSurfaceProperty
@@ -209,6 +210,7 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		printStream.println("Simulation type = "+net.getGluingType());
 		printStream.println("Transmission coefficient of space-cancelling-wedge surfaces = "+net.getSpaceCancellingWedgeSurfaceTransmissionCoefficient());
 		printStream.println("Number of space-cancelling wedges in fan of space-cancelling wedge = "+net.getNumberOfNegativeSpaceWedges());
+		printStream.println("Distance between principal points of lenses 1 and 2 in each SC wedge = "+net.getDistanceP1P2());
 		printStream.println("Show structure > Show edges and faces of net of hypercube = "+showNetEdges);
 		printStream.println("Show structure > Show edges of space-cancelling wedges = "+showSpaceCancellingWedgeEdges);
 		printStream.println("Show structure > Tube radius = "+net.getEdgeRadius());
@@ -357,7 +359,7 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 	
 	// GUI panels
 	private LabelledVector3DPanel centrePanel, rightDirectionPanel, upDirectionPanel;
-	private LabelledDoublePanel sideLengthPanel, edgeRadiusPanel, spaceCancellingWedgeLegLengthFactorPanel, spaceCancellingWedgeSurfaceTransmissionCoefficientPanel;
+	private LabelledDoublePanel sideLengthPanel, distanceP1P2Panel, edgeRadiusPanel, spaceCancellingWedgeLegLengthFactorPanel, spaceCancellingWedgeSurfaceTransmissionCoefficientPanel;
 	private LabelledIntPanel numberOfNegativeSpaceWedgesPanel;
 	private JComboBox<GluingType> gluingTypeComboBox;
 	private JCheckBox showSpaceCancellingWedgesCheckBox, showNetEdgesCheckBox, showSpaceCancellingWedgesEdgesCheckBox;
@@ -442,6 +444,9 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		numberOfNegativeSpaceWedgesPanel.setNumber(net.getNumberOfNegativeSpaceWedges());
 		netPanel.add(numberOfNegativeSpaceWedgesPanel, "wrap");
 		
+		distanceP1P2Panel = new LabelledDoublePanel("Distance between principal points of lenses 1 and 2 in SC wedge");
+		distanceP1P2Panel.setNumber(net.getDistanceP1P2());
+		netPanel.add(distanceP1P2Panel, "wrap");
 		
 		JPanel structureVisualisationPanel = new JPanel();
 		structureVisualisationPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Show structure"));
@@ -581,6 +586,7 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		net.setSpaceCancellingWedgeLegLengthFactor(spaceCancellingWedgeLegLengthFactorPanel.getNumber());
 		net.setSpaceCancellingWedgeSurfaceTransmissionCoefficient(spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.getNumber());
 		net.setNumberOfNegativeSpaceWedges(numberOfNegativeSpaceWedgesPanel.getNumber());
+		net.setDistanceP1P2(distanceP1P2Panel.getNumber());
 		net.setGluingType((GluingType)gluingTypeComboBox.getSelectedItem());
 		net.setEdgeRadius(edgeRadiusPanel.getNumber());
 		showNetEdges = showNetEdgesCheckBox.isSelected();
@@ -611,14 +617,19 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 		// show or hide additional parameters as appropriate
 		switch(net.getGluingType())
 		{
-		case SPACE_CANCELLING_WEDGES:
-		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
-		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case NEGATIVE_SPACE_WEDGES:
+		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
+		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
+			break;
+		case LENSES_COMPLETELY_SYMMETRIC:
+		case LENSES_QUITE_SYMMETRIC:
+			distanceP1P2Panel.setEnabled(true);
 			break;
 		case PERFECT:
 		default:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(false);
+			distanceP1P2Panel.setEnabled(false);
 		}
 	}
 	

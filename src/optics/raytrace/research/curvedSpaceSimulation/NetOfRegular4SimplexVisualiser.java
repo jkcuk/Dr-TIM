@@ -553,7 +553,7 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 	{
 		spaceCancellingWedgeLegLengthFactorPanel.setEnabled(showSpaceCancellingWedges || showSpaceCancellingWedgeEdges);
 		spaceCancellingWedgeSurfaceTransmissionCoefficientPanel.setEnabled(showSpaceCancellingWedges);
-		numberOfNegativeSpaceWedgesPanel.setEnabled((showSpaceCancellingWedges || showSpaceCancellingWedgeEdges) && (net.getGluingType() == GluingType.SPACE_CANCELLING_WEDGES));
+		numberOfNegativeSpaceWedgesPanel.setEnabled((showSpaceCancellingWedges || showSpaceCancellingWedgeEdges) && (net.getGluingType() == GluingType.NEGATIVE_SPACE_WEDGES));
 		gluingTypeComboBox.setEnabled(showSpaceCancellingWedges || showSpaceCancellingWedgeEdges);
 		edgeRadiusPanel.setEnabled(showSpaceCancellingWedgeEdges || showNetEdges);
 		

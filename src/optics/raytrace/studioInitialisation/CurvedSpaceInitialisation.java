@@ -147,6 +147,7 @@ public class CurvedSpaceInitialisation extends StudioInitialisation
 					edgeSurfaceProperty,	// edgeSurfaceProperty
 					gluingType,	// gluingType
 					noOfNegativeSpaceWedgesPerNullSpaceWedge,	// numberOfNegativeSpaceWedges
+					1,	// distanceP1P2
 					scene,
 					studio
 					));

@@ -84,6 +84,11 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 	 * Number of negative-space wedges, <i>N</i>, in the space-cancelling wedge
 	 */
 	protected int numberOfNegativeSpaceWedges;
+	
+	/**
+	 * separation between the principal points of lenses 1 and 2 in the three-lens space-cancelling wedge
+	 */
+	protected double distanceP1P2;
 
 	/**
 	 * show edges and faces of the simplicial complex that forms the net of the 4-simplex
@@ -163,6 +168,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 			double spaceCancellingWedgeSurfaceTransmissionCoefficient,
 			GluingType gluingType,
 			int numberOfNegativeSpaceWedges,
+			double distanceP1P2,
 			boolean showNetEdges,
 			boolean showSpaceCancellingWedgeEdges,
 			SurfaceProperty netEdgeSurfaceProperty,
@@ -183,6 +189,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		this.spaceCancellingWedgeSurfaceTransmissionCoefficient = spaceCancellingWedgeSurfaceTransmissionCoefficient;
 		this.gluingType = gluingType;
 		this.numberOfNegativeSpaceWedges = numberOfNegativeSpaceWedges;
+		this.distanceP1P2 = distanceP1P2;
 		this.showNetEdgesAndFaces = showNetEdges;
 		this.showSpaceCancellingWedgeEdges = showSpaceCancellingWedgeEdges;
 		this.netEdgeSurfaceProperty = netEdgeSurfaceProperty;
@@ -214,6 +221,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 			original.getSpaceCancellingWedgeSurfaceTransmissionCoefficient(),
 			original.getGluingType(),
 			original.getNumberOfNegativeSpaceWedges(),
+			original.getDistanceP1P2(),
 			original.isShowNetEdges(),
 			original.isShowSpaceCancellingWedgeEdges(),
 			original.getNetEdgeSurfaceProperty(),
@@ -238,6 +246,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 				0.96,	// refractingSurfaceTransmissionCoefficient
 				GluingType.PERFECT,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
+				1,	// distanceP1P2
 				false,	// showNetStructure
 				false,	// showSpaceCancellingWedgesStructure
 				SurfaceColour.BLUE_SHINY,	// netStructureSurfaceProperty
@@ -343,6 +352,13 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		this.numberOfNegativeSpaceWedges = numberOfNegativeSpaceWedges;
 	}
 
+	public double getDistanceP1P2() {
+		return distanceP1P2;
+	}
+
+	public void setDistanceP1P2(double distanceP1P2) {
+		this.distanceP1P2 = distanceP1P2;
+	}
 
 	public boolean isShowNetEdges() {
 		return showNetEdgesAndFaces;
@@ -732,6 +748,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 						spaceCancellingWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty
 						gluingType,	// gluingType
 						numberOfNegativeSpaceWedges,	// numberOfNegativeSpaceWedges,
+						distanceP1P2,	// distanceP1P2
 						spaceCancellingWedges,	// parent, 
 						getStudio()
 						)
@@ -759,6 +776,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 						spaceCancellingWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty
 						gluingType,	// gluingType
 						numberOfNegativeSpaceWedges,	// numberOfNegativeSpaceWedges,
+						distanceP1P2,	// distanceP1P2
 						spaceCancellingWedges,	// parent, 
 						getStudio()
 						)
@@ -1000,7 +1018,7 @@ public class EditableNetOfHypercube extends EditableSceneObjectCollection implem
 		// show or hide additional parameters as appropriate
 		switch(gluingType)
 		{
-		case SPACE_CANCELLING_WEDGES:
+		case NEGATIVE_SPACE_WEDGES:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
 			break;
 		case PERFECT:

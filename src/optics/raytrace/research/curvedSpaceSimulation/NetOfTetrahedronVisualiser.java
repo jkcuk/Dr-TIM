@@ -94,6 +94,11 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 	 * Number of negative-space wedges, <i>N</i>, in the null-space wedge
 	 */
 	protected int numberOfNegativeSpaceWedges;
+	
+	/**
+	 * distance between principal points of lenses 1 and 2 in each lens-based space-cancelling wedge
+	 */
+	protected double distanceP1P2;
 
 	/**
 	 * show edges of the simplicial complex that forms the net of the 4-simplex
@@ -227,6 +232,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		nullSpaceWedgeSurfaceTransmissionCoefficient = 0.96;
 		curvedSpaceSimulationType = GluingType.PERFECT; // SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS;
 		numberOfNegativeSpaceWedges = 2;
+		distanceP1P2 = 1;
 		netEdgeSurfaceProperty = // SurfaceColour.BLUE_SHINY;
 			ColourFilter.CYAN_GLASS;
 		nullSpaceWedgeEdgeSurfaceProperty = SurfaceColour.BLACK_SHINY;
@@ -313,6 +319,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		printStream.println("nullSpaceWedgeSurfaceTransmissionCoefficient = "+nullSpaceWedgeSurfaceTransmissionCoefficient);
 		printStream.println("curvedSpaceSimulationType = "+curvedSpaceSimulationType);
 		printStream.println("numberOfNegativeSpaceWedges = "+numberOfNegativeSpaceWedges);
+		printStream.println("distanceP1P2 = "+distanceP1P2);
 		printStream.println("showNetEdges = "+showNetEdges);
 		printStream.println("showNullSpaceWedgeEdges = "+showNullSpaceWedgeEdges);
 		printStream.println("netEdgeSurfaceProperty = "+netEdgeSurfaceProperty);
@@ -428,41 +435,6 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		
 		switch(curvedSpaceSimulationType)
 		{
-		case SPACE_CANCELLING_WEDGES:
-		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
-		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
-		case PERFECT:
-			// calculate the centres of the three null-space wedges
-			for(int i=0; i<3; i++)
-			{
-				double phi = i*2.0*Math.PI/3.0;
-				double cos = Math.cos(phi);
-				double sin = Math.sin(phi);
-				
-				Vector3D radialDirection = Vector3D.sum(u.getProductWith(cos), v.getProductWith(sin));
-				
-				net.addSceneObject(new EditableSpaceCancellingWedge(
-						"Null-space wedge #"+i,	// description
-						Math.PI,	// apexAngle = 180 degrees
-						Vector3D.sum(centre, radialDirection.getProductWith(faceCircumRadius)),	// apexEdgeCentre
-						w,	// apexEdgeDirection
-						radialDirection,	// bisectorDirection
-						faceCircumRadius*Math.sqrt(3.0)*nullSpaceWedgeLegLengthFactor,	// legLength, here the side length of an equilateral triangle with the given circumradius
-						nullSpaceWedgeHeight,	// apexEdgeLength,
-						// SCWedgeLegFaceShape.RECTANGULAR,
-						true,	// showRefractingSurfaces,
-						MyMath.deg2rad(100),	// containmentMirrorsAngleWithSides
-						nullSpaceWedgeSurfaceTransmissionCoefficient,	// surfaceTransmissionCoefficient,
-						false,	// showEdges,
-						edgeRadius,	// edgeRadius,
-						netEdgeSurfaceProperty,	// edgeSurfaceProperty,
-						curvedSpaceSimulationType,	// nullSpaceWedgeType
-						numberOfNegativeSpaceWedges,
-						scene,	// parent, 
-						studio
-				));
-			}
-			break;
 		case MIRROR_APPROXIMATION:
 			// the unfolded net lies in the (u, v) plane such that the "central" face, C, is centred at the origin and one of the vertices is in the u direction
 			// (see the crap diagram below, and Johannes's lab book p.19 8/11/18)
@@ -542,6 +514,40 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 					net,	// parent
 					studio)
 				);
+			break;
+		default:
+			// calculate the centres of the three null-space wedges
+			for(int i=0; i<3; i++)
+			{
+				double phi = i*2.0*Math.PI/3.0;
+				double cos = Math.cos(phi);
+				double sin = Math.sin(phi);
+				
+				Vector3D radialDirection = Vector3D.sum(u.getProductWith(cos), v.getProductWith(sin));
+				
+				net.addSceneObject(new EditableSpaceCancellingWedge(
+						"Null-space wedge #"+i,	// description
+						Math.PI,	// apexAngle = 180 degrees
+						Vector3D.sum(centre, radialDirection.getProductWith(faceCircumRadius)),	// apexEdgeCentre
+						w,	// apexEdgeDirection
+						radialDirection,	// bisectorDirection
+						faceCircumRadius*Math.sqrt(3.0)*nullSpaceWedgeLegLengthFactor,	// legLength, here the side length of an equilateral triangle with the given circumradius
+						nullSpaceWedgeHeight,	// apexEdgeLength,
+						// SCWedgeLegFaceShape.RECTANGULAR,
+						true,	// showRefractingSurfaces,
+						MyMath.deg2rad(100),	// containmentMirrorsAngleWithSides
+						nullSpaceWedgeSurfaceTransmissionCoefficient,	// surfaceTransmissionCoefficient,
+						false,	// showEdges,
+						edgeRadius,	// edgeRadius,
+						netEdgeSurfaceProperty,	// edgeSurfaceProperty,
+						curvedSpaceSimulationType,	// nullSpaceWedgeType
+						numberOfNegativeSpaceWedges,
+						distanceP1P2,
+						scene,	// parent, 
+						studio
+				));
+			}
+			break;
 
 		}
 		
@@ -676,40 +682,6 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		// ... and add what needs to be added now, i.e. everything with the correct visibility
 		switch(curvedSpaceSimulationType)
 		{
-		case SPACE_CANCELLING_WEDGES:
-		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
-		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
-		case PERFECT:
-			for(int i=0; i<3; i++)
-			{
-				double phi = i*2.0*Math.PI/3.0;
-				double cos = Math.cos(phi);
-				double sin = Math.sin(phi);
-
-				Vector3D radialDirection = Vector3D.sum(u.getProductWith(cos), v.getProductWith(sin));
-
-				scene.addSceneObject(new EditableSpaceCancellingWedge(
-						"Null-space wedge #"+i,	// description
-						Math.PI,	// apexAngle = 180 degrees
-						Vector3D.sum(centre, radialDirection.getProductWith(faceCircumRadius)),	// apexEdgeCentre
-						w,	// apexEdgeDirection
-						radialDirection,	// bisectorDirection
-						faceCircumRadius*Math.sqrt(3.0)*nullSpaceWedgeLegLengthFactor,	// legLength, here the side length of an equilateral triangle with the given circumradius
-						nullSpaceWedgeHeight,	// apexEdgeLength,
-						// SCWedgeLegFaceShape.RECTANGULAR,
-						showNullSpaceWedges,	// showRefractingSurfaces,
-						MyMath.deg2rad(100),	// containmentMirrorsAngleWithSides
-						nullSpaceWedgeSurfaceTransmissionCoefficient,	// surfaceTransmissionCoefficient,
-						showNullSpaceWedgeEdges,	// showEdges,
-						edgeRadius,	// edgeRadius,
-						nullSpaceWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty,
-						curvedSpaceSimulationType,	// nullSpaceWedgeType
-						numberOfNegativeSpaceWedges,
-						scene,	// parent, 
-						studio
-						));
-			}
-		break;
 		case MIRROR_APPROXIMATION:
 			// the unfolded net lies in the (u, v) plane such that the "central" face, C, is centred at the origin and one of the vertices is in the u direction
 			// (see the crap diagram below, and Johannes's lab book p.19 8/11/18)
@@ -789,6 +761,39 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 					net,	// parent
 					studio)
 				);
+			break;
+		default:
+			for(int i=0; i<3; i++)
+			{
+				double phi = i*2.0*Math.PI/3.0;
+				double cos = Math.cos(phi);
+				double sin = Math.sin(phi);
+
+				Vector3D radialDirection = Vector3D.sum(u.getProductWith(cos), v.getProductWith(sin));
+
+				scene.addSceneObject(new EditableSpaceCancellingWedge(
+						"Null-space wedge #"+i,	// description
+						Math.PI,	// apexAngle = 180 degrees
+						Vector3D.sum(centre, radialDirection.getProductWith(faceCircumRadius)),	// apexEdgeCentre
+						w,	// apexEdgeDirection
+						radialDirection,	// bisectorDirection
+						faceCircumRadius*Math.sqrt(3.0)*nullSpaceWedgeLegLengthFactor,	// legLength, here the side length of an equilateral triangle with the given circumradius
+						nullSpaceWedgeHeight,	// apexEdgeLength,
+						// SCWedgeLegFaceShape.RECTANGULAR,
+						showNullSpaceWedges,	// showRefractingSurfaces,
+						MyMath.deg2rad(100),	// containmentMirrorsAngleWithSides
+						nullSpaceWedgeSurfaceTransmissionCoefficient,	// surfaceTransmissionCoefficient,
+						showNullSpaceWedgeEdges,	// showEdges,
+						edgeRadius,	// edgeRadius,
+						nullSpaceWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty,
+						curvedSpaceSimulationType,	// nullSpaceWedgeType
+						numberOfNegativeSpaceWedges,
+						distanceP1P2,
+						scene,	// parent, 
+						studio
+						));
+			}
+		break;
 		}
 		
 		if(showNetEdges)
@@ -929,7 +934,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 	
 	// GUI panels
 	private LabelledVector3DPanel centrePanel, rightDirectionPanel, upDirectionPanel;
-	private LabelledDoublePanel sideLengthPanel, edgeRadiusPanel, nullSpaceWedgeLegLengthFactorPanel, nullSpaceWedgeSurfaceTransmissionCoefficientPanel;
+	private LabelledDoublePanel sideLengthPanel, distanceP1P2Panel, edgeRadiusPanel, nullSpaceWedgeLegLengthFactorPanel, nullSpaceWedgeSurfaceTransmissionCoefficientPanel;
 	private LabelledIntPanel numberOfNegativeSpaceWedgesPanel;
 	private JComboBox<GluingType> curvedSpaceSimulationTypeComboBox;
 	private JCheckBox showNullSpaceWedgesCheckBox, showNetEdgesCheckBox, showNullSpaceWedgesEdgesCheckBox;
@@ -1022,6 +1027,9 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		numberOfNegativeSpaceWedgesPanel.setNumber(numberOfNegativeSpaceWedges);
 		netPanel.add(numberOfNegativeSpaceWedgesPanel, "wrap");
 		
+		distanceP1P2Panel = new LabelledDoublePanel("Distance between principal points of lenses 1 and 2 in lens SC wedge");
+		distanceP1P2Panel.setNumber(distanceP1P2);
+		netPanel.add(distanceP1P2Panel, "wrap");
 		
 		JPanel structureVisualisationPanel = new JPanel();
 		structureVisualisationPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Show structure"));
@@ -1256,6 +1264,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		nullSpaceWedgeLegLengthFactor = nullSpaceWedgeLegLengthFactorPanel.getNumber();
 		nullSpaceWedgeSurfaceTransmissionCoefficient = nullSpaceWedgeSurfaceTransmissionCoefficientPanel.getNumber();
 		numberOfNegativeSpaceWedges = numberOfNegativeSpaceWedgesPanel.getNumber();
+		distanceP1P2 = distanceP1P2Panel.getNumber();
 		curvedSpaceSimulationType = (GluingType)curvedSpaceSimulationTypeComboBox.getSelectedItem();
 		edgeRadius = edgeRadiusPanel.getNumber();
 		showNetEdges = showNetEdgesCheckBox.isSelected();
@@ -1297,13 +1306,18 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		// show or hide additional parameters as appropriate
 		switch(curvedSpaceSimulationType)
 		{
-		case SPACE_CANCELLING_WEDGES:
+		case NEGATIVE_SPACE_WEDGES:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
+			break;
+		case LENSES_COMPLETELY_SYMMETRIC:
+		case LENSES_QUITE_SYMMETRIC:
+			distanceP1P2Panel.setEnabled(true);
 			break;
 		case PERFECT:
 		case MIRROR_APPROXIMATION:
 		default:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(false);
+			distanceP1P2Panel.setEnabled(false);
 		}
 	}
 	

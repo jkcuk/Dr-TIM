@@ -94,6 +94,11 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 	 * Number of negative-space wedges, <i>N</i>, in the null-space wedge
 	 */
 	protected int numberOfNegativeSpaceWedges;
+	
+	/**
+	 * separation between the principal points of lenses 1 and 2 in the three-lens space-cancelling wedge
+	 */
+	protected double distanceP1P2;
 
 	/**
 	 * show edges of the simplicial complex that forms the net of the 4-simplex
@@ -237,6 +242,7 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		nullSpaceWedgeSurfaceTransmissionCoefficient = 0.96;
 		gluingType = GluingType.PERFECT; // GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS;
 		numberOfNegativeSpaceWedges = 2;
+		distanceP1P2 = 1;
 		netEdgeSurfaceProperty = // SurfaceColour.BLUE_SHINY;
 			ColourFilter.CYAN_GLASS;
 		nullSpaceWedgeEdgeSurfaceProperty = SurfaceColour.BLACK_SHINY;
@@ -332,6 +338,7 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		printStream.println("nullSpaceWedgeSurfaceTransmissionCoefficient = "+nullSpaceWedgeSurfaceTransmissionCoefficient);
 		printStream.println("gluingType = "+gluingType);
 		printStream.println("numberOfNegativeSpaceWedges = "+numberOfNegativeSpaceWedges);
+		printStream.println("distanceP1P2 = "+distanceP1P2);
 		printStream.println("showNetEdges = "+showNetEdges);
 		printStream.println("showNullSpaceWedgeEdges = "+showNullSpaceWedgeEdges);
 		printStream.println("netEdgeSurfaceProperty = "+netEdgeSurfaceProperty);
@@ -464,9 +471,9 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 			
 			switch(gluingType)
 			{
-			case SPACE_CANCELLING_WEDGES:
-			case SPACE_CANCELLING_WEDGES_SYMMETRIC:
-			case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
+			case NEGATIVE_SPACE_WEDGES:
+			case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
+			case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
 				Vector3D
 					v1 = Vector3D.sum(centre, w.getProductWith(-0.5), radialDirection.getProductWith(r1)),
 					v2 = Vector3D.sum(centre, w.getProductWith(-0.5), radialDirection.getProductWith(r2));
@@ -492,7 +499,6 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 						studio
 						));
 				break;
-			case PERFECT:
 			default:
 				net.addSceneObject(new EditableSpaceCancellingWedge(
 						"Inner null-space wedge #"+i,	// description
@@ -511,6 +517,7 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 						nullSpaceWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty,
 						gluingType,
 						1,	// numberOfNegativeSpaceWedges,
+						distanceP1P2,	// distanceP1P2
 						scene,	// parent, 
 						studio
 						));
@@ -533,6 +540,7 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 					nullSpaceWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty,
 					gluingType,
 					numberOfNegativeSpaceWedges,
+					distanceP1P2,	// distanceP1P2
 					scene,	// parent, 
 					studio
 			));
@@ -757,9 +765,9 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 			
 			switch(gluingType)
 			{
-			case SPACE_CANCELLING_WEDGES:
-			case SPACE_CANCELLING_WEDGES_SYMMETRIC:
-			case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
+			case NEGATIVE_SPACE_WEDGES:
+			case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
+			case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
 				Vector3D
 					v1 = Vector3D.sum(centre, w.getProductWith(-0.5), radialDirection.getProductWith(r1)),
 					v2 = Vector3D.sum(centre, w.getProductWith(-0.5), radialDirection.getProductWith(r2));
@@ -785,7 +793,6 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 						studio
 						));
 				break;
-			case PERFECT:
 			default:
 				net.addSceneObject(new EditableSpaceCancellingWedge(
 						"Inner null-space wedge #"+i,	// description
@@ -804,6 +811,7 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 						nullSpaceWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty,
 						gluingType,
 						1,	// numberOfNegativeSpaceWedges,
+						distanceP1P2,
 						scene,	// parent, 
 						studio
 						));
@@ -869,6 +877,7 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 					nullSpaceWedgeEdgeSurfaceProperty,	// edgeSurfaceProperty,
 					gluingType,
 					numberOfNegativeSpaceWedges,
+					distanceP1P2,
 					scene,	// parent, 
 					studio
 			));
@@ -1109,7 +1118,7 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 	
 	// GUI panels
 	private LabelledVector3DPanel centrePanel, rightDirectionPanel, upDirectionPanel;
-	private LabelledDoublePanel sideLengthPanel, edgeRadiusPanel, nullSpaceWedgeLegLengthFactorPanel, nullSpaceWedgeSurfaceTransmissionCoefficientPanel;
+	private LabelledDoublePanel sideLengthPanel, distanceP1P2Panel, edgeRadiusPanel, nullSpaceWedgeLegLengthFactorPanel, nullSpaceWedgeSurfaceTransmissionCoefficientPanel;
 	private LabelledIntPanel numberOfNegativeSpaceWedgesPanel;
 	private JComboBox<GluingType> gluingTypeComboBox;
 	private JCheckBox showNullSpaceWedgesCheckBox, showNetEdgesCheckBox, showNullSpaceWedgesEdgesCheckBox;
@@ -1210,6 +1219,10 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		numberOfNegativeSpaceWedgesPanel = new LabelledIntPanel("Number of negative-space wedges per null-space wedge");
 		numberOfNegativeSpaceWedgesPanel.setNumber(numberOfNegativeSpaceWedges);
 		netPanel.add(numberOfNegativeSpaceWedgesPanel, "wrap");
+		
+		distanceP1P2Panel = new LabelledDoublePanel("Distance between principal points of lenses 1 and 2");
+		distanceP1P2Panel.setNumber(distanceP1P2);
+		netPanel.add(distanceP1P2Panel, "wrap");
 		
 		
 		JPanel structureVisualisationPanel = new JPanel();
@@ -1475,6 +1488,7 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		nullSpaceWedgeLegLengthFactor = nullSpaceWedgeLegLengthFactorPanel.getNumber();
 		nullSpaceWedgeSurfaceTransmissionCoefficient = nullSpaceWedgeSurfaceTransmissionCoefficientPanel.getNumber();
 		numberOfNegativeSpaceWedges = numberOfNegativeSpaceWedgesPanel.getNumber();
+		distanceP1P2 = distanceP1P2Panel.getNumber();
 		gluingType = (GluingType)gluingTypeComboBox.getSelectedItem();
 		edgeRadius = edgeRadiusPanel.getNumber();
 		showNetEdges = showNetEdgesCheckBox.isSelected();
@@ -1525,14 +1539,19 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 		// show or hide additional parameters as appropriate
 		switch(gluingType)
 		{
-		case SPACE_CANCELLING_WEDGES:
-		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
-		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case NEGATIVE_SPACE_WEDGES:
+		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
+		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
+			break;
+		case LENSES_COMPLETELY_SYMMETRIC:
+		case LENSES_QUITE_SYMMETRIC:
+			distanceP1P2Panel.setEnabled(true);
 			break;
 		case PERFECT:
 		default:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(false);
+			distanceP1P2Panel.setEnabled(false);
 		}
 	}
 	
