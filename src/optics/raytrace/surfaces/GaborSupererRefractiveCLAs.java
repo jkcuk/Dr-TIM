@@ -496,6 +496,7 @@ public class GaborSupererRefractiveCLAs extends Parallelepiped2
 		return pointWhereAllPlanesMeet;
 	}
 	
+	
 	/**
 	 * 
 	 * @param normalisedOpticalAxisDirection

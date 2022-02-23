@@ -454,6 +454,7 @@ public class SurfaceOfGaborSupererRefractiveCLAs extends SurfaceOfVoxellatedLens
 				gaborSupererRefractiveLensArrayContainer.addSceneObject(RefractiveFrontHalfLensSurfaceArray2);
 			}
 			//System.out.println(separatedArrays);
+		
 		 	
 		 return gaborSupererRefractiveLensArrayContainer;
 	}

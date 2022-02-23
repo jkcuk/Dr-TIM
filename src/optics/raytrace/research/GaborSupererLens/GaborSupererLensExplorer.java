@@ -508,8 +508,7 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 			double phi1 = MyMath.deg2rad(-Math.pow(-1, 1)*0.5*phiDeg);
 			double c1 = Math.cos(phi1);
 			double s1 = Math.sin(phi1);
-			Vector3D commonPlaneInterceptionPoint;
-			
+			Vector3D commonPlaneInterceptionPoint;			
 			
 			scene.addSceneObject(new GaborSupererRefractiveCLAs(		
 //					"lenslet array made of refractive lenses",// description,
