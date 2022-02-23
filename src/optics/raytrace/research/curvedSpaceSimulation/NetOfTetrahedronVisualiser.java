@@ -232,7 +232,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 		nullSpaceWedgeSurfaceTransmissionCoefficient = 0.96;
 		curvedSpaceSimulationType = GluingType.PERFECT; // SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS;
 		numberOfNegativeSpaceWedges = 2;
-		distanceP1P2 = 1;
+		distanceP1P2 = 0.01;
 		netEdgeSurfaceProperty = // SurfaceColour.BLUE_SHINY;
 			ColourFilter.CYAN_GLASS;
 		nullSpaceWedgeEdgeSurfaceProperty = SurfaceColour.BLACK_SHINY;
