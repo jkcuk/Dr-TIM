@@ -739,7 +739,7 @@ public class EditableNetOf4Simplex extends EditableSceneObjectCollection impleme
 		// show or hide additional parameters as appropriate
 		switch(gluingType)
 		{
-		case SPACE_CANCELLING_WEDGES:
+		case NEGATIVE_SPACE_WEDGES:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
 			break;
 		case PERFECT:

@@ -46,6 +46,7 @@ public class TestInitialisation extends StudioInitialisation
 				0.96,	// refractingSurfaceTransmissionCoefficient
 				GluingType.PERFECT,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
+				1,	// distanceP1P2
 				true,	// showNetStructure
 				false,	// showNullSpaceWedgesStructure
 				SurfaceColour.BLUE_SHINY,	// netStructureSurfaceProperty

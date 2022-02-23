@@ -6,10 +6,12 @@ package optics.raytrace.research.curvedSpaceSimulation;
  */
 public enum GluingType
 {
-	SPACE_CANCELLING_WEDGES("Space-cancelling wedges (asymmetric, without containment mirrors)"),
-	SPACE_CANCELLING_WEDGES_SYMMETRIC("Symmetric space-cancelling wedges (without containment mirrors)"),
-	SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS("Space-cancelling wedges (asymmetric) with containment mirrors"),
-	PERFECT("Perfect"),	// teleporting sides
+	NEGATIVE_SPACE_WEDGES("Negative-space wedges (asymmetric, without containment mirrors)"),
+	NEGATIVE_SPACE_WEDGES_SYMMETRIC("Symmetric negative-space wedges (without containment mirrors)"),
+	NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS("Negative-space wedges (asymmetric) with containment mirrors"),
+	PERFECT("Perfect (teleporting sides)"),	// teleporting sides
+	LENSES_COMPLETELY_SYMMETRIC("Three-lens combo, symmetric (f1=f2=f3)"),
+	LENSES_QUITE_SYMMETRIC("Three-lens combo, quite symmetric (f1=f3)"),
 	MIRROR_APPROXIMATION("Mirror approximation");	
 	
 	private String description;

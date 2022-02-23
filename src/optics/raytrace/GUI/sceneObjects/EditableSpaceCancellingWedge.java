@@ -23,6 +23,7 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.research.curvedSpaceSimulation.GluingType;
+import optics.raytrace.surfaces.IdealThinLensSurfaceSimple;
 import optics.raytrace.surfaces.RayRotating;
 import optics.raytrace.surfaces.Reflective;
 import optics.raytrace.surfaces.SurfaceColour;
@@ -122,6 +123,11 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 	 */
 	private int numberOfNegativeSpaceWedges;
 	
+	/**
+	 * separation between the principal points of lenses 1 and 2 in the three-lens space-cancelling wedge
+	 */
+	private double distanceP1P2;
+	
 
 
 	//
@@ -164,6 +170,7 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 			SurfaceProperty edgeSurfaceProperty,
 			GluingType gluingType,
 			int numberOfNegativeSpaceWedges,
+			double distanceP1P2,
 			SceneObject parent, 
 			Studio studio
 	)
@@ -184,6 +191,7 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 		this.edgeSurfaceProperty = edgeSurfaceProperty;
 		this.gluingType = gluingType;
 		this.numberOfNegativeSpaceWedges = numberOfNegativeSpaceWedges;
+		this.distanceP1P2 = distanceP1P2;
 
 		populateSceneObjectCollection();
 	}
@@ -209,8 +217,9 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 				false,	// showEdges
 				0.01,	// edgeRadius
 				SurfaceColour.RED_SHINY,	// edgeSurfaceProperty
-				GluingType.SPACE_CANCELLING_WEDGES,	// gluingType
+				GluingType.NEGATIVE_SPACE_WEDGES,	// gluingType
 				1,	// numberOfNegativeSpaceWedges
+				1.,	// distanceP1P2
 				parent,
 				studio
 			);
@@ -238,6 +247,7 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 			original.getEdgeSurfaceProperty().clone(),
 			original.getGluingType(),
 			original.getNumberOfNegativeSpaceWedges(),
+			original.getDistanceP1P2(),
 			original.getParent(),
 			original.getStudio()
 		);
@@ -366,13 +376,23 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 	public void setNumberOfNegativeSpaceWedges(int numberOfNegativeSpaceWedges) {
 		this.numberOfNegativeSpaceWedges = numberOfNegativeSpaceWedges;
 	}
+	
+	public double getDistanceP1P2() {
+		return distanceP1P2;
+	}
+
+	public void setDistanceP1P2(double distanceP1P2) {
+		this.distanceP1P2 = distanceP1P2;
+	}
+
+
 
 
 	
 	//
 	// internal variables
 	//
-	
+
 	// containers for the refracting surfaces and edges
 	private EditableSceneObjectCollection surfaces, edges;
 	
@@ -392,6 +412,204 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 		c = Vector3D.crossProduct(b, a);
 	}
 	
+	private void addLens(
+			String description,
+			Vector3D corner,
+			Vector3D spanVector1,
+			Vector3D spanVector2,
+			Vector3D principalPoint,
+			double focalLength
+		)
+	{
+		surfaces.addSceneObject(new EditableScaledParametrisedParallelogram(
+				description,
+				corner,
+				spanVector1,
+				spanVector2,
+// 				SurfaceColour.BLUE_MATT,
+				new IdealThinLensSurfaceSimple(
+						principalPoint,	// lensCentre, i.e. principal point
+						Vector3D.crossProduct(spanVector1, spanVector2),	// opticalAxisDirection,
+						focalLength,
+						surfaceTransmissionCoefficient,	// transmissionCoefficient,
+						false	// shadowThrowing,	
+					),	// surfaceProperty
+				surfaces,	// parent
+				getStudio()
+			));
+
+		edges.addSceneObject(
+				new EditableParametrisedCylinder(
+						"Top edge of "+description,
+						Vector3D.sum(corner, spanVector1),	// start point
+						Vector3D.sum(corner, spanVector1, spanVector2),	// end point
+						edgeRadius,	// radius
+						edgeSurfaceProperty,
+						edges,
+						getStudio()
+					)
+			);
+
+		edges.addSceneObject(
+				new EditableParametrisedCylinder(
+						"Outer edge of "+description,
+						Vector3D.sum(corner, spanVector1, spanVector2),	// start point
+						Vector3D.sum(corner, spanVector2),	// end point
+						edgeRadius,	// radius
+						edgeSurfaceProperty,
+						edges,
+						getStudio()
+					)
+			);
+
+		edges.addSceneObject(
+				new EditableParametrisedCylinder(
+						"Bottom edge of "+description,
+						Vector3D.sum(corner, spanVector2), // start point
+						corner,	// end point
+						edgeRadius,	// radius
+						edgeSurfaceProperty,
+						edges,
+						getStudio()
+					)
+			);
+	}
+	
+	/**
+	 * add the lenses that form a lens-based space-cancelling wedge for the case of the
+	 * three-lens setup being completely symmetric (L_2 along bisector direction;
+	 * f1 = f2 = f3; angle between L1 and L2 = angle between L3 and L2
+	 */
+	private void addLensesCompletelySymmetric()
+	{
+		// References:
+		// [1] ThreeLensImageRotationCompletelySymmetricFormulas.nb
+
+
+		double d = distanceP1P2;
+		
+		double c6 = Math.cos(apexAngle/6.);
+		double c3 = Math.cos(apexAngle/3.);
+		
+		// focal lengths f1 and f2 [2]
+		double f1 = d*c6/(1.+2.*c3);
+		double f2 = d*c6/(1.+2.*c3);	// same as f1
+		double f3 = d*c6/(1.+2.*c3);	// same as f1 and f2
+		System.out.println("EditableSpaceCancellingWedge::addLenses: f1="+f1+", f2="+f2+", f3="+f3);
+				
+		// now calculate P1, P2, P3 in global (x,y,z) coordinates
+		// V is called apexEdgeCentre
+		double r = d/(2*Math.sin(apexAngle/6.));
+		Vector3D p1 = Vector3D.sum(apexEdgeCentre, new Vector3D(0, r*Math.cos(apexAngle/3.), -r*Math.sin(apexAngle/3.)).fromBasis(a, b, c));
+		Vector3D p2 = Vector3D.sum(apexEdgeCentre, new Vector3D(0, r, 0).fromBasis(a, b, c));
+		Vector3D p3 = Vector3D.sum(apexEdgeCentre, new Vector3D(0, r*Math.cos(apexAngle/3.), r*Math.sin(apexAngle/3.)).fromBasis(a, b, c));
+		
+		// now add the lenses
+		Vector3D apexEdgeBottom = Vector3D.sum(apexEdgeCentre, a.getProductWith(-0.5*apexEdgeLength));
+		// Vector3D apexEdgeTop = Vector3D.sum(apexEdgeCentre, a.getProductWith(+0.5*apexEdgeLength));
+		// span vector in the a direction
+		Vector3D aSpanVector = a.getProductWith(apexEdgeLength);
+
+		addLens(
+				"L1",	// description
+				apexEdgeBottom,	// corner 
+				aSpanVector,	// spanVector1
+				Vector3D.difference(p1,  apexEdgeCentre).getWithLength(legLength),	// spanVector2
+				p1,	// principalPoint
+				f1	// focalLength
+			);
+
+		addLens(
+				"L2",	// description
+				apexEdgeBottom,	// corner 
+				aSpanVector,	// spanVector1
+				Vector3D.difference(p2,  apexEdgeCentre).getWithLength(legLength),	// spanVector2
+				p2,	// principalPoint
+				f2	// focalLength
+			);
+
+		addLens(
+				"L3",	// description
+				apexEdgeBottom,	// corner 
+				aSpanVector,	// spanVector1
+				Vector3D.difference(p3,  apexEdgeCentre).getWithLength(legLength),	// spanVector2
+				p3,	// principalPoint
+				f3	// focalLength
+			);
+	}
+
+	/**
+	 * add the lenses that form a lens-based space-cancelling wedge for the case of the
+	 * three-lens setup being quite symmetric (L_2 along bisector direction;
+	 * f1 = f3; angle between L1 and L2 = angle between L3 and L2)
+	 */
+	private void addLensesQuiteSymmetric()
+	{
+		// [1] ThreeLensImageRotationQuiteSymmetricFormulas.nb
+		
+		// eps is the angle between the "legs" of the space-cancelling wedge and the nearest lens
+		double eps = MyMath.deg2rad(.1);	// a small angle
+//		double sinEps = Math.sin(eps);
+//		double cosEps = Math.cos(eps);
+		double d = distanceP1P2;
+				
+		// focal lengths f1 and f2 [2]
+		double f1 = d*Math.sin(eps)*Math.cos(eps)/Math.sin(0.5*apexAngle);
+		double f2 = 0.5*d*(Math.cos(eps) - Math.sin(eps)/Math.tan(0.5*apexAngle));
+		double f3 = d*Math.sin(eps)*Math.cos(eps)/Math.sin(0.5*apexAngle);
+		System.out.println("EditableSpaceCancellingWedge::addLenses: f1="+f1+", f2="+f2+", f3="+f3);
+
+		// P1, P2, P3 in global (x,y,z) coordinates
+		// V is called apexEdgeCentre
+		Vector3D p1 = Vector3D.sum(
+				apexEdgeCentre, 
+				b.getProductWith(d*Math.cos(eps)/Math.tan(0.5*apexAngle - eps)),
+				c.getProductWith(-d*Math.cos(eps))
+			);
+		Vector3D p2 = Vector3D.sum(
+				apexEdgeCentre,
+				b.getProductWith(d/Math.cos(eps)/(Math.tan(0.5*apexAngle - 2.*eps) + Math.tan(eps)))
+			);
+		Vector3D p3 = Vector3D.sum(
+				apexEdgeCentre,
+				b.getProductWith(d*Math.cos(eps)/Math.tan(0.5*apexAngle - eps)),
+				c.getProductWith(d*Math.cos(eps))
+			);
+		
+		// now add the lenses
+		Vector3D apexEdgeBottom = Vector3D.sum(apexEdgeCentre, a.getProductWith(-0.5*apexEdgeLength));
+		// Vector3D apexEdgeTop = Vector3D.sum(apexEdgeCentre, a.getProductWith(+0.5*apexEdgeLength));
+		// span vector in the a direction
+		Vector3D aSpanVector = a.getProductWith(apexEdgeLength);
+
+		addLens(
+				"L1",	// description
+				apexEdgeBottom,	// corner 
+				aSpanVector,	// spanVector1
+				Vector3D.difference(p1,  apexEdgeCentre).getWithLength(legLength),	// spanVector2
+				p1,	// principalPoint
+				f1	// focalLength
+			);
+
+		addLens(
+				"L2",	// description
+				apexEdgeBottom,	// corner 
+				aSpanVector,	// spanVector1
+				Vector3D.difference(p2,  apexEdgeCentre).getWithLength(legLength),	// spanVector2
+				p2,	// principalPoint
+				f2	// focalLength
+			);
+
+		addLens(
+				"L3",	// description
+				apexEdgeBottom,	// corner 
+				aSpanVector,	// spanVector1
+				Vector3D.difference(p3,  apexEdgeCentre).getWithLength(legLength),	// spanVector2
+				p3,	// principalPoint
+				f3	// focalLength
+			);
+	}
+
 	/**
 	 * Add one of the surfaces that form the "leg surfaces" of the isosceles negative-space wedges
 	 * @param description
@@ -754,9 +972,9 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 	{
 		switch(gluingType)
 		{
-		case SPACE_CANCELLING_WEDGES:
-		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
-		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case NEGATIVE_SPACE_WEDGES:
+		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
+		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
 			// calculate the angle of each wedge
 			// each wedge needs to rotate by <wedgeAngle> / <numberOfNegativeSpaceWedges>, which it does by
 			// having a wedge angle that is half of that (in radians)
@@ -771,7 +989,7 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 
 				// first calculate the angle in the (a, b) plane and with respect to the b axis
 				double angleWithBisector =
-						(gluingType==GluingType.SPACE_CANCELLING_WEDGES_SYMMETRIC)
+						(gluingType==GluingType.NEGATIVE_SPACE_WEDGES_SYMMETRIC)
 						?(-(apexAngle-delta)/2 + i*delta)
 						:(-apexAngle/2 + i*delta);
 
@@ -779,12 +997,12 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 				addNegativeSpaceWedgeLegSurface(
 						"Surface #"+i+" (angle with bisector="+MyMath.rad2deg(angleWithBisector)+"°)",	// description
 						angleWithBisector,	// azimuthalAngle
-						(gluingType==GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS) && (i%2 == 1)
+						(gluingType==GluingType.NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS) && (i%2 == 1)
 					);
 			
 				if(i%2 == 1)
 				{
-					if(gluingType==GluingType.SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS)
+					if(gluingType==GluingType.NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS)
 					{
 						// add mirrors
 						addMirrors(
@@ -804,6 +1022,12 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 					}
 				}
 			}
+			break;
+		case LENSES_COMPLETELY_SYMMETRIC:
+			addLensesCompletelySymmetric();
+			break;
+		case LENSES_QUITE_SYMMETRIC:
+			addLensesQuiteSymmetric();
 			break;
 		case PERFECT:
 		default:
@@ -1036,9 +1260,9 @@ public class EditableSpaceCancellingWedge extends EditableSceneObjectCollection 
 		// show or hide additional parameters as appropriate
 		switch(gluingType)
 		{
-		case SPACE_CANCELLING_WEDGES:
-		case SPACE_CANCELLING_WEDGES_SYMMETRIC:
-		case SPACE_CANCELLING_WEDGES_WITH_CONTAINMENT_MIRRORS:
+		case NEGATIVE_SPACE_WEDGES:
+		case NEGATIVE_SPACE_WEDGES_SYMMETRIC:
+		case NEGATIVE_SPACE_WEDGES_WITH_CONTAINMENT_MIRRORS:
 			numberOfNegativeSpaceWedgesPanel.setEnabled(true);
 			break;
 		case PERFECT:
