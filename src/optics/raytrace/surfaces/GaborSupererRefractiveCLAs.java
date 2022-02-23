@@ -470,18 +470,20 @@ public class GaborSupererRefractiveCLAs extends Parallelepiped2
 		
 		//time to do some geometry math to find the intersection points
 		
-			intersectionFan1 = Geometry.lineLineIntersectionNoRayTraceException(
+			intersectionFan1 = Geometry.pointClosestToBothLines(
 				pointOnPlane00Array1Fan1, // pointOnLine1,	// p_1
 				Vector3D.difference(pointOnPlane00Array2Fan1, pointOnPlane00Array1Fan1),// directionOfLine1,	// v_1
 				pointOnplane10Array1,// pointOnLine2,
-				Vector3D.difference(pointOnplane10Array2, pointOnplane10Array1)// directionOfLine2
+				Vector3D.difference(pointOnplane10Array2, pointOnplane10Array1),// directionOfLine2
+				false
 				);
 		
-			intersectionFan2 = Geometry.lineLineIntersectionNoRayTraceException(
+			intersectionFan2 = Geometry.pointClosestToBothLines(
 					pointOnPlane00Array1Fan2, // pointOnLine1,	// p_1
 					Vector3D.difference(pointOnPlane00Array2Fan2, pointOnPlane00Array1Fan2),// directionOfLine1,	// v_1
 					pointOnplane01Array1,// pointOnLine2,
-					Vector3D.difference(pointOnplane01Array2, pointOnplane01Array1)// directionOfLine2
+					Vector3D.difference(pointOnplane01Array2, pointOnplane01Array1),// directionOfLine2
+					false
 					);
 		
 

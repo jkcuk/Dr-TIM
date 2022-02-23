@@ -424,9 +424,6 @@ public class SurfaceOfGaborSupererRefractiveCLAs extends SurfaceOfVoxellatedLens
 			
 		}else {
 			
-			/**
-			 * TODO check normal direction convention works for all u,v vect
-			 */
 				RefractiveFrontHalfLensSurfaces RefractiveFrontHalfLensSurfaceArray1 = new RefractiveFrontHalfLensSurfaces(
 						"Array 1, Lens #"+ voxelIndices[0]+", "+voxelIndices[1], // description,
 						centrePrincipalPointLensArray1,// centre,
@@ -464,11 +461,11 @@ public class SurfaceOfGaborSupererRefractiveCLAs extends SurfaceOfVoxellatedLens
 	public static Voxellation[] createVoxellations(Vector3D uPeriod, Vector3D vPeriod, Vector3D centreOfLens00, Vector3D commonInterceptionPoint)
 	{
 		Voxellation voxellations[] = new Voxellation[2];
-
-		if(commonInterceptionPoint.getLength() >= Double.POSITIVE_INFINITY) {
+		
 		Vector3D pointOnPlane0 = Vector3D.sum(centreOfLens00, uPeriod.getProductWith(+0.5), vPeriod.getProductWith(+0.5));
-		
-		
+		Vector3D pointOnplane1 = Vector3D.sum(pointOnPlane0, uPeriod, vPeriod);
+
+		if(commonInterceptionPoint.getLength() >= Double.POSITIVE_INFINITY) {		
 		//System.out.println("SurfaceOfGeneralRefractiveLensletArrays::createVoxellations: pointOnPlane0="+pointOnPlane0);
 		
 		voxellations[0] = new SetOfEquidistantParallelPlanes(
@@ -483,23 +480,19 @@ public class SurfaceOfGaborSupererRefractiveCLAs extends SurfaceOfVoxellatedLens
 				vPeriod.getPartPerpendicularTo(uPeriod).getLength()	// separation
 			);
 		}else {
-			Vector3D pointOnPlane00Array1Fan1 = Vector3D.sum(centreOfLens00, uPeriod.getProductWith(0.5));
-			Vector3D pointOnPlane00Array1Fan2 = Vector3D.sum(centreOfLens00, vPeriod.getProductWith(0.5));
-			Vector3D pointOnplane10Array1 = Vector3D.sum(pointOnPlane00Array1Fan1, uPeriod);
-			Vector3D pointOnplane01Array1 = Vector3D.sum(pointOnPlane00Array1Fan2, vPeriod);
 			
 			voxellations[0] = new FanOfPlanes(
 					commonInterceptionPoint,// c1, 
 					commonInterceptionPoint.getSumWith(vPeriod),// c2, 
-					pointOnPlane00Array1Fan1,// p0, 
-					pointOnplane10Array1 //p1
+					pointOnPlane0,// p0, 
+					pointOnplane1 //p1
 				);
 
 			voxellations[1] = new FanOfPlanes(
 					commonInterceptionPoint,// c1, 
 					commonInterceptionPoint.getSumWith(uPeriod),// c2, 
-					pointOnPlane00Array1Fan2,// p0, 
-					pointOnplane01Array1 //p1
+					pointOnPlane0,// p0, 
+					pointOnplane1 //p1
 				);
 		}
 		
