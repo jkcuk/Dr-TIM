@@ -32,6 +32,7 @@ import optics.raytrace.GUI.cameras.RenderQualityEnum;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
+import optics.raytrace.GUI.lowLevel.IntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector2DPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.GUI.lowLevel.TextAreaOutputStream;
@@ -173,7 +174,6 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 	//
 	//Adding params for the refractive lenses
 	//
-	private boolean refractiveLens; 
 	/**
 	 * refractive index of the refractive lenses
 	 */
@@ -326,8 +326,6 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		
 		//refractive settings
 		lensArrayType = LensArrayType.NON_REFRACTIVE;
-//		refractiveLens = false;
-//		separatedArrays = true;
 		refractiveIndex = 1.5;
 		boundingBoxThickness= 5;
 		centreThicknessArray1 = 0.3;
@@ -516,9 +514,6 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		addForeground(scene);
 				
 		calculateAllParameters();
-		
-		System.out.println(refractiveLens);
-
 
 		switch(lensArrayType)
 		{
@@ -571,12 +566,12 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 					0.96, //surfaceTransmissionCoefficient,
 					shadowThrowing, // shadowThrowing,
 					separatedArrays, //separatedArrays,
-					50, //maxSteps
+					cameraMaxTraceLevel, //maxSteps
 					scene, //parent,
 					studio //studio		
 					)
 					);
-			System.out.println(Vector3D.sum(centreOfRectangularOutline[0], new Vector3D(0,0,zCommonPlaneInterceptionPoint)));
+
 			break;
 		case NON_REFRACTIVE:
 
@@ -1086,6 +1081,7 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 	// camera stuff
 	// private LabelledVector3DPanel cameraViewDirectionPanel;
 	private DoublePanel cameraDistanceCMPanel;
+	private IntPanel cameraMaxTraceLevelPanel;
 	private LabelledVector3DPanel cameraViewDirectionPanel;
 	private DoublePanel cameraHorizontalFOVDegPanel;
 	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
@@ -1273,9 +1269,6 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		boundingBoxThicknessPanel.setToolTipText("Thickness of the ounding box, should be sufficiently thick to include the lens arrays and their seperation between them");
 		refractvePane.add(GUIBitsAndBobs.makeRow("Bounding Box thickness", boundingBoxThicknessPanel, "cm"), "span");
 		
-		refractiveLensCheckBox = new JCheckBox();
-		refractiveLensCheckBox.setSelected(refractiveLens);
-		
 		lensArrayTypeTabbedPane.addTab("Refractive", refractvePane);
 		
 		
@@ -1408,7 +1401,11 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		
 		cameraFocussingDistanceMPanel = new DoublePanel();
 		cameraFocussingDistanceMPanel.setNumber(cameraFocussingDistance/M);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Focussing distance", cameraFocussingDistanceMPanel, "m"));
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Focussing distance", cameraFocussingDistanceMPanel, "m"), "span");
+		
+		cameraMaxTraceLevelPanel = new IntPanel();
+		cameraMaxTraceLevelPanel.setNumber(cameraMaxTraceLevel);
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Max trace and steps", cameraMaxTraceLevelPanel));
 		
 		
 		//
@@ -1470,7 +1467,7 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		boundingBoxThickness = boundingBoxThicknessPanel.getNumber()*CM;
 		refractiveIndex = refractiveIndexPanel.getNumber();
 		separatedArrays = separatedArraysCheckBox.isSelected();
-		refractiveLens = refractiveLensCheckBox.isSelected();
+
 		
 		// studioInitialisation = (StudioInitialisationWithZAdjustableForegroundType)(studioInitialisationComboBox.getSelectedItem());
 		foreground = (ForegroundType)(foregroundComboBox.getSelectedItem());
@@ -1485,6 +1482,7 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
 		cameraApertureSize = (ApertureSizeType)(cameraApertureSizeComboBox.getSelectedItem());
 		cameraFocussingDistance = cameraFocussingDistanceMPanel.getNumber()*M;
+		cameraMaxTraceLevel = cameraMaxTraceLevelPanel.getNumber();
 		
 //		switch(lensArrayType)
 //		{
