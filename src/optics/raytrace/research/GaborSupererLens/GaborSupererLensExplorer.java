@@ -330,8 +330,8 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 //		separatedArrays = true;
 		refractiveIndex = 1.5;
 		boundingBoxThickness= 5;
-		centreThicknessArray1 = 3;
-		centreThicknessArray2 = 3;
+		centreThicknessArray1 = 0.3;
+		centreThicknessArray2 = 0.3;
 		
 		// studioInitialisation = StudioInitialisationWithZAdjustableForegroundType.LATTICE;	// the backdrop
 		foreground = ForegroundType.LATTICE;
@@ -537,46 +537,23 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 			double phi1 = MyMath.deg2rad(-Math.pow(-1, 1)*0.5*phiDeg);
 			double c1 = Math.cos(phi1);
 			double s1 = Math.sin(phi1);
-			Vector3D commonPlaneInterceptionPoint;			
 
-			scene.addSceneObject(new GaborSupererRefractiveCLAs(		
-					//					"lenslet array made of refractive lenses",// description,
-					//					boundingBoxCentre,	// boundingBoxCentre,
-					//					new Vector3D(width, 0, 0),	// boundingBoxSpanVector1,
-					//					new Vector3D(0, height, 0),	// boundingBoxSpanVector2,
-					//					new Vector3D(0, 0, boundingBoxThickness), // boundingBoxSpanVector3,
-					//					new Vector3D(0,0,1),// normalisedOpticalAxisDirection,
-					//					f[0],// focalLengthArray1,
-					//					ac00xyz[0], // lens00ClearApertureCentreArray1,
-					//					new Vector3D(acPeriod[0], 0, 0),	//  clearApertureArrayBasisVector1Array1,
-					//					new Vector3D(0, acPeriod[0], 0),	// clearApertureArrayBasisVector2Array1,
-					//					pp00xyz[0],//  lens00PrincipalPointArray1,
-					//					new Vector3D( ppPeriod[0]*c0, ppPeriod[0]*s0, 0),	// principalPointArrayBasisVector1Array1,
-					//					new Vector3D(-ppPeriod[0]*s0, ppPeriod[0]*c0, 0),	// principalPointArrayBasisVector2Array1,
-					//					centreThicknessArray1,// centreThicknessArray1,
-					//					f[1],// focalLengthArray2,
-					//					ac00xyz[1], // lens00ClearApertureCentreArray2,
-					//					new Vector3D(acPeriod[1], 0, 0),	// clearApertureArrayBasisVector1Array2,
-					//					new Vector3D(0, acPeriod[1], 0),	// clearApertureArrayBasisVector2Array2,
-					//					pp00xyz[1],//  lens00PrincipalPointArray2,
-					//					new Vector3D( ppPeriod[1]*c1, ppPeriod[1]*s1, 0),	// principalPointArrayBasisVector1Array2,
-					//					new Vector3D(-ppPeriod[1]*s1, ppPeriod[1]*c1, 0),	// principalPointArrayBasisVector2Array2,
-					//					centreThicknessArray2,// centreThicknessArray2,
-					//					refractiveIndex, // refractiveIndex,
-					//					0.96, //surfaceTransmissionCoefficient,
-					//					shadowThrowing, // shadowThrowing,
-					//					separatedArrays, //separatedArrays,
-					//					cameraMaxTraceLevel, //maxSteps
-					//					scene, //parent,
-					//					studio //studio
+			
+			double zCommonPlaneInterceptionPoint;
+			if(acPeriod[0]==acPeriod[1]) {
+				zCommonPlaneInterceptionPoint = Double.POSITIVE_INFINITY;
+			}else {
+				zCommonPlaneInterceptionPoint = (zSeparation*acPeriod[0])/(acPeriod[0]-acPeriod[1]);	
+			}		
 
+			scene.addSceneObject(new GaborSupererRefractiveCLAs(
 					"lenslet array made of refractive lenses",// description,
 					boundingBoxCentre,	// boundingBoxCentre,
 					new Vector3D(width, 0, 0),	// boundingBoxSpanVector1,
 					new Vector3D(0, height, 0),	// boundingBoxSpanVector2,
 					new Vector3D(0, 0, boundingBoxThickness), // boundingBoxSpanVector3,
 					new Vector3D(0,0,1),// normalisedOpticalAxisDirection,
-					new Vector3D(0,0,Double.POSITIVE_INFINITY), //commonPlaneInterceptionPoint,
+					Vector3D.sum(centreOfRectangularOutline[0], new Vector3D(0,0,zCommonPlaneInterceptionPoint)), //commonPlaneInterceptionPoint,
 					ac00xyz[0], // lens00ClearApertureCentreArray1,
 					new Vector3D(acPeriod[0], 0, 0),	//  clearApertureArrayBasisVector1Array1,
 					new Vector3D(0, acPeriod[0], 0),	// clearApertureArrayBasisVector2Array1,
@@ -599,6 +576,7 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 					studio //studio		
 					)
 					);
+			System.out.println(Vector3D.sum(centreOfRectangularOutline[0], new Vector3D(0,0,zCommonPlaneInterceptionPoint)));
 			break;
 		case NON_REFRACTIVE:
 
@@ -672,50 +650,51 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 
 			case REFRACTIVE_LENSLET_ARRAYS:
 
-				//			double centreThickness;
-				//			if(bigLensF[i]<=0) {
-				//				centreThickness = SimpleRefractiveCLAs.calculateMinAndMaxThickness(pBigLens[i], pBigLens[i],  new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), 
-				//						new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), -1, bigLensF[i], refractiveIndex, new int[] {0,0})[0];
-				//			}
-				//				else {
-				//					centreThickness = SimpleRefractiveCLAs.calculateMinAndMaxThickness(pBigLens[i], pBigLens[i],  new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), 
-				//							new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), -1, bigLensF[i], refractiveIndex, new int[] {0,0})[1];	
-				//			}
-				//			double boundingBoxThicknessSingleLens = 0.5*SimpleRefractiveCLAs.calculateMinAndMaxThickness(pBigLens[i], pBigLens[i],  new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), 
-				//					new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), -1, bigLensF[i], refractiveIndex, new int[] {0,0})[1];
-				//		
-				//			//create a single refractive lens by using a 1x1 lenslet array. 
-				//			scene.addSceneObject(new SimpleRefractiveCLAs(
-				//					"Big lens in front of LA"+i,// description,
-				//					pBigLens[i],// centre,
-				//					new Vector3D(width, 0, 0),	// spanVector1,
-				//					new Vector3D(0, height, 0),	// spanVector2,
-				//					new Vector3D(0, 0, boundingBoxThicknessSingleLens),	// spanVector2,
-				//					new Vector3D(0,0,1), //normalisedOpticalAxisDirection,
-				//					new Vector3D(width, 0, 0), // clearApertureArrayBasisVector1, 
-				//					new Vector3D(0, height, 0),// clearApertureArrayBasisVector2,
-				//					new Vector3D(width, 0, 0), // principalPointArray1BasisVector1,
-				//					new Vector3D(0, height, 0), // principalPointArray1BasisVector2,
-				//					new Vector3D(width, 0, 0), // principalPointArray2BasisVector1,
-				//					new Vector3D(0, height, 0), // principalPointArray2BasisVector2,
-				//					pBigLens[i], // lens00ClearApertureCentreArray1, 
-				//					pBigLens[i], //lens00ClearApertureCentreArray2,
-				//					pBigLens[i], // lens00PrincipalPointArray1,
-				//					pBigLens[i], // lens00PrincipalPointArray2,
-				//					bigLensF[i], //focalLengthArray1,
-				//					bigLensF[i], //focalLengthArray2,			
-				//					refractiveIndex, // refractiveIndex,
-				//					centreThickness, // lensletCentreThicknessArray1,
-				//					centreThickness, // lensletCentreThicknessArray2,
-				//					cameraMaxTraceLevel, // maxSteps, 
-				//					0.96, //surfaceTransmissionCoefficient,
-				//					shadowThrowing, // shadowThrowing,
-				//					true, //separatedArrays,
-				//					scene, //parent,
-				//					studio //studio
-				//					),
-				//					showBigLens[i]	
-				//			);
+//							double centreThickness;
+//							if(bigLensF[i]<=0) {
+//								centreThickness = SimpleRefractiveCLAs.calculateMinAndMaxThickness(pBigLens[i], pBigLens[i],  new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), 
+//										new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), -1, bigLensF[i], refractiveIndex, new int[] {0,0})[0];
+//							}
+//								else {
+//									centreThickness = SimpleRefractiveCLAs.calculateMinAndMaxThickness(pBigLens[i], pBigLens[i],  new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), 
+//											new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), -1, bigLensF[i], refractiveIndex, new int[] {0,0})[1];	
+//							}
+//							double boundingBoxThicknessSingleLens = 0.5*SimpleRefractiveCLAs.calculateMinAndMaxThickness(pBigLens[i], pBigLens[i],  new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), 
+//									new Vector3D(width, 0, 0),  new Vector3D(0, height, 0), -1, bigLensF[i], refractiveIndex, new int[] {0,0})[1];
+//						
+//							//create a single refractive lens by using a 1x1 lenslet array. 
+//							scene.addSceneObject(new SimpleRefractiveCLAs(
+//									"Big lens in front of LA"+i,// description,
+//									pBigLens[i],// centre,
+//									new Vector3D(width, 0, 0),	// spanVector1,
+//									new Vector3D(0, height, 0),	// spanVector2,
+//									new Vector3D(0, 0, boundingBoxThicknessSingleLens),	// spanVector2,
+//									new Vector3D(0,0,1), //normalisedOpticalAxisDirection,
+//									new Vector3D(width, 0, 0), // clearApertureArrayBasisVector1, 
+//									new Vector3D(0, height, 0),// clearApertureArrayBasisVector2,
+//									new Vector3D(width, 0, 0), // principalPointArray1BasisVector1,
+//									new Vector3D(0, height, 0), // principalPointArray1BasisVector2,
+//									new Vector3D(width, 0, 0), // principalPointArray2BasisVector1,
+//									new Vector3D(0, height, 0), // principalPointArray2BasisVector2,
+//									pBigLens[i], // lens00ClearApertureCentreArray1, 
+//									pBigLens[i], //lens00ClearApertureCentreArray2,
+//									pBigLens[i], // lens00PrincipalPointArray1,
+//									pBigLens[i], // lens00PrincipalPointArray2,
+//									bigLensF[i], //focalLengthArray1,
+//									bigLensF[i], //focalLengthArray2,			
+//									refractiveIndex, // refractiveIndex,
+//									centreThickness, // lensletCentreThicknessArray1,
+//									centreThickness, // lensletCentreThicknessArray2,
+//									cameraMaxTraceLevel, // maxSteps, 
+//									0.96, //surfaceTransmissionCoefficient,
+//									shadowThrowing, // shadowThrowing,
+//									true, //separatedArrays,
+//									scene, //parent,
+//									studio //studio
+//									),
+//									showBigLens[i]	
+//							);
+				break;
 
 			case NON_REFRACTIVE:
 				// the big lenses
@@ -1254,6 +1233,17 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		showFieldLensArrayCheckBox.setSelected(showFieldLensArray);
 		nonRefractvePane.add(showFieldLensArrayCheckBox, "span");
 
+		simulateDiffractiveBlurCheckBox = new JCheckBox("");
+		simulateDiffractiveBlurCheckBox.setSelected(simulateDiffractiveBlur);
+		lambdaNMPanel = new DoublePanel();
+		lambdaNMPanel.setNumber(lambda/NM);
+		nonRefractvePane.add(GUIBitsAndBobs.makeRow(simulateDiffractiveBlurCheckBox, "Simulate diffractive blur for wavelength", lambdaNMPanel, "nm"), "span");
+
+		minimumZSeparationMMPanel = new DoublePanel();
+		minimumZSeparationMMPanel.setNumber(minimumZSeparation/MM);
+		minimumZSeparationMMPanel.setToolTipText("The two lenslet arrays are separated in the z direction by a distance usually close to f1 + f2, unless this is less than the minimum z separation");
+		nonRefractvePane.add(GUIBitsAndBobs.makeRow("Minimum z separation between arrays", minimumZSeparationMMPanel, "mm"), "span");
+
 		lensArrayTypeTabbedPane.addTab("Non Refractive", nonRefractvePane);
 		
 		JPanel refractvePane = new JPanel();
@@ -1301,14 +1291,14 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		}
 		
 		
-		shadowThrowingCheckBox = new JCheckBox("Shadow throwing");
+		shadowThrowingCheckBox = new JCheckBox();
 		shadowThrowingCheckBox.setSelected(shadowThrowing);
 		commonLAParametersPanel.add(shadowThrowingCheckBox, "span");
 		
 		phiDegPanel = new DoublePanel();
 		phiDegPanel.setNumber(phiDeg);
 		phiDegPanel.setToolTipText("Angle by which the arrays are rotated around the array normal");
-		commonLAParametersPanel.add(GUIBitsAndBobs.makeRow("phi", phiDegPanel, "\u00B0"), "span");
+		commonLAParametersPanel.add(GUIBitsAndBobs.makeRow("phi", phiDegPanel, "\u00B0 ", shadowThrowingCheckBox, "Shadow throwing"), "span");
 
 		
 		makeSuperlensButton = new JButton("Make superlens");
@@ -1332,23 +1322,7 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		setObjectZ2LastClickZButton = new JButton("Set object distance to that of last click");
 		setObjectZ2LastClickZButton.addActionListener(this);
 		commonLAParametersPanel.add(setObjectZ2LastClickZButton, "span");
-		
-		// objectDistancePanel.setNumber(getLastClickIntersection().p.z);
-
-
-		simulateDiffractiveBlurCheckBox = new JCheckBox("");
-		simulateDiffractiveBlurCheckBox.setSelected(simulateDiffractiveBlur);
-		lambdaNMPanel = new DoublePanel();
-		lambdaNMPanel.setNumber(lambda/NM);
-		commonLAParametersPanel.add(GUIBitsAndBobs.makeRow(simulateDiffractiveBlurCheckBox, "Simulate diffractive blur for wavelength", lambdaNMPanel, "nm"), "span");
-
-		minimumZSeparationMMPanel = new DoublePanel();
-		minimumZSeparationMMPanel.setNumber(minimumZSeparation/MM);
-		minimumZSeparationMMPanel.setToolTipText("The two lenslet arrays are separated in the z direction by a distance usually close to f1 + f2, unless this is less than the minimum z separation");
-		commonLAParametersPanel.add(GUIBitsAndBobs.makeRow("Minimum z separation between arrays", minimumZSeparationMMPanel, "mm"), "span");
-		
-
-		
+				
 		
 		//
 		// rest-of-the-scene panel
