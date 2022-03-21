@@ -191,7 +191,7 @@ public class AdaptiveTWsExplorer extends NonInteractiveTIMEngine implements Acti
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "AdaptiveTWsExplorer";	// the name
 	}

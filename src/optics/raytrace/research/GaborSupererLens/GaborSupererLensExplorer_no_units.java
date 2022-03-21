@@ -202,7 +202,7 @@ public class GaborSupererLensExplorer_no_units extends NonInteractiveTIMEngine i
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "GaborSupererLensExplorer"	// the name
 				;

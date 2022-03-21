@@ -269,7 +269,7 @@ public class LensletArraySpecsExplorer extends NonInteractiveTIMEngine implement
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "LensletArraySpecsExplorer"	// the name
 //				+ (showLensletArray1?
@@ -879,7 +879,7 @@ public class LensletArraySpecsExplorer extends NonInteractiveTIMEngine implement
 		
 		cameraHorizontalFOVDegPanel = new DoublePanel();
 		cameraHorizontalFOVDegPanel.setNumber(cameraHorizontalFOVDeg);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Horizontal FOV", cameraHorizontalFOVDegPanel, "°"), "span");
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Horizontal FOV", cameraHorizontalFOVDegPanel, "ï¿½"), "span");
 		
 		cameraFocussingDistancePanel = new LabelledDoublePanel("Focussing distance");
 		cameraFocussingDistancePanel.setNumber(cameraFocussingDistance);

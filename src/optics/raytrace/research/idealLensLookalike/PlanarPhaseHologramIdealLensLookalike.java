@@ -196,7 +196,7 @@ public class PlanarPhaseHologramIdealLensLookalike extends NonInteractiveTIMEngi
 
 		
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "PlanarPhaseHologramIdealLensLookalike"	// the name
 				;

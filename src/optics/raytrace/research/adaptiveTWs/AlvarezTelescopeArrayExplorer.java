@@ -190,7 +190,7 @@ public class AlvarezTelescopeArrayExplorer extends NonInteractiveTIMEngine imple
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "AlvarezTelescopeArrayExplorer"	// the name
 //				+ " a1="+focalPowerOverDeltaX1

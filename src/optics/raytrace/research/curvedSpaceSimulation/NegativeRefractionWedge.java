@@ -86,7 +86,7 @@ public class NegativeRefractionWedge extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "NegativeRefractionWedge"	// the name
 				+ " deficit angle "+deficitAngle+"°"

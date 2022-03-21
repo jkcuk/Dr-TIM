@@ -257,7 +257,7 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		String componentParams = "";
 		switch(viewRotationComponentType)

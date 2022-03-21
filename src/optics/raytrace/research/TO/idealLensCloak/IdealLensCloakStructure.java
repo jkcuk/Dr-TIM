@@ -153,7 +153,7 @@ public class IdealLensCloakStructure extends NonInteractiveTIMEngine
 
 	
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return
 				"IdealLensCloakStructure"

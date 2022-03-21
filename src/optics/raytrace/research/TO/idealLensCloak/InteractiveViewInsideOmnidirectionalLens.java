@@ -1,4 +1,4 @@
-package optics.raytrace.research.fourPiLens;
+package optics.raytrace.research.TO.idealLensCloak;
 
 import java.awt.event.ActionEvent;
 
@@ -100,7 +100,7 @@ public class InteractiveViewInsideOmnidirectionalLens extends NonInteractiveTIME
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "InteractiveViewInsideOmnidirectionalLens "	// the name
 				+ " hCOverF "+hCOverF+"°"

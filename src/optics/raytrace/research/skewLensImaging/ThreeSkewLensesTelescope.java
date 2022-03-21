@@ -160,7 +160,7 @@ public class ThreeSkewLensesTelescope extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "ThreeSkewLensesTelescope "	// the name
 				+ " alpha1 "+alpha1+"°"

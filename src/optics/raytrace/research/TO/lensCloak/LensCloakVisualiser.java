@@ -418,7 +418,7 @@ implements ChangeListener
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "LensCloakVisualiser";	// the name
 //				+ " tV "+topVertex

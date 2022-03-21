@@ -188,7 +188,7 @@ public class LensletArrayExplorer extends NonInteractiveTIMEngine implements Act
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "LensletArrayExplorer"	// the name
 //				+ (showLensletArray1?

@@ -1,4 +1,4 @@
-package optics.raytrace.research.fourPiLens;
+package optics.raytrace.research.TO.idealLensCloak;
 
 import math.*;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
@@ -50,7 +50,7 @@ public class FourPiLensInsideView extends NonInteractiveTIMEngine
 
 	
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return
 				"FourPiLensInsideView"

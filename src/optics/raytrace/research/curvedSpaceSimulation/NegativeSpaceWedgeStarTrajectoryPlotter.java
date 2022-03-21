@@ -108,7 +108,7 @@ public class NegativeSpaceWedgeStarTrajectoryPlotter extends NonInteractiveTIMEn
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "NegativeSpaceWedgeStarTrajectoryPlotter "	// the name
 				+ " deficit angle "+deficitAngleDeg+"°"

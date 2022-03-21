@@ -187,7 +187,7 @@ public class PlanarPhaseHologramIdealLensLookalikeVisualiser extends NonInteract
 
 		
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "PlanarPhaseHologramIdealLensLookalike"	// the name
 				;

@@ -128,7 +128,7 @@ public class AlvarezLohmannLensExplorer extends NonInteractiveTIMEngine implemen
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "AlvarezLohmannLensExplorer"	// the name
 //				+ "pOverDeltaX="+focalPowerOverDeltaX

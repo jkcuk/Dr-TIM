@@ -169,7 +169,7 @@ public class NestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 	 * @see optics.raytrace.NonInteractiveTIMEngine#getFirstPartOfFilename()
 	 */
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return
 				"NestedAbyssCloakExplorer"

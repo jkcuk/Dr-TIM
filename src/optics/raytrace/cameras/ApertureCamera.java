@@ -5,7 +5,8 @@ import java.io.*;
 import math.*;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
-import optics.raytrace.sceneObjects.*;
+// import optics.raytrace.sceneObjects.*;
+import optics.raytrace.sceneObjects.Plane;
 
 /**
  * A normal camera with a circular aperture, focussed on a plane in front of the camera.

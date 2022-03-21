@@ -187,7 +187,7 @@ public class NetOfHypercubeVisualiser extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "NetOfHypercubeVisualiser"	// the name
 				;

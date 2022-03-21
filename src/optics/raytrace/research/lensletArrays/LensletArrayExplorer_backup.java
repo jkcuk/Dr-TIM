@@ -142,7 +142,7 @@ public class LensletArrayExplorer_backup extends NonInteractiveTIMEngine
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "LensletArrayExplorer"	// the name
 				+ (showLensletArray1?

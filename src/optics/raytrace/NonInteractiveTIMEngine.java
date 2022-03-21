@@ -519,13 +519,13 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	 * Override to represent parameters in filename
 	 * @return	Any parts of the filename to be added between the class name, frame number, etc.
 	 */
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		try {
 			return  Class.forName(Thread.currentThread().getStackTrace()[1].getClassName()).getSimpleName();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			return "";
+			return "Cannot get class name";
 		}
 	}
 	
@@ -537,7 +537,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	public String getFilename()
 	{
 		return 
-				getFirstPartOfFilename()
+				getClassName()
 				+" "+renderQuality.getBriefDescription()
 				+(movie?" "+(new DecimalFormat("0000")).format(frame):"")	// if this is a movie, then this adds the number of the frame, converted into a string
 				+".bmp";
@@ -558,6 +558,8 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	 */
 	public void writeParameters(PrintStream printStream)
 	{
+		printStream.println("Created with class "+getClassName());
+		
 		// protected RenderQualityEnum renderQuality;
 		printStream.println("renderQuality = "+renderQuality);
 

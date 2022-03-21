@@ -166,7 +166,7 @@ public class CollimatingFresnelLensSurfaceTest extends NonInteractiveTIMEngine
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "CollimatingFresnelLensSurface "	// the name
 				+ (showFresnelLens?" Fresnel lens":"")

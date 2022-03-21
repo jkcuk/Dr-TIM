@@ -73,7 +73,7 @@ public class RayRotationSheetStarTrajectoryPlotter extends NonInteractiveTIMEngi
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "RRSStarTrajectory "	// the name
 				+ " deficit angle "+deficitAngle+"°"

@@ -245,7 +245,7 @@ public class Geometry
 	
 	/**
 	 * Calculate the intersection point of two straight lines.
-	 * If there is no such intersection, the zero vector is returned along with an error message.
+	 * If there is no such intersection, the null vector is returned along with an error message.
 	 * See https://en.wikipedia.org/wiki/Line--line_intersection
 	 * @param pointOnLine1
 	 * @param directionOfLine1
@@ -468,6 +468,29 @@ public class Geometry
 		
 		// turn p into a Vector3D
 		return new Vector3D(p.get(1, 1), p.get(2, 1), p.get(3, 1));
+	}
+	
+	public Line3D planePlaneIntersection(
+			Plane3D p1,	// plane 1
+			Plane3D p2	// plane 2
+	)
+	{
+		// the planes are given by their normalised normals and the offset from the origin;
+		
+		// calculate the direction of the intersection line
+		Vector3D n3 = Vector3D.crossProduct(p1.getNormal(), p2.getNormal());
+		
+		// 
+		return new Line3D(
+				pointClosestToBothLines(
+						p1.calculatePointOnPlane(),	// pointOnLine1
+						Vector3D.crossProduct(n3, p1.getNormal()),	// directionOfLine1
+						p2.calculatePointOnPlane(),	// pointOnLine2
+						Vector3D.crossProduct(n3, p2.getNormal()),	// directionOfLine2
+						false	// skewWarning
+					),	// pointOnLine
+				n3	// directionOfLine
+			);
 	}
 
 	/**

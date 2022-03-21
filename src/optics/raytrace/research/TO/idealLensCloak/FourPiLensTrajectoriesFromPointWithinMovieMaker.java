@@ -1,6 +1,7 @@
-package optics.raytrace.research.fourPiLens;
+package optics.raytrace.research.TO.idealLensCloak;
 
 import java.awt.*;
+import java.text.DecimalFormat;
 
 import math.*;
 import optics.raytrace.sceneObjects.*;
@@ -25,25 +26,34 @@ import optics.raytrace.GUI.sceneObjects.EditableRayTrajectory;
  * 
  * @author Johannes Courtial
  */
-public class FourPiLensTrajectoriesFromPointWithin
+public class FourPiLensTrajectoriesFromPointWithinMovieMaker
 {
-	public static final double H_C_OVER_F = 0.4;	// 0.655;
+	public static final double H_C_OVER_F = 0.9;	// 0.655;
 	public static final double H_C_OVER_H_1 = 0.5;
 	public static final double HORIZONTAL_ANGLE_OF_VIEW = .5;
 	public static final boolean BOTTOM_LENS_PRESENT = true;
 
 	/**
+	 * @return	the number of frames in the movie
+	 */
+	public static int getNoOfFrames()
+	{
+		return 50;
+	}
+	
+	/**
 	 * Filename under which main saves the rendered image.
 	 * Alter to save the rendered image under a different name.
 	 * @return	the filename under which main saves the rendered image.
 	 */
-	public static String getFilename()
+	public static String getFilename(int frame)
 	{
 		return "IdealLensCloakTrajectoriesFromPointWithin"	// the name
 			+ (BOTTOM_LENS_PRESENT?"":" without bottom lens")
 			+ " hCOverf = " + H_C_OVER_F
 			+ " hCOverh1 = " + H_C_OVER_H_1
 			+ " horizontal angle of view " + HORIZONTAL_ANGLE_OF_VIEW
+			+ " ray=" + (new DecimalFormat("000")).format(frame)	// the number of the frame, converted into a string
 		    +".bmp";	// the extension
 	}
 	
@@ -51,7 +61,7 @@ public class FourPiLensTrajectoriesFromPointWithin
 	 * Define scene, lights, and/or camera.
 	 * @return a studio, i.e. scene, lights and camera
 	 */
-	public static Studio createStudio()
+	public static Studio createStudio(int frame)
 	{
 		Studio studio = new Studio();
 
@@ -101,7 +111,7 @@ public class FourPiLensTrajectoriesFromPointWithin
 		
 		System.out.println("h1E="+h1E);
 		
-		// ideal-lens cloak
+		// a lens-TO tetrahedron
 		EditableIdealLensCloak editableIdealLensCloak = 
 				new EditableIdealLensCloak(
 						"Ideal-lens cloak",
@@ -135,14 +145,11 @@ public class FourPiLensTrajectoriesFromPointWithin
 
 		scene.addSceneObject(editableIdealLensCloak);
 
-		int noOfRays = 50;
-		for(int i=0; i<noOfRays; i++)
-		{
-			double angle = ((double)i)/noOfRays*2.*Math.PI;
+			double angle = ((double)frame)/getNoOfFrames()*2.*Math.PI;
 
 			scene.addSceneObject(new EditableRayTrajectory(
 					"ray trajectory",
-					new Vector3D(0.2, 0, 0),	// start point
+					new Vector3D(0, 0, 0),	// start point
 					0,	// start time
 					new Vector3D(Math.cos(angle), 0, Math.sin(angle)),	// initial direction
 					0.01,	// radius
@@ -153,7 +160,7 @@ public class FourPiLensTrajectoriesFromPointWithin
 					studio
 					)
 					);
-		}
+		
 		
 		studio.setScene(scene);
 
@@ -204,7 +211,7 @@ public class FourPiLensTrajectoriesFromPointWithin
 				null,	// cameraFrameScene,
 				ApertureSizeType.PINHOLE,	// aperture size
 				QualityType.RUBBISH,	// blur quality
-				QualityType.GOOD	// anti-aliasing quality
+				QualityType.NORMAL	// anti-aliasing quality
 		);
 
 		studio.setLights(LightSource.getStandardLightsFromBehind());
@@ -224,18 +231,21 @@ public class FourPiLensTrajectoriesFromPointWithin
 		// open a window, and take a note of its content pane
 		Container container = (new PhotoFrame()).getContentPane();
 		
-		// define scene, lights and camera
-		Studio studio = createStudio();
+		for(int frame = 0; frame < getNoOfFrames(); frame++)
+		{
+			// define scene, lights and camera
+			Studio studio = createStudio(frame);
 
-		// do the ray tracing
-		studio.takePhoto();
+			// do the ray tracing
+			studio.takePhoto();
 
-		// save the image
-		studio.savePhoto(getFilename(), "bmp");
+			// save the image
+			studio.savePhoto(getFilename(frame), "bmp");
 
-		// display the image on the screen
-		container.removeAll();
-		container.add(new PhotoCanvas(studio.getPhoto()));
-		container.validate();
+			// display the image on the screen
+			container.removeAll();
+			container.add(new PhotoCanvas(studio.getPhoto()));
+			container.validate();
+		}
 	}
 }

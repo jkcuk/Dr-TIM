@@ -315,7 +315,7 @@ public class NetOfCubeVisualiser extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "NetOfCubeVisualiser"	// the name
 				;

@@ -243,7 +243,7 @@ public class PolyhedralShiftyCloakVisualiser extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "ShiftyPolyhedralCloakVisualiser"	// the name
 				;

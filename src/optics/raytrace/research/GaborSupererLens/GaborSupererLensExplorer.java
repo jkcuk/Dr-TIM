@@ -357,7 +357,7 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "GaborSupererLensExplorer";	// the name
 	}
@@ -365,6 +365,10 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 	@Override
 	public void writeParameters(PrintStream printStream)
 	{
+		// write all parameters defined in NonInteractiveTIMEngine
+		super.writeParameters(printStream);	
+		printStream.println();
+
 		// write any parameters not defined in NonInteractiveTIMEngine
 
 		// printStream.println("@=("+@[0]+","+@[1]+")");
@@ -392,11 +396,6 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		printStream.println("foregroundWidth="+foregroundWidth);
 		printStream.println("foregroundPhiDeg="+foregroundPhiDeg);
 		printStream.println("showSphereAtImageOfCamera="+showSphereAtImageOfCamera);
-
-		printStream.println();
-
-		// write all parameters defined in NonInteractiveTIMEngine
-		super.writeParameters(printStream);		
 	}
 
 	
@@ -523,22 +522,22 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 			if(separatedArrays) {
 				boundingBoxCentre = Vector3D.sum(centreOfRectangularOutline[0], centreOfRectangularOutline[1]).getProductWith(0.5);
 			}else {
-				boundingBoxCentre = Vector3D.sum(centreOfRectangularOutline[0], centreOfRectangularOutline[1]).getProductWith(0.5*refractiveIndex);
+				boundingBoxCentre = Vector3D.sum(centreOfRectangularOutline[0], centreOfRectangularOutline[1]).getProductWith(0.5*refractiveIndex);	// TODO why * refractiveIdex?
 			}
-			double phi0 = MyMath.deg2rad(-Math.pow(-1, 0)*0.5*phiDeg);
+			double phi0 = MyMath.deg2rad(-0.5*phiDeg);	// MyMath.deg2rad(-Math.pow(-1, 0)*0.5*phiDeg);
 			double c0 = Math.cos(phi0);
 			double s0 = Math.sin(phi0);
 
-			double phi1 = MyMath.deg2rad(-Math.pow(-1, 1)*0.5*phiDeg);
+			double phi1 = MyMath.deg2rad(+0.5*phiDeg);	// MyMath.deg2rad(-Math.pow(-1, 1)*0.5*phiDeg);
 			double c1 = Math.cos(phi1);
 			double s1 = Math.sin(phi1);
 
 			
-			double zCommonPlaneInterceptionPoint;
+			double zCommonPlaneIntersectionPoint;
 			if(acPeriod[0]==acPeriod[1]) {
-				zCommonPlaneInterceptionPoint = Double.POSITIVE_INFINITY;
+				zCommonPlaneIntersectionPoint = Double.POSITIVE_INFINITY;
 			}else {
-				zCommonPlaneInterceptionPoint = (zSeparation*acPeriod[0])/(acPeriod[0]-acPeriod[1]);	
+				zCommonPlaneIntersectionPoint = (zSeparation*acPeriod[0])/(acPeriod[0]-acPeriod[1]);	
 			}		
 
 			scene.addSceneObject(new GaborSupererRefractiveCLAs(
@@ -548,7 +547,7 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 					new Vector3D(0, height, 0),	// boundingBoxSpanVector2,
 					new Vector3D(0, 0, boundingBoxThickness), // boundingBoxSpanVector3,
 					new Vector3D(0,0,1),// normalisedOpticalAxisDirection,
-					Vector3D.sum(centreOfRectangularOutline[0], new Vector3D(0,0,zCommonPlaneInterceptionPoint)), //commonPlaneInterceptionPoint,
+					Vector3D.sum(centreOfRectangularOutline[0], new Vector3D(0,0,zCommonPlaneIntersectionPoint)), //commonPlaneInterceptionPoint,
 					ac00xyz[0], // lens00ClearApertureCentreArray1,
 					new Vector3D(acPeriod[0], 0, 0),	//  clearApertureArrayBasisVector1Array1,
 					new Vector3D(0, acPeriod[0], 0),	// clearApertureArrayBasisVector2Array1,
@@ -604,7 +603,6 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 						showLensletArray[i]
 						);
 			}
-			break;
 		}
 
 			
@@ -689,7 +687,7 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 //									),
 //									showBigLens[i]	
 //							);
-				break;
+//				break;
 
 			case NON_REFRACTIVE:
 				// the big lenses
@@ -707,7 +705,6 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 						),
 						showBigLens[i]
 						);
-				break;
 			}
 		}
 		scene.addSceneObject(
@@ -1393,7 +1390,7 @@ public class GaborSupererLensExplorer extends NonInteractiveTIMEngine implements
 		
 		cameraHorizontalFOVDegPanel = new DoublePanel();
 		cameraHorizontalFOVDegPanel.setNumber(cameraHorizontalFOVDeg);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Horizontal FOV", cameraHorizontalFOVDegPanel, "°"), "span");
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Horizontal FOV", cameraHorizontalFOVDegPanel, "ï¿½"), "span");
 		
 		cameraApertureSizeComboBox = new JComboBox<ApertureSizeType>(ApertureSizeType.values());
 		cameraApertureSizeComboBox.setSelectedItem(cameraApertureSize);

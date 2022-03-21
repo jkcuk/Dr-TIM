@@ -211,7 +211,7 @@ public class ShiftyGCLAsTetrahedralCloakVisualiser extends NonInteractiveTIMEngi
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "ShiftyGCLAsCloakVisualiser"	// the name
 				;

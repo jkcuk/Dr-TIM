@@ -39,7 +39,7 @@ public class SceneObjectPrimitiveIntersectionDemo extends NonInteractiveTIMEngin
 	 * @see optics.raytrace.NonInteractiveTIMEngine#getFirstPartOfFilename()
 	 */
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return
 				"SceneObjectPrimitiveIntersectionDemo"

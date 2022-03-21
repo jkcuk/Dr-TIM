@@ -418,7 +418,7 @@ implements ChangeListener
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "IdealLensWormholeVisualiser";	// the name
 //				+ " tV "+topVertex

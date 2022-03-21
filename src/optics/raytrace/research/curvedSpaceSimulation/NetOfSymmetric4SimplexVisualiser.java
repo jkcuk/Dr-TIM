@@ -209,7 +209,7 @@ public class NetOfSymmetric4SimplexVisualiser extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "NetOfSymmetric4SimplexVisualiser"	// the name
 				;

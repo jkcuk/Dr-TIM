@@ -67,7 +67,7 @@ public class LastClickDemo extends NonInteractiveTIMEngine implements ActionList
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "LastClickDemo";	// the name
 	}

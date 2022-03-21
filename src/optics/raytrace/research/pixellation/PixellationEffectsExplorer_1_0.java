@@ -108,7 +108,7 @@ public class PixellationEffectsExplorer_1_0 extends NonInteractiveTIMEngine
 
 	
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "PixellationEffectJOSAA"
 				+" diffractive blur "+(simulateDiffractiveBlur?"on":"off")

@@ -188,7 +188,7 @@ public class NetOfRegular4SimplexVisualiser extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "NetOfRegular4SimplexVisualiser"	// the name
 				;

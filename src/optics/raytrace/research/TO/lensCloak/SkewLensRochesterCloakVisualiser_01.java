@@ -117,7 +117,7 @@ public class SkewLensRochesterCloakVisualiser_01 extends NonInteractiveTIMEngine
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "SkewLensRochesterCloakVisualiser";	// the name
 	}

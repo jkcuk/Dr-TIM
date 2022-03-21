@@ -80,7 +80,7 @@ public class CubeInRayRotationSheetStar extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "CubeInRRSStar "	// the name
 				+ " deficit angle "+deficitAngle+"°"

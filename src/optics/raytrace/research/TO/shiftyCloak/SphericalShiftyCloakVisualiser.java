@@ -236,7 +236,7 @@ public class SphericalShiftyCloakVisualiser extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "ShiftyCloakVisualiser"	// the name
 				;

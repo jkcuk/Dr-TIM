@@ -186,7 +186,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "SpiralLensVisualiser" // the name
 //				+ " type="+cylindricalLensSpiralType.toString()

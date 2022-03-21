@@ -276,7 +276,7 @@ public class PixellationEffectsExplorer extends NonInteractiveTIMEngine
 
 	
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		String s = "PixellationEffectExplorer2";
 		

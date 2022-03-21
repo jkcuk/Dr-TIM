@@ -233,7 +233,7 @@ public class TransmissionCoefficientVisualiser extends NonInteractiveTIMEngine
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "TransmissionCoefficientVisualiser"	// the name
 				+ ((alphaChoice == AlphaChoice.ZERO)?" alpha=0":"")

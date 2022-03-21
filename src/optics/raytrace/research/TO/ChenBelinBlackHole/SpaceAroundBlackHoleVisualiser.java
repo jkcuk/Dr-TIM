@@ -199,7 +199,7 @@ public class SpaceAroundBlackHoleVisualiser extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "SpaceAroundBlackHoleVisualiser"	// the name
 				;

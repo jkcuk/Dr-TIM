@@ -184,7 +184,7 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "AdaptiveToricLensVisualiser"	// the name
 				+ (showComponent1||showComponent2?" "+adaptiveToricLensType.getAcronym():"")

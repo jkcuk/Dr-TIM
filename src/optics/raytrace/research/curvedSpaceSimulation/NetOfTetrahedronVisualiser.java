@@ -296,7 +296,7 @@ public class NetOfTetrahedronVisualiser extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "NetOfTetrahedronVisualiser"	// the name
 				;

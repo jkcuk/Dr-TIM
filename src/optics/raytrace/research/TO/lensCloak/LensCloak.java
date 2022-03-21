@@ -66,7 +66,7 @@ public class LensCloak extends NonInteractiveTIMEngine
 
 	
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return
 				"LensCloak"

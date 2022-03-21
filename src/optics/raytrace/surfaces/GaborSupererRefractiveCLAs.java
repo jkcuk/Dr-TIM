@@ -44,7 +44,7 @@ public class GaborSupererRefractiveCLAs extends Parallelepiped2
 	 * @param boundingBoxSpanVector1
 	 * @param boundingBoxSpanVector2
 	 * @param boundingBoxSpanVector3
-	 * @param normalisedOpticalAxisDirection
+	 * @param normalisedOpticalAxisDirection	direction along which the centres of the spherical lens surfaces are shifted
 	 * @param commonPlaneInterceptionPoint
 	 * @param lens00ClearApertureCentre
 	 * @param clearApertureArrayBasisVector1
@@ -131,13 +131,43 @@ public class GaborSupererRefractiveCLAs extends Parallelepiped2
 					maxSteps
 				);
 			
-			if(separatedArrays) {
-				surface.setSeparatedArrays(true);
-			}else{
-				surface.setSeparatedArrays(false);
-			}		
+			surface.setSeparatedArrays(separatedArrays);
 			setSurfaceProperty(surface);
 		}	
+	
+	
+	/**
+	 * Constructor that calculates the common intersection point from the arrays of clear-aperture centres
+	 * @param description
+	 * @param boundingBoxCentre
+	 * @param boundingBoxSpanVector1
+	 * @param boundingBoxSpanVector2
+	 * @param boundingBoxSpanVector3
+	 * @param normalisedOpticalAxisDirection
+	 * @param focalLengthArray1
+	 * @param lens00ClearApertureCentreArray1
+	 * @param clearApertureArrayBasisVector1Array1
+	 * @param clearApertureArrayBasisVector2Array1
+	 * @param lens00PrincipalPointArray1
+	 * @param principalPointArrayBasisVector1Array1
+	 * @param principalPointArrayBasisVector2Array1
+	 * @param centreThicknessArray1
+	 * @param focalLengthArray2
+	 * @param lens00ClearApertureCentreArray2
+	 * @param clearApertureArrayBasisVector1Array2
+	 * @param clearApertureArrayBasisVector2Array2
+	 * @param lens00PrincipalPointArray2
+	 * @param principalPointArrayBasisVector1Array2
+	 * @param principalPointArrayBasisVector2Array2
+	 * @param centreThicknessArray2
+	 * @param refractiveIndex
+	 * @param surfaceTransmissionCoefficient
+	 * @param shadowThrowing
+	 * @param separatedArrays
+	 * @param maxSteps
+	 * @param parent
+	 * @param studio
+	 */
 	public GaborSupererRefractiveCLAs(
 			String description,
 			Vector3D boundingBoxCentre, 
@@ -204,11 +234,7 @@ public class GaborSupererRefractiveCLAs extends Parallelepiped2
 				shadowThrowing,
 				maxSteps
 			);
-		if(separatedArrays) {
-			surface.setSeparatedArrays(true);
-		}else{
-			surface.setSeparatedArrays(false);
-		}
+		surface.setSeparatedArrays(separatedArrays);
 		setSurfaceProperty(surface);
 	}
 
@@ -247,7 +273,6 @@ public class GaborSupererRefractiveCLAs extends Parallelepiped2
 				original.getParent(), 
 				original.getStudio()
 			);
-	
 	}
 	
 	public Vector3D getBoundingBoxCentre() {
@@ -489,7 +514,7 @@ public class GaborSupererRefractiveCLAs extends Parallelepiped2
 
 				
 		if(intersectionFan1.getDifferenceWith(intersectionFan2).getLength()> MyMath.EPSILON) {
-			System.err.println("The Point of intercestion for Plane Fan 1 "+intersectionFan1+" is not the same as for Fan 2 "+intersectionFan2);
+			System.err.println("The Point of intersection for Plane Fan 1 "+intersectionFan1+" is not the same as for Fan 2 "+intersectionFan2);
 		}
 		pointWhereAllPlanesMeet = intersectionFan1;	
 		System.out.println(pointWhereAllPlanesMeet);

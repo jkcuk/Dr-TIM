@@ -202,7 +202,7 @@ public class ThreeSkewLensRotationVisualiser_old extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "ThreeSkewLensesTelescope "	// the name
 				+ " simulationType "+simulationType

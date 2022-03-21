@@ -60,6 +60,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 	{
 		NO_LENSES("Without lenses, camera in standard position"),
 		LENSES("With lenses, camera in standard position"),
+		LENSES_CAMERA_SHIFTED("With lenses, camera view direction rotated by 2 degrees"),
 		CAMERA_ROTATION("Without lenses, camera position and direction rotated");
 
 		private String description;
@@ -201,8 +202,9 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
 		cameraViewDirection = new Vector3D(0, 0, 1);
 		cameraViewCentre = new Vector3D(0, 0, 0);
-		cameraFocussingDistance = 12;
+		cameraFocussingDistance = 13.5;
 		cameraApertureSize = ApertureSizeType.PINHOLE;
+		cameraHorizontalFOVDeg = 20;
 		
 		zLength= 8;
 		zCentre = distance;
@@ -216,7 +218,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 	}
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "ThreeSkewLensRotationVisualiser"	// the name
 				;
@@ -256,6 +258,8 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		printStream.println("viewType = "+viewType);
 		printStream.println("zLength = "+zLength);
 		printStream.println("zCentre = "+zCentre);
+		
+		printStream.println("cameraHorizontalFOVDeg = "+cameraHorizontalFOVDeg);
 
 		// write all parameters defined in NonInteractiveTIMEngine
 		super.writeParameters(printStream);		
@@ -496,14 +500,18 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		}*/
 		// System.out.println("focal length of 3rd lens: "+f3);
 
+		Vector3D standardCameraViewDirection = new Vector3D(1,0,-k_o);
+
 		switch(simulationType)
 		{
 		case LENSES:
+		case LENSES_CAMERA_SHIFTED:
 			boolean circularLenses = true;
 			if(circularLenses)
 			{
 				// we want the phase hologram of lens 1 to work like an ideal thin lens for rays through the eye position;
 				// the eye position should therefore be imaged to <eyePositionImage1>
+				cameraViewDirection = standardCameraViewDirection; // to ensure that getStandardCameraPosition() is, in fact, the standard camera position
 				Vector3D eyePositionImage1 = IdealThinLensSurface.getImagePosition(
 						f1,	// focalLength
 						p1,	// principalPoint
@@ -763,7 +771,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		}
 		else
 		{
-			Vector3D standardCameraViewDirection = new Vector3D(1,0,-k_o);
+			// Vector3D standardCameraViewDirection = new Vector3D(1,0,-k_o);
 
 			switch(simulationType)
 			{
@@ -795,6 +803,10 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 				cameraViewCentre = Vector3D.sum(cameraPosition, cameraViewDirection.getWithLength(cameraDistance));
 				studio.setCamera(getStandardCamera());
 				cameraViewCentre = cameraViewCentreSave;
+				break;
+			case LENSES_CAMERA_SHIFTED:
+				cameraViewDirection = Geometry.rotate(standardCameraViewDirection, lensPlaneIntersectionDirection, MyMath.deg2rad(2));
+				studio.setCamera(getStandardCamera());
 				break;
 			default:
 				cameraViewDirection = standardCameraViewDirection;
@@ -943,18 +955,20 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		scene.addSceneObject(frame);
 	}
 	
+	
+	
 	// GUI panels
 	
 	private JComboBox<SimulationType> simulationTypeComboBox;
 //	private JComboBox<ViewType> viewTypeComboBox;
 	private LabelledDoublePanel alpha1Panel, alpha2Panel, rotationAnglePanel,	// f1Panel, // f2Panel, 
-		distancePanel, cameraFocussingDistancePanel, xMinPanel, xMaxPanel, yMinPanel, yMaxPanel, zMinPanel, zMaxPanel, zLengthPanel, zCentrePanel;//telescopeMagnificationPanel, 
+		distancePanel, cameraFocussingDistancePanel, cameraHorizontalFOVDegPanel, xMinPanel, xMaxPanel, yMinPanel, yMaxPanel, zMinPanel, zMaxPanel, zLengthPanel, zCentrePanel;//telescopeMagnificationPanel, 
 	private LabelledIntPanel nXPanel, nYPanel, nZPanel;
 	// private LabelledVector3DPanel xVectorPanel, yVectorPanel, zVectorPanel;
 	private LabelledVector3DPanel latticeCentrePanel, cameraViewCentrePanel;
 	private JCheckBox showTrajectoriesCheckBox, showEyeAndEyeTrajectoriesCheckBox;	//, rotateLatticeCheckBox;//showLens3CheckBox, 
 	private ApertureSizeComboBox cameraApertureSizeComboBox;
-//	private JComboBox<LensType> lensTypeComboBox;
+	private JComboBox<LensType> lensTypeComboBox;
 	private JTextField infoTextField;
 	private JTabbedPane viewTypePane;
 
@@ -1048,9 +1062,9 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 //		lensPanel.add(p3TextField);
 
 		//  doesn't  work  at the moment -- comment out
-//		lensTypeComboBox = new JComboBox<LensType>(LensType.values());
-//		lensTypeComboBox.setSelectedItem(lensType);
-//		lensPanel.add(new LabelledComponent("Lens type", lensTypeComboBox), "span");
+		lensTypeComboBox = new JComboBox<LensType>(LensType.values());
+		lensTypeComboBox.setSelectedItem(lensType);
+		lensPanel.add(new LabelledComponent("Lens type", lensTypeComboBox), "span");
 
 		//latticePanel stuff
 		
@@ -1129,6 +1143,10 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		cameraFocussingDistancePanel.setNumber(cameraFocussingDistance);
 		standardViewPanel.add(cameraFocussingDistancePanel, "span");
 		
+		cameraHorizontalFOVDegPanel = new LabelledDoublePanel("Horizontal FOV", "&deg;");
+		cameraHorizontalFOVDegPanel.setNumber(cameraHorizontalFOVDeg);
+		standardViewPanel.add(cameraHorizontalFOVDegPanel, "span");
+		
 		viewTypePane.addTab(ViewType.STANDARD.toString(), standardViewPanel);
 
 		
@@ -1205,8 +1223,9 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 //		telescopeMagnification = telescopeMagnificationPanel.getNumber();
 		cameraFocussingDistance = cameraFocussingDistancePanel.getNumber();
 		cameraApertureSize = cameraApertureSizeComboBox.getApertureSize();
+		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
 //		showLens3 = showLens3CheckBox.isSelected();
-//		lensType = (LensType)(lensTypeComboBox.getSelectedItem());	// doesn't work  at  the moment -- comment  out
+		lensType = (LensType)(lensTypeComboBox.getSelectedItem());	// doesn't work  at  the moment -- comment  out
 //		viewType = (ViewType)(viewTypeComboBox.getSelectedItem());
 		// set the viewType to correspond to the selected tab
 		for(ViewType v:ViewType.values())

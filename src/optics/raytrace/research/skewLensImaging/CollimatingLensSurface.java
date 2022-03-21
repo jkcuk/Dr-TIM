@@ -124,7 +124,7 @@ public class CollimatingLensSurface extends NonInteractiveTIMEngine
 	
 
 	@Override
-	public String getFirstPartOfFilename()
+	public String getClassName()
 	{
 		return "CollimatingLensSurface "	// the name
 				+ " f1 "+f1
