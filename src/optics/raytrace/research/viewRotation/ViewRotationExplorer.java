@@ -11,6 +11,7 @@ import javax.swing.JTabbedPane;
 import math.*;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.surfaces.AzimuthalPixelatedFresnelWedge;
 import optics.raytrace.surfaces.IdealThinCylindricalLensSurfaceSimple;
 import optics.raytrace.surfaces.IdealisedDovePrismArray;
 import optics.raytrace.surfaces.PhaseHologramOfCylindricalLens;
@@ -44,6 +45,7 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 	public enum ViewRotationComponentType
 	{
 		AZIMUTHAL_FRESNEL_WEDGE("Azimuthal Fresnel wedge"),
+		PIXELATED_AZIMUTHAL_FRESNEL_WEDGE("Non-countinous Azimuthal Fresnel wedge"),
 		MOIRE_ROTATOR("Moiré rotator"),
 		RADIAL_LAS("Complementary radial lenticular arrays"),
 		RR_SHEET("Ray-rotation sheet"),
@@ -80,7 +82,16 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 	 * the number of segments; each segment covers an angle 360 degrees / <i>n</i>
 	 */
 	private int aFwN;
+	
+	//
+	// Additional variables for the pixelated fresnel wedge
+	//
 
+	/**
+	 * the lattice span vectors of the hologram
+	 */
+	private Vector3D latticeSpanVector1, latticeSpanVector2;
+	private double aFwBPixel;
 	
 	//
 	// moiré rotator
@@ -211,6 +222,11 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		// aFwSimulateHonestly = true;
 		aFwN = 100;
 		
+		//pixelated Fresnel wedge
+		aFwBPixel = -0.02;
+		latticeSpanVector1 = new Vector3D(0.05,0,0);
+		latticeSpanVector2 = new Vector3D(0,0.05,0);
+		
 		// moiré rotator
 		mmF = 0.1;
 		mmPitch = 0.01;
@@ -266,6 +282,12 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 			componentParams =
 				" aFwB="+aFwB
 				+ " aFwN="+aFwN;	// (aFwSimulateHonestly?" aFwN="+aFwN:"");
+			break;
+		case PIXELATED_AZIMUTHAL_FRESNEL_WEDGE:
+			componentParams =
+			" aFwB="+aFwBPixel
+			+ "latticeSpanVector1=" +latticeSpanVector1
+			+ "latticeSpanVector2=" +latticeSpanVector2;
 			break;
 		case MOIRE_ROTATOR:
 			componentParams =
@@ -359,6 +381,32 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 							studio
 							)
 					);
+			break;
+			
+		case PIXELATED_AZIMUTHAL_FRESNEL_WEDGE:
+			scene.addSceneObject(
+					new EditableScaledParametrisedDisc(
+							"Azimuthal Fresnel wedge",	// description
+							Vector3D.O,	// centre
+							Vector3D.Z,	// normal
+							1,	// radius
+							new AzimuthalPixelatedFresnelWedge(
+									Vector3D.O,	// centre
+									latticeSpanVector1, //latticeSpanVector1,
+									latticeSpanVector2,// latticeSpanVector2,
+									aFwBPixel,	// b
+									2,	// c
+									0,	// s
+									0,	// t
+									SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
+									false,	// reflective
+									true	// shadowThrowing
+									),	// surfaceProperty
+							scene,	// parent
+							studio
+							)
+					);
+			
 			break;
 		case MOIRE_ROTATOR:
 			separation = 1e-6;
@@ -653,6 +701,10 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 	// private JCheckBox aFwSimulateHonestlyCheckBox;
 	private IntPanel aFwNPanel;
 	
+	//Pixelated azimuthal fresnel wedge
+	private DoublePanel aFwBPixelPanel;
+	private LabelledVector3DPanel latticeSpanVector1Panel, latticeSpanVector2Panel;
+	
 	// moiré rotator
 	private DoublePanel mmFPanel;
 	private DoublePanel mmPitchPanel;
@@ -740,6 +792,31 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 			);
 
 		viewRotatingComponentTabbedPane.addTab("Azimuthal Fresnel wedge", azimuthalFresnelWedgePanel);
+		
+		
+		
+		
+		JPanel PixelatedAzimuthalFresnelWedgePanel = new JPanel();
+		// azimuthalFresnelWedgePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Azimuthal Fresnel wedge"));
+		PixelatedAzimuthalFresnelWedgePanel.setLayout(new MigLayout("insets 0"));
+
+		aFwBPixelPanel = new DoublePanel();
+		aFwBPixelPanel.setNumber(aFwBPixel);
+		PixelatedAzimuthalFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("<html>Phase gradient d<i>&Phi;</i>/d<i>&phi;</i> = <i>k</i>*</html>", aFwBPixelPanel, "<html>*<i>r</i><sup>2</sup>,</html>"), "span");
+		PixelatedAzimuthalFresnelWedgePanel.add(new JLabel("<html>where &phi; is the azimuthal angle and <i>r</i> is the distance from the centre.</html>"), "wrap");
+		
+		latticeSpanVector1Panel = new LabelledVector3DPanel("first pixel span vector");
+		latticeSpanVector1Panel.setVector3D(latticeSpanVector1);
+		PixelatedAzimuthalFresnelWedgePanel.add(latticeSpanVector1Panel, "span");
+		
+		latticeSpanVector2Panel = new LabelledVector3DPanel("second pixel span vector");
+		latticeSpanVector2Panel.setVector3D(latticeSpanVector2);
+		PixelatedAzimuthalFresnelWedgePanel.add(latticeSpanVector2Panel, "span");
+
+		viewRotatingComponentTabbedPane.addTab("Pixelated azimuthal Fresnel wedge", PixelatedAzimuthalFresnelWedgePanel);
+		
+		
+		
 		
 		
 		// moiré rotator
@@ -919,25 +996,34 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 			viewRotationComponentType = ViewRotationComponentType.AZIMUTHAL_FRESNEL_WEDGE;
 			break;
 		case 1:
-			viewRotationComponentType = ViewRotationComponentType.MOIRE_ROTATOR;
+			viewRotationComponentType = ViewRotationComponentType.PIXELATED_AZIMUTHAL_FRESNEL_WEDGE;
 			break;
 		case 2:
-			viewRotationComponentType = ViewRotationComponentType.RADIAL_LAS;
+			viewRotationComponentType = ViewRotationComponentType.MOIRE_ROTATOR;
 			break;
 		case 3:
-			viewRotationComponentType = ViewRotationComponentType.RR_SHEET;
+			viewRotationComponentType = ViewRotationComponentType.RADIAL_LAS;
 			break;
 		case 4:
-			viewRotationComponentType = ViewRotationComponentType.CYLINDRICAL_LENS_TELESCOPES;
+			viewRotationComponentType = ViewRotationComponentType.RR_SHEET;
 			break;
 		case 5:
+			viewRotationComponentType = ViewRotationComponentType.CYLINDRICAL_LENS_TELESCOPES;
+			break;
+
+		case 6:
 			viewRotationComponentType = ViewRotationComponentType.NOTHING;
 			break;
+
 		}
 
 		aFwB = aFwBPanel.getNumber();
 		// aFwSimulateHonestly = aFwSimulateHonestlyCheckBox.isSelected();
 		aFwN = aFwNPanel.getNumber();
+		
+		aFwBPixel = aFwBPixelPanel.getNumber();
+		latticeSpanVector1 = latticeSpanVector1Panel.getVector3D();
+		latticeSpanVector2 = latticeSpanVector2Panel.getVector3D();
 
 		mmF = mmFPanel.getNumber();
 		mmPitch = mmPitchPanel.getNumber();
