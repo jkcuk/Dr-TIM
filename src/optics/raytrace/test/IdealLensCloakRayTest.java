@@ -62,10 +62,9 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 	private boolean showTrajectory;
 	private Vector3D trajectoryDefaultDirection; //defines the default ray direction
 	private Vector3D rayAim; // defines the direction when a position of where to look is inputed
-	private Vector3D trajectoryDefaultPos; //defines the manual ray trace position
-	private boolean manualRayStart; //defines which starting point should be set for the ray tracing 
 	private boolean manualRayDirection;//defines which direction should be set for the ray tracing 
 	private double rayAngle;// sets the angle of the ray location, in equal to camera sets it to camera position
+	private double rayUpAngle;
 	private Vector3D rayPos; //ray trace starting position 
 	private Vector3D rayDirection; // raytrace direction
 	
@@ -78,18 +77,19 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 	private int maxSteps;
 	
 	//movie stuff
+	private double startAngleCloak, stopAngleCloak, startAngleRay, stopAngleRay, startAngleCamera, stopAngleCamera;
+	private double startUpAngleRay, stopUpAngleRay, startUpAngleCamera, stopUpAngleCamera;
 	public enum MovieType
 	{
 		MOVING_RAY("Ray moves around the cloak"),
 		ROTATING_CLOAK("Cloak roatates anticlockwise"),
-		CAMERA_MOVING_XZ_PLANE("Camera Moves (xz plane)"),
-		CAMERA_MOVING_XY_PLANE("Camera Moves (xy plane)"),
-		CAMERA_MOVING_XYZ_PLANE("Camera Moves (xyz plane)");
+		CAMERA_MOVING("Camera Moves");
 		
 		private String description;
 		private MovieType(String description) {this.description = description;}	
 		@Override
 		public String toString() {return description;}
+		
 	}
 
 	private MovieType movieType;
@@ -114,13 +114,12 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		
 		//ray trace stuff
 		traceRaysWithTrajectory = false; 
-		manualRayStart = false;
 		manualRayDirection = false;
 		showTrajectory = false;
-		trajectoryDefaultPos = new Vector3D(0, 0, -15); //sets the manual starting position of the ray
 		trajectoryDefaultDirection = new Vector3D(0,0,1);//sets the manual direction of the ray
 		rayAim = new Vector3D(0, 0, 0);//sets the position the ray should go towards
 		rayAngle = 0; //setting the ray angle to the camera angle. 
+		rayUpAngle = 0;
 
 		// camera params
 		cameraAngle = 0;
@@ -133,6 +132,18 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		movie = false;
 		numberOfFrames = 10;
 		movieType = MovieType.ROTATING_CLOAK;
+		startAngleCloak = 0;
+		stopAngleCloak = 0;
+		
+		startAngleRay = 0;
+		stopAngleRay = 0;
+		startUpAngleRay = 0;
+		stopUpAngleRay = 0;
+		
+		startAngleCamera = 0;
+		stopAngleCamera = 0;
+		startUpAngleCamera = 0;
+		stopUpAngleCamera = 0;
 		
 		//Tim engine setup
 				renderQuality = RenderQualityEnum.DRAFT;//Set the default render quality		
@@ -168,26 +179,19 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 			switch(movieType)
 			{
 			case ROTATING_CLOAK:
-				double partialRotationAngle = cloakRotationAngle*frame/numberOfFrames;
+				double partialRotationAngle = startAngleCloak+(stopAngleCloak-startAngleCloak)*frame/numberOfFrames;
 				baseVertex = new Vector3D(r*Math.cos(Math.toRadians(partialRotationAngle)), 2+r*Math.sin(Math.toRadians(partialRotationAngle)), h/2);
 				break;
 			case MOVING_RAY:
-				//TODO always 360 degrees in movie mode most movie type. This can be changed here if need be. 
-				rayAngle = 360*frame/numberOfFrames;
+				rayAngle = startAngleRay+(stopAngleRay-startAngleRay)*frame/numberOfFrames;
+				rayUpAngle = startUpAngleRay+(stopUpAngleRay-startUpAngleRay)*frame/numberOfFrames;
 				break;
-			case CAMERA_MOVING_XZ_PLANE:
-				cameraAngle = 360*frame/numberOfFrames;
-				break;
-			case CAMERA_MOVING_XY_PLANE:
-				cameraUpAngle = 360*frame/numberOfFrames;
-				break;
-			case CAMERA_MOVING_XYZ_PLANE:
-				cameraAngle = 360*frame/numberOfFrames;
-				cameraUpAngle = 360*frame/numberOfFrames;
+			case CAMERA_MOVING:
+				cameraAngle = startAngleCamera+(stopAngleCamera-startAngleCamera)*frame/numberOfFrames;
+				cameraUpAngle = startUpAngleCamera+(stopUpAngleCamera-startUpAngleCamera)*frame/numberOfFrames;
 				break;
 				
 			}
-
 		}
 		
 		//adding the lens cloak
@@ -283,15 +287,11 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		 */
 		if(showTrajectory)
 		{
-			if(manualRayStart)
-			{ rayPos = trajectoryDefaultPos;
-			
-			}
-			else
-			{ rayPos = new Vector3D(cameraDistance*Math.sin(Math.toRadians(rayAngle)), 2, -cameraDistance*Math.cos(Math.toRadians(rayAngle)));//sets the 'automatic' position of the ray ;	
-			}
+
+			rayPos = new Vector3D (cameraDistance*Math.cos(Math.toRadians(rayUpAngle))*Math.sin(Math.toRadians(rayAngle)), 2+cameraDistance*Math.sin(Math.toRadians(rayUpAngle)) , -cameraDistance*Math.cos(Math.toRadians(rayAngle))*Math.cos(Math.toRadians(rayUpAngle)));//sets the 'automatic' position of the ray ;				
 			if(manualRayDirection)
-			{ rayDirection = trajectoryDefaultDirection;
+			{System.out.println(rayPos);
+				rayDirection = Vector3D.difference(trajectoryDefaultDirection,rayPos);
 			}
 			else
 			{RaySceneObjectIntersection i = raytracingImageCanvas.getLastClickIntersection();
@@ -348,23 +348,24 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 								baseVertex	// baseVertex1
 							);
 						scene.addSceneObject(cloakFrame);
-		}
+		}	
 		
-			
-			
 	}
 	//general and camera
 	private LabelledDoublePanel cameraAnglePanel, lensTransPanel, cameraZoomPanel, cameraUpAnglePanel,cameraDistancePanel, cloakRotationAnglePanel;
 	private LabelledIntPanel maxStepsPanel;
-	private LabelledDoublePanel baseLensFPanel, rayAnglePanel;
-	private JCheckBox   CloakFrameCheck, showTrajectoryPanel,
-	manualRayStartCheckBox,manualRayDirectionCheckBox, movieCheckBox;	
+	private LabelledDoublePanel baseLensFPanel, rayAnglePanel, rayUpAnglePanel;
+	private LabelledDoublePanel startAnglePanelCloak, stopAnglePanelCloak, 
+	startAnglePanelRay, startUpAnglePanelRay, stopAnglePanelRay, stopUpAnglePanelRay,
+	startAnglePanelCamera, startUpAnglePanelCamera, stopAnglePanelCamera, stopUpAnglePanelCamera;
+	JCheckBox   CloakFrameCheck, showTrajectoryPanel,
+	manualRayDirectionCheckBox, movieCheckBox;	
 	private JTextArea rayLastClickTextArea;
 	private JButton rayLastClickInfo;
 	private JComboBox<LensType>  lensTypeComboBox;
-	private LabelledVector3DPanel trajectoryDefaultPosPanel, trajectoryDefaultDirectionPanel;
+	private LabelledVector3DPanel trajectoryDefaultDirectionPanel;
 	private IntPanel numberOfFramesPanel, firstFramePanel, lastFramePanel;
-	private JComboBox<MovieType> movieTypeComboBox;
+	JTabbedPane movieTabbedPane;
 	
 
 	
@@ -423,9 +424,14 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		rayPanel.add(showTrajectoryPanel, "span");
 
 		//semi automatic parts
-		rayAnglePanel = new LabelledDoublePanel("Angle of which the ray is looking at origin (set to camera angle to get place ray at camera position)");
+		rayAnglePanel = new LabelledDoublePanel("xz angle");
 		rayAnglePanel.setNumber(rayAngle);
 		rayPanel.add(rayAnglePanel, "span");
+		
+		
+		rayUpAnglePanel = new LabelledDoublePanel("xy angle");
+		rayUpAnglePanel.setNumber(rayUpAngle);
+		rayPanel.add(rayUpAnglePanel, "span");
 
 		rayLastClickTextArea = new JTextArea(2, 40);
 		JScrollPane scrollPane = new JScrollPane(rayLastClickTextArea); 
@@ -435,21 +441,12 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		rayLastClickInfo.addActionListener(this);
 		rayPanel.add(GUIBitsAndBobs.makeRow(scrollPane, rayLastClickInfo), "span");
 
-		//manual parts
-		manualRayStartCheckBox = new JCheckBox("use manual ray position");
-		manualRayStartCheckBox.setSelected(manualRayStart);
-		rayPanel.add(manualRayStartCheckBox, "span");
-
-		trajectoryDefaultPosPanel = new LabelledVector3DPanel("Set the position of the ray manually when manual is selected");
-		trajectoryDefaultPosPanel.setVector3D(trajectoryDefaultPos);
-		rayPanel.add(trajectoryDefaultPosPanel, "span");
-
 
 		manualRayDirectionCheckBox = new JCheckBox("use manual ray direction");
 		manualRayDirectionCheckBox.setSelected(manualRayDirection);
 		rayPanel.add(manualRayDirectionCheckBox, "span");
 
-		trajectoryDefaultDirectionPanel = new LabelledVector3DPanel("Set the direction of the ray manually when manual is selected");
+		trajectoryDefaultDirectionPanel = new LabelledVector3DPanel("Point to be viewed");
 		trajectoryDefaultDirectionPanel.setVector3D(trajectoryDefaultDirection);
 		rayPanel.add(trajectoryDefaultDirectionPanel, "span");
 		
@@ -485,16 +482,77 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		//movie stuff
 		JPanel moviePanel = new JPanel();
 		moviePanel.setLayout(new MigLayout("insets 0"));
-		moviePanel.setBorder(GUIBitsAndBobs.getTitledBorder("camera"));
-		generalpanel.add(moviePanel, "wrap");
-		
+		//moviePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Movie Time"));
+		tabbedPane.add(moviePanel, "Movie Time");
+	
 		movieCheckBox = new JCheckBox("Create movie");
 		movieCheckBox.setSelected(movie);
 		moviePanel.add(movieCheckBox, "span");
 		
-		movieTypeComboBox = new JComboBox<MovieType>(MovieType.values());
-		movieTypeComboBox.setSelectedItem(movieType);
-		moviePanel.add(GUIBitsAndBobs.makeRow("Movie type", movieTypeComboBox), "wrap");
+		movieTabbedPane = new JTabbedPane();
+		moviePanel.add(movieTabbedPane, "span");
+		
+		
+		JPanel movingCloakPanle = new JPanel();
+		//movingCloakPanle.setBorder(GUIBitsAndBobs.getTitledBorder("Cloak"));
+		movingCloakPanle.setLayout(new MigLayout("insets 0"));		
+		
+		startAnglePanelCloak = new LabelledDoublePanel("starting angle");
+		startAnglePanelCloak.setNumber(startAngleCloak);
+		movingCloakPanle.add(startAnglePanelCloak, ""); 
+		
+		stopAnglePanelCloak = new LabelledDoublePanel("stopping angle");
+		stopAnglePanelCloak.setNumber(stopAngleCloak);
+		movingCloakPanle.add(stopAnglePanelCloak, "span");
+		
+		movieTabbedPane.add(movingCloakPanle, "Cloak");
+		
+		
+		JPanel movingRayPanle = new JPanel();
+		//movingRayPanle.setBorder(GUIBitsAndBobs.getTitledBorder("Ray"));
+		movingRayPanle.setLayout(new MigLayout("insets 0"));
+		
+		startAnglePanelRay = new LabelledDoublePanel("starting angle");
+		startAnglePanelRay.setNumber(startAngleRay);
+		movingRayPanle.add(startAnglePanelRay, ""); 
+		
+		stopAnglePanelRay = new LabelledDoublePanel("stopping angle");
+		stopAnglePanelRay.setNumber(stopAngleRay);
+		movingRayPanle.add(stopAnglePanelRay, "span");
+		
+		startUpAnglePanelRay = new LabelledDoublePanel("starting up angle");
+		startUpAnglePanelRay.setNumber(startUpAngleRay);
+		movingRayPanle.add(startUpAnglePanelRay, ""); 
+		
+		stopUpAnglePanelRay = new LabelledDoublePanel("stopping up angle");
+		stopUpAnglePanelRay.setNumber(stopUpAngleRay);
+		movingRayPanle.add(stopUpAnglePanelRay, "span");
+		
+		movieTabbedPane.add(movingRayPanle,"Ray");
+		
+		
+		JPanel movingCameraPanle = new JPanel();
+		//movingCameraPanle.setBorder(GUIBitsAndBobs.getTitledBorder("Camera"));
+		movingCameraPanle.setLayout(new MigLayout("insets 0"));
+		
+		startAnglePanelCamera = new LabelledDoublePanel("starting angle");
+		startAnglePanelCamera.setNumber(startAngleCamera);
+		movingCameraPanle.add(startAnglePanelCamera, ""); 
+		
+		stopAnglePanelCamera = new LabelledDoublePanel("stopping angle");
+		stopAnglePanelCamera.setNumber(stopAngleCamera);
+		movingCameraPanle.add(stopAnglePanelCamera, "span");
+		
+		startUpAnglePanelCamera = new LabelledDoublePanel("starting up angle");
+		startUpAnglePanelCamera.setNumber(startUpAngleCamera);
+		movingCameraPanle.add(startUpAnglePanelCamera, ""); 
+		
+		stopUpAnglePanelCamera = new LabelledDoublePanel("stopping up angle");
+		stopUpAnglePanelCamera.setNumber(stopUpAngleCamera);
+		movingCameraPanle.add(stopUpAnglePanelCamera, "span");
+		
+		movieTabbedPane.add(movingCameraPanle,"Camera");
+		
 		
 		numberOfFramesPanel = new IntPanel();
 		numberOfFramesPanel.setNumber(numberOfFrames);
@@ -506,13 +564,28 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		lastFramePanel.setNumber(lastFrame);
 
 		moviePanel.add(GUIBitsAndBobs.makeRow("Calculate frames", firstFramePanel, "to", lastFramePanel, "out of", numberOfFramesPanel), "wrap");
-		
-		
-	
-		
 	}
-	protected void acceptValuesInInteractiveControlPanel()
-	{
+		
+		@Override
+		protected void acceptValuesInInteractiveControlPanel()
+		{
+			super.acceptValuesInInteractiveControlPanel();
+			
+			switch(movieTabbedPane.getSelectedIndex())
+			{
+			case 0:
+				movieType = MovieType.ROTATING_CLOAK;
+				break;
+			case 1:
+				movieType = MovieType.MOVING_RAY;
+				break;
+			case 2:
+				movieType = MovieType.CAMERA_MOVING;
+				break;
+			}
+		
+
+
 		
 		//cloak
 		lensTrans = lensTransPanel.getNumber();
@@ -526,8 +599,7 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		// raytrace
 		showTrajectory = showTrajectoryPanel.isSelected();
 		rayAngle = rayAnglePanel.getNumber(); //angle
-		manualRayStart = manualRayStartCheckBox.isSelected(); //checkbox to set to manual position
-		trajectoryDefaultPos = trajectoryDefaultPosPanel.getVector3D();//manual position of beam
+		rayUpAngle = rayUpAnglePanel.getNumber();
 		manualRayDirection = manualRayDirectionCheckBox.isSelected(); //checkbox to set to manual direction
 		trajectoryDefaultDirection = trajectoryDefaultDirectionPanel.getVector3D();//manual direction of beam
 		
@@ -544,6 +616,16 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		numberOfFrames = numberOfFramesPanel.getNumber();
 		firstFrame = firstFramePanel.getNumber();
 		lastFrame = lastFramePanel.getNumber();
+		startAngleCloak = startAnglePanelCloak.getNumber();
+		stopAngleCloak = stopAnglePanelCloak.getNumber();
+		startAngleRay = startAnglePanelRay.getNumber();
+		stopAngleRay = stopAnglePanelRay.getNumber();
+		startUpAngleRay = startUpAnglePanelRay.getNumber();
+		stopUpAngleRay = stopUpAnglePanelRay.getNumber();
+		startAngleCamera = startAnglePanelCamera.getNumber();
+		stopAngleCamera = stopAnglePanelCamera.getNumber();
+		startUpAngleCamera = startUpAnglePanelCamera.getNumber();
+		stopUpAngleCamera = stopUpAnglePanelCamera.getNumber();
 	}
 	
 	
