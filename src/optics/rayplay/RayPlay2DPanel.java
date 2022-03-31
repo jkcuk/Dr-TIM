@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
@@ -29,7 +30,7 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 
 	// the parameters -- see [1] for nomenclature
 	private double fD;
-	private double r;
+	private double baseLensRadius;
 	private double h1;
 	private double h2;
 	private double h;
@@ -37,6 +38,13 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 	// indices of the points
 	private static final int RAY_POINT2 = 0;
 	private static final int RAY_START_POINT = 1;
+	private static final int V2_POINT = 2;
+	private static final int P1_POINT = 3;
+	private static final int P2_POINT = 4;
+	private static final int P3_POINT = 5;
+	private static final int FD_POINT = 6;	// focal point of base lens
+	private static final int NO_OF_POINTS = 7;
+	
 	private InteractivePoint2D point[];
 //	private InteractivePoint2D rayStartPoint;
 //	private InteractivePoint2D rayDirection;
@@ -73,16 +81,24 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 		setBackground(new java.awt.Color(255, 255, 255));
 		// setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
 		
+		createVertexArray();
+		
 		// set the parameters
 		fD = .1;
-		r = 0.5;
+		baseLensRadius = 0.5;
 		h1 = 1./3.;
 		h2 = 2./3.;
 		h = 1;
-		point = new InteractivePoint2D[2];
+		point = new InteractivePoint2D[NO_OF_POINTS];
 		point[RAY_START_POINT] = new InteractivePoint2D(-0.8, 0.5, 5);
 		point[RAY_POINT2] = new InteractivePoint2D(-0.6, 0.5, 3);
-		rayBundleAngle = 30;
+		point[V2_POINT] = new InteractivePoint2D(vertex[V2], 3);
+		point[P1_POINT] = new InteractivePoint2D(vertex[P1], 3);
+		point[P2_POINT] = new InteractivePoint2D(vertex[P2], 3);
+		point[P3_POINT] = new InteractivePoint2D(vertex[P3], 3);
+		point[FD_POINT] = new InteractivePoint2D(vertex[FD], 3);
+
+		rayBundleAngle = MyMath.deg2rad(30);
 		rayBundleNoOfRays = 5;
 		rayBundle = true;
 		forwardTraceOnly = false;
@@ -112,11 +128,11 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 	}
 
 	public double getR() {
-		return r;
+		return baseLensRadius;
 	}
 
-	public void setR(double r) {
-		this.r = r;
+	public void setR(double baseLensRadius) {
+		this.baseLensRadius = baseLensRadius;
 	}
 
 	public double getH1() {
@@ -144,11 +160,11 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 	}
 
 	public Vector2D getRayStartPoint() {
-		return point[RAY_START_POINT];
+		return point[RAY_START_POINT].getV();
 	}
 
 	public void setRayStartPoint(Vector2D rayStartPoint) {
-		this.point[RAY_START_POINT].setPosition(rayStartPoint);
+		this.point[RAY_START_POINT].setVComponents(rayStartPoint);
 	}
 
 	public double getRayBundleAngle() {
@@ -236,7 +252,7 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 		// draw rays
 		drawRays(g2);
 		
-		drawPoints(g2);	// TODO
+		drawPoints(g2);
 	}
 	
 	/**
@@ -264,7 +280,7 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 	
 	public void init()
 	{
-		initVertices();
+		calculateVertices();
 		initLenses();
 	}
 	
@@ -275,26 +291,38 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 	private static final int P3 = 3;
 	private static final int V1 = 4;
 	private static final int V2 = 5;
+	private static final int FD = 6;
+	private static final int NO_OF_VERTICES = 7;
 	
-	private void initVertices()
+	private void createVertexArray()
 	{
-		vertex = new Vector2D[6];
+		vertex = new Vector2D[NO_OF_VERTICES];
+		for(int v=0; v<vertex.length; v++)
+			vertex[v] = new Vector2D(0, 0);
 		
+		calculateVertices();
+	}
+	
+	private void calculateVertices()
+	{
 		// the bottom vertices
-		vertex[V1] = right.getProductWith(-r);
-		vertex[V2] = right.getProductWith( r);
+		vertex[V1].setCoordinatesToThoseOf(right.getProductWith(-baseLensRadius));
+		vertex[V2].setCoordinatesToThoseOf(right.getProductWith( baseLensRadius));
 		
 		// the lower inner vertex
-		vertex[P1] = up.getProductWith(h1);
+		vertex[P1].setCoordinatesToThoseOf(up.getProductWith(h1));
 		
 		// the upper inner vertex
-		vertex[P2] = up.getProductWith(h2);
+		vertex[P2].setCoordinatesToThoseOf(up.getProductWith(h2));
 
 		// the top vertex
-		vertex[P3] = up.getProductWith(h);
+		vertex[P3].setCoordinatesToThoseOf(up.getProductWith(h));
 		
 		// the principal point of lens D
-		vertex[P0] = new Vector2D(0, 0);
+		vertex[P0].setCoordinatesTo(0, 0);	
+		
+		// the (inside) focal point of lens D
+		vertex[FD].setCoordinatesTo(0, fD);
 	}
 	
 
@@ -315,14 +343,17 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 
 	private void initLenses()
 	{
+		calculateVertices();
+		
 		lens = new Lens2D[9];
 		
 		// calculate the focal lengths from fD and r, h1, h2, h -- see AllLoopTheorems 2D.nb
-		double fA = ((-fD*h + (fD + h)*h1)*(h - h2)*r)/(h1*h2*Math.sqrt(h*h + r*r));
-		double fB = (fD*(h - h2)*(-h1 + h2)*r)/(h*h1*Math.sqrt(h2*h2 + r*r));
-		double fC = ((fD*h - (fD + h)*h1)*(h1 - h2)*r)/(h*h2*Math.sqrt(h1*h1 + r*r));
-		double fE = ((fD*h - (fD + h)*h1)*(h1 - h2)*r)/(2*h*h1*h2);
-		double fF = ((fD*h - (fD + h)*h1)*(h  - h2)*r)/(2*h*h1*h2);
+		double r2 = baseLensRadius*baseLensRadius;
+		double fA = ((-fD*h + (fD + h)*h1)*(h - h2)*baseLensRadius)/(h1*h2*Math.sqrt(h*h + r2));
+		double fB = (fD*(h - h2)*(-h1 + h2)*baseLensRadius)/(h*h1*Math.sqrt(h2*h2 + r2));
+		double fC = ((fD*h - (fD + h)*h1)*(h1 - h2)*baseLensRadius)/(h*h2*Math.sqrt(h1*h1 + r2));
+		double fE = ((fD*h - (fD + h)*h1)*(h1 - h2)*baseLensRadius)/(2*h*h1*h2);
+		double fF = ((fD*h - (fD + h)*h1)*(h  - h2)*baseLensRadius)/(2*h*h1*h2);
 		
 		// lenses A
 		lens[A1] = new Lens2D(
@@ -437,36 +468,37 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 	
 	
 	public Vector2D getCentralRayDirection() {
-		return Vector2D.difference(point[RAY_POINT2], point[RAY_START_POINT]);
+		return Vector2D.difference(point[RAY_POINT2].getV(), point[RAY_START_POINT].getV());
 	}
 	
-
+	private double tanRayBundleAngleConstant = 0.25;
+	
 	private void traceRays()
 	{
 		Vector2D dC = getCentralRayDirection();
 		
-		rayBundleAngle = 180*dC.getLength();
+		rayBundleAngle = 2*Math.atan(tanRayBundleAngleConstant/dC.getLength());	// 180*dC.getLength();
 		if(rayBundle)
 		{
 			ray = new Ray2D[(forwardTraceOnly?rayBundleNoOfRays:2*rayBundleNoOfRays)];
 			
 			double alphaC = Math.atan2(dC.y, dC.x);
-			double alpha0 = alphaC - MyMath.deg2rad(0.5*rayBundleAngle);
+			double alpha0 = alphaC - 0.5*rayBundleAngle;
 
 			for(int r=0; r<rayBundleNoOfRays; r++)
 			{
 				// calculate the ray direction
-				double alpha = alpha0 + r*MyMath.deg2rad(rayBundleAngle)/(rayBundleNoOfRays-1);
+				double alpha = alpha0 + r*rayBundleAngle/(rayBundleNoOfRays-1);
 				Vector2D d = new Vector2D(Math.cos(alpha),Math.sin(alpha));
 
 				// initialise the forward ray
-				ray[r] = new Ray2D(point[RAY_START_POINT], d);
+				ray[r] = new Ray2D(point[RAY_START_POINT].getV(), d);
 				traceRay(ray[r]);
 
 				if(!forwardTraceOnly)
 				{
 					// ... and the backwards ray
-					ray[r+rayBundleNoOfRays] = new Ray2D(point[RAY_START_POINT], d.getProductWith(-1));
+					ray[r+rayBundleNoOfRays] = new Ray2D(point[RAY_START_POINT].getV(), d.getProductWith(-1));
 					traceRay(ray[r+rayBundleNoOfRays]);
 				}
 			}
@@ -476,13 +508,13 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 			ray = new Ray2D[(forwardTraceOnly?1:2)];
 
 			// initialise the forward ray
-			ray[0] = new Ray2D(point[RAY_START_POINT], dC);
+			ray[0] = new Ray2D(point[RAY_START_POINT].getV(), dC);
 			traceRay(ray[0]);
 	
 			if(!forwardTraceOnly)
 			{
 				// ... and the backwards ray
-				ray[1] = new Ray2D(point[RAY_START_POINT], dC.getProductWith(-1));
+				ray[1] = new Ray2D(point[RAY_START_POINT].getV(), dC.getProductWith(-1));
 				traceRay(ray[1]);
 			}
 		}
@@ -531,23 +563,77 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 	
 	private void drawPoints(Graphics2D g2)
 	{
+		DecimalFormat df2 = new DecimalFormat( "#,###,###,##0.00" );
+
 		g2.setStroke(new BasicStroke(1));
-		g2.setColor(Color.RED);
+		g2.setColor(Color.GRAY);
 
 		for(int p=0; p<point.length; p++)
 		{
 			int r = point[p].getRadius();
-			int pointI = x2i(point[p].x);
-			int pointJ = y2j(point[p].y);
+			int pointI = x2i(point[p].getV().x);
+			int pointJ = y2j(point[p].getV().y);
 			// is the mouse within the radius from the point?
 			if(mouseNearPoint == p)
-				g2.fillOval(x2i(point[p].x)-r, y2j(point[p].y)-r, 2*r, 2*r);
+				g2.fillOval(x2i(point[p].getV().x)-r, y2j(point[p].getV().y)-r, 2*r, 2*r);
 			else
-				g2.drawOval(x2i(point[p].x)-r, y2j(point[p].y)-r, 2*r, 2*r);			
+				g2.drawOval(x2i(point[p].getV().x)-r, y2j(point[p].getV().y)-r, 2*r, 2*r);			
+		}
+		
+		if(mouseNearPoint == RAY_START_POINT)
+		{
+			Vector2D p = point[RAY_START_POINT].getV();
+			g2.drawString("Ray "+(rayBundle?"bundle ":"")+"start position ("+df2.format(p.x)+","+df2.format(p.y)+")", x2i(p.x)+10, y2j(p.y)+5);
+		}
+		else if(mouseNearPoint == RAY_POINT2)
+		{
+			Vector2D n = getCentralRayDirection().getPerpendicularVector().getNormalised();
+		
+			if(rayBundle)
+			{
+				g2.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
+						0, new float[]{3}, 0));
+				drawLine(
+						Vector2D.sum(point[RAY_POINT2].getV(), n.getProductWith(-tanRayBundleAngleConstant)),
+						Vector2D.sum(point[RAY_POINT2].getV(), n.getProductWith( tanRayBundleAngleConstant)),
+						g2);
+			}
+			
+			// give some info
+			Vector2D p = point[RAY_POINT2].getV();
+			Vector2D dC = getCentralRayDirection();
+			g2.drawString("Angle with horizontal = "+df2.format(MyMath.rad2deg(Math.atan2(dC.y, dC.x)))+" degrees", x2i(p.x)+10, y2j(p.y)+(rayBundle?-5:5));
+			if(rayBundle)
+				g2.drawString("Ray bundle angular width = "+df2.format(MyMath.rad2deg(2*Math.atan(tanRayBundleAngleConstant/dC.getLength())))+" degrees", x2i(p.x)+10, y2j(p.y)+15);
+		}
+		else if(mouseNearPoint == V2_POINT)
+		{
+			Vector2D p = point[V2_POINT].getV();
+			g2.drawString("Base lens radius = "+df2.format(baseLensRadius), x2i(p.x)+10, y2j(p.y)+5);
+		}
+		else if(mouseNearPoint == P1_POINT)
+		{
+			Vector2D p = point[P1_POINT].getV();
+			g2.drawString("h1 = "+df2.format(h1), x2i(p.x)+10, y2j(p.y)+5);
+		}
+		else if(mouseNearPoint == P2_POINT)
+		{
+			Vector2D p = point[P2_POINT].getV();
+			g2.drawString("h2 = "+df2.format(h2), x2i(p.x)+10, y2j(p.y)+5);
+		}
+		else if(mouseNearPoint == P3_POINT)
+		{
+			Vector2D p = point[P3_POINT].getV();
+			g2.drawString("h = "+df2.format(h), x2i(p.x)+10, y2j(p.y)+5);
+		}
+		else if(mouseNearPoint == FD_POINT)
+		{
+			Vector2D p = point[FD_POINT].getV();
+			g2.drawString("Base lens f = "+df2.format(fD), x2i(p.x)+10, y2j(p.y)+5);
 		}
 	}
 
-	
+
 	
 	// MouseListener methods
 	
@@ -561,13 +647,13 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 			if(mouseNearPoint == RAY_START_POINT)
 			{
 				// mouse double-clicked near point 2
-				rayBundle = !rayBundle;
+				forwardTraceOnly = !forwardTraceOnly;
 				repaint();
 			}
 			else if(mouseNearPoint == RAY_POINT2)
 			{
 				// mouse double-clicked near point 2
-				forwardTraceOnly = !forwardTraceOnly;
+				rayBundle = !rayBundle;
 				repaint();
 			}
 		}
@@ -632,23 +718,92 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 			{
 				// the mouse is close to the ray start point
 				
-				Vector2D startPoint2Point2 = Vector2D.difference(point[RAY_POINT2], point[RAY_START_POINT]);
-				System.out.println("startPoint2Point2="+startPoint2Point2);
-
-				point[RAY_START_POINT].x = i2x(e.getX());
-				point[RAY_START_POINT].y = j2y(e.getY());
+				Vector2D startPoint2Point2 = Vector2D.difference(point[RAY_POINT2].getV(), point[RAY_START_POINT].getV());
+				
+				point[RAY_START_POINT].getV().x = i2x(e.getX());
+				point[RAY_START_POINT].getV().y = j2y(e.getY());
 
 				// move point[RAY_POINT2] by the same amount
-				point[RAY_POINT2].x = point[RAY_START_POINT].x + startPoint2Point2.x;
-				point[RAY_POINT2].y = point[RAY_START_POINT].y + startPoint2Point2.y;
+				point[RAY_POINT2].getV().x = point[RAY_START_POINT].getV().x + startPoint2Point2.x;
+				point[RAY_POINT2].getV().y = point[RAY_START_POINT].getV().y + startPoint2Point2.y;
 
 				repaint();
+			}
+			else if(mouseNearPoint == V2_POINT)
+			{
+				double newBaseLensRadius = Vector2D.scalarProduct(
+						Vector2D.difference(new Vector2D(i2x(e.getX()), j2y(e.getY())), vertex[P0]),
+						right
+					);
+					
+				if(newBaseLensRadius > 0)
+				{
+					baseLensRadius = newBaseLensRadius;
+					initLenses();
+					repaint();
+				}
+			}
+			else if(mouseNearPoint == P1_POINT)
+			{
+				double newH1 = Vector2D.scalarProduct(
+						Vector2D.difference(new Vector2D(i2x(e.getX()), j2y(e.getY())), vertex[P0]),
+						up
+					);
+					
+				if((newH1 > 0) && (newH1 < h2))
+				{
+					h1 = newH1;
+					initLenses();
+					repaint();
+				}
+			}
+			else if(mouseNearPoint == P2_POINT)
+			{
+				double newH2 = Vector2D.scalarProduct(
+						Vector2D.difference(new Vector2D(i2x(e.getX()), j2y(e.getY())), vertex[P0]),
+						up
+					);
+					
+				if((newH2 > 0) && (newH2 > h1) && (newH2 < h))
+				{
+					h2 = newH2;
+					initLenses();
+					repaint();
+				}
+			}
+			else if(mouseNearPoint == P3_POINT)
+			{
+				double newH = Vector2D.scalarProduct(
+						Vector2D.difference(new Vector2D(i2x(e.getX()), j2y(e.getY())), vertex[P0]),
+						up
+					);
+				
+				if((newH > 0) && (newH > h2))
+				{
+					h = newH;
+					initLenses();
+					repaint();
+				}
+			}
+			else if(mouseNearPoint == FD_POINT)
+			{
+				double newFD = Vector2D.scalarProduct(
+						Vector2D.difference(new Vector2D(i2x(e.getX()), j2y(e.getY())), vertex[P0]),
+						up
+					);
+				
+				if(newFD != 0)
+				{
+					fD = newFD;
+					initLenses();
+					repaint();
+				}
 			}
 			else 
 			{
 				// the mouse is close to another point
-				point[mouseNearPoint].x = i2x(e.getX());
-				point[mouseNearPoint].y = j2y(e.getY());
+				point[mouseNearPoint].getV().x = i2x(e.getX());
+				point[mouseNearPoint].getV().y = j2y(e.getY());
 				repaint();
 			}
 		}
@@ -676,8 +831,8 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 		for(int p=0; p<point.length; p++)
 		{
 			int r = point[p].getRadius();
-			int pointI = x2i(point[p].x);
-			int pointJ = y2j(point[p].y);
+			int pointI = x2i(point[p].getV().x);
+			int pointJ = y2j(point[p].getV().y);
 			// is the mouse within the radius from the point?
 			if(MyMath.square(mouseI - pointI) + MyMath.square(mouseJ - pointJ) <= r*r)
 			{

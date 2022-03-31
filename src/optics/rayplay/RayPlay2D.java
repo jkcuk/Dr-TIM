@@ -12,7 +12,7 @@ implements ActionListener
 	private static final long serialVersionUID = 5766147858386479499L;
 	
     private RayPlay2DPanel rpPanel;
-    private LabelledDoublePanel focalLengthPanel;
+    // private LabelledDoublePanel focalLengthPanel;
 
 
 
@@ -31,10 +31,10 @@ implements ActionListener
         rpPanel = new RayPlay2DPanel();
         panel.add(rpPanel);
         
-        focalLengthPanel = new LabelledDoublePanel("Focal length");
-        focalLengthPanel.setNumber(rpPanel.getfD());
-        focalLengthPanel.addActionListener(this);
-        panel.add(focalLengthPanel, BorderLayout.SOUTH);
+//        focalLengthPanel = new LabelledDoublePanel("Focal length");
+//        focalLengthPanel.setNumber(rpPanel.getfD());
+//        focalLengthPanel.addActionListener(this);
+//        panel.add(focalLengthPanel, BorderLayout.SOUTH);
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
@@ -52,8 +52,8 @@ implements ActionListener
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		rpPanel.setfD(focalLengthPanel.getNumber());
-		rpPanel.init();
-		rpPanel.repaint();
+//		rpPanel.setfD(focalLengthPanel.getNumber());
+//		rpPanel.init();
+//		rpPanel.repaint();
 	}
 }

@@ -27,6 +27,28 @@ public class Vector2D implements Serializable
 		this.x = x;
 		this.y = y;
 	}
+	
+	/**
+	 * Copy the vector v
+	 * @param v
+	 */
+	public Vector2D(Vector2D v)
+	{
+		this.x = v.x;
+		this.y = v.y;
+	}
+	
+	public void setCoordinatesToThoseOf(Vector2D v)
+	{
+		this.x = v.x;
+		this.y = v.y;
+	}
+	
+	public void setCoordinatesTo(double x, double y)
+	{
+		this.x = x;
+		this.y = y;
+	}
 
 	/**
 	 * Calculate the sum of two Vector2Ds.
@@ -78,6 +100,11 @@ public class Vector2D implements Serializable
 	public Vector2D getProductWith(double f)
 	{		
 		return new Vector2D(f*x, f*y);
+	}
+	
+	public Vector2D getPerpendicularVector()
+	{
+		return new Vector2D(y, -x);
 	}
 	
 	/**
