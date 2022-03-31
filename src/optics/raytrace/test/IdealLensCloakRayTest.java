@@ -169,18 +169,19 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		SceneObjectContainer scene = new SceneObjectContainer("the scene", null, studio);		
 				
 		// the standard scene objects
-		scene.addSceneObject(SceneObjectClass.getLighterChequerboardFloor(-1, scene, studio)); //the floor
-		scene.addSceneObject(SceneObjectClass.getSkySphere(scene, studio));	// the sky	
+		scene.addSceneObject(SceneObjectClass.getHeavenSphere(scene, studio)); //the floor
+		//scene.addSceneObject(SceneObjectClass.getChequerboardFloor(scene, studio)); //the floor
+		//scene.addSceneObject(SceneObjectClass.getSkySphere(scene, studio));	// the sky	
 	
 		
-		Vector3D baseVertex = new Vector3D(r*Math.cos(Math.toRadians(cloakRotationAngle)), 2+r*Math.sin(Math.toRadians(cloakRotationAngle)), h/2);
+		Vector3D baseVertex = new Vector3D(r*Math.cos(Math.toRadians(cloakRotationAngle-90)), 2-h/2, r*Math.sin(Math.toRadians(cloakRotationAngle-90)));
 		if(movie) {
 			
 			switch(movieType)
 			{
 			case ROTATING_CLOAK:
 				double partialRotationAngle = startAngleCloak+(stopAngleCloak-startAngleCloak)*frame/numberOfFrames;
-				baseVertex = new Vector3D(r*Math.cos(Math.toRadians(partialRotationAngle)), 2+r*Math.sin(Math.toRadians(partialRotationAngle)), h/2);
+				baseVertex = new Vector3D(r*Math.cos(Math.toRadians(partialRotationAngle)), 2-h/2, r*Math.sin(Math.toRadians(partialRotationAngle)));
 				break;
 			case MOVING_RAY:
 				rayAngle = startAngleRay+(stopAngleRay-startAngleRay)*frame/numberOfFrames;
@@ -210,14 +211,14 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		cloak.setVertexRadiusP(frameRadius);
 		cloak.setShowStructureV(false);
 		cloak.setVertexRadiusV(frameRadius);
-		cloak.setSurfacePropertyP(new SurfaceColour(DoubleColour.RED, DoubleColour.WHITE, false));
+		cloak.setSurfacePropertyP(new SurfaceColour(DoubleColour.BLUE, DoubleColour.WHITE, false));
 		
 		cloak.initialiseToOmnidirectionalLens(
 				h1P,	// physicalSpaceFractionalLowerInnerVertexHeight
 				h2P,	// physicalSpaceFractionalUpperInnerVertexHeight
 				1./(-h/baseFocal + 1/h1P),	// virtualSpaceFractionalLowerInnerVertexHeightI,	// virtualSpaceFractionalLowerInnerVertexHeight
-				new Vector3D(0, 2, -h/2),	// topVertex
-				new Vector3D(0, 2, h/2),	// baseCentre
+				new Vector3D(0, 2+h/2, 0),	// topVertex
+				new Vector3D(0, 2-h/2, 0),	// baseCentre
 				baseVertex	// baseVertex
 			);
 		scene.addSceneObject(cloak);
@@ -288,7 +289,7 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		if(showTrajectory)
 		{
 
-			rayPos = new Vector3D (cameraDistance*Math.cos(Math.toRadians(rayUpAngle))*Math.sin(Math.toRadians(rayAngle)), 2+cameraDistance*Math.sin(Math.toRadians(rayUpAngle)) , -cameraDistance*Math.cos(Math.toRadians(rayAngle))*Math.cos(Math.toRadians(rayUpAngle)));//sets the 'automatic' position of the ray ;				
+			rayPos = new Vector3D (cameraDistance*Math.cos(Math.toRadians(rayUpAngle+90))*Math.sin(Math.toRadians(rayAngle)), 2+cameraDistance*Math.sin(Math.toRadians(rayUpAngle+90)),-cameraDistance*Math.cos(Math.toRadians(rayAngle))*Math.cos(Math.toRadians(rayUpAngle+90))  );//sets the 'automatic' position of the ray ;				
 			if(manualRayDirection)
 			{System.out.println(rayPos);
 				rayDirection = Vector3D.difference(trajectoryDefaultDirection,rayPos);
@@ -310,7 +311,7 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 							0,	// startTime
 							rayDirection,	// startDirection
 							0.005,	// rayRadius
-							SurfaceColourLightSourceIndependent.GREEN,	// surfaceProperty
+							SurfaceColourLightSourceIndependent.RED,	// surfaceProperty
 							100,	// maxTraceLevel
 							true,	// reportToConsole
 							scene,	// parent
@@ -332,19 +333,19 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 								studio
 							);
 						// ... and initialise it as an ideal-lens cloak  IDEAL_THIN_LENS
-						cloakFrame.setLensTypeRepresentingFace(LensType.NONE);
+						cloakFrame.setLensTypeRepresentingFace(LensType.SEMITRANSPARENT_PLANE);
 						cloakFrame.setShowStructureP(true);
 						cloakFrame.setVertexRadiusP(frameRadius);
 						cloakFrame.setShowStructureV(false);
 						cloakFrame.setVertexRadiusV(frameRadius);
-						cloakFrame.setSurfacePropertyP(new SurfaceColour(DoubleColour.RED, DoubleColour.WHITE, false));
+						cloakFrame.setSurfacePropertyP(new SurfaceColour(DoubleColour.DARK_BLUE, DoubleColour.GREY10, false));
 						
 						cloakFrame.initialiseToOmnidirectionalLens(
 								h1P,	// physicalSpaceFractionalLowerInnerVertexHeight
 								h2P,	// physicalSpaceFractionalUpperInnerVertexHeight
 								1./(-h/baseFocal + 1/h1P),	// virtualSpaceFractionalLowerInnerVertexHeightI,	// virtualSpaceFractionalLowerInnerVertexHeight
-								new Vector3D(0, 2, -h/2),	// topVertex
-								new Vector3D(0, 2, h/2),	// baseCentre
+								new Vector3D(0, 2+h/2, 0),	// topVertex
+								new Vector3D(0, 2-h/2, 0),	// baseCentre
 								baseVertex	// baseVertex1
 							);
 						scene.addSceneObject(cloakFrame);
