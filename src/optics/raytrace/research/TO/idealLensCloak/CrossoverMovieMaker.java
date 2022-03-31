@@ -9,10 +9,8 @@ import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.GlensSurface;
 import optics.raytrace.surfaces.ImagingDirection;
 import optics.raytrace.surfaces.SurfaceColour;
-import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
 import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
 import optics.raytrace.core.*;
-import optics.DoubleColour;
 import optics.raytrace.GUI.cameras.EditableRelativisticAnyFocusSurfaceCamera;
 import optics.raytrace.GUI.cameras.QualityType;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
@@ -39,8 +37,16 @@ import optics.raytrace.GUI.sceneObjects.EditableTriangle;
 public class CrossoverMovieMaker
 {
 	// the height of the point above the base lens, in physical space and in EM space
-	public static final double H_P_P = 0.2;
-	public static final double H_P_E = 0.8;	// 0.8;
+	public static final double H_P_P = 0.2;	// 0.2
+	public static final double H_P_E = 0.8;	// 0.8;	// virtual space, i.e. in outside space
+	
+	public static final QualityType BLUR_QUALITY = 
+			QualityType.RUBBISH;
+			// QualityType.GOOD;	// blur quality
+	public static final QualityType ANTI_ALIASING_QUALITY = 
+			QualityType.NORMAL;
+			// QualityType.GOOD;	// anti-aliasing quality
+
 	
 	/**
 	 * @return	the number of frames in the movie
@@ -69,7 +75,8 @@ public class CrossoverMovieMaker
 			Vector3D startPosition,
 			Vector3D initialDirection,
 			double radius,
-			DoubleColour colour,
+			SurfaceProperty surfaceProperty,
+			// DoubleColour colour,
 			SceneObjectContainer scene,
 			Studio studio
 		)
@@ -81,7 +88,7 @@ public class CrossoverMovieMaker
 				0,	// start time
 				initialDirection,	// initial direction
 				radius,	// radius
-				new SurfaceColourLightSourceIndependent(colour, true),
+				surfaceProperty, 	// new SurfaceColourLightSourceIndependent(colour, true),
 				20,	// max trace level
 				true,	// reportToConsole
 				scene,
@@ -96,7 +103,7 @@ public class CrossoverMovieMaker
 				0,	// start time
 				initialDirection.getReverse(),	// initial direction
 				radius,	// radius
-				new SurfaceColourLightSourceIndependent(colour, true),
+				surfaceProperty, 	// new SurfaceColourLightSourceIndependent(colour, true),
 				20,	// max trace level
 				true,	// reportToConsole
 				scene,
@@ -204,7 +211,7 @@ public class CrossoverMovieMaker
 				pointLightSourcePosition,	// startPosition
 				initialDirectionInside,	// initialDirection
 				0.009,	// radius
-				DoubleColour.BLUE,	// colour
+				SurfaceColour.BLUE_SHINY,	// .BLUE,	// colour
 				scene,
 				studio
 			);
@@ -253,7 +260,7 @@ public class CrossoverMovieMaker
 				0,	// start time
 				outsideRayDirection,	// initial direction
 				0.01,	// radius
-				new SurfaceColourLightSourceIndependent(DoubleColour.RED, true),
+				SurfaceColour.RED_SHINY,	//  SurfaceColourLightSourceIndependent(DoubleColour.RED, true),
 				20,	// max trace level
 				true,	// reportToConsole
 				scene,
@@ -298,10 +305,15 @@ public class CrossoverMovieMaker
 				Studio.NULL_STUDIO
 		);
 		
+		double cameraDistanceXZ = Math.sqrt(10*10+2*2);
+		Vector3D apertureCentre = 
+				// new Vector3D(10, 1.5, -2);
+				new Vector3D(2, 1.5, -10);
+		Vector3D centreOfView = new Vector3D(0, 0, 0);
 		EditableRelativisticAnyFocusSurfaceCamera camera = new EditableRelativisticAnyFocusSurfaceCamera(
 				"Camera",
-				new Vector3D(2, 1.5, -10),	// centre of aperture
-				new Vector3D(-.2, -.15, 1),	// viewDirection
+				apertureCentre,	// centre of aperture
+				Vector3D.difference(centreOfView, apertureCentre),	//new Vector3D(-.2, -.15, 1),	// viewDirection
 				new Vector3D(0, 1, 0),	// top direction vector
 				20,	// horiontalViewAngle in degrees; 2*MyMath.rad2deg(Math.atan(2./10.)) gives same view angle as in previous version
 				new Vector3D(0, 0, 0),	// beta
@@ -311,8 +323,8 @@ public class CrossoverMovieMaker
 				focusScene,
 				null,	// cameraFrameScene,
 				ApertureSizeType.PINHOLE,	// aperture size
-				QualityType.RUBBISH,	// blur quality
-				QualityType.NORMAL	// anti-aliasing quality
+				BLUR_QUALITY,	// QualityType.GOOD,	// blur quality
+				ANTI_ALIASING_QUALITY	// QualityType.GOOD	// anti-aliasing quality
 		);
 
 		studio.setLights(LightSource.getStandardLightsFromBehind());

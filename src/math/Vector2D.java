@@ -53,6 +53,22 @@ public class Vector2D implements Serializable
 		return new Vector2D(a.x+b.x+c.x, a.y+b.y+c.y);
 	}
 
+	/**
+	 * @param a
+	 * @param b
+	 * @return	a-b
+	 */
+	public static Vector2D difference(Vector2D a, Vector2D b)
+	{
+		return new Vector2D(a.x-b.x, a.y-b.y);
+	}
+	
+	public static double distance(Vector2D a, Vector2D b)
+	{
+		double dx = b.x - a.x;
+		double dy = b.y - a.y;
+		return Math.sqrt(dx*dx+dy*dy);
+	}
 
 	/**
 	 * The scalar product with this Vector2D.
@@ -82,6 +98,23 @@ public class Vector2D implements Serializable
 	public double getModSquared()
 	{	//returns the modulus squared of the current instance
 		return x*x+y*y;
+	}
+	
+	public double getLength()
+	{
+		return Math.sqrt(x*x+y*y);
+	}
+	
+	public Vector2D getNormalised()
+	{
+		double length = getLength();
+		return new Vector2D(x/length, y/length);
+	}
+
+	public Vector2D getWithLength(double length)
+	{
+		double currentLength = getLength();
+		return new Vector2D(x/currentLength*length, y/currentLength*length);
 	}
 
 	/**

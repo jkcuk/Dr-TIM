@@ -217,7 +217,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	/**
 	 * Constructor.
 	 * Override to set all variables.
-	 * @see optics.raytrace.test
+	 * @see optics.rayplay.Test3D
 	 * @see nonInteractiveTIMAction
 	 * @see numberOfFrames
  	 * @see firstFrame
@@ -608,7 +608,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	
 	/**
 	 * @return	a camera set according to a number of parameters
-	 * @see optics.raytrace.test
+	 * @see optics.rayplay.Test3D
 	 * @see optics.raytrace.PointCloudMakerEngine.cameraViewDirection
 	 * @see optics.raytrace.PointCloudMakerEngine.cameraViewCentre
 	 * @see optics.raytrace.PointCloudMakerEngine.cameraDistance

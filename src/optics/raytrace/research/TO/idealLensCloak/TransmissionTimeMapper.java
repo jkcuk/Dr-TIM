@@ -119,7 +119,7 @@ public class TransmissionTimeMapper
 						h1,	// heightLowerInnerVertexP
 						h2,	// heightUpperInnerVertexP
 						h1E,	// heightLowerInnerVertexE
-						0.9,	// interface transmission coefficient
+						1,	// 0.9,	// interface transmission coefficient
 						false,	// show frames
 						0.01,	// frame radius
 						SurfaceColour.GREY50_SHINY,	// frame surface property
@@ -171,8 +171,8 @@ public class TransmissionTimeMapper
 		
 		EditableRelativisticAnyFocusSurfaceCamera camera = new EditableRelativisticAnyFocusSurfaceCamera(
 				"Camera",
-				new Vector3D(0, 0, 0),	// centre of aperture
-				new Vector3D(0, 0, 1),	// viewDirection
+				new Vector3D(0, 03, 0),	// centre of aperture
+				new Vector3D(0, -.3, 1),	// viewDirection
 				new Vector3D(0, 1, 0),	// top direction vector
 				20,	// horiontalViewAngle in degrees; 2*MyMath.rad2deg(Math.atan(2./10.)) gives same view angle as in previous version
 				new Vector3D(0, 0, 0),	// beta
