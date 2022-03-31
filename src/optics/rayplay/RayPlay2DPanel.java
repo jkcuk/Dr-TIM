@@ -35,8 +35,8 @@ class RayPlay2DPanel extends JPanel implements MouseListener, MouseMotionListene
 	private double h;
 	
 	// indices of the points
-	private static final int RAY_START_POINT = 0;
-	private static final int RAY_POINT2 = 1;
+	private static final int RAY_POINT2 = 0;
+	private static final int RAY_START_POINT = 1;
 	private InteractivePoint2D point[];
 //	private InteractivePoint2D rayStartPoint;
 //	private InteractivePoint2D rayDirection;

@@ -22,6 +22,8 @@ implements ActionListener
 
     private void initComponents()
     {
+    	setTitle("RayPlay 2D");
+    	
     	JPanel panel = new JPanel();
     	panel.setLayout(new BorderLayout());
         setContentPane(panel);
