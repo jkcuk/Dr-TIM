@@ -2,6 +2,8 @@ package optics.rayplay;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+
 import javax.swing.*;
 
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
@@ -13,6 +15,7 @@ implements ActionListener
 	
     private RayPlay2DPanel rpPanel;
     // private LabelledDoublePanel focalLengthPanel;
+    private JButton saveButton;
 
 
 
@@ -30,6 +33,10 @@ implements ActionListener
 
         rpPanel = new RayPlay2DPanel();
         panel.add(rpPanel);
+        
+        saveButton = new JButton("Save");
+        saveButton.addActionListener(this);
+        panel.add(saveButton, BorderLayout.SOUTH);
         
 //        focalLengthPanel = new LabelledDoublePanel("Focal length");
 //        focalLengthPanel.setNumber(rpPanel.getfD());
@@ -49,9 +56,34 @@ implements ActionListener
         });
     }
 
+    private JFileChooser fileChooser;
+    
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
+		if(e.getSource().equals(saveButton))
+		{
+			if(fileChooser == null)
+			{
+				fileChooser = new JFileChooser();
+				fileChooser.setSelectedFile(new File("RayPlay2DSimulation"));
+			}
+			int returnVal = fileChooser.showSaveDialog(rpPanel);
+			
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                
+                rpPanel.saveSVG(file.getAbsolutePath());
+    			rpPanel.saveParameters(file.getAbsolutePath());
+
+    			System.out.println("SVG image and parameters saved as \""+file.getAbsolutePath()+"\".");
+            }
+			else
+			{
+				System.out.println("Saving cancelled.");
+			}
+		}
+		
 //		rpPanel.setfD(focalLengthPanel.getNumber());
 //		rpPanel.init();
 //		rpPanel.repaint();

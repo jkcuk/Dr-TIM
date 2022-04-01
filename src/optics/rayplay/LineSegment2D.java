@@ -71,6 +71,11 @@ public class LineSegment2D
 		else return n;
 	}
 	
+	public Vector2D getMidpoint()
+	{
+		return Vector2D.sum(a, b).getProductWith(0.5);
+	}
+	
 	/**
 	 * @param s1
 	 * @param s2

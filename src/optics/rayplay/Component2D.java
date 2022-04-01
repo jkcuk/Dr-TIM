@@ -5,6 +5,8 @@ import java.awt.Graphics2D;
 import math.Vector2D;
 
 public interface Component2D {
+	
+	public String getName();
 
 	public void draw(RayPlay2DPanel p, Graphics2D g2);
 

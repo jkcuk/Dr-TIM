@@ -5,8 +5,10 @@ import java.awt.Graphics2D;
 import math.Vector2D;
 
 public class Lens2D extends LineSegment2D
-implements Component2D
+implements Component2D, Bijection2D
 {
+	
+	private String name;
 	
 	/**
 	 * the principal point;
@@ -17,10 +19,16 @@ implements Component2D
 
 	private double focalLength;
 	
+	/**
+	 * for use by the Bijection2D methods: a vector pointing from inside to outside space
+	 */
+	private Vector2D outwardsVector;
+	
 	
 	// constructors
 	
 	public Lens2D(
+			String name,
 			Vector2D principalPoint,
 			double focalLength,
 			Vector2D endPoint1,
@@ -29,6 +37,7 @@ implements Component2D
 	{
 		super(endPoint1, endPoint2);
 		
+		this.name = name;
 		this.principalPoint = principalPoint;
 		this.focalLength = focalLength;
 	}
@@ -36,6 +45,17 @@ implements Component2D
 	
 	
 	// setters & getters
+	
+	@Override
+	public String getName()
+	{
+		return name;
+	}
+	
+	public void setName(String name)
+	{
+		this.name = name;
+	}
 	
 	public Vector2D getPrincipalPoint() {
 		return principalPoint;
@@ -143,6 +163,38 @@ implements Component2D
 		
 		// calculate the new ray direction
 		r.startNextSegment(intersectionPoint, Vector2D.difference(p, intersectionPoint).getProductWith(Math.signum(focalLength)));
+	}
+
+
+	// references for mappings:
+	// [1] G. J. Chaplain et al., "Ray optics of generalized lenses", J. Opt. Soc. Am. A 33, 962-969 (2016)
+	
+	// Eqn (3) in [1] can be written as Q' = N + f/(f-a) (Q-N);
+	// for a lens (where N=P) Q' = P + f/(f-a) (Q-P)
+
+
+	@Override
+	public Vector2D mapInwards(Vector2D q)
+	{
+		Vector2D pq = Vector2D.difference(q, principalPoint);
+		Vector2D aHat = getDirection().getPerpendicularVector().getNormalised();
+		return Vector2D.sum(
+				principalPoint,
+				pq.getProductWith(focalLength/(focalLength+Vector2D.scalarProduct(pq, aHat)))
+			);	
+	}
+
+
+
+	@Override
+	public Vector2D mapOutwards(Vector2D q)
+	{
+		Vector2D pq = Vector2D.difference(q, principalPoint);
+		Vector2D aHat = getDirection().getPerpendicularVector().getNormalised();
+		return Vector2D.sum(
+				principalPoint,
+				pq.getProductWith(focalLength/(focalLength-Vector2D.scalarProduct(pq, aHat)))
+			);	
 	}
 
 
