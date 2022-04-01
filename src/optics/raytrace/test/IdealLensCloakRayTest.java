@@ -103,12 +103,12 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		
 		//cloak stuff
 		CloakFrame = false; //shows the frame of the cloak
-		baseFocal = 1;
+		baseFocal = 0.1;
 		lensType = LensType.IDEAL_THIN_LENS; //set to ideal thin lens by default
 		lensTrans = 1; //sets transmission coef of lens to 1 (default)
 		h = 3;//over all height of cloak
-		h1P = 0.7; // Height to lower inner vertex in physical space
-		h2P = 0.9; //Height to upper inner vertex in physical space
+		h1P = 0.4; // Height to lower inner vertex in physical space
+		h2P = 0.7; //Height to upper inner vertex in physical space
 		r = h/2; //base radius
 		cloakRotationAngle = 0;
 		
@@ -124,7 +124,7 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		// camera params
 		cameraAngle = 0;
 		cameraUpAngle = 0;
-		cameraFOV = 20;
+		cameraFOV = 30;
 		cameraDistance = 10;
 		maxSteps = 50;
 		
@@ -333,7 +333,7 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 								studio
 							);
 						// ... and initialise it as an ideal-lens cloak  IDEAL_THIN_LENS
-						cloakFrame.setLensTypeRepresentingFace(LensType.SEMITRANSPARENT_PLANE);
+						cloakFrame.setLensTypeRepresentingFace(LensType.NONE);
 						cloakFrame.setShowStructureP(true);
 						cloakFrame.setVertexRadiusP(frameRadius);
 						cloakFrame.setShowStructureV(false);
