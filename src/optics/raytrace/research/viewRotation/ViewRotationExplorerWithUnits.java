@@ -26,8 +26,8 @@ import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.IntPanel;
-import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
+import optics.raytrace.GUI.lowLevel.Vector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedDisc;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
@@ -40,8 +40,16 @@ import optics.raytrace.core.SurfacePropertyPrimitive;
  * 
  * @author Johannes Courtial
  */
-public class ViewRotationExplorer extends NonInteractiveTIMEngine
+public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 {
+	// units
+	public static double NM = 1e-9;
+	public static double UM = 1e-6;
+	public static double MM = 1e-3;
+	public static double CM = 1e-2;
+	public static double M = 1;
+	
+	
 	public enum ViewRotationComponentType
 	{
 		AZIMUTHAL_FRESNEL_WEDGE("Azimuthal Fresnel wedge"),
@@ -213,7 +221,7 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 	 * Constructor.
 	 * Sets all parameters.
 	 */
-	public ViewRotationExplorer()
+	public ViewRotationExplorerWithUnits()
 	{
 		super();
 		
@@ -235,19 +243,19 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		
 		//pixelated Fresnel wedge
 		aFwBPixel = -0.02;
-		latticeSpanVector1 = new Vector3D(0.05,0,0);
-		latticeSpanVector2 = new Vector3D(0,0.05,0);
+		latticeSpanVector1 = new Vector3D(5,0,0).getProductWith(MM);
+		latticeSpanVector2 = new Vector3D(0,5,0).getProductWith(MM);
 		diffractiveBlurPixelatedFresnelWedge = false;
 		
 		// moiré rotator
-		mmF = 0.1;
+		mmF = 10*CM;
 		mmPitch = 0.01;
 		mmDeltaPhiDeg = .1;
 		mmShowLA1 = true;
 		mmShowLA2 = true;
 		
 		// complementary radial lenticular arrays
-		rLAsF = 0.1;
+		rLAsF = 10*CM;
 		rLAsN = 100;
 		rLAsDeltaPhiDeg = .1;
 		rLAsShowLA1 = true;
@@ -255,12 +263,12 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		
 		// ray-rotation sheet
 		rrAngleDeg = 5;
-		rrPeriod = 0.01;
+		rrPeriod = 10*MM;
 		rrShowDPA1 = true;
 		rrShowDPA2 = true;
 		
 		// rotated cylindrical-lens telescopes
-		cltFocalLength = 1;
+		cltFocalLength = 1*M;
 		cltRotationAngleDeg = 5;
 		cltCylindricalLensType = CylindricalLensType.IDEAL;
 
@@ -269,11 +277,11 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 
 		// camera
 		cameraViewCentre = new Vector3D(0, 0, 0);
-		cameraDistance = 10;
+		cameraDistance = 1000*CM;
 		cameraViewDirection = new Vector3D(0, 0, 1);
 		cameraHorizontalFOVDeg = 15;
 		cameraApertureSize = ApertureSizeType.PINHOLE;
-		cameraFocussingDistance = 20;
+		cameraFocussingDistance = 20*M;
 		
 		if(nonInteractiveTIMAction == NonInteractiveTIMActionEnum.INTERACTIVE)
 		{
@@ -717,7 +725,7 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 	
 	//Pixelated azimuthal fresnel wedge
 	private DoublePanel aFwBPixelPanel;
-	private LabelledVector3DPanel latticeSpanVector1Panel, latticeSpanVector2Panel;
+	private Vector3DPanel latticeSpanVector1Panel, latticeSpanVector2Panel;
 	private JCheckBox diffractiveBlurPixelatedFresnelWedgeCheckBox;
 	
 	// moiré rotator
@@ -745,11 +753,11 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 
 	// camera stuff
 	// private LabelledVector3DPanel cameraViewDirectionPanel;
-	private LabelledDoublePanel cameraDistancePanel;
+	private DoublePanel cameraDistancePanel;
 	private LabelledVector3DPanel cameraViewDirectionPanel;
 	private DoublePanel cameraHorizontalFOVDegPanel;
 	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
-	private LabelledDoublePanel cameraFocussingDistancePanel;
+	private DoublePanel cameraFocussingDistancePanel;
 
 
 
@@ -820,13 +828,13 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		PixelatedAzimuthalFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("<html>Phase gradient d<i>&Phi;</i>/d<i>&phi;</i> = <i>k</i>*</html>", aFwBPixelPanel, "<html>*<i>r</i><sup>2</sup>,</html>"), "span");
 		PixelatedAzimuthalFresnelWedgePanel.add(new JLabel("<html>where &phi; is the azimuthal angle and <i>r</i> is the distance from the centre.</html>"), "wrap");
 		
-		latticeSpanVector1Panel = new LabelledVector3DPanel("first pixel span vector");
-		latticeSpanVector1Panel.setVector3D(latticeSpanVector1);
-		PixelatedAzimuthalFresnelWedgePanel.add(latticeSpanVector1Panel, "span");
+		latticeSpanVector1Panel = new Vector3DPanel();
+		latticeSpanVector1Panel.setVector3D(latticeSpanVector1.getProductWith(1/MM));
+		PixelatedAzimuthalFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("first pixel span vector", latticeSpanVector1Panel,"mm"), "span");
 		
-		latticeSpanVector2Panel = new LabelledVector3DPanel("second pixel span vector");
-		latticeSpanVector2Panel.setVector3D(latticeSpanVector2);
-		PixelatedAzimuthalFresnelWedgePanel.add(latticeSpanVector2Panel, "span");
+		latticeSpanVector2Panel = new Vector3DPanel();
+		latticeSpanVector2Panel.setVector3D(latticeSpanVector2.getProductWith(1/MM));
+		PixelatedAzimuthalFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("second pixel span vector",latticeSpanVector2Panel,"mm" ),"span");
 		
 		diffractiveBlurPixelatedFresnelWedgeCheckBox = new JCheckBox("Show diffraction blur");
 		diffractiveBlurPixelatedFresnelWedgeCheckBox.setSelected(diffractiveBlurPixelatedFresnelWedge);
@@ -844,14 +852,14 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		moireRotatorPanel.setLayout(new MigLayout("insets 0"));
 
 		mmFPanel = new DoublePanel();
-		mmFPanel.setNumber(mmF);
+		mmFPanel.setNumber(mmF/CM);
 		mmPitchPanel = new DoublePanel();
 		mmPitchPanel.setNumber(mmPitch);
 		mmDeltaPhiDegPanel = new DoublePanel();
 		mmDeltaPhiDegPanel.setNumber(mmDeltaPhiDeg);
 		moireRotatorPanel.add(new JLabel("Two confocal, complementary, square lenslet arrays,"), "wrap");
 		moireRotatorPanel.add(
-				GUIBitsAndBobs.makeRow("<html>focal lengths &plusmn;</html>", mmFPanel, ","), "wrap");
+				GUIBitsAndBobs.makeRow("<html>focal lengths &plusmn;</html>", mmFPanel, "cm,"), "wrap");
 		moireRotatorPanel.add(
 				GUIBitsAndBobs.makeRow("each with pitch", mmPitchPanel, ","), "wrap");
 		moireRotatorPanel.add(
@@ -876,7 +884,7 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		complementaryRadialLenticularArraysPanel.setLayout(new MigLayout("insets 0"));
 		
 		rLAsFPanel = new DoublePanel();
-		rLAsFPanel.setNumber(rLAsF);
+		rLAsFPanel.setNumber(rLAsF/CM);
 		rLAsNPanel = new IntPanel();
 		rLAsNPanel.setNumber(rLAsN);
 		rLAsNPanel.setToolTipText("Number of radial cylindrical lenses in each array");
@@ -885,7 +893,7 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		rLAsDeltaPhiDegPanel.setToolTipText("Relative rotation angle between the two radial cylindrical lenses");
 		complementaryRadialLenticularArraysPanel.add(new JLabel("Two confocal, complementary, radial lenticular arrays,"), "wrap");
 		complementaryRadialLenticularArraysPanel.add(
-				GUIBitsAndBobs.makeRow("<html>focal lengths &plusmn;</html>", rLAsFPanel, ","), "wrap");
+				GUIBitsAndBobs.makeRow("<html>focal lengths &plusmn;</html>", rLAsFPanel, "cm,"), "wrap");
 		complementaryRadialLenticularArraysPanel.add(
 				GUIBitsAndBobs.makeRow("each with", rLAsNPanel, "cylindrical lenses in it,"), "wrap");
 		complementaryRadialLenticularArraysPanel.add(
@@ -911,9 +919,9 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		rayRotationSheetPanel.add(new JLabel("Two Dove-prism arrays,"), "wrap");
 
 		rrPeriodPanel = new DoublePanel();
-		rrPeriodPanel.setNumber(rrPeriod);
+		rrPeriodPanel.setNumber(rrPeriod/MM);
 		rrPeriodPanel.setToolTipText("Period of each of the two Dove-prism arrays");
-		rayRotationSheetPanel.add(GUIBitsAndBobs.makeRow("each with period", rrPeriodPanel, ","), "span");
+		rayRotationSheetPanel.add(GUIBitsAndBobs.makeRow("each with period", rrPeriodPanel, "mm,"), "span");
 
 		rrAngleDegPanel = new DoublePanel();
 		rrAngleDegPanel.setNumber(rrAngleDeg);
@@ -944,9 +952,9 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 				GUIBitsAndBobs.makeRow("rotated w.r.t. each other by an angle", cltRotationAngleDegPanel, "<html>&deg;</html>,"), "wrap");
 
 		cltFocalLengthPanel = new DoublePanel();
-		cltFocalLengthPanel.setNumber(cltFocalLength);
+		cltFocalLengthPanel.setNumber(cltFocalLength/M);
 		cylindricalLensTelescopesPanel.add(
-				GUIBitsAndBobs.makeRow("each comprising cylindrical lenses of focal length", cltFocalLengthPanel, ","), "wrap");
+				GUIBitsAndBobs.makeRow("each comprising cylindrical lenses of focal length", cltFocalLengthPanel, "m,"), "wrap");
 
 		cltCylindricalLensTypeComboBox = new JComboBox<CylindricalLensType>(CylindricalLensType.values());
 		cltCylindricalLensTypeComboBox.setSelectedItem(cltCylindricalLensType);
@@ -979,9 +987,9 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 //		cameraViewDirectionPanel.setVector3D(cameraViewDirection);
 //		cameraPanel.add(cameraViewDirectionPanel, "span");
 		
-		cameraDistancePanel = new LabelledDoublePanel("Camera distance");
-		cameraDistancePanel.setNumber(cameraDistance);
-		cameraPanel.add(cameraDistancePanel, "span");
+		cameraDistancePanel = new DoublePanel();
+		cameraDistancePanel.setNumber(cameraDistance/CM);
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera distance",cameraDistancePanel,"cm" ),"span");
 		
 		cameraViewDirectionPanel = new LabelledVector3DPanel("View direction");
 		cameraViewDirectionPanel.setVector3D(cameraViewDirection);
@@ -995,9 +1003,9 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		cameraApertureSizeComboBox.setSelectedItem(cameraApertureSize);
 		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera aperture", cameraApertureSizeComboBox), "span");		
 		
-		cameraFocussingDistancePanel = new LabelledDoublePanel("Focussing distance");
-		cameraFocussingDistancePanel.setNumber(cameraFocussingDistance);
-		cameraPanel.add(cameraFocussingDistancePanel);
+		cameraFocussingDistancePanel = new DoublePanel();
+		cameraFocussingDistancePanel.setNumber(cameraFocussingDistance/M);
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Focussing distance",cameraFocussingDistancePanel,"m"));
 	}
 	
 	/**
@@ -1041,24 +1049,24 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		aFwN = aFwNPanel.getNumber();
 		
 		aFwBPixel = aFwBPixelPanel.getNumber();
-		latticeSpanVector1 = latticeSpanVector1Panel.getVector3D();
-		latticeSpanVector2 = latticeSpanVector2Panel.getVector3D();
+		latticeSpanVector1 = latticeSpanVector1Panel.getVector3D().getProductWith(MM);
+		latticeSpanVector2 = latticeSpanVector2Panel.getVector3D().getProductWith(MM);
 		diffractiveBlurPixelatedFresnelWedge = diffractiveBlurPixelatedFresnelWedgeCheckBox.isSelected();
 
-		mmF = mmFPanel.getNumber();
+		mmF = mmFPanel.getNumber()*CM;
 		mmPitch = mmPitchPanel.getNumber();
 		mmDeltaPhiDeg = mmDeltaPhiDegPanel.getNumber();
 		mmShowLA1 = mmShowLA1CheckBox.isSelected();
 		mmShowLA2 = mmShowLA2CheckBox.isSelected();
 		
-		rLAsF = rLAsFPanel.getNumber();
+		rLAsF = rLAsFPanel.getNumber()*CM;
 		rLAsN = rLAsNPanel.getNumber();
 		rLAsDeltaPhiDeg = rLAsDeltaPhiDegPanel.getNumber();
 		rLAsShowLA1 = rLAsShowLA1CheckBox.isSelected();
 		rLAsShowLA2 = rLAsShowLA2CheckBox.isSelected();
 
 		rrAngleDeg = rrAngleDegPanel.getNumber();
-		rrPeriod = rrPeriodPanel.getNumber();
+		rrPeriod = rrPeriodPanel.getNumber()*MM;
 		rrShowDPA1 = rrShowDPA1CheckBox.isSelected();
 		rrShowDPA2 = rrShowDPA2CheckBox.isSelected();
 
@@ -1069,11 +1077,11 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		
 		// cameraViewDirection = cameraViewDirectionPanel.getVector3D();
-		cameraDistance = cameraDistancePanel.getNumber();
+		cameraDistance = cameraDistancePanel.getNumber()*CM;
 		cameraViewDirection = cameraViewDirectionPanel.getVector3D();
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
 		cameraApertureSize = (ApertureSizeType)(cameraApertureSizeComboBox.getSelectedItem());
-		cameraFocussingDistance = cameraFocussingDistancePanel.getNumber();
+		cameraFocussingDistance = cameraFocussingDistancePanel.getNumber()*M;
 	}
 
 	//
@@ -1086,6 +1094,6 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 	 */
 	public static void main(final String[] args)
 	{
-		(new ViewRotationExplorer()).run();
+		(new ViewRotationExplorerWithUnits()).run();
 	}
 }

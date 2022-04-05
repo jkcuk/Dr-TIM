@@ -2,6 +2,7 @@ package optics.raytrace.surfaces;
 
 import math.Vector3D;
 import optics.raytrace.core.Orientation;
+import optics.raytrace.utility.SingleSlitDiffraction;
 
 /**
  * A phase hologram of a class of rotationally symmetric phase holograms.
@@ -67,6 +68,17 @@ public class AzimuthalPixelatedFresnelWedge extends PhaseHologram
 	 * The radial phase gradient is of the form d<i>&Phi;</i>/d<i>r</i> = <i>k</i>*<i>s</i>*<i>r</i><sup><i>t</i></sup>, where <i>k</i>=(2 &pi;/&lambda;).
 	 */
 	private double t;
+	
+	/**
+	 * if true, add a random angle that represents diffractive blur to the direction of the outgoing light ray
+	 */
+	private boolean simulateDiffractiveBlur;
+
+	/**
+	 * wavelength of light;
+	 * used to calculate approximate magnitude of diffractive blur
+	 */
+	private double lambda;	// wavelength of light, for diffraction purposes
 
 	
 	//
@@ -93,6 +105,8 @@ public class AzimuthalPixelatedFresnelWedge extends PhaseHologram
 			double c,
 			double s,
 			double t, 
+			boolean simulateDiffractiveBlur,
+			double lambda,
 			double throughputCoefficient,
 			boolean reflective,
 			boolean shadowThrowing
@@ -106,6 +120,8 @@ public class AzimuthalPixelatedFresnelWedge extends PhaseHologram
 		this.c = c;
 		this.s = s;
 		this.t = t;
+		this.simulateDiffractiveBlur=simulateDiffractiveBlur;
+		this.lambda =lambda;
 	}
 
 	/**
@@ -121,6 +137,8 @@ public class AzimuthalPixelatedFresnelWedge extends PhaseHologram
 				original.getC(),
 				original.getS(),
 				original.getT(),
+				original.isSimulateDiffractiveBlur(),
+				original.getLambda(),
 				original.getTransmissionCoefficient(),
 				original.isReflective(),
 				original.isShadowThrowing()
@@ -193,13 +211,30 @@ public class AzimuthalPixelatedFresnelWedge extends PhaseHologram
 	public void setT(double t) {
 		this.t = t;
 	}
+	
+	public boolean isSimulateDiffractiveBlur() {
+		return simulateDiffractiveBlur;
+	}
 
+	public void setSimulateDiffractiveBlur(boolean simulateDiffractiveBlur) {
+		this.simulateDiffractiveBlur = simulateDiffractiveBlur;
+	}
+
+	public double getLambda() {
+		return lambda;
+	}
+
+	public void setLambda(double lambda) {
+		this.lambda = lambda;
+	}
+	
+	
 
 	
 	//
 	// PhaseHologram methods
 	// 
-	
+
 	@Override
 	public Vector3D getTangentialDirectionComponentChangeTransmissive(Vector3D surfacePosition,
 			Vector3D surfaceNormal)
@@ -242,8 +277,21 @@ public class AzimuthalPixelatedFresnelWedge extends PhaseHologram
 			tangentialDirectionComponentChange = Vector3D.sum(tangentialDirectionComponentChange, rHat.getProductWith(s*Math.pow(r,t)));
 		}
 		
+		
+		if(simulateDiffractiveBlur)
+		{
+				return Vector3D.sum(tangentialDirectionComponentChange, SingleSlitDiffraction.getTangentialDirectionComponentChange(
+						lambda,
+						latticeSpanVector1.getLength(),	// pixelSideLengthU
+						latticeSpanVector2.getLength(),	// pixelSideLengthV
+						latticeSpanVector1.getNormalised(),	// uHat
+						latticeSpanVector2.getNormalised()	// vHat
+					));
+		}
+		
 		return tangentialDirectionComponentChange;
 	}
+	
 
 	@Override
 	public Vector3D getTangentialDirectionComponentChangeReflective(Orientation incidentLightRayOrientation,

@@ -67,6 +67,7 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 	private double rayUpAngle;
 	private Vector3D rayPos; //ray trace starting position 
 	private Vector3D rayDirection; // raytrace direction
+	private boolean images; //shows a second ray to see where the images form
 	
 	
 	//camera stuff
@@ -300,6 +301,8 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 			rayDirection = Vector3D.difference(rayAim, rayPos);	
 					
 			}	
+			Vector3D imageRayDirection;
+			imageRayDirection = Vector3D.difference(Vector3D.sum(rayDirection, rayPos).getSumWith(new Vector3D(0.1,0.1,0.1)),rayPos);
 			
 		
 			
@@ -318,6 +321,24 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 							studio
 							)
 					);
+			if (images) {
+				// do the tracing of rays with trajectory
+				scene.addSceneObject(
+						new EditableRayTrajectory(
+								"light-ray trajectory",	// description
+								rayPos,	// startPoint
+								0,	// startTime
+								imageRayDirection,	// startDirection
+								0.005,	// rayRadius
+								SurfaceColourLightSourceIndependent.GREEN,	// surfaceProperty
+								100,	// maxTraceLevel
+								true,	// reportToConsole
+								scene,	// parent
+								studio
+								)
+				);
+				
+			}
 
 			studio.setScene(scene);
 
@@ -359,7 +380,7 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 	private LabelledDoublePanel startAnglePanelCloak, stopAnglePanelCloak, 
 	startAnglePanelRay, startUpAnglePanelRay, stopAnglePanelRay, stopUpAnglePanelRay,
 	startAnglePanelCamera, startUpAnglePanelCamera, stopAnglePanelCamera, stopUpAnglePanelCamera;
-	JCheckBox   CloakFrameCheck, showTrajectoryPanel,
+	JCheckBox   CloakFrameCheck, showTrajectoryPanel, imagesPanel,
 	manualRayDirectionCheckBox, movieCheckBox;	
 	private JTextArea rayLastClickTextArea;
 	private JButton rayLastClickInfo;
@@ -423,6 +444,10 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		showTrajectoryPanel = new JCheckBox("Show the trajectory a of  light ray");
 		showTrajectoryPanel.setSelected(showTrajectory);
 		rayPanel.add(showTrajectoryPanel, "span");
+		
+		imagesPanel = new JCheckBox("Second ray to show images");
+		imagesPanel.setSelected(images);
+		rayPanel.add(imagesPanel, "span");
 
 		//semi automatic parts
 		rayAnglePanel = new LabelledDoublePanel("xz angle");
@@ -603,6 +628,7 @@ public class IdealLensCloakRayTest extends NonInteractiveTIMEngine implements Ac
 		rayUpAngle = rayUpAnglePanel.getNumber();
 		manualRayDirection = manualRayDirectionCheckBox.isSelected(); //checkbox to set to manual direction
 		trajectoryDefaultDirection = trajectoryDefaultDirectionPanel.getVector3D();//manual direction of beam
+		images = imagesPanel.isSelected();
 		
 		//camera
 		cameraAngle = cameraAnglePanel.getNumber();
