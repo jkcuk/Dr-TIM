@@ -113,6 +113,14 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	protected Vector3D cameraViewDirection;
 	
 	/**
+	 * the top direction of the camera
+	 * @see optics.raytrace.PointCloudMakerEngine.cameraViewCentre
+	 * @see optics.raytrace.NonInteractiveTIMEngine.getStandardCamera()
+	 */
+	
+	protected Vector3D cameraTopDirection;
+	
+	/**
 	 * the centre of the scene, which is also a point in the focussing plane if the aperture size is not PINHOLE
 	 * @see optics.raytrace.PointCloudMakerEngine.cameraApertureSize
 	 * @see optics.raytrace.NonInteractiveTIMEngine.getStandardCamera()
@@ -249,6 +257,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 		
 		// camera parameters; these are often set (or altered) in createStudio()
 		cameraViewDirection = new Vector3D(-.3, -.2, 1);
+		cameraTopDirection = new Vector3D(0,1,0);
 		cameraViewCentre = new Vector3D(0, 0, 0);
 		cameraDistance = 10;
 		cameraFocussingDistance = 10;
@@ -333,6 +342,15 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 		this.cameraViewDirection = cameraViewDirection;
 	}
 
+	public Vector3D getCameraTopDirection() {
+		return cameraTopDirection;
+	}
+
+
+	public void setCameraTopDirection(Vector3D cameraTopDirection) {
+		this.cameraTopDirection = cameraTopDirection;
+	}
+	
 
 	public Vector3D getCameraViewCentre() {
 		return cameraViewCentre;
@@ -642,8 +660,8 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 //			aaQuality = QualityType.NORMAL;
 //		}
 		
-		Vector3D topDirection = new Vector3D(0, 1, 0);
-		if(cameraViewDirection.getPartPerpendicularTo(topDirection).getLength() == 0) topDirection = new Vector3D(1, 0, 0);
+		Vector3D topDirection = cameraTopDirection;
+		if(cameraViewDirection.getPartPerpendicularTo(cameraTopDirection).getLength() == 0) topDirection = new Vector3D(1, 0, 0);
 		return new EditableRelativisticAnyFocusSurfaceCamera(
 				"Camera",
 				cameraPosition,	// centre of aperture
@@ -908,6 +926,9 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 
 //		protected Vector3D cameraViewDirection;
 		printStream.println("cameraViewDirection = "+cameraViewDirection);
+		
+//		protected Vector3D cameraTopDirection;
+		printStream.println("cameraTopDirection = "+cameraTopDirection);
 
 //		protected Vector3D cameraViewCentre;
 		printStream.println("cameraViewCentre = "+cameraViewCentre);

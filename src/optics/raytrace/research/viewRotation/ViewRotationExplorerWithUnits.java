@@ -28,7 +28,10 @@ import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.IntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.GUI.lowLevel.Vector3DPanel;
+import optics.raytrace.GUI.sceneObjects.EditableCylinderLattice;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedDisc;
+import optics.raytrace.core.LightSource;
+import optics.raytrace.core.SceneObjectClass;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 import optics.raytrace.core.SurfaceProperty;
@@ -212,9 +215,18 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	//
 	
 	/**
+	 * camera
+	 */
+	private double cameraRotation;
+	
+	/**
 	 * Determines how to initialise the backdrop
 	 */
 	private StudioInitialisationType studioInitialisation;
+	
+	private boolean variableLattice;
+	private double objectRotationAngle;
+	private double objectDistance;
 	
 	
 	/**
@@ -274,13 +286,18 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 		// rest of scene
 		studioInitialisation = StudioInitialisationType.LATTICE;	// the backdrop
+		variableLattice = false;
+		objectRotationAngle = 0;
+		objectDistance = 10;
 
 		// camera
+		cameraRotation = 0;
 		cameraViewCentre = new Vector3D(0, 0, 0);
 		cameraDistance = 1000*CM;
 		cameraViewDirection = new Vector3D(0, 0, 1);
+		cameraTopDirection = new Vector3D(0,1,0);
 		cameraHorizontalFOVDeg = 15;
-		cameraApertureSize = ApertureSizeType.PINHOLE;
+		cameraApertureSize = ApertureSizeType.EYE;
 		cameraFocussingDistance = 20*M;
 		
 		if(nonInteractiveTIMAction == NonInteractiveTIMActionEnum.INTERACTIVE)
@@ -365,12 +382,38 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		SceneObjectContainer scene = new SceneObjectContainer("the scene", null, studio);
 		studio.setScene(scene);
 		
-		// initialise the scene and lights
-		StudioInitialisationType.initialiseSceneAndLights(
-				studioInitialisation,
-				scene,
-				studio
-			);
+		
+		//setting the lights and backdrop
+		if (variableLattice) {
+			studio.setLights(LightSource.getStandardLightsFromBehind());
+			scene.addSceneObject(SceneObjectClass.getSkySphere(scene, studio));
+			scene.addSceneObject(SceneObjectClass.getLighterChequerboardFloor(scene, studio));
+			
+			// a cylinder lattice...
+			Vector3D uHat, vHat, zHat;
+			zHat = new Vector3D(0,0,1);
+			uHat = new Vector3D(Math.cos(Math.toRadians(objectRotationAngle)), Math.sin(Math.toRadians(objectRotationAngle)),0);
+			vHat= new Vector3D(-Math.sin(Math.toRadians(objectRotationAngle)), Math.cos(Math.toRadians(objectRotationAngle)),0);
+			scene.addSceneObject(new EditableCylinderLattice(
+					"cylinder lattice",
+					-1, 1, 4, uHat,
+					-1+0.02, 1+0.02, 4, vHat,
+					objectDistance, 4*objectDistance, 4, zHat, // this puts the "transverse" cylinders into the planes z=10, 20, 30, 40
+					0.02,
+					scene,
+					studio
+
+			));	
+
+		} else {
+			// initialise the scene and lights
+			StudioInitialisationType.initialiseSceneAndLights(
+					studioInitialisation,
+					scene,
+					studio
+				);
+		}
+
 		
 		double separation;
 		Vector3D centre1, centre2;
@@ -680,6 +723,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		}
 
 		// the camera
+		cameraTopDirection = new Vector3D(Math.sin(Math.toRadians(cameraRotation)),Math.cos(Math.toRadians(cameraRotation)),0);
 		studio.setCamera(getStandardCamera());
 	}
 
@@ -750,10 +794,12 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
+	private JCheckBox variableLatticeCheckBox;
+	private DoublePanel objectRotationAnglePanel, objectDistancePanel;
 
 	// camera stuff
 	// private LabelledVector3DPanel cameraViewDirectionPanel;
-	private DoublePanel cameraDistancePanel;
+	private DoublePanel cameraDistancePanel, cameraRotationPanel;
 	private LabelledVector3DPanel cameraViewDirectionPanel;
 	private DoublePanel cameraHorizontalFOVDegPanel;
 	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
@@ -966,11 +1012,28 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		// nothing
 		
 		viewRotatingComponentTabbedPane.addTab("Nothing", new JPanel());
+		
+		JPanel backgroundPane = new JPanel();
+//		scenePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Background"));
+		scenePanel.setLayout(new MigLayout("insets 0"));
+		scenePanel.add(backgroundPane, BorderLayout.SOUTH);
 
 		
 		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
-		scenePanel.add(GUIBitsAndBobs.makeRow("Background", studioInitialisationComboBox), BorderLayout.SOUTH);
+		backgroundPane.add(GUIBitsAndBobs.makeRow("Background", studioInitialisationComboBox,"or"));
+		
+		variableLatticeCheckBox = new JCheckBox();
+		variableLatticeCheckBox.setSelected(variableLattice);
+		backgroundPane.add(GUIBitsAndBobs.makeRow("Make an adjustable lattice", variableLatticeCheckBox));
+		
+		objectRotationAnglePanel = new DoublePanel();
+		objectRotationAnglePanel.setNumber(objectRotationAngle);
+		backgroundPane.add(GUIBitsAndBobs.makeRow("Rotation angle", objectRotationAnglePanel,"<html>&deg;</html>,"));
+		
+		objectDistancePanel = new DoublePanel();
+		objectDistancePanel.setNumber(objectDistance);
+		backgroundPane.add(GUIBitsAndBobs.makeRow("Distance", objectDistancePanel,"m"));
 		
 
 		//
@@ -990,6 +1053,10 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		cameraDistancePanel = new DoublePanel();
 		cameraDistancePanel.setNumber(cameraDistance/CM);
 		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera distance",cameraDistancePanel,"cm" ),"span");
+		
+		cameraRotationPanel = new DoublePanel();
+		cameraRotationPanel.setNumber(cameraRotation);
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera/eye rotation",cameraRotationPanel,"<html>&deg;</html>,"),"span"); 
 		
 		cameraViewDirectionPanel = new LabelledVector3DPanel("View direction");
 		cameraViewDirectionPanel.setVector3D(cameraViewDirection);
@@ -1075,8 +1142,12 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		cltCylindricalLensType = (CylindricalLensType)(cltCylindricalLensTypeComboBox.getSelectedItem());
 
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
+		variableLattice = variableLatticeCheckBox.isSelected();
+		objectRotationAngle = objectRotationAnglePanel.getNumber();
+		objectDistance = objectDistancePanel.getNumber();
 		
 		// cameraViewDirection = cameraViewDirectionPanel.getVector3D();
+		cameraRotation = cameraRotationPanel.getNumber();
 		cameraDistance = cameraDistancePanel.getNumber()*CM;
 		cameraViewDirection = cameraViewDirectionPanel.getVector3D();
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
