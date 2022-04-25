@@ -6,7 +6,8 @@ import java.io.File;
 
 import javax.swing.*;
 
-import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
+import optics.rayplay.core.RayPlay2DPanel;
+
 
 class RayPlay2D extends JFrame
 implements ActionListener

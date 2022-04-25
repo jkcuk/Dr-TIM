@@ -1,4 +1,4 @@
-package optics.rayplay;
+package optics.rayplay.geometry2D;
 
 import math.Vector2D;
 

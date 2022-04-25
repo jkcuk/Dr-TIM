@@ -1,4 +1,4 @@
-package optics.rayplay;
+package optics.rayplay.core;
 
 import java.util.ArrayList;
 
@@ -25,6 +25,11 @@ public class Ray2D {
 	 * list of start points of previous straight-line trajectories
 	 */
 	private ArrayList<Vector2D> trajectory;
+	
+	/**
+	 * the trace level, i.e. the number of additional intersections the ray can make before it is no longer traced
+	 */
+	private int traceLevel;
 
 	public Ray2D(
 			Vector2D startingPoint,
@@ -36,6 +41,7 @@ public class Ray2D {
 		setStartingPoint(startingPoint);
 		setDirection(direction);
 		this.pathLength = 0;
+		this.traceLevel = 255;
 		
 		trajectory = new ArrayList<Vector2D>();
 		trajectory.add(startingPoint);
@@ -76,9 +82,24 @@ public class Ray2D {
 		this.trajectory = trajectory;
 	}
 
+	public int getTraceLevel() {
+		return traceLevel;
+	}
+
+	public void setTraceLevel(int traceLevel) {
+		this.traceLevel = traceLevel;
+	}
+
+
 	
 	// useful methods
 	
+	/**
+	 * Start a new segment in the ray's trajectory.
+	 * Decrease the ray's traceLevel by 1.
+	 * @param newStartingPoint
+	 * @param newDirection
+	 */
 	public void startNextSegment(Vector2D newStartingPoint, Vector2D newDirection)
 	{
 		// calculate the path length from the previous starting point to the new starting point
@@ -90,8 +111,15 @@ public class Ray2D {
 		// set the new starting point and direction
 		this.startingPoint = newStartingPoint;
 		this.direction = newDirection;
+		
+		traceLevel--;
 	}
 	
+	/**
+	 * Advance the ray by the given distance.
+	 * This starts a new segment in the ray's trajectory, which decreases the ray's traceLevel by 1.
+	 * @param distance
+	 */
 	public void advance(double distance)
 	{
 		Vector2D newStartingPoint = Vector2D.sum(startingPoint, direction.getWithLength(distance));

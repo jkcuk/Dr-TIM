@@ -1,4 +1,4 @@
-package optics.rayplay;
+package optics.rayplay.geometry2D;
 
 import math.Vector2D;
 
@@ -13,7 +13,7 @@ import math.Vector2D;
  * @author johannes
  *
  */
-public class Line2D
+public class Line2Dabc
 {	
 	private double a;
 	private double b;
@@ -26,7 +26,7 @@ public class Line2D
 	 * @param b
 	 * @param c	-distance from origin
 	 */
-	public Line2D(
+	public Line2Dabc(
 			double a,
 			double b,
 			double c
@@ -43,7 +43,7 @@ public class Line2D
 	 * @param normal	normal, not necessarily normalised
 	 * @param intersect
 	 */
-	public Line2D(
+	public Line2Dabc(
 			Vector2D normal,
 			double intersect
 		)
@@ -59,7 +59,7 @@ public class Line2D
 	 * @param point1
 	 * @param point2
 	 */
-	public Line2D(
+	public Line2Dabc(
 			Vector2D point1,
 			Vector2D point2
 		)
@@ -126,7 +126,7 @@ public class Line2D
 	 * @param line2
 	 * @return	the intersection of the two infinite straight lines
 	 */
-	public static Vector2D calculateIntersection(Line2D line1, Line2D line2)
+	public static Vector2D calculateIntersection(Line2Dabc line1, Line2Dabc line2)
 	{
 		// see https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
 		// in homogeneous coordinates, the intersection is (a3, b3, c3) = (b1 c2 - b2 c1, a2 c1 - a1 c2, a1 b2 - a2 b1),
@@ -137,12 +137,12 @@ public class Line2D
 		return new Vector2D(a3/c3, b3/c3);
 	}
 	
-	public static double linePointDistance(Line2D line, Vector2D point)
+	public static double linePointDistance(Line2Dabc line, Vector2D point)
 	{
 		return Vector2D.scalarProduct(line.getNormalisedNormal(), point) - line.getIntersect();
 	}
 	
-	public static boolean isPointOnLine(Line2D line, Vector2D point)
+	public static boolean isPointOnLine(Line2Dabc line, Vector2D point)
 	{
 		return linePointDistance(line, point) == 0.;
 	}

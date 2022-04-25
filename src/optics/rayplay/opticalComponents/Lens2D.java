@@ -1,11 +1,21 @@
-package optics.rayplay;
+package optics.rayplay.opticalComponents;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
 
 import math.Vector2D;
+import optics.rayplay.core.OpticalComponent2D;
+import optics.rayplay.core.Ray2D;
+import optics.rayplay.core.RayComponentIntersection2D;
+import optics.rayplay.core.RayPlay2DPanel;
+import optics.rayplay.geometry2D.Bijection2D;
+import optics.rayplay.geometry2D.Geometry2D;
+import optics.rayplay.graphicElements.LineSegmentGE2D;
 
-public class Lens2D extends LineSegment2D
-implements Component2D, Bijection2D
+public class Lens2D extends LineSegmentGE2D 
+implements OpticalComponent2D, Bijection2D
 {
 	
 	private String name;
@@ -22,7 +32,7 @@ implements Component2D, Bijection2D
 	/**
 	 * for use by the Bijection2D methods: a vector pointing from inside to outside space
 	 */
-	private Vector2D outwardsVector;
+	// private Vector2D outwardsVector;
 	
 	
 	// constructors
@@ -35,11 +45,16 @@ implements Component2D, Bijection2D
 			Vector2D endPoint2
 		)
 	{
-		super(endPoint1, endPoint2);
+		super(endPoint1, endPoint2, new BasicStroke(3), Color.CYAN);
 		
 		this.name = name;
 		this.principalPoint = principalPoint;
 		this.focalLength = focalLength;
+	}
+	
+	public Lens2D(String name)
+	{
+		this(name, null, 1, null, null);
 	}
 
 	
@@ -61,9 +76,18 @@ implements Component2D, Bijection2D
 		return principalPoint;
 	}
 
+	/**
+	 * Set the principal point.
+	 * The end points need to be set first!
+	 * @param principalPoint
+	 */
 	public void setPrincipalPoint(Vector2D principalPoint)
 	{
-		if(!isPointOnLine(this, principalPoint))
+		if(!Geometry2D.isPointOnLine(this, principalPoint))
+		{
+			System.out.println("Lens2D::setPrincipalPoint: Warning: principalPoint "+principalPoint+" of lens "+name+" does not lie on the straight line between the end points "+a+" and "+b+"!");
+		}
+		
 		this.principalPoint = principalPoint;
 	}
 
@@ -75,18 +99,17 @@ implements Component2D, Bijection2D
 		this.focalLength = focalLength;
 	}
 
+	public void setEndPoints(Vector2D e1, Vector2D e2)
+	{
+		this.a = e1;
+		this.b = e2;
+	}
 	
 	
 	// useful methods
 	
 	@Override
-	public void draw(RayPlay2DPanel p, Graphics2D g2) {
-		p.drawLine(a, b, g2);
-	}
-
-
-	@Override
-	public Vector2D calculateIntersection(Ray2D r, boolean forwardOnly)
+	public RayComponentIntersection2D calculateIntersection(Ray2D r, boolean forwardOnly, OpticalComponent2D lastIntersectionComponent)
 	{
 		// s1 from a1 to b1, s2 from a2 to b2
 		// define line directions d1 = b1 - a1, d2 = b2 - a2
@@ -97,7 +120,7 @@ implements Component2D, Bijection2D
 		// alpha1 = -((a1d2 d1d2 - a2d2 d1d2 - a1d1 d2d2 + a2d1 d2d2)/(d1d2^2 - d1d1 d2d2))
 		// alpha2 = -((a1d2 d1d1 - a2d2 d1d1 - a1d1 d1d2 + a2d1 d1d2)/(d1d2^2 - d1d1 d2d2))
 		Vector2D a1 = a;
-		Vector2D d1 = getDirection();
+		Vector2D d1 = getA2B();
 		Vector2D a2 = r.getStartingPoint();
 		Vector2D d2 = r.getDirection();
 		double a1d1 = Vector2D.scalarProduct(a1, d1);
@@ -126,10 +149,13 @@ implements Component2D, Bijection2D
 					// the intersection is with the actual ray, not its backwards continuation
 
 					// return the intersection point, i.e. either a1 + alpha1 d1 or a2 + alpha2 d2
-					return Vector2D.sum(
-							a1, 
-							d1.getProductWith(alpha1)
-						);
+					return new RayComponentIntersection2D(
+							this,	// component
+							Vector2D.sum(
+									a1, 
+									d1.getProductWith(alpha1)	// position
+									)
+							);
 				}
 			}
 		}
@@ -141,7 +167,7 @@ implements Component2D, Bijection2D
 
 
 	@Override
-	public void passThroughComponent(Ray2D r, Vector2D intersectionPoint)
+	public void stepThroughComponent(Ray2D r, RayComponentIntersection2D i)
 	{
 		// old ray direction
 		Vector2D d = r.getDirection();
@@ -154,6 +180,8 @@ implements Component2D, Bijection2D
 		// component of old ray direction along optical axis
 		double da = Vector2D.scalarProduct(d, n);
 		
+		// System.out.println("Lens2D::stepThroughComponent: principalPoint="+principalPoint+", d="+d);
+		
 		// the ray intersects the image-sided focal plane in the same position as the principal ray through the principal point,
 		// which intersects at
 		Vector2D p = Vector2D.sum(
@@ -162,7 +190,7 @@ implements Component2D, Bijection2D
 			);
 		
 		// calculate the new ray direction
-		r.startNextSegment(intersectionPoint, Vector2D.difference(p, intersectionPoint).getProductWith(Math.signum(focalLength)));
+		r.startNextSegment(i.p, Vector2D.difference(p, i.p).getProductWith(Math.signum(focalLength)));
 	}
 
 
@@ -177,7 +205,7 @@ implements Component2D, Bijection2D
 	public Vector2D mapInwards(Vector2D q)
 	{
 		Vector2D pq = Vector2D.difference(q, principalPoint);
-		Vector2D aHat = getDirection().getPerpendicularVector().getNormalised();
+		Vector2D aHat = getA2B().getPerpendicularVector().getNormalised();
 		return Vector2D.sum(
 				principalPoint,
 				pq.getProductWith(focalLength/(focalLength+Vector2D.scalarProduct(pq, aHat)))
@@ -190,13 +218,32 @@ implements Component2D, Bijection2D
 	public Vector2D mapOutwards(Vector2D q)
 	{
 		Vector2D pq = Vector2D.difference(q, principalPoint);
-		Vector2D aHat = getDirection().getPerpendicularVector().getNormalised();
+		Vector2D aHat = getA2B().getPerpendicularVector().getNormalised();
 		return Vector2D.sum(
 				principalPoint,
 				pq.getProductWith(focalLength/(focalLength-Vector2D.scalarProduct(pq, aHat)))
 			);	
 	}
 
+	@Override
+	public boolean isInteractive()
+	{
+		return true;
+	}
+		
+	@Override
+	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ)
+	{
+		g.setColor(Color.GRAY);
+		g.drawString(
+				"Lens "+getName()+", f = "+RayPlay2DPanel.format(getFocalLength()), 
+				mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
+				);
+	}
 
-	
+	@Override
+	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
+	{
+		return false;	// this component hasn't fully handled the event
+	}
 }
