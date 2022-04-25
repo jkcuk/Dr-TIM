@@ -11,6 +11,7 @@ import math.Vector2D;
 import optics.rayplay.core.CoordinateConverterXY2IJ;
 import optics.rayplay.core.LightSource2D;
 import optics.rayplay.core.RayPlay2DPanel;
+import optics.rayplay.util.DoubleFormatter;
 
 /**
  * The second point, after the start point, that defines the main characteristics of a ray bundle.
@@ -87,9 +88,9 @@ public class RaysCharacteristicsPoint2D extends PointGE2D
 		}
 
 		// give some info
-		g.drawString("Angle with horizontal = "+RayPlay2DPanel.format(MyMath.rad2deg(ls.getRayAngle()))+" degrees", rpp.x2i(position.x)+10, rpp.y2j(position.y)+(ls.isRayBundle()?-5:5));
+		g.drawString("Angle with horizontal = "+DoubleFormatter.format(MyMath.rad2deg(ls.getRayAngle()))+" degrees", rpp.x2i(position.x)+10, rpp.y2j(position.y)+(ls.isRayBundle()?-5:5));
 		if(ls.isRayBundle() && !ls.isRayBundleIsotropic())
-			g.drawString("Ray bundle angular width = "+RayPlay2DPanel.format(MyMath.rad2deg(ls.getRayBundleAngle()))+" degrees", rpp.x2i(position.x)+10, rpp.y2j(position.y)+15);
+			g.drawString("Ray bundle angular width = "+DoubleFormatter.format(MyMath.rad2deg(ls.getRayBundleAngle()))+" degrees", rpp.x2i(position.x)+10, rpp.y2j(position.y)+15);
 
 	}
 	

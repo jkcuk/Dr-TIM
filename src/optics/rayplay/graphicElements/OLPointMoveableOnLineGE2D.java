@@ -11,6 +11,7 @@ import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Line2D;
 import optics.rayplay.opticalComponents.OmnidirectionalLens2D;
 import optics.rayplay.opticalComponents.OmnidirectionalLens2D.OLPointType;
+import optics.rayplay.util.DoubleFormatter;
 
 /**
  * A point in an omnidirectional lens that is moveable on a line.
@@ -68,21 +69,21 @@ public class OLPointMoveableOnLineGE2D extends PointMoveableOnLineGE2D
 		case P1:
 			g.setColor(Color.GRAY);
 			g.drawString(
-					getName() + " (h1 =" + RayPlay2DPanel.format(ol.getH1()) + ")", 
+					getName() + " (h1 =" + DoubleFormatter.format(ol.getH1()) + ")", 
 					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 					);
 			break;
 		case P2:
 			g.setColor(Color.GRAY);
 			g.drawString(
-					getName() + " (h2 =" + RayPlay2DPanel.format(ol.getH2()) + ")", 
+					getName() + " (h2 =" + DoubleFormatter.format(ol.getH2()) + ")", 
 					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 					);
 			break;
 		case P3:
 			g.setColor(Color.GRAY);
 			g.drawString(
-					getName() + " (h =" + RayPlay2DPanel.format(ol.getH()) + ")", 
+					getName() + " (h =" + DoubleFormatter.format(ol.getH()) + ")", 
 					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 					);
 			break;
@@ -90,14 +91,14 @@ public class OLPointMoveableOnLineGE2D extends PointMoveableOnLineGE2D
 		case V2:
 			g.setColor(Color.GRAY);
 			g.drawString(
-					getName() + " (rD =" + RayPlay2DPanel.format(ol.getrD()) + ")", 
+					getName() + " (rD =" + DoubleFormatter.format(ol.getrD()) + ")", 
 					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 					);
 			break;
 		case FD:
 			g.setColor(Color.GRAY);
 			g.drawString(
-					getName() + " (f_D =" + RayPlay2DPanel.format(ol.getfD()) + ")", 
+					getName() + " (f_D =" + DoubleFormatter.format(ol.getfD()) + ")", 
 					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 					);	
 		}

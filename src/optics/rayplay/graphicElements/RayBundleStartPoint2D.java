@@ -15,6 +15,7 @@ import math.Vector2D;
 import optics.rayplay.core.CoordinateConverterXY2IJ;
 import optics.rayplay.core.LightSource2D;
 import optics.rayplay.core.RayPlay2DPanel;
+import optics.rayplay.util.Colour;
 
 /**
  * The start point of a ray bundle.
@@ -125,12 +126,9 @@ public class RayBundleStartPoint2D extends PointGE2D
 	// menu items
 	JMenuItem
 		forwardRaysOnlyMenuItem,
-		rayBundleMenuItem,
-		rayBundleIsotropicMenuItem,
-		doubleNoOfRaysMenuItem,
-		halfNoOfRaysMenuItem,
-		deleteRayBundleMenuItem;
-
+		// rayBundleMenuItem,
+		rayBundleIsotropicMenuItem;
+	
 	private void initPopup()
 	{
 		forwardRaysOnlyMenuItem = new JMenuItem("-");
@@ -144,16 +142,16 @@ public class RayBundleStartPoint2D extends PointGE2D
 		});
 		popup.add(forwardRaysOnlyMenuItem);
 
-		rayBundleMenuItem = new JMenuItem("-");
-		// menuItem.setMnemonic(KeyEvent.VK_P);
-		rayBundleMenuItem.getAccessibleContext().setAccessibleDescription("Toggle ray bundle");
-		rayBundleMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				ls.setRayBundle(!ls.isRayBundle());
-				panelWithPopup.repaint();
-			}
-		});
-		popup.add(rayBundleMenuItem);
+//		rayBundleMenuItem = new JMenuItem("-");
+//		// menuItem.setMnemonic(KeyEvent.VK_P);
+//		rayBundleMenuItem.getAccessibleContext().setAccessibleDescription("Toggle ray bundle");
+//		rayBundleMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				ls.setRayBundle(!ls.isRayBundle());
+//				panelWithPopup.repaint();
+//			}
+//		});
+//		popup.add(rayBundleMenuItem);
 
 		rayBundleIsotropicMenuItem = new JMenuItem("-");
 		// menuItem.setMnemonic(KeyEvent.VK_P);
@@ -167,32 +165,73 @@ public class RayBundleStartPoint2D extends PointGE2D
 		});
 		popup.add(rayBundleIsotropicMenuItem);
 		
-		doubleNoOfRaysMenuItem = new JMenuItem("Double no of rays in bundle");
-		doubleNoOfRaysMenuItem.setEnabled(true);
-		doubleNoOfRaysMenuItem.getAccessibleContext().setAccessibleDescription("Double no of rays in bundle");
-		doubleNoOfRaysMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				ls.setRayBundleNoOfRays(2*ls.getRayBundleNoOfRays());
-				panelWithPopup.repaint();
-			}
-		});
-		popup.add(doubleNoOfRaysMenuItem);
+		// Separator
+	    popup.addSeparator();
 		
-		halfNoOfRaysMenuItem = new JMenuItem("Halve no of rays in bundle");
-		halfNoOfRaysMenuItem.setEnabled(true);
-		halfNoOfRaysMenuItem.getAccessibleContext().setAccessibleDescription("Halve no of rays in bundle");
-		halfNoOfRaysMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(ls.getRayBundleNoOfRays() > 2)
-				{
-					ls.setRayBundleNoOfRays(ls.getRayBundleNoOfRays()/2);
+//		JMenuItem doubleNoOfRaysMenuItem = new JMenuItem("Double no of rays in bundle");
+//		doubleNoOfRaysMenuItem.setEnabled(true);
+//		doubleNoOfRaysMenuItem.getAccessibleContext().setAccessibleDescription("Double no of rays in bundle");
+//		doubleNoOfRaysMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				ls.setRayBundleNoOfRays(2*ls.getRayBundleNoOfRays());
+//				panelWithPopup.repaint();
+//			}
+//		});
+//		popup.add(doubleNoOfRaysMenuItem);
+//		
+//		JMenuItem halfNoOfRaysMenuItem = new JMenuItem("Halve no of rays in bundle");
+//		halfNoOfRaysMenuItem.setEnabled(true);
+//		halfNoOfRaysMenuItem.getAccessibleContext().setAccessibleDescription("Halve no of rays in bundle");
+//		halfNoOfRaysMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				if(ls.getRayBundleNoOfRays() > 2)
+//				{
+//					ls.setRayBundleNoOfRays(ls.getRayBundleNoOfRays()/2);
+//					panelWithPopup.repaint();
+//				}
+//			}
+//		});
+//		popup.add(halfNoOfRaysMenuItem);
+		
+		int rayNumbers[] = {1, 2, 4, 8, 16, 32, 64, 128};
+		for(int rayNumber:rayNumbers)
+		{
+			JMenuItem rayNumberMenuItem = new JMenuItem(rayNumber + ((rayNumber == 1)?" ray":" rays"));
+			rayNumberMenuItem.setEnabled(true);
+			rayNumberMenuItem.getAccessibleContext().setAccessibleDescription("Set number of rays to "+rayNumber);
+			rayNumberMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ls.setRayBundleNoOfRays(rayNumber);
+					ls.setRayBundle(rayNumber > 1);
 					panelWithPopup.repaint();
 				}
-			}
-		});
-		popup.add(halfNoOfRaysMenuItem);
-		
-		deleteRayBundleMenuItem = new JMenuItem("Delete light source");
+			});
+			popup.add(rayNumberMenuItem);
+
+		}
+
+		// Separator
+	    popup.addSeparator();
+
+	    for(Colour c:Colour.values())
+	    {
+	    	JMenuItem colourMenuItem = new JMenuItem(c.getName());
+	    	colourMenuItem.setEnabled(true);
+	    	colourMenuItem.getAccessibleContext().setAccessibleDescription("Set colour to "+c.getName());
+	    	colourMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ls.setColour(c);
+					panelWithPopup.repaint();
+				}
+			});
+			popup.add(colourMenuItem);
+
+	    }
+	    
+		// Separator
+	    popup.addSeparator();
+	    
+	    JMenuItem deleteRayBundleMenuItem = new JMenuItem("Delete light source");
 		deleteRayBundleMenuItem.setEnabled(true);
 		deleteRayBundleMenuItem.getAccessibleContext().setAccessibleDescription("Delete light source");
 		deleteRayBundleMenuItem.addActionListener(new ActionListener() {
@@ -212,14 +251,10 @@ public class RayBundleStartPoint2D extends PointGE2D
 		forwardRaysOnlyMenuItem.setText(ls.isForwardRaysOnly()?"Make ray(s) bidirectional":"Make ray(s) unidirectional");
 		forwardRaysOnlyMenuItem.setEnabled(!ls.isRayBundleIsotropic());
 		
-		rayBundleMenuItem.setText(ls.isRayBundle()?"Change to single ray":"Change to ray bundle");
-		rayBundleMenuItem.setEnabled(!ls.isRayBundleIsotropic());
+//		rayBundleMenuItem.setText(ls.isRayBundle()?"Change to single ray":"Change to ray bundle");
+//		rayBundleMenuItem.setEnabled(!ls.isRayBundleIsotropic());
 		
 		rayBundleIsotropicMenuItem.setText(ls.isRayBundleIsotropic()?"Make ray bundle directional":"Make ray bundle isotropic");
 		rayBundleIsotropicMenuItem.setEnabled(ls.isRayBundle());
-
-		doubleNoOfRaysMenuItem.setEnabled(ls.isRayBundle());
-
-		halfNoOfRaysMenuItem.setEnabled(ls.isRayBundle());
 	}	
 }

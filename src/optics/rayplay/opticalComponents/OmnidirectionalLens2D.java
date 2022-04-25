@@ -292,6 +292,7 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 			case P3:
 				// P3 can be moved freely
 				OLPointGE2D p3 = new OLPointGE2D(olPointType.name, this, olPointType);
+				p3.setRadius(4);
 				points.put(olPointType, p3);
 				graphicElements.add(p3);
 				break;

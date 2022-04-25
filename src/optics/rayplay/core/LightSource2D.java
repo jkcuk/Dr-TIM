@@ -1,12 +1,17 @@
 package optics.rayplay.core;
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
+import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.util.ArrayList;
 
 import math.Vector2D;
 import optics.rayplay.graphicElements.RaysCharacteristicsPoint2D;
+import optics.rayplay.util.Colour;
+import optics.rayplay.util.SVGWriter;
 import optics.rayplay.graphicElements.RayBundleStartPoint2D;
 
 /**
@@ -45,6 +50,8 @@ public class LightSource2D extends GraphicElementCollection2D
 	 * number of rays in a ray bundle
 	 */
 	private int rayBundleNoOfRays;
+	
+	private Colour colour;
 
 //	private Stroke pointStroke;
 //	private Color pointColor;
@@ -68,7 +75,8 @@ public class LightSource2D extends GraphicElementCollection2D
 			boolean rayBundle,
 			boolean rayBundleIsotropic,
 			double rayBundleAngle,
-			int rayBundleNoOfRays
+			int rayBundleNoOfRays,
+			Colour colour
 //			Stroke pointStroke,
 //			Color pointColor
 		)
@@ -82,6 +90,7 @@ public class LightSource2D extends GraphicElementCollection2D
 		this.rayBundleIsotropic = rayBundleIsotropic;
 		this.rayBundleAngle = rayBundleAngle;
 		this.rayBundleNoOfRays = rayBundleNoOfRays;
+		this.colour = colour;
 //		this.pointStroke = pointStroke;
 //		this.pointColor = pointColor;
 
@@ -195,6 +204,16 @@ public class LightSource2D extends GraphicElementCollection2D
 //		this.pointColor = pointColor;
 //	}
 
+	public Colour getColour() {
+		return colour;
+	}
+
+	public void setColour(Colour colour) {
+		this.colour = colour;
+	}
+
+
+
 	public ArrayList<Ray2D> getRays() {
 		return rays;
 	}
@@ -269,6 +288,53 @@ public class LightSource2D extends GraphicElementCollection2D
 			}
 		}
 	}
+	
+	public void drawRays(RayPlay2DPanel rpp, Graphics2D g2)
+	{
+		// draw a ray
+		g2.setStroke(new BasicStroke(1));
+
+		// make everything that gets drawn transparent
+		Composite c = g2.getComposite();
+		AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
+        g2.setComposite(alcom);
+
+        for(Ray2D ray:rays)
+		{
+			ArrayList<Vector2D> t = ray.getTrajectory();
+			if(ray.getTraceLevel() == 0)
+				g2.setColor(
+						colour.getDarkerColor()
+						// Color.BLACK
+						);
+			else g2.setColor(colour.getColor());
+			for(int p=1; p<t.size(); p++)
+				rpp.drawLine(t.get(p-1), t.get(p), g2);
+		}
+		
+		// set transparency to whatever it was previously
+		g2.setComposite(c);
+	}
+	
+	public void writeSVGCode(RayPlay2DPanel rpp)
+	{
+		for(Ray2D ray:rays)
+		{
+			ArrayList<Vector2D> t = ray.getTrajectory();
+			if(ray.getTraceLevel() == 0)
+			{
+				// assumed to be a closed-loop trajectory
+				SVGWriter.writeSVGPolyLine(t, rpp, colour.getSVGNameOfDarkerColour(), 1, "");
+			}
+			else
+			{
+				// definitely not a closed-loop trajectory
+				SVGWriter.writeSVGPolyLine(t, rpp, colour.getSVGName(), 1, "");
+			}
+		}
+
+	}
+
 
 
 //	public void drawRays(RayPlay2DPanel rpp, Graphics2D g2)

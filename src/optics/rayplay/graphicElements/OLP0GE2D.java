@@ -1,5 +1,6 @@
 package optics.rayplay.graphicElements;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
@@ -26,16 +27,12 @@ public class OLP0GE2D extends OLPointGE2D {
 
 	public OLP0GE2D(String name, Vector2D position, OmnidirectionalLens2D ol, OLPointType pt)
 	{
-		super(name, position, ol, pt);
-		
-		initPopup();
+		this(name, position, 5, new BasicStroke(1), Color.gray, true, ol, pt);
 	}
 
 	public OLP0GE2D(String name, OmnidirectionalLens2D ol, OLPointType pt)
 	{
-		super(name, ol, pt);
-		
-		initPopup();
+		this(name, new Vector2D(0, 0), 5, new BasicStroke(1), Color.gray, true, ol, pt);
 	}
 	
 	

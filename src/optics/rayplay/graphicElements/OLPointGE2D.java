@@ -10,6 +10,7 @@ import optics.rayplay.core.CoordinateConverterXY2IJ;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.opticalComponents.OmnidirectionalLens2D;
 import optics.rayplay.opticalComponents.OmnidirectionalLens2D.OLPointType;
+import optics.rayplay.util.DoubleFormatter;
 
 /**
  * A point in an omnidirectional lens that is moveable freely.
@@ -73,7 +74,7 @@ public class OLPointGE2D extends PointGE2D
 		case P3:
 			g.setColor(Color.GRAY);
 			g.drawString(
-					getName() + " (h =" + RayPlay2DPanel.format(ol.getH()) + ")", 
+					getName() + " (h =" + DoubleFormatter.format(ol.getH()) + ")", 
 					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 					);
 			break;

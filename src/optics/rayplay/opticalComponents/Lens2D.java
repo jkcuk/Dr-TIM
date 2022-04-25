@@ -13,6 +13,7 @@ import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Bijection2D;
 import optics.rayplay.geometry2D.Geometry2D;
 import optics.rayplay.graphicElements.LineSegmentGE2D;
+import optics.rayplay.util.DoubleFormatter;
 
 public class Lens2D extends LineSegmentGE2D 
 implements OpticalComponent2D, Bijection2D
@@ -236,7 +237,7 @@ implements OpticalComponent2D, Bijection2D
 	{
 		g.setColor(Color.GRAY);
 		g.drawString(
-				"Lens "+getName()+", f = "+RayPlay2DPanel.format(getFocalLength()), 
+				"Lens "+getName()+", f = "+DoubleFormatter.format(getFocalLength()), 
 				mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 				);
 	}
