@@ -97,14 +97,14 @@ public class RayBundleStartPoint2D extends PointGE2D
 //		}
 //	}
 	
-	private RayPlay2DPanel panelWithPopup;
+	private RayPlay2DPanel panelAssociatedWithPopup;
 	
 	@Override
 	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
 	{
 		if(mouseNear && e.isPopupTrigger())
 		{
-			panelWithPopup = rpp;
+			panelAssociatedWithPopup = rpp;
 			
 			updatePopup();
 
@@ -127,7 +127,8 @@ public class RayBundleStartPoint2D extends PointGE2D
 	JMenuItem
 		forwardRaysOnlyMenuItem,
 		// rayBundleMenuItem,
-		rayBundleIsotropicMenuItem;
+		rayBundleIsotropicMenuItem,
+		darkenExhaustedRaysMenuItem;
 	
 	private void initPopup()
 	{
@@ -137,7 +138,7 @@ public class RayBundleStartPoint2D extends PointGE2D
 		forwardRaysOnlyMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				ls.setForwardRaysOnly(!ls.isForwardRaysOnly());
-				panelWithPopup.repaint();
+				panelAssociatedWithPopup.repaint();
 			}
 		});
 		popup.add(forwardRaysOnlyMenuItem);
@@ -160,7 +161,7 @@ public class RayBundleStartPoint2D extends PointGE2D
 		rayBundleIsotropicMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				ls.setRayBundleIsotropic(!ls.isRayBundleIsotropic());
-				panelWithPopup.repaint();
+				panelAssociatedWithPopup.repaint();
 			}
 		});
 		popup.add(rayBundleIsotropicMenuItem);
@@ -193,7 +194,7 @@ public class RayBundleStartPoint2D extends PointGE2D
 //		});
 //		popup.add(halfNoOfRaysMenuItem);
 		
-		int rayNumbers[] = {1, 2, 4, 8, 16, 32, 64, 128};
+		int rayNumbers[] = {1, 2, 4, 8, 16, 32, 64, 128, 1024};
 		for(int rayNumber:rayNumbers)
 		{
 			JMenuItem rayNumberMenuItem = new JMenuItem(rayNumber + ((rayNumber == 1)?" ray":" rays"));
@@ -203,7 +204,7 @@ public class RayBundleStartPoint2D extends PointGE2D
 				public void actionPerformed(ActionEvent e) {
 					ls.setRayBundleNoOfRays(rayNumber);
 					ls.setRayBundle(rayNumber > 1);
-					panelWithPopup.repaint();
+					panelAssociatedWithPopup.repaint();
 				}
 			});
 			popup.add(rayNumberMenuItem);
@@ -221,7 +222,7 @@ public class RayBundleStartPoint2D extends PointGE2D
 	    	colourMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					ls.setColour(c);
-					panelWithPopup.repaint();
+					panelAssociatedWithPopup.repaint();
 				}
 			});
 			popup.add(colourMenuItem);
@@ -231,14 +232,30 @@ public class RayBundleStartPoint2D extends PointGE2D
 		// Separator
 	    popup.addSeparator();
 	    
+	    darkenExhaustedRaysMenuItem = new JMenuItem("-");	// "Switch darkening of exhausted rays "+(ls.isDarkenExhaustedRays()?"off":"on"));
+	    darkenExhaustedRaysMenuItem.setEnabled(true);
+	    darkenExhaustedRaysMenuItem.getAccessibleContext().setAccessibleDescription("Toggle darken exhausted rays");
+	    darkenExhaustedRaysMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ls.setDarkenExhaustedRays(!ls.isDarkenExhaustedRays());
+				// darkenExhaustedRaysMenuItem.setText("Switch darkening of exhausted rays "+(ls.isDarkenExhaustedRays()?"off":"on"));
+				panelAssociatedWithPopup.repaint();
+			}
+		});
+		popup.add(darkenExhaustedRaysMenuItem);
+
+	    
+		// Separator
+	    popup.addSeparator();
+	    
 	    JMenuItem deleteRayBundleMenuItem = new JMenuItem("Delete light source");
 		deleteRayBundleMenuItem.setEnabled(true);
 		deleteRayBundleMenuItem.getAccessibleContext().setAccessibleDescription("Delete light source");
 		deleteRayBundleMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				panelWithPopup.graphicElements.removeAll(ls.getGraphicElements());
-				panelWithPopup.lss.remove(ls);
-				panelWithPopup.repaint();
+				panelAssociatedWithPopup.graphicElements.removeAll(ls.getGraphicElements());
+				panelAssociatedWithPopup.lss.remove(ls);
+				panelAssociatedWithPopup.repaint();
 			}
 		});
 		popup.add(deleteRayBundleMenuItem);
@@ -256,5 +273,7 @@ public class RayBundleStartPoint2D extends PointGE2D
 		
 		rayBundleIsotropicMenuItem.setText(ls.isRayBundleIsotropic()?"Make ray bundle directional":"Make ray bundle isotropic");
 		rayBundleIsotropicMenuItem.setEnabled(ls.isRayBundle());
+		
+		darkenExhaustedRaysMenuItem.setText("Switch darkening of exhausted rays "+(ls.isDarkenExhaustedRays()?"off":"on"));
 	}	
 }

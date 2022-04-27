@@ -52,6 +52,8 @@ public class LightSource2D extends GraphicElementCollection2D
 	private int rayBundleNoOfRays;
 	
 	private Colour colour;
+	
+	private boolean darkenExhaustedRays;
 
 //	private Stroke pointStroke;
 //	private Color pointColor;
@@ -93,6 +95,7 @@ public class LightSource2D extends GraphicElementCollection2D
 		this.colour = colour;
 //		this.pointStroke = pointStroke;
 //		this.pointColor = pointColor;
+		this.darkenExhaustedRays = true;
 
 		Stroke pointStroke = new BasicStroke(1);
 		Color pointColor = Color.gray;
@@ -212,7 +215,13 @@ public class LightSource2D extends GraphicElementCollection2D
 		this.colour = colour;
 	}
 
+	public boolean isDarkenExhaustedRays() {
+		return darkenExhaustedRays;
+	}
 
+	public void setDarkenExhaustedRays(boolean darkenExhaustedRays) {
+		this.darkenExhaustedRays = darkenExhaustedRays;
+	}
 
 	public ArrayList<Ray2D> getRays() {
 		return rays;
@@ -302,7 +311,7 @@ public class LightSource2D extends GraphicElementCollection2D
         for(Ray2D ray:rays)
 		{
 			ArrayList<Vector2D> t = ray.getTrajectory();
-			if(ray.getTraceLevel() == 0)
+			if(darkenExhaustedRays && (ray.getTraceLevel() == 0))
 				g2.setColor(
 						colour.getDarkerColor()
 						// Color.BLACK
@@ -321,7 +330,7 @@ public class LightSource2D extends GraphicElementCollection2D
 		for(Ray2D ray:rays)
 		{
 			ArrayList<Vector2D> t = ray.getTrajectory();
-			if(ray.getTraceLevel() == 0)
+			if(darkenExhaustedRays && (ray.getTraceLevel() == 0))
 			{
 				// assumed to be a closed-loop trajectory
 				SVGWriter.writeSVGPolyLine(t, rpp, colour.getSVGNameOfDarkerColour(), 1, "");
