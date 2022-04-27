@@ -393,6 +393,10 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 
 	@Override
 	public void mousePressed(MouseEvent e) {
+		maybeShowPopup(e);
+	}
+	
+	private void maybeShowPopup(MouseEvent e) {
 		boolean eventHandled = false;
 
 		// run each GraphicElement2D's mousePressed method...
@@ -427,7 +431,9 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {
+		maybeShowPopup(e);
+	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {}
