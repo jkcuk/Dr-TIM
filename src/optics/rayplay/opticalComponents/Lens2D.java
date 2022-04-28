@@ -12,23 +12,25 @@ import optics.rayplay.core.RayComponentIntersection2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Bijection2D;
 import optics.rayplay.geometry2D.Geometry2D;
+import optics.rayplay.geometry2D.Line2D;
 import optics.rayplay.graphicElements.LineSegmentGE2D;
+import optics.rayplay.util.Colour;
 import optics.rayplay.util.DoubleFormatter;
 
 public class Lens2D extends LineSegmentGE2D 
 implements OpticalComponent2D, Bijection2D
 {
 	
-	private String name;
+	protected String name;
 	
 	/**
 	 * the principal point;
 	 * this should lie on the lens, i.e. on the straight line between the end points;
 	 * strange things will happen if it doesn't
 	 */
-	private Vector2D principalPoint;
+	protected Vector2D principalPoint;
 
-	private double focalLength;
+	protected double focalLength;
 	
 	/**
 	 * for use by the Bijection2D methods: a vector pointing from inside to outside space
@@ -46,7 +48,7 @@ implements OpticalComponent2D, Bijection2D
 			Vector2D endPoint2
 		)
 	{
-		super(endPoint1, endPoint2, new BasicStroke(3), Color.CYAN);
+		super(endPoint1, endPoint2, new BasicStroke(3), Colour.CYAN, 3, "opacity=\"0.7\"");
 		
 		this.name = name;
 		this.principalPoint = principalPoint;
@@ -192,6 +194,19 @@ implements OpticalComponent2D, Bijection2D
 		
 		// calculate the new ray direction
 		r.startNextSegment(i.p, Vector2D.difference(p, i.p).getProductWith(Math.signum(focalLength)));
+	}
+	
+	public Line2D getOpticalAxis()
+	{
+		return new Line2D(
+				principalPoint,
+				Vector2D.sum(principalPoint, getNormal(true))
+			);
+	}
+	
+	public Vector2D getFocalPoint()
+	{
+		return Vector2D.sum(principalPoint, getNormal(true).getProductWith(focalLength));
 	}
 
 

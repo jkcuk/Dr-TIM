@@ -6,8 +6,10 @@ import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.io.PrintStream;
 import java.util.ArrayList;
 
+import math.MyMath;
 import math.Vector2D;
 import optics.rayplay.graphicElements.RaysCharacteristicsPoint2D;
 import optics.rayplay.util.Colour;
@@ -15,7 +17,7 @@ import optics.rayplay.util.SVGWriter;
 import optics.rayplay.graphicElements.RayBundleStartPoint2D;
 
 /**
- * A point source of a single light ray or a ray bundle
+ * A source of light ray(s)
  * @author johannes
  */
 public class LightSource2D extends GraphicElementCollection2D
@@ -344,34 +346,17 @@ public class LightSource2D extends GraphicElementCollection2D
 
 	}
 
+	public void writeParameters(PrintStream printStream)
+	{
+		printStream.println("\nLight-ray source \""+name+"\"\n");
 
+		printStream.println("  rayStartPoint = "+getRayStartPoint());
+		printStream.println("  rayAngle = "+ MyMath.rad2deg(getRayAngle())+" degrees");
+		printStream.println("  rayBundle = "+isRayBundle());
+		printStream.println("  rayBundleIsotropic = "+isRayBundleIsotropic());
+		printStream.println("  rayBundleAngle = "+MyMath.rad2deg(getRayBundleAngle())+" degrees");
+		printStream.println("  rayBundleNoOfRays = "+getRayBundleNoOfRays());
+		printStream.println("  forwardRaysOnly = "+isForwardRaysOnly());
+	}
 
-//	public void drawRays(RayPlay2DPanel rpp, Graphics2D g2)
-//	{
-//		// draw a ray
-//		g2.setStroke(new BasicStroke(1));
-//
-//		// make everything that gets drawn transparent
-//		Composite c = g2.getComposite();
-//		AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
-//        g2.setComposite(alcom);
-//
-//		// drawLine(rayStartPoint, Vector2D.sum(rayStartPoint, rayDirection), g2);
-//		// g2.drawRect(200, 200, 200, 200);
-//		// g2.fillOval(x2i(point[RAY_START_POINT].x)-5, y2j(point[RAY_START_POINT].y)-5, 11, 11);
-//		// g2.drawOval(currentX-2, currentY-2, 5, 5);
-//
-//		for(Ray2D ray:rays)
-//		{
-//			ArrayList<Vector2D> t = ray.getTrajectory();
-//			if(t.size() > 20) g2.setColor(Color.BLACK);
-//			else g2.setColor(Color.RED);
-//			for(int p=1; p<t.size(); p++)
-//				rpp.drawLine(t.get(p-1), t.get(p), g2);
-//		}
-//		
-//		// set transparency to whatever it was previously
-//		g2.setComposite(c);
-//	}
-	
 }

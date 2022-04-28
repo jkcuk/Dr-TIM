@@ -12,8 +12,10 @@ import javax.swing.JPopupMenu;
 
 import math.Vector2D;
 import optics.rayplay.core.RayPlay2DPanel;
-import optics.rayplay.opticalComponents.OmnidirectionalLens2D;
-import optics.rayplay.opticalComponents.OmnidirectionalLens2D.OLPointType;
+import optics.rayplay.interactiveOpticalComponents.Lens2DIOC;
+import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D;
+import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D.OLLensType;
+import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D.OLPointType;
 
 public class OLP0GE2D extends OLPointGE2D {
 
@@ -65,7 +67,8 @@ public class OLP0GE2D extends OLPointGE2D {
 	
 	// menu items
 	JMenuItem
-		deleteOLMenuItem;
+		deleteOLMenuItem,
+		turnIntoIndividualLensesMenuItem;
 
 	private void initPopup()
 	{
@@ -75,13 +78,39 @@ public class OLP0GE2D extends OLPointGE2D {
 		deleteOLMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				panelWithPopup.graphicElements.removeAll(ol.getGraphicElements());
-				panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
-				panelWithPopup.ols.remove(ol);
+				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
+				panelWithPopup.iocs.remove(ol);
 				panelWithPopup.repaint();
 			}
 		});
 		popup.add(deleteOLMenuItem);
-	}
+		
+		// Separator
+	    popup.addSeparator();
+
+		turnIntoIndividualLensesMenuItem = new JMenuItem("Turn omnidirectional lens into individual lenses");
+		turnIntoIndividualLensesMenuItem.setEnabled(true);
+		turnIntoIndividualLensesMenuItem.getAccessibleContext().setAccessibleDescription("Turn omnidirectional lens into individual lenses");
+		turnIntoIndividualLensesMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// remove the omnidirectional lens
+				panelWithPopup.graphicElements.removeAll(ol.getGraphicElements());
+				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
+				panelWithPopup.iocs.remove(ol);
+				
+				// and add all the lenses
+				for(OLLensType olLensType:OLLensType.values())
+				{
+					Lens2DIOC lens = new Lens2DIOC(ol.getLens(olLensType));
+					panelWithPopup.iocs.add(lens);
+					panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
+				}
+				
+				panelWithPopup.repaint();
+			}
+		});
+		popup.add(turnIntoIndividualLensesMenuItem);
+}
 	
 	private void updatePopup()
 	{

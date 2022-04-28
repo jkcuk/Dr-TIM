@@ -214,7 +214,7 @@ public class RayBundleStartPoint2D extends PointGE2D
 		// Separator
 	    popup.addSeparator();
 
-	    for(Colour c:Colour.values())
+	    for(Colour c:Colour.RAY_COLOURS)
 	    {
 	    	JMenuItem colourMenuItem = new JMenuItem(c.getName());
 	    	colourMenuItem.setEnabled(true);

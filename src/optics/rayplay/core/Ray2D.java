@@ -126,4 +126,70 @@ public class Ray2D {
 		startNextSegment(newStartingPoint, direction);
 	}
 	
+	/**
+	 * @param opticalComponents
+	 * @param lastIntersectionComponent
+	 * @return	the intersection between this ray and the optical components (but not the lastIntersectionComponent)
+	 */
+	public RayComponentIntersection2D calculateIntersectionWith(ArrayList<OpticalComponent2D> opticalComponents, OpticalComponent2D lastIntersectionComponent)
+	{
+		RayComponentIntersection2D closestIntersection = null;
+		double closestIntersectionDistance = Double.POSITIVE_INFINITY;
+
+		// go through all the optical components that make up this omnidirectional lens
+		for(OpticalComponent2D o:opticalComponents)
+		{
+			// was the last intersection with the current optical component?
+			if(o != lastIntersectionComponent)
+			{
+				// the last intersection was with a different component
+
+				// see if there is an intersection with the current optical component
+				RayComponentIntersection2D i = o.calculateIntersection(this, true, lastIntersectionComponent);
+				if(i != null)
+				{
+					// there is an intersection; is it closer than the current closest intersection?
+
+					double d = Vector2D.distance(getStartingPoint(), i.p);
+					if(d < closestIntersectionDistance)
+					{
+						// the intersection is closer than the current closest intersection
+						closestIntersection = i;
+						closestIntersectionDistance = d;
+					}
+				}
+			}
+		}
+		return closestIntersection;
+	}
+
+	/**
+	 * Trace the ray through the optical components
+	 * @param opticalComponents
+	 */
+	public void traceThrough(ArrayList<OpticalComponent2D> opticalComponents)
+	{
+		// keep a note of the last intersected component
+		OpticalComponent2D lastIntersectionComponent = null;
+		
+		while(traceLevel > 0)
+		{
+			// find the closest intersection between the ray and the components
+			RayComponentIntersection2D i = calculateIntersectionWith(opticalComponents, lastIntersectionComponent);
+			
+			if(i == null)
+			{
+				// there is no intersection with any of the components
+				advance(10);
+				return;
+			}
+			else
+			{
+				// there is an intersection
+				lastIntersectionComponent = i.o;
+				i.o.stepThroughComponent(this, i);
+			}
+		}
+	}
+
 }

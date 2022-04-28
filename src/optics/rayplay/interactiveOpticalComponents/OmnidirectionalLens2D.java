@@ -1,19 +1,19 @@
-package optics.rayplay.opticalComponents;
+package optics.rayplay.interactiveOpticalComponents;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import math.Vector2D;
 import optics.rayplay.core.GraphicElement2D;
+import optics.rayplay.core.InteractiveOpticalComponent2D;
 import optics.rayplay.core.OpticalComponent2D;
-import optics.rayplay.core.OpticalComponentCollection2D;
-import optics.rayplay.core.Ray2D;
-import optics.rayplay.core.RayComponentIntersection2D;
 import optics.rayplay.geometry2D.Line2D;
 import optics.rayplay.graphicElements.OLP0GE2D;
 import optics.rayplay.graphicElements.OLPointGE2D;
 import optics.rayplay.graphicElements.OLPointMoveableOnLineGE2D;
 import optics.rayplay.graphicElements.PointGE2D;
+import optics.rayplay.opticalComponents.Lens2D;
 
 /**
  * An ideal-lens cloak / omnidirectional lens.
@@ -24,58 +24,62 @@ import optics.rayplay.graphicElements.PointGE2D;
  * 
  * @author johannes
  */
-public class OmnidirectionalLens2D extends OpticalComponentCollection2D
-// implements GraphicElement2D
+public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 {
+	private String name;
+
 	// the parameters -- see [1] for nomenclature
-	
+
 	/**
 	 * the focal length of lens D (the base lens)
 	 */
 	private double fD;
-	
+
 	/**
 	 * the radius of lens D (the base lens)
 	 */
 	private double rD;
-	
+
 	/**
 	 * height of lower inner vertex above lens D
 	 */
 	private double h1;
-	
+
 	/**
 	 * height of upper inner vertex above lens D
 	 */
 	private double h2;
-	
+
 	/**
 	 * height of top vertex above lens D
 	 */
 	private double h;
-	
+
 	/**
 	 * the principal point of lens D (the base lens), P_D
 	 */
 	private Vector2D pD;
-	
+
 	/**
 	 * unit vector in the plane of lens D, pointing in the direction from P_D to V_1
 	 */
 	private Vector2D dHat;
-	
+
 	/**
 	 * unit vector in the direction of the central axis, pointing from P_D to the other principal points
 	 */
 	private Vector2D cHat;
 
-	
+
+
 	// internal variables
-	
+
+	private ArrayList<OpticalComponent2D> opticalComponents = new ArrayList<OpticalComponent2D>();
+
 	/**
 	 * list of graphic elements
 	 */
-	private ArrayList<GraphicElement2D> graphicElements;
+	private ArrayList<GraphicElement2D> graphicElements = new ArrayList<GraphicElement2D>();
 
 	/**
 	 * The lens types.
@@ -93,23 +97,23 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 		D("D"),
 		E("E"),
 		F("F");
-		
+
 		public final String name;
-		
+
 		OLLensType(String name) {this.name = name;}
 	}
-	
+
 	/**
 	 * the lenses
 	 */
 	// private Lens2D lens[];
 	private HashMap<OLLensType, Lens2D> lenses;
-	
+
 	public Lens2D getLens(OLLensType type)
 	{
 		return lenses.get(type);
 	}
-	
+
 	/**
 	 * The point/vertex names.
 	 * For nomenclature see Fig. 4 in [1]
@@ -124,20 +128,20 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 		V1("V1"),
 		V2("V2"),
 		FD("Focal point of lens D");
-		
+
 		public final String name;
-		
+
 		OLPointType(String name) {this.name = name;}
 	}
-	
+
 	private HashMap<OLPointType, PointGE2D> points;
-	
+
 	// private Vector2D point[];
-	
-	
-	
+
+
+
 	// constructor
-	
+
 	public OmnidirectionalLens2D(
 			String name,
 			double fD,
@@ -148,9 +152,9 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 			Vector2D pD,
 			Vector2D dHat,
 			Vector2D cHat
-		)
+			)
 	{
-		super(name);
+		this.name = name;
 		this.fD = fD;
 		this.rD = rD;
 		this.h1 = h1;
@@ -159,22 +163,19 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 		this.pD = pD;
 		this.dHat = dHat;
 		this.cHat = cHat;
-		
-		// create the ArrayLists
-		graphicElements = new ArrayList<GraphicElement2D>();
-		
+
 		// create the points, ...
 		createPoints();
-		
+
 		// ..., the lenses, ...
 		createLenses();
-		
+
 		// ... and set their parameters
 		calculatePointParameters();
 		calculateLensParameters();
 	}
-	
-	
+
+
 	// setters & getters
 
 	public double getfD() {
@@ -240,44 +241,68 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 	public void setcHat(Vector2D c) {
 		this.cHat = c.getNormalised();
 	}
-	
-	public ArrayList<GraphicElement2D> getGraphicElements() {
-		return graphicElements;
-	}
-
-	public void setGraphicElements(ArrayList<GraphicElement2D> graphicElements) {
-		this.graphicElements = graphicElements;
-	}
-
-//	public Lens2D[] getLens() {
-//		return lens;
-//	}
-//
-//	public void setLens(Lens2D[] lens) {
-//		this.lens = lens;
-//	}
-
-//	public PointGE2D[] getPoint() {
-//		return point;
-//	}
-//
-//	public void setPoint(PointGE2D[] point) {
-//		this.point = point;
-//	}
 
 	public PointGE2D getPoint(OLPointType type)
 	{
 		return points.get(type);
 	}
-	
-	
-	// the meat
+
+
+
+
+	//
+	// InteractiveOpticalComponent2D methods
+	//
+
+	@Override
+	public String getName() {
+		return null;
+	}
+
+	@Override
+	public ArrayList<OpticalComponent2D> getOpticalComponents()
+	{
+		return opticalComponents;
+	}
+
+	@Override
+	public ArrayList<GraphicElement2D> getGraphicElements()
+	{
+		return graphicElements;
+	}
+
+	@Override
+	public void writeParameters(PrintStream printStream)
+	{
+		printStream.println("\nOmnidirectional lens \""+ name +"\"\n");
+
+		printStream.println("  fD = "+fD);
+		printStream.println("  baseLensRadius = "+rD);
+		printStream.println("  h1 = "+h1);
+		printStream.println("  h2 = "+h2);
+		printStream.println("  h = "+h);
+		printStream.println("  pD = "+pD);
+		printStream.println("  dHat = "+dHat);
+		printStream.println("  cHat = "+cHat);
 		
+		printStream.println("  Lens focal lengths:");
+		printStream.println("  	 fA = "+getLens(OLLensType.A1).getFocalLength());
+		printStream.println("    fB = "+getLens(OLLensType.B1).getFocalLength());
+		printStream.println("    fC = "+getLens(OLLensType.C1).getFocalLength());
+		printStream.println("    fD = "+getLens(OLLensType.D).getFocalLength());
+		printStream.println("    fE = "+getLens(OLLensType.E).getFocalLength());
+		printStream.println("    fF = "+getLens(OLLensType.F).getFocalLength());
+
+	}
+	
+
+	// the meat
+
 	private void createPoints()
 	{
 		// initialise the array of points
 		points = new HashMap<OLPointType, PointGE2D>();
-		
+
 		// and add them all to the list graphicElements
 		for(OLPointType olPointType : OLPointType.values())
 		{
@@ -304,27 +329,27 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 			}
 		}
 	}
-	
+
 	private void createLenses()
 	{
 		// initialise the array of lenses
 		// lens = new Lens2D[OLLensType.values().length];
 		lenses = new HashMap<OLLensType, Lens2D>();
-		
+
 		for(OLLensType olLensType : OLLensType.values())
 		{
 			// create the lens, ...
 			Lens2D l = new Lens2D(olLensType.toString());
-			
+
 			// ... add it to the array of lenses, ...
 			lenses.put(olLensType, l);
-			
+
 			// ... and add it to the list of optical components and the list of graphic elements
 			opticalComponents.add(l);
 			graphicElements.add(l);
 		}
 	}
-	
+
 	public void calculatePointParameters()
 	{		
 		// all the points that can move on a line move on one of two lines
@@ -336,7 +361,7 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 		points.get(OLPointType.V2).setCoordinatesToThoseOf(Vector2D.sum(pD, dHat.getProductWith( rD)));
 		((OLPointMoveableOnLineGE2D)points.get(OLPointType.V1)).setLine(lineOfLensD);
 		((OLPointMoveableOnLineGE2D)points.get(OLPointType.V2)).setLine(lineOfLensD);
-		
+
 		// the lower inner vertex
 		points.get(OLPointType.P1).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(h1)));
 		((OLPointMoveableOnLineGE2D)points.get(OLPointType.P1)).setLine(lineThroughPrincipalPoints);
@@ -346,20 +371,20 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 		points.get(OLPointType.P2).setCoordinatesToThoseOf(
 				// new Vector2D(0.2, 0.4)
 				Vector2D.sum(pD, cHat.getProductWith(h2))
-			);
+				);
 		((OLPointMoveableOnLineGE2D)points.get(OLPointType.P2)).setLine(lineThroughPrincipalPoints);
 
 		// the top vertex
 		points.get(OLPointType.P3).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(h)));
-		
+
 		// the principal point of lens D
 		points.get(OLPointType.P0).setCoordinatesToThoseOf(pD);
-		
+
 		// the (inside) focal point of lens D
 		points.get(OLPointType.FD).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(fD)));
 		((OLPointMoveableOnLineGE2D)points.get(OLPointType.FD)).setLine(lineThroughPrincipalPoints);
 	}
-		
+
 	public void calculateLensParameters()
 	{
 		// calculate the focal lengths from fD and r, h1, h2, h -- see AllLoopTheorems 2D.nb
@@ -369,7 +394,7 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 		double fC = ((fD*h - (fD + h)*h1)*(h1 - h2)*rD)/(h*h2*Math.sqrt(h1*h1 + r2));
 		double fE = ((fD*h - (fD + h)*h1)*(h1 - h2)*rD)/(2*h*h1*h2);
 		double fF = ((fD*h - (fD + h)*h1)*(h  - h2)*rD)/(2*h*h1*h2);
-		
+
 		// lenses A
 		lenses.get(OLLensType.A1).setEndPoints(points.get(OLPointType.V1).getPosition(), points.get(OLPointType.P3).getPosition());
 		lenses.get(OLLensType.A1).setPrincipalPoint(points.get(OLPointType.P3).getPosition());
@@ -378,7 +403,7 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 		lenses.get(OLLensType.A2).setEndPoints(points.get(OLPointType.V2).getPosition(), points.get(OLPointType.P3).getPosition());
 		lenses.get(OLLensType.A2).setPrincipalPoint(points.get(OLPointType.P3).getPosition());
 		lenses.get(OLLensType.A2).setFocalLength(fA);
-		
+
 		// lenses B
 		lenses.get(OLLensType.B1).setEndPoints(points.get(OLPointType.V1).getPosition(), points.get(OLPointType.P2).getPosition());
 		lenses.get(OLLensType.B1).setPrincipalPoint(points.get(OLPointType.P2).getPosition());
@@ -401,7 +426,7 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 		lenses.get(OLLensType.D).setEndPoints(points.get(OLPointType.V1).getPosition(), points.get(OLPointType.V2).getPosition());
 		lenses.get(OLLensType.D).setPrincipalPoint(points.get(OLPointType.P0).getPosition());
 		lenses.get(OLLensType.D).setFocalLength(fD);
-		
+
 		// lens E
 		lenses.get(OLLensType.E).setEndPoints(points.get(OLPointType.P1).getPosition(), points.get(OLPointType.P2).getPosition());
 		lenses.get(OLLensType.E).setPrincipalPoint(points.get(OLPointType.P1).getPosition());
@@ -414,42 +439,43 @@ public class OmnidirectionalLens2D extends OpticalComponentCollection2D
 	}
 
 
+
+	//	//
+	//	// OpticalComponent2D methods
+	//	//
 	//
-	// OpticalComponent2D methods
+	//	@Override
+	//	public RayComponentIntersection2D calculateIntersection(Ray2D r, boolean forwardOnly, OpticalComponent2D lastIntersectionComponent)
+	//	{
+	//		RayComponentIntersection2D closestIntersection = null;
+	//		double closestIntersectionDistance = Double.POSITIVE_INFINITY;
 	//
+	//		// go through all the optical components that make up this omnidirectional lens
+	//		for(OpticalComponent2D o:opticalComponents)
+	//		{
+	//			// was the last intersection with the current optical component?
+	//			if(o != lastIntersectionComponent)
+	//			{
+	//				// the last intersection was with a different component
+	//
+	//				// see if there is an intersection with the current optical component
+	//				RayComponentIntersection2D i = o.calculateIntersection(r, true, lastIntersectionComponent);
+	//				if(i != null)
+	//				{
+	//					// there is an intersection; is it closer than the current closest intersection?
+	//
+	//					double d = Vector2D.distance(r.getStartingPoint(), i.p);
+	//					if(d < closestIntersectionDistance)
+	//					{
+	//						// the intersection is closer than the current closest intersection
+	//						closestIntersection = i;
+	//						closestIntersectionDistance = d;
+	//					}
+	//				}
+	//			}
+	//		}
+	//		return closestIntersection;
+	//	}
 
-	@Override
-	public RayComponentIntersection2D calculateIntersection(Ray2D r, boolean forwardOnly, OpticalComponent2D lastIntersectionComponent)
-	{
-		RayComponentIntersection2D closestIntersection = null;
-		double closestIntersectionDistance = Double.POSITIVE_INFINITY;
 
-		// go through all the optical components that make up this omnidirectional lens
-		for(OpticalComponent2D o:opticalComponents)
-		{
-			// was the last intersection with the current optical component?
-			if(o != lastIntersectionComponent)
-			{
-				// the last intersection was with a different component
-
-				// see if there is an intersection with the current optical component
-				RayComponentIntersection2D i = o.calculateIntersection(r, true, lastIntersectionComponent);
-				if(i != null)
-				{
-					// there is an intersection; is it closer than the current closest intersection?
-
-					double d = Vector2D.distance(r.getStartingPoint(), i.p);
-					if(d < closestIntersectionDistance)
-					{
-						// the intersection is closer than the current closest intersection
-						closestIntersection = i;
-						closestIntersectionDistance = d;
-					}
-				}
-			}
-		}
-		return closestIntersection;
-	}
-	
-	
 }

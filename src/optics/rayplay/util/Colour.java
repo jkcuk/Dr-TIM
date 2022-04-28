@@ -6,8 +6,10 @@ public enum Colour {
 		RED("Red", "red", Color.RED),
 		GREEN("Green", "green", Color.GREEN),
 		BLUE("Blue", "blue", Color.BLUE),
-		ORANGE("Orange", "orange", Color.ORANGE);
-		// CYAN("cyan", Color.CYAN);
+		ORANGE("Orange", "orange", Color.ORANGE),
+		CYAN("Cyan", "cyan", Color.CYAN);
+	
+		public static Colour RAY_COLOURS[] = {RED, GREEN, BLUE, ORANGE};
 		
 		private final String name;
 		private final String svgName;

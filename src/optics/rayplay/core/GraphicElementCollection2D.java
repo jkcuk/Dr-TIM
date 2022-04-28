@@ -8,7 +8,7 @@ import java.util.ArrayList;
  */
 public class GraphicElementCollection2D
 {
-	private String name;
+	protected String name;
 	
 	protected ArrayList<GraphicElement2D> graphicElements;
 	

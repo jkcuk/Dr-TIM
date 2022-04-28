@@ -162,6 +162,10 @@ public class PointGE2D implements GraphicElement2D
 		return false;
 	}
 
+	@Override
+	public void writeSVGCode(RayPlay2DPanel rpp) {
+	}
+
 //	public void addGraphicElement2DEventHandler(GraphicElement2DEventHandler h)
 //	{
 //		graphicElement2DEventHandlers.add(h);

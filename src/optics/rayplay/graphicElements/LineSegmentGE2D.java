@@ -1,6 +1,5 @@
 package optics.rayplay.graphicElements;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.event.MouseEvent;
@@ -11,18 +10,24 @@ import optics.rayplay.core.GraphicElement2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
 import optics.rayplay.geometry2D.LineSegment2D;
+import optics.rayplay.util.Colour;
+import optics.rayplay.util.SVGWriter;
 
 public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicElement2D
 {
 	private Stroke stroke;
-	private Color color;
+	private Colour colour;
+	private String svgStyle;
+	private int svgLineThickness;
 	
-	public LineSegmentGE2D(Vector2D a, Vector2D b, Stroke stroke, Color color)
+	public LineSegmentGE2D(Vector2D a, Vector2D b, Stroke stroke, Colour colour, int svgLineThickness, String svgStyle)
 	{
 		super(a, b);
 		
 		this.stroke = stroke;
-		this.color = color;
+		this.colour = colour;
+		this.svgLineThickness = svgLineThickness;
+		this.svgStyle = svgStyle;
 	}
 
 	@Override
@@ -49,13 +54,18 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 		// by default, just ignore the mouse; override to change this
 
 		g.setStroke(stroke);
-		g.setColor(color);
+		g.setColor(colour.getColor());
 		p.drawLine(a, b, g);
 	}
 	
 	@Override
 	public void drawOnTop(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
 	{}
+	
+	public void writeSVGCode(RayPlay2DPanel rpp)
+	{
+		SVGWriter.writeSVGLine(a, b, rpp, colour.getSVGName(), svgLineThickness, svgStyle);
+	}
 	
 	@Override
 	public void mouseDragged(CoordinateConverterXY2IJ c, boolean mouseNear, int mouseI, int mouseJ)

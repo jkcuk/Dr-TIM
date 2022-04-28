@@ -12,6 +12,9 @@ public class Vector2D implements Serializable
 {
 	private static final long serialVersionUID = 4586744457207191051L;
 	
+	public static final Vector2D X = new Vector2D(1, 0);
+	public static final Vector2D Y = new Vector2D(0, 1);
+	
 	/**
 	 * The coordinates of this Vector2D
 	 */

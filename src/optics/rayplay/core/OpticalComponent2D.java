@@ -1,35 +1,30 @@
 package optics.rayplay.core;
 
-import java.awt.Graphics2D;
-
+/**
+ * An optical component.
+ * This interface makes available the methods that enable tracing of rays through the component.
+ * 
+ * If the component can also be drawn on the screen, then it also needs to implement the GraphicElement2D interface.
+ * 
+ * @author johannes
+ * @see optics.rayplay.core.GraphicElement2D
+ */
 public interface OpticalComponent2D {
 	
 	public String getName();
 
 	/**
-	 * Draw the component.
-	 * It might look different if the mouse is near it.
-	 * By default, just draws, ignoring the mouse.  Override to change this.
-	 * @param p
-	 * @param g
-	 * @param mouseNear
-	 * @param mouseI
-	 * @param mouseJ
-	 */
-	public void draw(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ);
-
-	/**
 	 * @param r
 	 * @param forwardOnly
 	 * @param lastIntersectionComponent	the optical component that was previously intersected (and which might have to be avoided)
-	 * @return	the intersection between the ray r and this component
+	 * @return	the intersection between the ray r and this component (or a sub-component, in case this optical component is a collection)
 	 */
 	public RayComponentIntersection2D calculateIntersection(Ray2D r, boolean forwardOnly, OpticalComponent2D lastIntersectionComponent);
 	
 	/**
 	 * Step the ray through one component.
-	 * If the optical component is a simple component such as a lens, then it simply passes through it.
-	 * If the optical component is a collection of simple components, then it passes through one simple component.
+	 * If the optical component is a (simple) component such as a lens, then it simply passes through it.
+	 * If the optical component is a collection of components, then it passes through one of the simple components.
 	 * Should start a new ray segment from the intersection point.
 	 * @param r
 	 * @param intersectionPoint

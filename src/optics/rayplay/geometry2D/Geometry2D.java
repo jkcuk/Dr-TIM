@@ -157,5 +157,37 @@ public class Geometry2D {
 		return null;
 	}
 	
-
+	public static double calculateAzimuthalCoordinate(Vector2D v, Vector2D xHat, Vector2D yHat)
+	{
+		return Math.atan2(
+				Vector2D.scalarProduct(v, yHat),
+				Vector2D.scalarProduct(v, xHat)
+			);
+	}
+	
+	public static double calculateAzimuthalCoordinate(Vector2D v)
+	{
+		return calculateAzimuthalCoordinate(v, Vector2D.X, Vector2D.Y);
+	}
+	
+	public static Vector2D rotate(Vector2D v, double angle)
+	{
+		double c = Math.cos(angle);
+		double s = Math.sin(angle);
+		return new Vector2D(
+				v.x*c - v.y*s,
+				v.x*s + v.y*c
+			);
+	}
+	
+	public static Vector2D rotateAroundPoint(Vector2D v, double angle, Vector2D rotationCentre)
+	{
+		return Vector2D.sum(
+				rotationCentre,
+				Geometry2D.rotate(
+						Vector2D.difference(v, rotationCentre),
+						angle
+					)
+			);
+	}
 }

@@ -21,8 +21,8 @@ import javax.swing.KeyStroke;
 
 import math.MyMath;
 import math.Vector2D;
-import optics.rayplay.opticalComponents.OmnidirectionalLens2D;
-import optics.rayplay.opticalComponents.OmnidirectionalLens2D.OLLensType;
+import optics.rayplay.interactiveOpticalComponents.Lens2DIOC;
+import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D;
 import optics.rayplay.util.Colour;
 import optics.rayplay.util.SVGWriter;
 
@@ -39,14 +39,14 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 	// private static final String NUMBER_OF_RAYS_POINT_NAME = "Point controlling number of rays";
 
 
-	// the omnidirectional lenses
-	public ArrayList<OmnidirectionalLens2D> ols = new ArrayList<OmnidirectionalLens2D>();
+	// the interactive optical components
+	public ArrayList<InteractiveOpticalComponent2D> iocs = new ArrayList<InteractiveOpticalComponent2D>();
 
 	// the light sources
 	public ArrayList<LightSource2D> lss = new ArrayList<LightSource2D>();
 
 	// the optical components
-	public OpticalComponentCollection2D opticalComponents = new OpticalComponentCollection2D("Components");
+	// public OpticalComponentCollection2D opticalComponents = new OpticalComponentCollection2D("Components");
 
 	// the graphic elements;
 	// note that these get drawn in the order in which they appear in the ArrayList
@@ -82,7 +82,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		double h = 1;
 
 		OmnidirectionalLens2D ol = new OmnidirectionalLens2D(
-				"Omnidirectional lens",	// name
+				"Omnidirectional lens 1",	// name
 				0.1*h,	// fD
 				0.5*h,	// rD
 				h/3.,	// h1
@@ -92,13 +92,11 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 				new Vector2D(1, 0),	// dHat
 				new Vector2D(0, 1)	// cHat
 				);
-		ols.add(ol);
-		opticalComponents.addAll(ol.getOpticalComponents());
-		graphicElements.addAll(ol.getGraphicElements());
+		iocs.add(ol);
 
 		// ray / ray-bundle parameters
-		LightSource2D ls = new LightSource2D(
-				"Point ray source",	// name
+		LightSource2D ls1 = new LightSource2D(
+				"Point ray source 1",	// name
 				new Vector2D(-0.5*h, 0),	// raysStartPoint
 				MyMath.deg2rad(0), // centralRayAngle
 				false,	// forwardRaysOnly
@@ -108,8 +106,15 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 				4,	// rayBundleNoOfRays
 				Colour.RED
 				);
-		lss.add(ls);
-		graphicElements.addAll(ls.getGraphicElements());
+		lss.add(ls1);
+		
+		// add to the list of graphic elements the graphic elements associated with the interactive optical components...
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			graphicElements.addAll(ioc.getGraphicElements());
+
+		// ... and with the light sources
+		for(LightSource2D ls:lss)
+			graphicElements.addAll(ls.getGraphicElements());
 
 		xCentre = 0;
 		yCentre = 0;
@@ -148,46 +153,11 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 
 		printStream.println("\n*** Parameters ***");
 
-		int i=1;
-		for(OmnidirectionalLens2D o:ols)
-		{
-			printStream.println("\nOmnidirectional lens "+ i++ +"\n");
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			ioc.writeParameters(printStream);
 
-			printStream.println("  fD = "+o.getfD());
-			printStream.println("  baseLensRadius = "+o.getrD());
-			printStream.println("  h1 = "+o.getH1());
-			printStream.println("  h2 = "+o.getH2());
-			printStream.println("  h = "+o.getH());
-		}
-
-		i = 1;
-		for(LightSource2D l:lss)
-		{
-			printStream.println("\nRay source "+ i++ +"\n");
-
-			printStream.println("  rayStartPoint = "+l.getRayStartPoint());
-			printStream.println("  rayAngle = "+ MyMath.rad2deg(l.getRayAngle())+" degrees");
-			printStream.println("  rayBundle = "+l.isRayBundle());
-			printStream.println("  rayBundleIsotropic = "+l.isRayBundleIsotropic());
-			printStream.println("  rayBundleAngle = "+MyMath.rad2deg(l.getRayBundleAngle())+" degrees");
-			printStream.println("  rayBundleNoOfRays = "+l.getRayBundleNoOfRays());
-			printStream.println("  forwardRaysOnly = "+l.isForwardRaysOnly());
-		}
-
-		printStream.println("\n*** Lens focal lengths ***\n");
-
-		i=1;
-		for(OmnidirectionalLens2D o:ols)
-		{
-			printStream.println("\nOmnidirectional lens "+ i++ +"\n");
-
-			printStream.println("  fA = "+o.getLens(OLLensType.A1).getFocalLength());
-			printStream.println("  fB = "+o.getLens(OLLensType.B1).getFocalLength());
-			printStream.println("  fC = "+o.getLens(OLLensType.C1).getFocalLength());
-			printStream.println("  fD = "+o.getLens(OLLensType.D).getFocalLength());
-			printStream.println("  fE = "+o.getLens(OLLensType.E).getFocalLength());
-			printStream.println("  fF = "+o.getLens(OLLensType.F).getFocalLength());
-		}
+		for(LightSource2D ls:lss)
+			ls.writeParameters(printStream);
 	}
 
 	/**
@@ -228,12 +198,14 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 			for(LightSource2D ls:lss)
 				ls.writeSVGCode(this);
 
-			// draw the omnidirectional lenses
-			for(OmnidirectionalLens2D o:ols)
-			{
-				for(OLLensType type:OLLensType.values())
-					if(o.getLens(type) != null) SVGWriter.writeSVGLine(o.getLens(type).getA(), o.getLens(type).getB(), this, "cyan", 3, "opacity=\"0.7\"");
-			}
+			// draw the interactive optical components
+			for(InteractiveOpticalComponent2D ioc:iocs)
+				for(GraphicElement2D g:ioc.getGraphicElements())
+					g.writeSVGCode(this);
+//			{
+//				for(OLLensType type:OLLensType.values())
+//					if(o.getLens(type) != null) SVGWriter.writeSVGLine(o.getLens(type).getA(), o.getLens(type).getB(), this, "cyan", 3, "opacity=\"0.7\"");
+//			}
 
 			SVGWriter.endSVGFile();
 
@@ -305,20 +277,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		// draw into a Graphics2D (much easier than Graphics)
 		Graphics2D g2 = (Graphics2D)g;
 
-		// initialise all light sources...
-		for(LightSource2D ls:lss)
-		{
-			ls.initialiseRays();
-		}
-
-		// ... and trace the rays from all light sources through the optical components
-		for(LightSource2D ls:lss)
-			for(Ray2D ray:ls.getRays())
-			{
-				opticalComponents.traceThroughComponents(ray);
-			}
-
-		// and draw all the GraphicElements
+		// draw all graphic elements
 		// go through the GraphicElements2D in reverse order so that the one that's drawn last (i.e. on top) is checked first
 		for(int i=graphicElements.size()-1; i>=0; i--)
 			// for(GraphicElement2D g:graphicElements)
@@ -326,6 +285,23 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 			GraphicElement2D ge = graphicElements.get(i);
 			ge.draw(this, g2, graphicElementNearMouse == ge, mouseI, mouseJ);
 		}
+
+		// initialise all light sources, ...
+		for(LightSource2D ls:lss)
+		{
+			ls.initialiseRays();
+		}
+		
+		// ... gather together all the optical components, ...
+		ArrayList<OpticalComponent2D> opticalComponents = new ArrayList<OpticalComponent2D>();
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			opticalComponents.addAll(ioc.getOpticalComponents());
+
+		// ... and trace the rays from all light sources through the optical components
+		for(LightSource2D ls:lss)
+			for(Ray2D ray:ls.getRays())
+				ray.traceThrough(opticalComponents);
+
 
 		// draw rays
 		for(LightSource2D ls:lss)
@@ -522,6 +498,10 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 
 	final JPopupMenu spacePopup = new JPopupMenu();
 	private int popupMenuX, popupMenuY;
+	private int
+		lensNo = 1,
+		omnidirectionalLensNo = 1,
+		raySourceNo = 1;
 
 	// menu items
 	JMenuItem forwardRaysOnlyMenuItem, rayBundleMenuItem, rayBundleIsotropicMenuItem;
@@ -529,6 +509,31 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 	private void initPopups()
 	{
 		// the (empty)space popup
+
+		JMenuItem createLensMenuItem = new JMenuItem("Create lens");
+		createLensMenuItem.getAccessibleContext().setAccessibleDescription("Create lens");
+		createLensMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				lensNo++;
+				Vector2D p = new Vector2D(i2x(popupMenuX), j2y(popupMenuY));
+				Lens2DIOC lens = new Lens2DIOC(
+						"Lens "+lensNo,	// name
+						p,	// principalPoint
+						1,	// focalLength
+						Vector2D.sum(p, new Vector2D(0, +0.5)),	// endPoint1
+						Vector2D.sum(p, new Vector2D(0, -0.5))	// endPoint2
+						);
+				iocs.add(lens);
+				graphicElements.addAll(lens.getGraphicElements());
+
+				repaint();
+			}
+		});
+		spacePopup.add(createLensMenuItem);
+
+		// Separator
+		spacePopup.addSeparator();
 
 		JMenuItem createOmnidirectionalLensMenuItem = new JMenuItem("Create omnidirectional lens");
 		// menuItem.setMnemonic(KeyEvent.VK_P);
@@ -538,8 +543,9 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 
 				double h = 1;
 
+				omnidirectionalLensNo++;
 				OmnidirectionalLens2D ol = new OmnidirectionalLens2D(
-						"Omnidirectional lens",	// name
+						"Omnidirectional lens "+omnidirectionalLensNo,	// name
 						0.1*h,	// fD
 						0.5*h,	// rD
 						h/3.,	// h1
@@ -549,8 +555,8 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 						new Vector2D(1, 0),	// dHat
 						new Vector2D(0, 1)	// cHat
 						);
-				ols.add(ol);
-				opticalComponents.addAll(ol.getOpticalComponents());
+				iocs.add(ol);
+				// opticalComponents.addAll(ol.getOpticalComponents());
 				graphicElements.addAll(ol.getGraphicElements());
 
 				repaint();
@@ -567,8 +573,9 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		createLightSourceMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// ray / ray-bundle parameters
+				raySourceNo++;
 				LightSource2D ls = new LightSource2D(
-						"Point ray source",	// name
+						"Point ray source "+raySourceNo,	// name
 						new Vector2D(i2x(popupMenuX), j2y(popupMenuY)),	// raysStartPoint
 						MyMath.deg2rad(0), // centralRayAngle
 						false,	// forwardRaysOnly

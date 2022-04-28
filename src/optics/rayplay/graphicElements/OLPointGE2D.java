@@ -8,8 +8,8 @@ import java.awt.Stroke;
 import math.Vector2D;
 import optics.rayplay.core.CoordinateConverterXY2IJ;
 import optics.rayplay.core.RayPlay2DPanel;
-import optics.rayplay.opticalComponents.OmnidirectionalLens2D;
-import optics.rayplay.opticalComponents.OmnidirectionalLens2D.OLPointType;
+import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D;
+import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D.OLPointType;
 import optics.rayplay.util.DoubleFormatter;
 
 /**

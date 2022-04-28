@@ -40,6 +40,8 @@ public interface GraphicElement2D
 	 * @param mouseJ
 	 */
 	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ);
+	
+	public void writeSVGCode(RayPlay2DPanel rpp);
 
 	
 	// interactivity
