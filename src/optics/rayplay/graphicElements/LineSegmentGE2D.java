@@ -5,7 +5,6 @@ import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 
 import math.Vector2D;
-import optics.rayplay.core.CoordinateConverterXY2IJ;
 import optics.rayplay.core.GraphicElement2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
@@ -37,12 +36,12 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 	public abstract boolean isInteractive();
 
 	@Override
-	public boolean isMouseNear(CoordinateConverterXY2IJ cc, int i, int j)
+	public boolean isMouseNear(RayPlay2DPanel p, int i, int j)
 	{
 		// define the line segment in (i,j) coordinates
 		LineSegment2D s = new LineSegment2D(
-				new Vector2D(cc.x2i(a.x), cc.y2j(a.y)),
-				new Vector2D(cc.x2i(b.x), cc.y2j(b.y))
+				new Vector2D(p.x2i(a.x), p.y2j(a.y)),
+				new Vector2D(p.x2i(b.x), p.y2j(b.y))
 				);
 
 		return (Geometry2D.lineSementPointDistance(s, new Vector2D(i, j)) < 3);
@@ -68,13 +67,13 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 	}
 	
 	@Override
-	public void mouseDragged(CoordinateConverterXY2IJ c, boolean mouseNear, int mouseI, int mouseJ)
+	public void mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ)
 	{
 		// ignore
 	}
 	
 	@Override
-	public void mouseClicked(CoordinateConverterXY2IJ c, boolean mouseNear, MouseEvent e)
+	public void mouseClicked(RayPlay2DPanel p, boolean mouseNear, MouseEvent e)
 	{	
 	}
 }

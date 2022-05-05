@@ -7,6 +7,7 @@ import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import math.MyMath;
@@ -20,7 +21,7 @@ import optics.rayplay.graphicElements.RayBundleStartPoint2D;
  * A source of light ray(s)
  * @author johannes
  */
-public class LightSource2D extends GraphicElementCollection2D
+public class RaySource2D extends GraphicElementCollection2D
 {
 	private static final String RAYS_START_POINT_NAME = "Start point of ray(s)";
 	private static final String RAYS_CHARACTERISTICS_POINT_NAME = "Point controlling ray/ray bundle characteristics";
@@ -56,6 +57,8 @@ public class LightSource2D extends GraphicElementCollection2D
 	private Colour colour;
 	
 	private boolean darkenExhaustedRays;
+	
+	private int maxTraceLevel;
 
 //	private Stroke pointStroke;
 //	private Color pointColor;
@@ -71,7 +74,7 @@ public class LightSource2D extends GraphicElementCollection2D
 
 	// constructor
 
-	public LightSource2D(
+	public RaySource2D(
 			String name,
 			Vector2D raysStartPoint,
 			double centralRayAngle,
@@ -80,7 +83,8 @@ public class LightSource2D extends GraphicElementCollection2D
 			boolean rayBundleIsotropic,
 			double rayBundleAngle,
 			int rayBundleNoOfRays,
-			Colour colour
+			Colour colour,
+			int maxTraceLevel
 //			Stroke pointStroke,
 //			Color pointColor
 		)
@@ -98,6 +102,7 @@ public class LightSource2D extends GraphicElementCollection2D
 //		this.pointStroke = pointStroke;
 //		this.pointColor = pointColor;
 		this.darkenExhaustedRays = true;
+		this.maxTraceLevel = maxTraceLevel;
 
 		Stroke pointStroke = new BasicStroke(1);
 		Color pointColor = Color.gray;
@@ -217,6 +222,14 @@ public class LightSource2D extends GraphicElementCollection2D
 		this.colour = colour;
 	}
 
+	public int getMaxTraceLevel() {
+		return maxTraceLevel;
+	}
+
+	public void setMaxTraceLevel(int maxTraceLevel) {
+		this.maxTraceLevel = maxTraceLevel;
+	}
+
 	public boolean isDarkenExhaustedRays() {
 		return darkenExhaustedRays;
 	}
@@ -259,7 +272,7 @@ public class LightSource2D extends GraphicElementCollection2D
 					Vector2D d = new Vector2D(Math.cos(alpha),Math.sin(alpha));
 
 					// initialise the forward ray
-					rays.add(new Ray2D(raysStartPoint, d));
+					rays.add(new Ray2D(raysStartPoint, d, maxTraceLevel));
 				}
 			}
 			else
@@ -277,12 +290,12 @@ public class LightSource2D extends GraphicElementCollection2D
 					Vector2D d = new Vector2D(Math.cos(alpha),Math.sin(alpha));
 
 					// initialise the forward ray
-					rays.add(new Ray2D(raysStartPoint, d));
+					rays.add(new Ray2D(raysStartPoint, d, maxTraceLevel));
 
 					if(!forwardRaysOnly)
 					{
 						// ... and the backwards ray
-						rays.add(new Ray2D(raysStartPoint, d.getProductWith(-1)));
+						rays.add(new Ray2D(raysStartPoint, d.getProductWith(-1), maxTraceLevel));
 					}
 				}
 			}
@@ -290,12 +303,12 @@ public class LightSource2D extends GraphicElementCollection2D
 		else
 		{
 			// initialise the forward ray
-			rays.add(new Ray2D(raysStartPoint, dC));
+			rays.add(new Ray2D(raysStartPoint, dC, maxTraceLevel));
 
 			if(!forwardRaysOnly)
 			{
 				// ... and the backwards ray
-				rays.add(new Ray2D(raysStartPoint, dC.getProductWith(-1)));
+				rays.add(new Ray2D(raysStartPoint, dC.getProductWith(-1), maxTraceLevel));
 			}
 		}
 	}
@@ -348,7 +361,7 @@ public class LightSource2D extends GraphicElementCollection2D
 
 	public void writeParameters(PrintStream printStream)
 	{
-		printStream.println("\nLight-ray source \""+name+"\"\n");
+		printStream.println("\nRay source \""+name+"\"\n");
 
 		printStream.println("  rayStartPoint = "+getRayStartPoint());
 		printStream.println("  rayAngle = "+ MyMath.rad2deg(getRayAngle())+" degrees");
@@ -359,4 +372,15 @@ public class LightSource2D extends GraphicElementCollection2D
 		printStream.println("  forwardRaysOnly = "+isForwardRaysOnly());
 	}
 
+	public void writeToCSV(PrintWriter writer)
+	{
+		writer.write("Ray source, ");
+		writer.write("Start point="+getRayStartPoint()+",");
+		writer.println("Angle="+ getRayAngle());
+		writer.println("Bundle="+isRayBundle());
+		writer.println("Isotropic="+isRayBundleIsotropic());
+		writer.println("Bundle angle="+getRayBundleAngle());
+		writer.println("No of rays="+getRayBundleNoOfRays());
+		writer.println("Forward rays only="+isForwardRaysOnly());
+	}
 }

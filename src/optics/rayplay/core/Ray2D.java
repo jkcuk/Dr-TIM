@@ -33,7 +33,8 @@ public class Ray2D {
 
 	public Ray2D(
 			Vector2D startingPoint,
-			Vector2D direction
+			Vector2D direction,
+			int maxTraceLevel
 		)
 	{
 		super();
@@ -41,7 +42,7 @@ public class Ray2D {
 		setStartingPoint(startingPoint);
 		setDirection(direction);
 		this.pathLength = 0;
-		this.traceLevel = 255;
+		this.traceLevel = maxTraceLevel;
 		
 		trajectory = new ArrayList<Vector2D>();
 		trajectory.add(startingPoint);

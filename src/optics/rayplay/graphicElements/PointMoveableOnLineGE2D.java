@@ -5,7 +5,7 @@ import java.awt.Color;
 import java.awt.Stroke;
 
 import math.Vector2D;
-import optics.rayplay.core.CoordinateConverterXY2IJ;
+import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
 import optics.rayplay.geometry2D.Line2D;
 
@@ -51,11 +51,11 @@ public class PointMoveableOnLineGE2D extends PointGE2D
 	// GraphicElement2D methods
 	
 	@Override
-	public void mouseDragged(CoordinateConverterXY2IJ c, boolean mouseNear, int mouseI, int mouseJ)
+	public void mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ)
 	{
 		if(mouseNear)
 		{
-			Vector2D v = new Vector2D(c.i2x(mouseI), c.j2y(mouseJ));
+			Vector2D v = new Vector2D(p.i2x(mouseI), p.j2y(mouseJ));
 			
 			position.setCoordinatesToThoseOf(Geometry2D.getPointOnLineClosestToPoint(line, v));
 		}

@@ -7,7 +7,6 @@ import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 
 import math.Vector2D;
-import optics.rayplay.core.CoordinateConverterXY2IJ;
 import optics.rayplay.core.GraphicElement2D;
 import optics.rayplay.core.RayPlay2DPanel;
 
@@ -95,10 +94,10 @@ public class PointGE2D implements GraphicElement2D
 	}
 
 	@Override
-	public boolean isMouseNear(CoordinateConverterXY2IJ cc, int i, int j)
+	public boolean isMouseNear(RayPlay2DPanel p, int i, int j)
 	{
-		int iDistance = cc.x2i(position.x) - i;
-		int jDistance = cc.y2j(position.y) - j;
+		int iDistance = p.x2i(position.x) - i;
+		int jDistance = p.y2j(position.y) - j;
 
 		return iDistance*iDistance + jDistance*jDistance < radius*radius;
 	}
@@ -138,19 +137,19 @@ public class PointGE2D implements GraphicElement2D
 
 	
 	@Override
-	public void mouseDragged(CoordinateConverterXY2IJ c, boolean mouseNear, int mouseI, int mouseJ)
+	public void mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ)
 	{
 		if(mouseNear)
 		{
-			position.x = c.i2x(mouseI);
-			position.y = c.j2y(mouseJ);
+			position.x = p.i2x(mouseI);
+			position.y = p.j2y(mouseJ);
 		}
 //		for(GraphicElement2DEventHandler h:graphicElement2DEventHandlers)
 //			h.mouseDragged(this, mouseNear, mouseI, mouseJ);
 	}
 
 	@Override
-	public void mouseClicked(CoordinateConverterXY2IJ c, boolean mouseNear, MouseEvent e)
+	public void mouseClicked(RayPlay2DPanel p, boolean mouseNear, MouseEvent e)
 	{
 		// ignore	
 	}

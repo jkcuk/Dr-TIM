@@ -105,6 +105,9 @@ public class Vector2D implements Serializable
 		return new Vector2D(f*x, f*y);
 	}
 	
+	/**
+	 * @return	a perpendicular vector of the same length
+	 */
 	public Vector2D getPerpendicularVector()
 	{
 		return new Vector2D(y, -x);

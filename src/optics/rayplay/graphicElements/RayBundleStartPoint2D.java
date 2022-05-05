@@ -12,8 +12,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import math.Vector2D;
-import optics.rayplay.core.CoordinateConverterXY2IJ;
-import optics.rayplay.core.LightSource2D;
+import optics.rayplay.core.RaySource2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.util.Colour;
 
@@ -23,9 +22,9 @@ import optics.rayplay.util.Colour;
  */
 public class RayBundleStartPoint2D extends PointGE2D
 {
-	private LightSource2D ls;
+	private RaySource2D ls;
 	
-	public RayBundleStartPoint2D(String name, Vector2D position, int radius, Stroke stroke, Color color, boolean interactive, LightSource2D ls)
+	public RayBundleStartPoint2D(String name, Vector2D position, int radius, Stroke stroke, Color color, boolean interactive, RaySource2D ls)
 	{
 		super(name, position, radius, stroke, color, interactive);
 		
@@ -34,7 +33,7 @@ public class RayBundleStartPoint2D extends PointGE2D
 		initPopup();
 	}
 
-	public RayBundleStartPoint2D(String name, LightSource2D ls)
+	public RayBundleStartPoint2D(String name, RaySource2D ls)
 	{
 		this(name, null, 3, new BasicStroke(1), Color.gray, true, ls);
 	}
@@ -42,11 +41,11 @@ public class RayBundleStartPoint2D extends PointGE2D
 	
 	// getters & setters
 	
-	public LightSource2D getLs() {
+	public RaySource2D getLs() {
 		return ls;
 	}
 
-	public void setLs(LightSource2D ls) {
+	public void setLs(RaySource2D ls) {
 		this.ls = ls;
 	}
 
@@ -65,7 +64,7 @@ public class RayBundleStartPoint2D extends PointGE2D
 	}
 	
 	@Override
-	public void mouseDragged(CoordinateConverterXY2IJ c, boolean mouseNear, int mouseI, int mouseJ)
+	public void mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ)
 	{
 		if(mouseNear)
 		{
@@ -73,14 +72,14 @@ public class RayBundleStartPoint2D extends PointGE2D
 			Vector2D d = Vector2D.difference(ls.getRaysCharacteristicsPoint(), ls.getRayStartPoint());
 			
 			// update this point's position, which is also the rpp's ray start point
-			super.mouseDragged(c, mouseNear, mouseI, mouseJ);
+			super.mouseDragged(p, mouseNear, mouseI, mouseJ);
 			// rpp.setRayStartPointCoordinatesToThoseOf(position);
 			
 			// construct ray point 2 as the new ray start point + d
 			ls.setRaysCharacteristicsPointCoordinatesToThoseOf(Vector2D.sum(position, d));
 		}
 		else
-			super.mouseDragged(c, mouseNear, mouseI, mouseJ);
+			super.mouseDragged(p, mouseNear, mouseI, mouseJ);
 	}
 
 //	@Override
@@ -232,6 +231,24 @@ public class RayBundleStartPoint2D extends PointGE2D
 		// Separator
 	    popup.addSeparator();
 	    
+		int maxTraceLevels[] = {1, 2, 3, 4, 16, 64, 256, 1024};
+		for(int maxTraceLevel:maxTraceLevels)
+		{
+			JMenuItem maxTraceLevelMenuItem = new JMenuItem("max. trace level = "+maxTraceLevel);
+			maxTraceLevelMenuItem.setEnabled(true);
+			maxTraceLevelMenuItem.getAccessibleContext().setAccessibleDescription("Set max. trace level to "+maxTraceLevel);
+			maxTraceLevelMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ls.setMaxTraceLevel(maxTraceLevel);
+					panelAssociatedWithPopup.repaint();
+				}
+			});
+			popup.add(maxTraceLevelMenuItem);
+		}
+
+		// Separator
+	    popup.addSeparator();
+
 	    darkenExhaustedRaysMenuItem = new JMenuItem("-");	// "Switch darkening of exhausted rays "+(ls.isDarkenExhaustedRays()?"off":"on"));
 	    darkenExhaustedRaysMenuItem.setEnabled(true);
 	    darkenExhaustedRaysMenuItem.getAccessibleContext().setAccessibleDescription("Toggle darken exhausted rays");

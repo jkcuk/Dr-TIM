@@ -1,6 +1,7 @@
 package optics.rayplay.interactiveOpticalComponents;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -49,6 +50,14 @@ implements InteractiveOpticalComponent2D
 	public Lens2DIOC(Lens2D lens)
 	{
 		this(lens.getName(), lens.getPrincipalPoint(), lens.getFocalLength(), lens.getA(), lens.getB());
+	}
+	
+	/**
+	 * @param field	{Lens, <name>, <name of parameter 1>=<value of parameter 1>, ...}
+	 */
+	public Lens2DIOC(String[] field)
+	{
+		super(field[1]);
 	}
 	
 	
@@ -122,5 +131,17 @@ implements InteractiveOpticalComponent2D
 		printStream.println("  focalLength = "+focalLength);
 		printStream.println("  a (end point 1) = "+a);
 		printStream.println("  b (end point 2) = "+b);
+	}
+
+	@Override
+	public InteractiveOpticalComponent2D readFromCSV(String filename) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void writeToCSV(PrintWriter writer) {
+		// TODO Auto-generated method stub
+		
 	}
 }

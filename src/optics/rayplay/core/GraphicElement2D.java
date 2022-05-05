@@ -48,11 +48,11 @@ public interface GraphicElement2D
 	
 	public boolean isInteractive();
 	
-	public boolean isMouseNear(CoordinateConverterXY2IJ cc, int i, int j);
+	public boolean isMouseNear(RayPlay2DPanel p, int i, int j);
 		
-	public void mouseDragged(CoordinateConverterXY2IJ c, boolean mouseNear, int mouseI, int mouseJ);
+	public void mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ);
 	
-	public void mouseClicked(CoordinateConverterXY2IJ c, boolean mouseNear, MouseEvent e);
+	public void mouseClicked(RayPlay2DPanel p, boolean mouseNear, MouseEvent e);
 
 	/**
 	 * @param c

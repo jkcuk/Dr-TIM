@@ -1,6 +1,7 @@
 package optics.rayplay.interactiveOpticalComponents;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -9,9 +10,8 @@ import optics.rayplay.core.GraphicElement2D;
 import optics.rayplay.core.InteractiveOpticalComponent2D;
 import optics.rayplay.core.OpticalComponent2D;
 import optics.rayplay.geometry2D.Line2D;
-import optics.rayplay.graphicElements.OLP0GE2D;
-import optics.rayplay.graphicElements.OLPointGE2D;
-import optics.rayplay.graphicElements.OLPointMoveableOnLineGE2D;
+import optics.rayplay.graphicElements.OmnidirectionalLensPointGE2D;
+import optics.rayplay.graphicElements.OmnidirectionalLensPointGE2D.OmnidirectionalLensPointType;
 import optics.rayplay.graphicElements.PointGE2D;
 import optics.rayplay.opticalComponents.Lens2D;
 
@@ -86,7 +86,7 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	 * For nomenclature see Fig. 7 in [1]
 	 * @author johannes
 	 */
-	public enum OLLensType
+	public enum OmnidirectionalLensLensType
 	{
 		A1("A1"),
 		A2("A2"),
@@ -100,41 +100,21 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 
 		public final String name;
 
-		OLLensType(String name) {this.name = name;}
+		OmnidirectionalLensLensType(String name) {this.name = name;}
 	}
 
 	/**
 	 * the lenses
 	 */
 	// private Lens2D lens[];
-	private HashMap<OLLensType, Lens2D> lenses;
+	private HashMap<OmnidirectionalLensLensType, Lens2D> lenses;
 
-	public Lens2D getLens(OLLensType type)
+	public Lens2D getLens(OmnidirectionalLensLensType type)
 	{
 		return lenses.get(type);
 	}
 
-	/**
-	 * The point/vertex names.
-	 * For nomenclature see Fig. 4 in [1]
-	 * @author johannes
-	 */
-	public enum OLPointType
-	{
-		P0("P0"),
-		P1("P1"),
-		P2("P2"),
-		P3("P3"),
-		V1("V1"),
-		V2("V2"),
-		FD("Focal point of lens D");
-
-		public final String name;
-
-		OLPointType(String name) {this.name = name;}
-	}
-
-	private HashMap<OLPointType, PointGE2D> points;
+	private HashMap<OmnidirectionalLensPointType, PointGE2D> points;
 
 	// private Vector2D point[];
 
@@ -242,7 +222,7 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		this.cHat = c.getNormalised();
 	}
 
-	public PointGE2D getPoint(OLPointType type)
+	public PointGE2D getPoint(OmnidirectionalLensPointType type)
 	{
 		return points.get(type);
 	}
@@ -286,47 +266,62 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		printStream.println("  cHat = "+cHat);
 		
 		printStream.println("  Lens focal lengths:");
-		printStream.println("  	 fA = "+getLens(OLLensType.A1).getFocalLength());
-		printStream.println("    fB = "+getLens(OLLensType.B1).getFocalLength());
-		printStream.println("    fC = "+getLens(OLLensType.C1).getFocalLength());
-		printStream.println("    fD = "+getLens(OLLensType.D).getFocalLength());
-		printStream.println("    fE = "+getLens(OLLensType.E).getFocalLength());
-		printStream.println("    fF = "+getLens(OLLensType.F).getFocalLength());
+		printStream.println("  	 fA = "+getLens(OmnidirectionalLensLensType.A1).getFocalLength());
+		printStream.println("    fB = "+getLens(OmnidirectionalLensLensType.B1).getFocalLength());
+		printStream.println("    fC = "+getLens(OmnidirectionalLensLensType.C1).getFocalLength());
+		printStream.println("    fD = "+getLens(OmnidirectionalLensLensType.D).getFocalLength());
+		printStream.println("    fE = "+getLens(OmnidirectionalLensLensType.E).getFocalLength());
+		printStream.println("    fF = "+getLens(OmnidirectionalLensLensType.F).getFocalLength());
 
 	}
 	
 
 	// the meat
+	
+	public Line2D getCentralSymmetryAxis()
+	{
+		return new Line2D(pD, Vector2D.sum(pD, cHat));
+	}
+	
+	public Line2D getLineOfLensD()
+	{
+		return new Line2D(pD, Vector2D.sum(pD, dHat));
+	}
 
 	private void createPoints()
 	{
 		// initialise the array of points
-		points = new HashMap<OLPointType, PointGE2D>();
+		points = new HashMap<OmnidirectionalLensPointType, PointGE2D>();
 
 		// and add them all to the list graphicElements
-		for(OLPointType olPointType : OLPointType.values())
+		for(OmnidirectionalLensPointType olPointType : OmnidirectionalLensPointType.values())
 		{
-			switch(olPointType)
-			{
-			case P0:
-				// P0 can be moved freely
-				OLP0GE2D p0 = new OLP0GE2D(olPointType.name, pD, this, olPointType);
-				points.put(olPointType, p0);
-				graphicElements.add(p0);
-				break;
-			case P3:
-				// P3 can be moved freely
-				OLPointGE2D p3 = new OLPointGE2D(olPointType.name, this, olPointType);
-				p3.setRadius(4);
-				points.put(olPointType, p3);
-				graphicElements.add(p3);
-				break;
-			default:
-				// all other points are moveable on a line, represented by a OLPointMoveableOnLineGE2D
-				OLPointMoveableOnLineGE2D pml = new OLPointMoveableOnLineGE2D(olPointType.name, this, olPointType);
-				points.put(olPointType, pml);
-				graphicElements.add(pml);
-			}
+			OmnidirectionalLensPointGE2D point = new OmnidirectionalLensPointGE2D(olPointType.name, this, olPointType);
+			points.put(olPointType, point);
+			graphicElements.add(point);
+			// TODO
+			// if(olPointType == OLPointType.P0) setPosition(pD);
+//			switch(olPointType)
+//			{
+//			case P0:
+//				// P0 can be moved freely
+//				OLP0GE2D p0 = new OLP0GE2D(olPointType.name, pD, this, olPointType);
+//				points.put(olPointType, p0);
+//				graphicElements.add(p0);
+//				break;
+//			case P3:
+//				// P3 can be moved freely
+//				OLPointGE2D p3 = new OLPointGE2D(olPointType.name, this, olPointType);
+//				p3.setRadius(4);
+//				points.put(olPointType, p3);
+//				graphicElements.add(p3);
+//				break;
+//			default:
+//				// all other points are moveable on a line, represented by a OLPointMoveableOnLineGE2D
+//				OLPointMoveableOnLineGE2D pml = new OLPointMoveableOnLineGE2D(olPointType.name, this, olPointType);
+//				points.put(olPointType, pml);
+//				graphicElements.add(pml);
+//			}
 		}
 	}
 
@@ -334,9 +329,9 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	{
 		// initialise the array of lenses
 		// lens = new Lens2D[OLLensType.values().length];
-		lenses = new HashMap<OLLensType, Lens2D>();
+		lenses = new HashMap<OmnidirectionalLensLensType, Lens2D>();
 
-		for(OLLensType olLensType : OLLensType.values())
+		for(OmnidirectionalLensLensType olLensType : OmnidirectionalLensLensType.values())
 		{
 			// create the lens, ...
 			Lens2D l = new Lens2D(olLensType.toString());
@@ -353,36 +348,36 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	public void calculatePointParameters()
 	{		
 		// all the points that can move on a line move on one of two lines
-		Line2D lineThroughPrincipalPoints = new Line2D(pD, Vector2D.sum(pD, cHat));
-		Line2D lineOfLensD = new Line2D(pD, Vector2D.sum(pD, dHat));
+//		Line2D lineThroughPrincipalPoints = new Line2D(pD, Vector2D.sum(pD, cHat));
+//		Line2D lineOfLensD = new Line2D(pD, Vector2D.sum(pD, dHat));
 
 		// the bottom vertices
-		points.get(OLPointType.V1).setCoordinatesToThoseOf(Vector2D.sum(pD, dHat.getProductWith(-rD)));
-		points.get(OLPointType.V2).setCoordinatesToThoseOf(Vector2D.sum(pD, dHat.getProductWith( rD)));
-		((OLPointMoveableOnLineGE2D)points.get(OLPointType.V1)).setLine(lineOfLensD);
-		((OLPointMoveableOnLineGE2D)points.get(OLPointType.V2)).setLine(lineOfLensD);
+		points.get(OmnidirectionalLensPointType.V1).setCoordinatesToThoseOf(Vector2D.sum(pD, dHat.getProductWith(-rD)));
+		points.get(OmnidirectionalLensPointType.V2).setCoordinatesToThoseOf(Vector2D.sum(pD, dHat.getProductWith( rD)));
+//		((OLPointMoveableOnLineGE2D)points.get(OLPointType.V1)).setLine(lineOfLensD);
+//		((OLPointMoveableOnLineGE2D)points.get(OLPointType.V2)).setLine(lineOfLensD);
 
 		// the lower inner vertex
-		points.get(OLPointType.P1).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(h1)));
-		((OLPointMoveableOnLineGE2D)points.get(OLPointType.P1)).setLine(lineThroughPrincipalPoints);
+		points.get(OmnidirectionalLensPointType.P1).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(h1)));
+//		((OLPointMoveableOnLineGE2D)points.get(OLPointType.P1)).setLine(lineThroughPrincipalPoints);
 
 		// the upper inner vertex
 		// System.out.println("OmnidirectionalLens2D::calculatePointAndLensParameters: h2="+h2);
-		points.get(OLPointType.P2).setCoordinatesToThoseOf(
+		points.get(OmnidirectionalLensPointType.P2).setCoordinatesToThoseOf(
 				// new Vector2D(0.2, 0.4)
 				Vector2D.sum(pD, cHat.getProductWith(h2))
 				);
-		((OLPointMoveableOnLineGE2D)points.get(OLPointType.P2)).setLine(lineThroughPrincipalPoints);
+//		((OLPointMoveableOnLineGE2D)points.get(OLPointType.P2)).setLine(lineThroughPrincipalPoints);
 
 		// the top vertex
-		points.get(OLPointType.P3).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(h)));
+		points.get(OmnidirectionalLensPointType.P3).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(h)));
 
 		// the principal point of lens D
-		points.get(OLPointType.P0).setCoordinatesToThoseOf(pD);
+		points.get(OmnidirectionalLensPointType.P0).setCoordinatesToThoseOf(pD);
 
 		// the (inside) focal point of lens D
-		points.get(OLPointType.FD).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(fD)));
-		((OLPointMoveableOnLineGE2D)points.get(OLPointType.FD)).setLine(lineThroughPrincipalPoints);
+		points.get(OmnidirectionalLensPointType.FD).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(fD)));
+//		((OLPointMoveableOnLineGE2D)points.get(OLPointType.FD)).setLine(lineThroughPrincipalPoints);
 	}
 
 	public void calculateLensParameters()
@@ -396,46 +391,62 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		double fF = ((fD*h - (fD + h)*h1)*(h  - h2)*rD)/(2*h*h1*h2);
 
 		// lenses A
-		lenses.get(OLLensType.A1).setEndPoints(points.get(OLPointType.V1).getPosition(), points.get(OLPointType.P3).getPosition());
-		lenses.get(OLLensType.A1).setPrincipalPoint(points.get(OLPointType.P3).getPosition());
-		lenses.get(OLLensType.A1).setFocalLength(fA);
+		lenses.get(OmnidirectionalLensLensType.A1).setEndPoints(points.get(OmnidirectionalLensPointType.V1).getPosition(), points.get(OmnidirectionalLensPointType.P3).getPosition());
+		lenses.get(OmnidirectionalLensLensType.A1).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P3).getPosition());
+		lenses.get(OmnidirectionalLensLensType.A1).setFocalLength(fA);
 
-		lenses.get(OLLensType.A2).setEndPoints(points.get(OLPointType.V2).getPosition(), points.get(OLPointType.P3).getPosition());
-		lenses.get(OLLensType.A2).setPrincipalPoint(points.get(OLPointType.P3).getPosition());
-		lenses.get(OLLensType.A2).setFocalLength(fA);
+		lenses.get(OmnidirectionalLensLensType.A2).setEndPoints(points.get(OmnidirectionalLensPointType.V2).getPosition(), points.get(OmnidirectionalLensPointType.P3).getPosition());
+		lenses.get(OmnidirectionalLensLensType.A2).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P3).getPosition());
+		lenses.get(OmnidirectionalLensLensType.A2).setFocalLength(fA);
 
 		// lenses B
-		lenses.get(OLLensType.B1).setEndPoints(points.get(OLPointType.V1).getPosition(), points.get(OLPointType.P2).getPosition());
-		lenses.get(OLLensType.B1).setPrincipalPoint(points.get(OLPointType.P2).getPosition());
-		lenses.get(OLLensType.B1).setFocalLength(fB);
+		lenses.get(OmnidirectionalLensLensType.B1).setEndPoints(points.get(OmnidirectionalLensPointType.V1).getPosition(), points.get(OmnidirectionalLensPointType.P2).getPosition());
+		lenses.get(OmnidirectionalLensLensType.B1).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P2).getPosition());
+		lenses.get(OmnidirectionalLensLensType.B1).setFocalLength(fB);
 
-		lenses.get(OLLensType.B2).setEndPoints(points.get(OLPointType.V2).getPosition(), points.get(OLPointType.P2).getPosition());
-		lenses.get(OLLensType.B2).setPrincipalPoint(points.get(OLPointType.P2).getPosition());
-		lenses.get(OLLensType.B2).setFocalLength(fB);
+		lenses.get(OmnidirectionalLensLensType.B2).setEndPoints(points.get(OmnidirectionalLensPointType.V2).getPosition(), points.get(OmnidirectionalLensPointType.P2).getPosition());
+		lenses.get(OmnidirectionalLensLensType.B2).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P2).getPosition());
+		lenses.get(OmnidirectionalLensLensType.B2).setFocalLength(fB);
 
 		// lenses C
-		lenses.get(OLLensType.C1).setEndPoints(points.get(OLPointType.V1).getPosition(), points.get(OLPointType.P1).getPosition());
-		lenses.get(OLLensType.C1).setPrincipalPoint(points.get(OLPointType.P1).getPosition());
-		lenses.get(OLLensType.C1).setFocalLength(fC);
+		lenses.get(OmnidirectionalLensLensType.C1).setEndPoints(points.get(OmnidirectionalLensPointType.V1).getPosition(), points.get(OmnidirectionalLensPointType.P1).getPosition());
+		lenses.get(OmnidirectionalLensLensType.C1).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P1).getPosition());
+		lenses.get(OmnidirectionalLensLensType.C1).setFocalLength(fC);
 
-		lenses.get(OLLensType.C2).setEndPoints(points.get(OLPointType.V2).getPosition(), points.get(OLPointType.P1).getPosition());
-		lenses.get(OLLensType.C2).setPrincipalPoint(points.get(OLPointType.P1).getPosition());
-		lenses.get(OLLensType.C2).setFocalLength(fC);
+		lenses.get(OmnidirectionalLensLensType.C2).setEndPoints(points.get(OmnidirectionalLensPointType.V2).getPosition(), points.get(OmnidirectionalLensPointType.P1).getPosition());
+		lenses.get(OmnidirectionalLensLensType.C2).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P1).getPosition());
+		lenses.get(OmnidirectionalLensLensType.C2).setFocalLength(fC);
 
 		// the "base lens", lens D
-		lenses.get(OLLensType.D).setEndPoints(points.get(OLPointType.V1).getPosition(), points.get(OLPointType.V2).getPosition());
-		lenses.get(OLLensType.D).setPrincipalPoint(points.get(OLPointType.P0).getPosition());
-		lenses.get(OLLensType.D).setFocalLength(fD);
+		lenses.get(OmnidirectionalLensLensType.D).setEndPoints(points.get(OmnidirectionalLensPointType.V1).getPosition(), points.get(OmnidirectionalLensPointType.V2).getPosition());
+		lenses.get(OmnidirectionalLensLensType.D).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P0).getPosition());
+		lenses.get(OmnidirectionalLensLensType.D).setFocalLength(fD);
 
 		// lens E
-		lenses.get(OLLensType.E).setEndPoints(points.get(OLPointType.P1).getPosition(), points.get(OLPointType.P2).getPosition());
-		lenses.get(OLLensType.E).setPrincipalPoint(points.get(OLPointType.P1).getPosition());
-		lenses.get(OLLensType.E).setFocalLength(fE);
+		lenses.get(OmnidirectionalLensLensType.E).setEndPoints(points.get(OmnidirectionalLensPointType.P1).getPosition(), points.get(OmnidirectionalLensPointType.P2).getPosition());
+		lenses.get(OmnidirectionalLensLensType.E).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P1).getPosition());
+		lenses.get(OmnidirectionalLensLensType.E).setFocalLength(fE);
 
 		// lens F
-		lenses.get(OLLensType.F).setEndPoints(points.get(OLPointType.P2).getPosition(), points.get(OLPointType.P3).getPosition());
-		lenses.get(OLLensType.F).setPrincipalPoint(points.get(OLPointType.P3).getPosition());
-		lenses.get(OLLensType.F).setFocalLength(fF);
+		lenses.get(OmnidirectionalLensLensType.F).setEndPoints(points.get(OmnidirectionalLensPointType.P2).getPosition(), points.get(OmnidirectionalLensPointType.P3).getPosition());
+		lenses.get(OmnidirectionalLensLensType.F).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P3).getPosition());
+		lenses.get(OmnidirectionalLensLensType.F).setFocalLength(fF);
+	}
+
+
+	@Override
+	public InteractiveOpticalComponent2D readFromCSV(String filename)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void writeToCSV(PrintWriter writer)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 
 

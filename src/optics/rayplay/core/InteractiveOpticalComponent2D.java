@@ -1,6 +1,7 @@
 package optics.rayplay.core;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 
@@ -20,4 +21,10 @@ public interface InteractiveOpticalComponent2D
 	public ArrayList<GraphicElement2D> getGraphicElements();
 	
 	public void writeParameters(PrintStream printStream);
+	
+	// CSV reading & writing
+	
+	public InteractiveOpticalComponent2D readFromCSV(String filename);
+
+	public void writeToCSV(PrintWriter writer);
 }

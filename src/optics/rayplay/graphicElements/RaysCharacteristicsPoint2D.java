@@ -8,8 +8,7 @@ import java.awt.Stroke;
 
 import math.MyMath;
 import math.Vector2D;
-import optics.rayplay.core.CoordinateConverterXY2IJ;
-import optics.rayplay.core.LightSource2D;
+import optics.rayplay.core.RaySource2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.util.DoubleFormatter;
 
@@ -19,9 +18,9 @@ import optics.rayplay.util.DoubleFormatter;
  */
 public class RaysCharacteristicsPoint2D extends PointGE2D
 {
-	private LightSource2D ls;
+	private RaySource2D ls;
 	
-	public RaysCharacteristicsPoint2D(String name, Vector2D position, int radius, Stroke stroke, Color color, boolean interactive, LightSource2D ls)
+	public RaysCharacteristicsPoint2D(String name, Vector2D position, int radius, Stroke stroke, Color color, boolean interactive, RaySource2D ls)
 	{
 		super(name, position, radius, stroke, color, interactive);
 		
@@ -42,7 +41,7 @@ public class RaysCharacteristicsPoint2D extends PointGE2D
 				);
 	}
 
-	public RaysCharacteristicsPoint2D(String name, LightSource2D ls)
+	public RaysCharacteristicsPoint2D(String name, RaySource2D ls)
 	{
 		this(name, null, 3, new BasicStroke(1), Color.gray, true, ls);
 	}
@@ -50,11 +49,11 @@ public class RaysCharacteristicsPoint2D extends PointGE2D
 	
 	// getters & setters
 	
-	public LightSource2D getLs() {
+	public RaySource2D getLs() {
 		return ls;
 	}
 
-	public void setLs(LightSource2D ls) {
+	public void setLs(RaySource2D ls) {
 		this.ls = ls;
 	}
 
@@ -97,9 +96,9 @@ public class RaysCharacteristicsPoint2D extends PointGE2D
 	private double tanRayBundleAngleConstant = 0.25;
 
 	@Override
-	public void mouseDragged(CoordinateConverterXY2IJ c, boolean mouseNear, int mouseI, int mouseJ)
+	public void mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ)
 	{
-		super.mouseDragged(c, mouseNear, mouseI, mouseJ);
+		super.mouseDragged(p, mouseNear, mouseI, mouseJ);
 		
 		if(mouseNear)
 		{
