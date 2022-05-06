@@ -88,15 +88,15 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	 */
 	public enum OmnidirectionalLensLensType
 	{
-		A1("A1"),
-		A2("A2"),
-		B1("B1"),
-		B2("B2"),
-		C1("C1"),
-		C2("C2"),
-		D("D"),
-		E("E"),
-		F("F");
+		A1("A1/03a"),
+		A2("A2/03b"),
+		B1("B1/2a3a"),
+		B2("B2/2b3b"),
+		C1("C1/12a"),
+		C2("C2/12b"),
+		D("D/01"),
+		E("E/2a2b"),
+		F("F/3a3b");
 
 		public final String name;
 

@@ -11,12 +11,16 @@ import java.awt.event.MouseEvent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import math.MyMath;
 import math.Vector2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
+import optics.rayplay.geometry2D.Line2D;
 import optics.rayplay.interactiveOpticalComponents.Lens2DIOC;
 import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D;
 import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D.OmnidirectionalLensLensType;
+import optics.rayplay.raySources.PointRaySource2D;
+import optics.rayplay.util.Colour;
 import optics.rayplay.util.DoubleFormatter;
 
 /**
@@ -270,13 +274,13 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 	final JPopupMenu popup = new JPopupMenu();
 	
 	// menu items
-	JMenuItem
-		deleteOLMenuItem,
-		turnIntoIndividualLensesMenuItem;
+//	JMenuItem
+//		deleteOLMenuItem,
+//		turnIntoIndividualLensesMenuItem;
 
 	private void initPopup()
 	{
-		deleteOLMenuItem = new JMenuItem("Delete omnidirectional lens");
+		JMenuItem deleteOLMenuItem = new JMenuItem("Delete omnidirectional lens");
 		deleteOLMenuItem.setEnabled(true);
 		deleteOLMenuItem.getAccessibleContext().setAccessibleDescription("Delete omnidirectional lens");
 		deleteOLMenuItem.addActionListener(new ActionListener() {
@@ -292,7 +296,7 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 		// Separator
 	    popup.addSeparator();
 
-		turnIntoIndividualLensesMenuItem = new JMenuItem("Turn omnidirectional lens into individual lenses");
+	    JMenuItem turnIntoIndividualLensesMenuItem = new JMenuItem("Turn omnidirectional lens into individual lenses");
 		turnIntoIndividualLensesMenuItem.setEnabled(true);
 		turnIntoIndividualLensesMenuItem.getAccessibleContext().setAccessibleDescription("Turn omnidirectional lens into individual lenses");
 		turnIntoIndividualLensesMenuItem.addActionListener(new ActionListener() {
@@ -314,7 +318,48 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 			}
 		});
 		popup.add(turnIntoIndividualLensesMenuItem);
-	}
+
+		// Separator
+	    popup.addSeparator();
+
+	    JMenuItem addRaySourceMenuItem = new JMenuItem("Add ray source constrained to C line");
+	    addRaySourceMenuItem.setEnabled(true);
+	    addRaySourceMenuItem.getAccessibleContext().setAccessibleDescription("Add ray source constrained to the omnidirectional lens's C line");
+	    addRaySourceMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// find intersection of focal plane of lens C1 in cell 2a with the horizontal line through P1
+				// works only if f of lens C1 is > 0
+				Vector2D focalPointC1 = ol.getLens(OmnidirectionalLensLensType.C1).getFocalPoint();
+				Vector2D directionC1 = ol.getLens(OmnidirectionalLensLensType.C1).getDirection();
+				double alpha1 = Geometry2D.getAlpha1ForLineLineIntersection2D(
+						focalPointC1,	// a1, i.e. point on line 1
+						directionC1,	// d1, i.e. direction of line 1
+						ol.getLens(OmnidirectionalLensLensType.C1).getPrincipalPoint(),	// a2, i.e. point on line 2
+						ol.getLens(OmnidirectionalLensLensType.D).getDirection()	// d2, i.e. direction of line 2
+					);
+				Vector2D cPoint = Vector2D.sum(focalPointC1, directionC1.getProductWith(alpha1));
+				PointRaySource2D ls = new PointRaySource2D(
+						"Point ray source constrained to C line",	// name
+						cPoint,	// raysStartPoint
+						MyMath.deg2rad(0), // centralRayAngle
+						false,	// forwardRaysOnly
+						true, // rayBundle
+						true,	// rayBundleIsotropic
+						MyMath.deg2rad(30), // rayBundleAngle
+						64,	// rayBundleNoOfRays
+						Colour.GREEN,
+						255	// maxTraceLevel
+						);
+				// set the line constraining the source position
+				ls.setLineConstrainingStartPoint(new Line2D(cPoint, ol.getPoint(OmnidirectionalLensPointType.V1).getPosition()));
+				panelWithPopup.lss.add(ls);
+				panelWithPopup.graphicElements.addAll(ls.getGraphicElements());
+
+				panelWithPopup.repaint();
+			}
+		});
+		popup.add(addRaySourceMenuItem);
+}
 	
 	private void updatePopup()
 	{

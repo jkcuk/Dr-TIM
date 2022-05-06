@@ -24,6 +24,7 @@ import math.Vector2D;
 import optics.rayplay.interactiveOpticalComponents.Lens2DIOC;
 import optics.rayplay.interactiveOpticalComponents.LensStar2D;
 import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D;
+import optics.rayplay.raySources.PointRaySource2D;
 import optics.rayplay.util.Colour;
 import optics.rayplay.util.SVGWriter;
 
@@ -44,7 +45,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 	public ArrayList<InteractiveOpticalComponent2D> iocs = new ArrayList<InteractiveOpticalComponent2D>();
 
 	// the light sources
-	public ArrayList<RaySource2D> lss = new ArrayList<RaySource2D>();
+	public ArrayList<PointRaySource2D> lss = new ArrayList<PointRaySource2D>();
 
 	// the optical components
 	// public OpticalComponentCollection2D opticalComponents = new OpticalComponentCollection2D("Components");
@@ -96,7 +97,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		iocs.add(ol);
 
 		// ray / ray-bundle parameters
-		RaySource2D ls1 = new RaySource2D(
+		PointRaySource2D ls1 = new PointRaySource2D(
 				"Point ray source 1",	// name
 				new Vector2D(-0.5*h, 0),	// raysStartPoint
 				MyMath.deg2rad(0), // centralRayAngle
@@ -115,7 +116,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 			graphicElements.addAll(ioc.getGraphicElements());
 
 		// ... and with the light sources
-		for(RaySource2D ls:lss)
+		for(PointRaySource2D ls:lss)
 			graphicElements.addAll(ls.getGraphicElements());
 
 		xCentre = 0;
@@ -158,7 +159,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		for(InteractiveOpticalComponent2D ioc:iocs)
 			ioc.writeParameters(printStream);
 
-		for(RaySource2D ls:lss)
+		for(PointRaySource2D ls:lss)
 			ls.writeParameters(printStream);
 	}
 
@@ -197,7 +198,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 			SVGWriter.startSVGFile(filename, getSize());
 
 			// draw rays
-			for(RaySource2D ls:lss)
+			for(PointRaySource2D ls:lss)
 				ls.writeSVGCode(this);
 
 			// draw the interactive optical components
@@ -289,7 +290,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		}
 
 		// initialise all light sources, ...
-		for(RaySource2D ls:lss)
+		for(PointRaySource2D ls:lss)
 		{
 			ls.initialiseRays();
 		}
@@ -300,13 +301,13 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 			opticalComponents.addAll(ioc.getOpticalComponents());
 
 		// ... and trace the rays from all light sources through the optical components
-		for(RaySource2D ls:lss)
+		for(PointRaySource2D ls:lss)
 			for(Ray2D ray:ls.getRays())
 				ray.traceThrough(opticalComponents);
 
 
 		// draw rays
-		for(RaySource2D ls:lss)
+		for(PointRaySource2D ls:lss)
 			ls.drawRays(this, g2);
 
 		// and draw all the GraphicElements
@@ -488,7 +489,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		public void actionPerformed(ActionEvent e)
 		{
 			// increase the number of rays in all light sources
-			for(RaySource2D ls:lss)
+			for(PointRaySource2D ls:lss)
 			{
 				ls.setRayBundleNoOfRays(ls.getRayBundleNoOfRays()+1);
 			}
@@ -503,7 +504,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		public void actionPerformed(ActionEvent e)
 		{
 			// decrease the number of rays in all light sources
-			for(RaySource2D ls:lss)
+			for(PointRaySource2D ls:lss)
 			{
 				if(ls.getRayBundleNoOfRays() > 2) ls.setRayBundleNoOfRays(ls.getRayBundleNoOfRays()-1);
 				else ls.setRayBundleNoOfRays(2);
@@ -553,7 +554,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		spacePopup.add(createLensMenuItem);
 
 		// Separator
-		spacePopup.addSeparator();
+		// spacePopup.addSeparator();
 
 		JMenuItem createLensStarMenuItem = new JMenuItem("Create lens star");
 		// menuItem.setMnemonic(KeyEvent.VK_P);
@@ -581,7 +582,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		spacePopup.add(createLensStarMenuItem);
 
 		// Separator
-		spacePopup.addSeparator();
+		// spacePopup.addSeparator();
 
 		JMenuItem createOmnidirectionalLensMenuItem = new JMenuItem("Create omnidirectional lens");
 		// menuItem.setMnemonic(KeyEvent.VK_P);
@@ -613,7 +614,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		spacePopup.add(createOmnidirectionalLensMenuItem);
 
 		// Separator
-		spacePopup.addSeparator();
+		// spacePopup.addSeparator();
 
 		JMenuItem createLightSourceMenuItem = new JMenuItem("Create light source");
 		// menuItem.setMnemonic(KeyEvent.VK_P);
@@ -622,7 +623,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 			public void actionPerformed(ActionEvent e) {
 				// ray / ray-bundle parameters
 				raySourceNo++;
-				RaySource2D ls = new RaySource2D(
+				PointRaySource2D ls = new PointRaySource2D(
 						"Point ray source "+raySourceNo,	// name
 						new Vector2D(i2x(popupMenuX), j2y(popupMenuY)),	// raysStartPoint
 						MyMath.deg2rad(0), // centralRayAngle

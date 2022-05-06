@@ -1,34 +1,38 @@
-package optics.rayplay.core;
+package optics.rayplay.raySources;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics2D;
-import java.awt.Stroke;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import math.MyMath;
 import math.Vector2D;
-import optics.rayplay.graphicElements.RaysCharacteristicsPoint2D;
+import optics.rayplay.graphicElements.PointRaySourcePointGE2D;
+import optics.rayplay.graphicElements.PointRaySourcePointGE2D.PointRaySource2DPointType;
 import optics.rayplay.util.Colour;
 import optics.rayplay.util.SVGWriter;
-import optics.rayplay.graphicElements.RayBundleStartPoint2D;
+import optics.rayplay.core.GraphicElementCollection2D;
+import optics.rayplay.core.Ray2D;
+import optics.rayplay.core.RayPlay2DPanel;
+import optics.rayplay.geometry2D.Line2D;
 
 /**
  * A source of light ray(s)
  * @author johannes
  */
-public class RaySource2D extends GraphicElementCollection2D
+public class PointRaySource2D extends GraphicElementCollection2D
 {
-	private static final String RAYS_START_POINT_NAME = "Start point of ray(s)";
-	private static final String RAYS_CHARACTERISTICS_POINT_NAME = "Point controlling ray/ray bundle characteristics";
-	// private static final String NUMBER_OF_RAYS_POINT_NAME = "Point controlling number of rays";
-
 	// ray / ray bundle
 	private Vector2D raysStartPoint;
+
+	/**
+	 * ignore if null, otherwise constrain rays start point to the line
+	 */
+	private Line2D lineConstrainingStartPoint = null;
+
 
 	/**
 	 * angle of ray (or, if rayBundle, the central ray in the bundle) with horizontal
@@ -59,22 +63,23 @@ public class RaySource2D extends GraphicElementCollection2D
 	private boolean darkenExhaustedRays;
 	
 	private int maxTraceLevel;
-
+	
 //	private Stroke pointStroke;
 //	private Color pointColor;
 
 
 	// internal variables
 
-	private RayBundleStartPoint2D rayBundleStartPoint;
-	private RaysCharacteristicsPoint2D raysCharacteristicsPoint;
+	private PointRaySourcePointGE2D rayBundleStartPoint, raysCharacteristicsPoint;
+//	private RayBundleStartPoint2D rayBundleStartPoint;
+//	private RaysCharacteristicsPoint2D raysCharacteristicsPoint;
 	// private NumberOfRaysPoint2D numberOfRaysPoint;
 
 	private ArrayList<Ray2D> rays;
 
 	// constructor
 
-	public RaySource2D(
+	public PointRaySource2D(
 			String name,
 			Vector2D raysStartPoint,
 			double centralRayAngle,
@@ -104,10 +109,18 @@ public class RaySource2D extends GraphicElementCollection2D
 		this.darkenExhaustedRays = true;
 		this.maxTraceLevel = maxTraceLevel;
 
-		Stroke pointStroke = new BasicStroke(1);
-		Color pointColor = Color.gray;
-		rayBundleStartPoint = new RayBundleStartPoint2D(RAYS_START_POINT_NAME, raysStartPoint, 5, pointStroke, pointColor, true, this);
-		raysCharacteristicsPoint = new RaysCharacteristicsPoint2D(RAYS_CHARACTERISTICS_POINT_NAME, new Vector2D(0, 0), 3, pointStroke, pointColor, true, this);
+		rayBundleStartPoint = new PointRaySourcePointGE2D(
+				raysStartPoint,	// position -- set value later
+				this,	// rs
+				PointRaySource2DPointType.S
+				);
+				// new RayBundleStartPoint2D(RAYS_START_POINT_NAME, raysStartPoint, 5, pointStroke, pointColor, true, this);
+		raysCharacteristicsPoint = new PointRaySourcePointGE2D(
+				new Vector2D(0, 0),	// position -- set value later
+				this,	// rs
+				PointRaySource2DPointType.C
+				);
+				// new RaysCharacteristicsPoint2D(RAYS_CHARACTERISTICS_POINT_NAME, new Vector2D(0, 0), 3, pointStroke, pointColor, true, this);
 		// numberOfRaysPoint = new NumberOfRaysPoint2D(NUMBER_OF_RAYS_POINT_NAME, new Vector2D(0, 0), 3, pointStroke, pointColor, true, this);
 		
 		graphicElements.add(rayBundleStartPoint);
@@ -123,76 +136,69 @@ public class RaySource2D extends GraphicElementCollection2D
 		return raysStartPoint;
 	}
 
-
 	public void setRayStartPointCoordinatesToThoseOf(Vector2D rayStartPoint) {
 		this.raysStartPoint.setCoordinatesToThoseOf(rayStartPoint);
 	}
 
+	public Line2D getLineConstrainingStartPoint() {
+		return lineConstrainingStartPoint;
+	}
+
+	public void setLineConstrainingStartPoint(Line2D lineConstrainingStartPoint) {
+		this.lineConstrainingStartPoint = lineConstrainingStartPoint;
+	}
 
 	public Vector2D getRaysCharacteristicsPoint() {
 		return raysCharacteristicsPoint.getPosition();
 	}
 
-
 	public void setRaysCharacteristicsPointCoordinatesToThoseOf(Vector2D rayPoint2) {
 		raysCharacteristicsPoint.setCoordinatesToThoseOf(rayPoint2);
 	}
-
 
 	public double getRayAngle() {
 		return centralRayAngle;
 	}
 
-
 	public void setRayAngle(double rayAngle) {
 		this.centralRayAngle = rayAngle;
 	}
-
 
 	public boolean isForwardRaysOnly() {
 		return forwardRaysOnly;
 	}
 
-
 	public void setForwardRaysOnly(boolean forwardRaysOnly) {
 		this.forwardRaysOnly = forwardRaysOnly;
 	}
-
 
 	public boolean isRayBundle() {
 		return rayBundle;
 	}
 
-
 	public void setRayBundle(boolean rayBundle) {
 		this.rayBundle = rayBundle;
 	}
-
 
 	public boolean isRayBundleIsotropic() {
 		return rayBundleIsotropic;
 	}
 
-
 	public void setRayBundleIsotropic(boolean rayBundleIsotropic) {
 		this.rayBundleIsotropic = rayBundleIsotropic;
 	}
-
 
 	public double getRayBundleAngle() {
 		return rayBundleAngle;
 	}
 
-
 	public void setRayBundleAngle(double rayBundleAngle) {
 		this.rayBundleAngle = rayBundleAngle;
 	}
 
-
 	public int getRayBundleNoOfRays() {
 		return rayBundleNoOfRays;
 	}
-
 
 	public void setRayBundleNoOfRays(int rayBundleNoOfRays) {
 		this.rayBundleNoOfRays = rayBundleNoOfRays;

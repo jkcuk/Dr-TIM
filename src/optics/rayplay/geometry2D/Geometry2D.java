@@ -100,6 +100,43 @@ public class Geometry2D {
 
 
 	/**
+	 * @param a1	point on line 1
+	 * @param d1	direction (not necessarily normalised) of line 1
+	 * @param a2	point on line 2
+	 * @param d2	direction (not necessarily normalised) of line 2
+	 * @return	alpha1, a real number such that a1 + alpha1 d1 points to the intersection; Double.POSITIVE_INFINITY if there is no intersection
+	 */
+	public static double getAlpha1ForLineLineIntersection2D(Vector2D a1, Vector2D d1, Vector2D a2, Vector2D d2)
+	{
+		// a1 + alpha1 d1 = a2 + alpha2 d2
+		// scalar product with d1: a1.d1 + alpha1 d1.d1 = a2.d1 + alpha2 d2.d1  (1)
+		// scalar product with d2: a1.d2 + alpha1 d1.d2 = a2.d2 + alpha2 d2.d2  (2)
+		// solution:
+		// alpha1 = -((a1d2 d1d2 - a2d2 d1d2 - a1d1 d2d2 + a2d1 d2d2)/(d1d2^2 - d1d1 d2d2))
+		// alpha2 = -((a1d2 d1d1 - a2d2 d1d1 - a1d1 d1d2 + a2d1 d1d2)/(d1d2^2 - d1d1 d2d2))
+		double a1d1 = Vector2D.scalarProduct(a1, d1);
+		double a1d2 = Vector2D.scalarProduct(a1, d2);
+		double a2d1 = Vector2D.scalarProduct(a2, d1);
+		double a2d2 = Vector2D.scalarProduct(a2, d2);
+		double d1d1 = Vector2D.scalarProduct(d1, d1);
+		double d1d2 = Vector2D.scalarProduct(d1, d2);
+		double d2d2 = Vector2D.scalarProduct(d2, d2);
+		
+		// denominator = 
+		double denominator = d1d2*d1d2 - d1d1*d2d2;
+		
+		if(denominator == 0.0)
+		{
+			// the lines are parallel -- there is no intersection
+			return Double.POSITIVE_INFINITY;
+		}
+		else
+		{
+			return (a1d1*d2d2 - a1d2*d1d2 - a2d1*d2d2 + a2d2*d1d2)/denominator;
+		}
+	}
+	
+	/**
 	 * @param s1
 	 * @param s2
 	 * @return	the intersection of the two line segments;
