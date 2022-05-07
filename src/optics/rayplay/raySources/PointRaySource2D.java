@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import math.MyMath;
 import math.Vector2D;
@@ -70,12 +71,15 @@ public class PointRaySource2D extends GraphicElementCollection2D
 
 	// internal variables
 
-	private PointRaySourcePointGE2D rayBundleStartPoint, raysCharacteristicsPoint;
+	// private PointRaySourcePointGE2D rayBundleStartPoint, raysCharacteristicsPoint;
 //	private RayBundleStartPoint2D rayBundleStartPoint;
 //	private RaysCharacteristicsPoint2D raysCharacteristicsPoint;
 	// private NumberOfRaysPoint2D numberOfRaysPoint;
 
 	private ArrayList<Ray2D> rays;
+	
+	private HashMap<PointRaySource2DPointType, PointRaySourcePointGE2D> points;
+
 
 	// constructor
 
@@ -109,23 +113,31 @@ public class PointRaySource2D extends GraphicElementCollection2D
 		this.darkenExhaustedRays = true;
 		this.maxTraceLevel = maxTraceLevel;
 
-		rayBundleStartPoint = new PointRaySourcePointGE2D(
-				raysStartPoint,	// position -- set value later
-				this,	// rs
-				PointRaySource2DPointType.S
-				);
-				// new RayBundleStartPoint2D(RAYS_START_POINT_NAME, raysStartPoint, 5, pointStroke, pointColor, true, this);
-		raysCharacteristicsPoint = new PointRaySourcePointGE2D(
-				new Vector2D(0, 0),	// position -- set value later
-				this,	// rs
-				PointRaySource2DPointType.C
-				);
-				// new RaysCharacteristicsPoint2D(RAYS_CHARACTERISTICS_POINT_NAME, new Vector2D(0, 0), 3, pointStroke, pointColor, true, this);
-		// numberOfRaysPoint = new NumberOfRaysPoint2D(NUMBER_OF_RAYS_POINT_NAME, new Vector2D(0, 0), 3, pointStroke, pointColor, true, this);
-		
-		graphicElements.add(rayBundleStartPoint);
-		graphicElements.add(raysCharacteristicsPoint);
-		// graphicElements.add(numberOfRaysPoint);
+		points = new HashMap<PointRaySource2DPointType, PointRaySourcePointGE2D>();
+
+		for(PointRaySource2DPointType pt:PointRaySource2DPointType.values())
+		{
+			PointRaySourcePointGE2D p = new PointRaySourcePointGE2D(this, pt);
+			points.put(pt, p);
+			graphicElements.add(p);
+		}
+//		rayBundleStartPoint = new PointRaySourcePointGE2D(
+//				raysStartPoint,	// position -- set value later
+//				this,	// rs
+//				PointRaySource2DPointType.S
+//				);
+//				// new RayBundleStartPoint2D(RAYS_START_POINT_NAME, raysStartPoint, 5, pointStroke, pointColor, true, this);
+//		raysCharacteristicsPoint = new PointRaySourcePointGE2D(
+//				new Vector2D(0, 0),	// position -- set value later
+//				this,	// rs
+//				PointRaySource2DPointType.C
+//				);
+//				// new RaysCharacteristicsPoint2D(RAYS_CHARACTERISTICS_POINT_NAME, new Vector2D(0, 0), 3, pointStroke, pointColor, true, this);
+//		// numberOfRaysPoint = new NumberOfRaysPoint2D(NUMBER_OF_RAYS_POINT_NAME, new Vector2D(0, 0), 3, pointStroke, pointColor, true, this);
+//		
+//		graphicElements.add(rayBundleStartPoint);
+//		graphicElements.add(raysCharacteristicsPoint);
+//		// graphicElements.add(numberOfRaysPoint);
 	}
 
 
@@ -148,13 +160,13 @@ public class PointRaySource2D extends GraphicElementCollection2D
 		this.lineConstrainingStartPoint = lineConstrainingStartPoint;
 	}
 
-	public Vector2D getRaysCharacteristicsPoint() {
-		return raysCharacteristicsPoint.getPosition();
-	}
-
-	public void setRaysCharacteristicsPointCoordinatesToThoseOf(Vector2D rayPoint2) {
-		raysCharacteristicsPoint.setCoordinatesToThoseOf(rayPoint2);
-	}
+//	public Vector2D getRaysCharacteristicsPoint1() {
+//		return raysCharacteristicsPoint.getPosition();
+//	}
+//
+//	public void setRaysCharacteristicsPointCoordinatesToThoseOf1(Vector2D rayPoint2) {
+//		raysCharacteristicsPoint.setCoordinatesToThoseOf(rayPoint2);
+//	}
 
 	public double getRayAngle() {
 		return centralRayAngle;
@@ -201,7 +213,8 @@ public class PointRaySource2D extends GraphicElementCollection2D
 	}
 
 	public void setRayBundleNoOfRays(int rayBundleNoOfRays) {
-		this.rayBundleNoOfRays = rayBundleNoOfRays;
+		if((rayBundleNoOfRays > 1) && (rayBundleNoOfRays <= 1000))
+			this.rayBundleNoOfRays = rayBundleNoOfRays;
 	}
 
 //	public Stroke getPointStroke() {
@@ -251,6 +264,12 @@ public class PointRaySource2D extends GraphicElementCollection2D
 	public void setRays(ArrayList<Ray2D> rays) {
 		this.rays = rays;
 	}
+	
+	public PointRaySourcePointGE2D getPoint(PointRaySource2DPointType type)
+	{
+		return points.get(type);
+	}
+
 
 
 	//

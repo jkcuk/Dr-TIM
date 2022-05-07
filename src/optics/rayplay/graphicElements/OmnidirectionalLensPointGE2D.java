@@ -133,7 +133,8 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 		case P3:
 			g.setColor(Color.GRAY);
 			g.drawString(
-					getName() + " (h =" + DoubleFormatter.format(ol.getH()) + ")", 
+					getName() + " (h =" + DoubleFormatter.format(ol.getH()) + ", " +
+					"(x,y)=("+DoubleFormatter.format(position.x)+", "+DoubleFormatter.format(position.y)+"))", 
 					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 					);
 			break;

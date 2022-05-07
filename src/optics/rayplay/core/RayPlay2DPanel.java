@@ -36,6 +36,11 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 {
 	private static final long serialVersionUID = 6137072632788997510L;
 
+	/**
+	 * a good distance, not too small, not too big, to be easily visible
+	 */
+	public static final int GOOD_DISTANCE = 100;
+	
 	//	private static final String RAYS_START_POINT_NAME = "Start point of ray(s)";
 	//	private static final String RAYS_CHARACTERISTICS_POINT_NAME = "Point controlling ray/ray bundle characteristics";
 	// private static final String NUMBER_OF_RAYS_POINT_NAME = "Point controlling number of rays";
@@ -266,6 +271,10 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 	}
 
 
+	public double getGoodDistanceXY()
+	{
+		return xWidth*GOOD_DISTANCE/getSize().width;
+	}
 
 
 	@Override
@@ -348,7 +357,18 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		else
 			g2.drawPolygon(xPoints, yPoints, 3);
 	}
+	
+	public void drawCircle(Vector2D centre, double radius, Graphics2D g2)
+	{
+		int radiusIJ = (int)(getSize().width*radius/xWidth + 0.5);
+		g2.drawOval(x2i(centre.x)-radiusIJ, y2j(centre.y)-radiusIJ, 2*radiusIJ, 2*radiusIJ);	
+	}
 
+	public void drawSector(Vector2D centre, double radius, double phi0, double deltaPhi, Graphics2D g2)
+	{
+		int radiusIJ = (int)(getSize().width*radius/xWidth + 0.5);
+		g2.fillArc(x2i(centre.x)-radiusIJ, y2j(centre.y)-radiusIJ, 2*radiusIJ, 2*radiusIJ, (int)(MyMath.rad2deg(phi0)+0.5), (int)(MyMath.rad2deg(deltaPhi)+0.5));	
+	}
 
 
 	// MouseListener methods

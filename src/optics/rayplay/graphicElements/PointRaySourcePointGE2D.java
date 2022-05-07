@@ -38,12 +38,19 @@ public class PointRaySourcePointGE2D extends PointGE2D
 	 */
 	public enum PointRaySource2DPointType
 	{
-		S("Ray start point"),
-		C("Ray source control point");
+		S("Ray start point", 5),
+		N("Ray number control point", 2),
+		D("Direction control point", 3),
+		A("Cone angle control point", 3);
 
 		public final String name;
+		public final int radius;
 
-		PointRaySource2DPointType(String name) {this.name = name;}
+		PointRaySource2DPointType(String name, int radius)
+		{
+			this.name = name;
+			this.radius = radius;
+		}
 	}
 
 	protected PointRaySource2DPointType pt;
@@ -56,35 +63,21 @@ public class PointRaySourcePointGE2D extends PointGE2D
 		this.rs = rs;
 		this.pt = pt;
 		
-		if(pt == PointRaySource2DPointType.C)
+		if(pt == PointRaySource2DPointType.S)
 		{
-			// calculate the position
-			double l = tanRayBundleAngleConstant / Math.tan(rs.getRayBundleAngle()/2.);
-			position.setCoordinatesToThoseOf(Vector2D.sum(
-					rs.getRayStartPoint(),
-					new Vector2D(l*Math.cos(rs.getRayAngle()), l*Math.sin(rs.getRayAngle()))	// TODO set the distance correctly
-					)
-					);
+			setPosition(rs.getRayStartPoint());
 		}
-		
+		// for the other point types, the position gets set at the time of drawing
+				
 		initPopup();
 	}
 
-	public PointRaySourcePointGE2D(Vector2D position, PointRaySource2D rs, PointRaySource2DPointType pt)
+	public PointRaySourcePointGE2D(PointRaySource2D rs, PointRaySource2DPointType pt)
 	{
-		this(position, 3, new BasicStroke(1), Color.gray, true, rs, pt);
-		
-		switch(pt)
-		{
-		case S:
-			setRadius(5);
-			break;
-		case C:
-			setRadius(3);
-		}
+		this(new Vector2D(0, 0), pt.radius, new BasicStroke(1), Color.gray, true, rs, pt);
+		// the actual position gets calculated at the time of drawing
 	}
-
-
+	
 	
 	// getters & setters
 	
@@ -109,60 +102,112 @@ public class PointRaySourcePointGE2D extends PointGE2D
 	// GraphicElement2D methods
 	
 	@Override
+	public void drawOnTop(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
+	{
+		// draw the point only if it is needed
+		if(
+				(pt == PointRaySource2DPointType.S) ||
+				(pt == PointRaySource2DPointType.D) ||
+				(pt == PointRaySource2DPointType.A && rs.isRayBundle() && !rs.isRayBundleIsotropic()) ||
+				(pt == PointRaySource2DPointType.N && rs.isRayBundle())
+				)
+		{
+			// calculate the position
+			if(pt != PointRaySource2DPointType.S)
+			{
+				double phi = 0;
+				if(pt == PointRaySource2DPointType.D) phi = rs.getRayAngle();
+				else if(pt == PointRaySource2DPointType.A) phi = rs.getRayAngle()+0.5*rs.getRayBundleAngle();
+				else if(pt == PointRaySource2DPointType.N)
+				{
+					if(rs.isRayBundleIsotropic()) phi = rs.getRayAngle() + 2.*Math.PI/rs.getRayBundleNoOfRays();
+					else phi = rs.getRayAngle()+(0.5 - 1./(rs.getRayBundleNoOfRays()-1))*rs.getRayBundleAngle();
+				}
+				position.setCoordinatesToThoseOf(Vector2D.sum(
+						rs.getRayStartPoint(),
+						new Vector2D(p.getGoodDistanceXY()*Math.cos(phi), p.getGoodDistanceXY()*Math.sin(phi))
+						));
+			}
+
+			super.drawOnTop(p,  g,  mouseNear, mouseI, mouseJ);
+		}
+	}
+
+	@Override
 	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel rpp, Graphics2D g, int mouseI, int mouseJ)
 	{
 		switch(pt)
 		{
 		case S:
-			g.setColor(Color.GRAY);
-			g.drawString(
-					getName(), 
-					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
-					);	
+			super.drawAdditionalInfoWhenMouseNear(rpp, g, mouseI, mouseJ);
+//			g.setColor(Color.GRAY);
+//			g.drawString(
+//					getName(), 
+//					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
+//					);	
 			break;
-		case C:
+		case D:
+			g.setColor(Color.GRAY);
+			g.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));	// dashed
+			
+			rpp.drawLine(rs.getRayStartPoint(), position, g);
+			rpp.drawCircle(
+					rs.getRayStartPoint(),	// centre
+					rpp.getGoodDistanceXY(),	// radius
+					g
+				);
+			
+			// give some info
+			g.drawString("Angle with horizontal = "+DoubleFormatter.format(MyMath.rad2deg(rs.getRayAngle()))+" degrees", rpp.x2i(position.x)+10, rpp.y2j(position.y)+5);
+			break;
+		case A:
+			g.setPaint(Color.red);
+			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f));
+			rpp.drawSector(
+					rs.getRayStartPoint(),	// centre
+					rpp.getGoodDistanceXY(),	// radius
+					rs.getRayAngle()-0.5*rs.getRayBundleAngle(),	// phi0
+					rs.getRayBundleAngle(),
+					g
+				);
+			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+			
+			g.setColor(Color.GRAY);
+			g.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));	// dashed
+			
+			rpp.drawLine(rs.getRayStartPoint(), position, g);
+			rpp.drawCircle(
+					rs.getRayStartPoint(),	// centre
+					rpp.getGoodDistanceXY(),	// radius
+					g
+				);
+
+			// give some info
+			g.drawString("Width of ray bundle = "+DoubleFormatter.format(MyMath.rad2deg(rs.getRayBundleAngle()))+" degrees", rpp.x2i(position.x)+10, rpp.y2j(position.y)+5);
+			break;
+		case N:
 			g.setColor(Color.GRAY);
 			g.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));	// dashed
 
 			rpp.drawLine(rs.getRayStartPoint(), position, g);
 
-			Vector2D d = rs.getCentralRayDirection();
-			Vector2D n = d.getPerpendicularVector().getNormalised();
-
-			if(rs.isRayBundle() && !rs.isRayBundleIsotropic())
-			{
-				Vector2D p1 = Vector2D.sum(position, n.getProductWith(-tanRayBundleAngleConstant));
-				Vector2D p2 = Vector2D.sum(position, n.getProductWith( tanRayBundleAngleConstant));
-				
-				g.setPaint(Color.red);
-				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f));
-				rpp.drawTriangle(rs.getRayStartPoint(), p1, p2, true, g);
-				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
-
-				g.setColor(Color.GRAY);
-				rpp.drawLine(p1, p2, g);
-			}
-
 			// give some info
-			g.drawString("Angle with horizontal = "+DoubleFormatter.format(MyMath.rad2deg(rs.getRayAngle()))+" degrees", rpp.x2i(position.x)+10, rpp.y2j(position.y)+(rs.isRayBundle()?-5:5));
-			if(rs.isRayBundle() && !rs.isRayBundleIsotropic())
-				g.drawString("Ray bundle angular width = "+DoubleFormatter.format(MyMath.rad2deg(rs.getRayBundleAngle()))+" degrees", rpp.x2i(position.x)+10, rpp.y2j(position.y)+15);
+			g.drawString("Number of rays = "+rs.getRayBundleNoOfRays(), rpp.x2i(position.x)+10, rpp.y2j(position.y)+5);
 		}
 	}
-	
-	private double tanRayBundleAngleConstant = 0.25;
-	
+		
 	@Override
 	public void mouseDragged(RayPlay2DPanel rpp, boolean mouseNear, int mouseI, int mouseJ)
 	{
 		if(mouseNear)
 		{
-			Vector2D d;
+			double dx, dy;
+			
 			switch(pt)
 			{
 			case S:
 				// the vector from the ray start point to ray point 2
-				d = Vector2D.difference(rs.getRaysCharacteristicsPoint(), rs.getRayStartPoint());
+				Vector2D d = Vector2D.difference(rs.getPoint(PointRaySource2DPointType.D).getPosition(), rs.getPoint(PointRaySource2DPointType.S).getPosition());
 
 				// update this point's position, which is also the rpp's ray start point
 				// the mouse position
@@ -177,14 +222,30 @@ public class PointRaySourcePointGE2D extends PointGE2D
 					position.setCoordinatesToThoseOf(p);
 
 				// construct ray point 2 as the new ray start point + d
-				rs.setRaysCharacteristicsPointCoordinatesToThoseOf(Vector2D.sum(position, d));
+				rs.getPoint(PointRaySource2DPointType.D).setCoordinatesToThoseOf(Vector2D.sum(position, d));
 				break;
-			case C:
-				super.mouseDragged(rpp, mouseNear, mouseI, mouseJ);
-
-				d = Vector2D.difference(position, rs.getRayStartPoint());
-				rs.setRayAngle(Math.atan2(d.y, d.x));
-				rs.setRayBundleAngle(2*Math.atan(tanRayBundleAngleConstant/d.getLength()));	// 180*dC.getLength();
+			case D:
+				dx = rpp.i2x(mouseI) - rs.getRayStartPoint().x;
+				dy = rpp.j2y(mouseJ) - rs.getRayStartPoint().y;
+				rs.setRayAngle(Math.atan2(dy, dx));
+				break;
+			case A:
+				dx = rpp.i2x(mouseI) - rs.getRayStartPoint().x;
+				dy = rpp.j2y(mouseJ) - rs.getRayStartPoint().y;
+				rs.setRayBundleAngle(2*(Math.atan2(dy, dx) - rs.getRayAngle()));
+				break;
+			case N:
+				dx = rpp.i2x(mouseI) - rs.getRayStartPoint().x;
+				dy = rpp.j2y(mouseJ) - rs.getRayStartPoint().y;
+				if(rs.isRayBundleIsotropic())
+				{
+					rs.setRayBundleNoOfRays((int)(2.*Math.PI/(Math.atan2(dy, dx) - rs.getRayAngle()) + 0.5));
+				}
+				else
+				{
+					double phi12 = rs.getRayAngle() + 0.5*rs.getRayBundleAngle() - Math.atan2(dy, dx);	// angle between rays 0 and 1
+					rs.setRayBundleNoOfRays((int)(rs.getRayBundleAngle()/phi12+0.5));
+				}
 			}
 		}
 		else
@@ -220,7 +281,7 @@ public class PointRaySourcePointGE2D extends PointGE2D
 	// menu items
 	JMenuItem
 		forwardRaysOnlyMenuItem,
-		// rayBundleMenuItem,
+		rayBundleMenuItem,
 		rayBundleIsotropicMenuItem,
 		darkenExhaustedRaysMenuItem,
 		releaseSourcePositionFromLineMenuItem;
@@ -238,16 +299,16 @@ public class PointRaySourcePointGE2D extends PointGE2D
 		});
 		popup.add(forwardRaysOnlyMenuItem);
 
-//		rayBundleMenuItem = new JMenuItem("-");
-//		// menuItem.setMnemonic(KeyEvent.VK_P);
-//		rayBundleMenuItem.getAccessibleContext().setAccessibleDescription("Toggle ray bundle");
-//		rayBundleMenuItem.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				rs.setRayBundle(!rs.isRayBundle());
-//				panelWithPopup.repaint();
-//			}
-//		});
-//		popup.add(rayBundleMenuItem);
+		rayBundleMenuItem = new JMenuItem("-");
+		// menuItem.setMnemonic(KeyEvent.VK_P);
+		rayBundleMenuItem.getAccessibleContext().setAccessibleDescription("Toggle ray bundle");
+		rayBundleMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				rs.setRayBundle(!rs.isRayBundle());
+				panelAssociatedWithPopup.repaint();
+			}
+		});
+		popup.add(rayBundleMenuItem);
 
 		rayBundleIsotropicMenuItem = new JMenuItem("-");
 		// menuItem.setMnemonic(KeyEvent.VK_P);
@@ -289,25 +350,25 @@ public class PointRaySourcePointGE2D extends PointGE2D
 //		});
 //		popup.add(halfNoOfRaysMenuItem);
 		
-		int rayNumbers[] = {1, 2, 4, 8, 16, 32, 64, 128, 1024};
-		for(int rayNumber:rayNumbers)
-		{
-			JMenuItem rayNumberMenuItem = new JMenuItem(rayNumber + ((rayNumber == 1)?" ray":" rays"));
-			rayNumberMenuItem.setEnabled(true);
-			rayNumberMenuItem.getAccessibleContext().setAccessibleDescription("Set number of rays to "+rayNumber);
-			rayNumberMenuItem.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					rs.setRayBundleNoOfRays(rayNumber);
-					rs.setRayBundle(rayNumber > 1);
-					panelAssociatedWithPopup.repaint();
-				}
-			});
-			popup.add(rayNumberMenuItem);
-
-		}
-
-		// Separator
-	    popup.addSeparator();
+//		int rayNumbers[] = {1, 2, 4, 8, 16, 32, 64, 128, 1024};
+//		for(int rayNumber:rayNumbers)
+//		{
+//			JMenuItem rayNumberMenuItem = new JMenuItem(rayNumber + ((rayNumber == 1)?" ray":" rays"));
+//			rayNumberMenuItem.setEnabled(true);
+//			rayNumberMenuItem.getAccessibleContext().setAccessibleDescription("Set number of rays to "+rayNumber);
+//			rayNumberMenuItem.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e) {
+//					rs.setRayBundleNoOfRays(rayNumber);
+//					rs.setRayBundle(rayNumber > 1);
+//					panelAssociatedWithPopup.repaint();
+//				}
+//			});
+//			popup.add(rayNumberMenuItem);
+//
+//		}
+//
+//		// Separator
+//	    popup.addSeparator();
 
 	    for(Colour c:Colour.RAY_COLOURS)
 	    {
@@ -326,6 +387,21 @@ public class PointRaySourcePointGE2D extends PointGE2D
 	    
 		// Separator
 	    popup.addSeparator();
+
+	    darkenExhaustedRaysMenuItem = new JMenuItem("-");	// "Switch darkening of exhausted rays "+(rs.isDarkenExhaustedRays()?"off":"on"));
+	    darkenExhaustedRaysMenuItem.setEnabled(true);
+	    darkenExhaustedRaysMenuItem.getAccessibleContext().setAccessibleDescription("Toggle darken exhausted rays");
+	    darkenExhaustedRaysMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				rs.setDarkenExhaustedRays(!rs.isDarkenExhaustedRays());
+				// darkenExhaustedRaysMenuItem.setText("Switch darkening of exhausted rays "+(rs.isDarkenExhaustedRays()?"off":"on"));
+				panelAssociatedWithPopup.repaint();
+			}
+		});
+		popup.add(darkenExhaustedRaysMenuItem);
+
+		// Separator
+	    popup.addSeparator();
 	    
 		int maxTraceLevels[] = {1, 2, 3, 4, 16, 64, 256, 1024};
 		for(int maxTraceLevel:maxTraceLevels)
@@ -341,22 +417,6 @@ public class PointRaySourcePointGE2D extends PointGE2D
 			});
 			popup.add(maxTraceLevelMenuItem);
 		}
-
-		// Separator
-	    popup.addSeparator();
-
-	    darkenExhaustedRaysMenuItem = new JMenuItem("-");	// "Switch darkening of exhausted rays "+(rs.isDarkenExhaustedRays()?"off":"on"));
-	    darkenExhaustedRaysMenuItem.setEnabled(true);
-	    darkenExhaustedRaysMenuItem.getAccessibleContext().setAccessibleDescription("Toggle darken exhausted rays");
-	    darkenExhaustedRaysMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				rs.setDarkenExhaustedRays(!rs.isDarkenExhaustedRays());
-				// darkenExhaustedRaysMenuItem.setText("Switch darkening of exhausted rays "+(rs.isDarkenExhaustedRays()?"off":"on"));
-				panelAssociatedWithPopup.repaint();
-			}
-		});
-		popup.add(darkenExhaustedRaysMenuItem);
-
 	    
 		// Separator
 	    popup.addSeparator();
@@ -394,8 +454,8 @@ public class PointRaySourcePointGE2D extends PointGE2D
 		forwardRaysOnlyMenuItem.setText(rs.isForwardRaysOnly()?"Make ray(s) bidirectional":"Make ray(s) unidirectional");
 		forwardRaysOnlyMenuItem.setEnabled(!rs.isRayBundleIsotropic());
 		
-//		rayBundleMenuItem.setText(rs.isRayBundle()?"Change to single ray":"Change to ray bundle");
-//		rayBundleMenuItem.setEnabled(!rs.isRayBundleIsotropic());
+		rayBundleMenuItem.setText(rs.isRayBundle()?"Change to single ray":"Change to ray bundle");
+		rayBundleMenuItem.setEnabled(!rs.isRayBundleIsotropic());
 		
 		rayBundleIsotropicMenuItem.setText(rs.isRayBundleIsotropic()?"Make ray bundle directional":"Make ray bundle isotropic");
 		rayBundleIsotropicMenuItem.setEnabled(rs.isRayBundle());

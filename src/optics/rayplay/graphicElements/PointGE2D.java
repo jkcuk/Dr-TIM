@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent;
 import math.Vector2D;
 import optics.rayplay.core.GraphicElement2D;
 import optics.rayplay.core.RayPlay2DPanel;
+import optics.rayplay.util.DoubleFormatter;
 
 public class PointGE2D implements GraphicElement2D
 {
@@ -130,7 +131,7 @@ public class PointGE2D implements GraphicElement2D
 	{
 		g.setColor(Color.GRAY);
 		g.drawString(
-				getName(), 
+				getName() + ", (x,y)=("+DoubleFormatter.format(position.x)+", "+DoubleFormatter.format(position.y)+")", 
 				mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 				);	
 	}

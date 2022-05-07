@@ -32,15 +32,20 @@ public class LensStarPointGE2D extends PointGE2D
 	 */
 	public enum LensStarPointType
 	{
-		P0("Principal point of lens 0"),
-		F0("Focal point of lens 0"),
-		L0("End point of lens 0"),
-		L1("End point of lens 1"),
-		C("Centre");
+		P0("Principal point of lens 0", 3),
+		F0("Focal point of lens 0", 3),
+		L0("End point of lens 0", 3),
+		L1("End point of lens 1", 2),
+		C("Centre", 5);
 
 		public final String name;
+		public final int radius;
 
-		LensStarPointType(String name) {this.name = name;}
+		LensStarPointType(String name, int radius)
+		{
+			this.name = name;
+			this.radius = radius;
+		}
 	}
 
 	protected LensStarPointType pt;
@@ -57,22 +62,7 @@ public class LensStarPointGE2D extends PointGE2D
 
 	public LensStarPointGE2D(String name, Vector2D position, LensStar2D ls, LensStarPointType pt)
 	{
-		this(name, position, 3, new BasicStroke(1), Color.gray, true, ls, pt);
-		
-		switch(pt)
-		{
-		case C:
-			setRadius(6);
-			break;
-		case L0:
-		case L1:
-		case F0:
-			setRadius(3);
-			break;
-		case P0:
-			setRadius(2);
-			break;
-		}
+		this(name, position, pt.radius, new BasicStroke(1), Color.gray, true, ls, pt);
 	}
 
 
@@ -101,6 +91,9 @@ public class LensStarPointGE2D extends PointGE2D
 			break;
 		case F0:
 			g.setColor(Color.GRAY);
+			g.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));	// dashed
+			p.drawLine(ls.getC(), position, g);
+
 			g.drawString(
 					getName() + " (f =" + DoubleFormatter.format(ls.getF()) + ")", 
 					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
@@ -115,8 +108,17 @@ public class LensStarPointGE2D extends PointGE2D
 			break;
 		case L1:
 			g.setColor(Color.GRAY);
+			g.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));	// dashed
+			
+			// p.drawLine(ls.getC(), position, g);
+			p.drawCircle(
+					ls.getC(),	// centre
+					ls.getR(),	// radius
+					g
+				);
+
 			g.drawString(
-					getName() + " (n =" + ls.getN() + ", r = " + DoubleFormatter.format(ls.getR()) + ")", 
+					getName() + " (n =" + ls.getN() + ")", 
 					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 					);
 			break;
@@ -185,7 +187,7 @@ public class LensStarPointGE2D extends PointGE2D
 				rpp.graphicElements.addAll(ls.getLenses());
 				
 				// set the radius of the lens star accordingly
-				ls.setR(l1.getLength());
+				// ls.setR(l1.getLength());
 				break;
 			case F0:
 				// dragging F0, which is confined to the optical axis of lens 0...
