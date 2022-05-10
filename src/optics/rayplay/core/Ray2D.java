@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import math.Vector2D;
 
 public class Ray2D {
+	
+	public static final ArrayList<Ray2D> NO_RAYS = new ArrayList<Ray2D>();
 
 	/**
 	 * starting point of the current (last, so far) straight-line segment

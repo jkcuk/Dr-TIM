@@ -176,7 +176,7 @@ public class LensStarPointGE2D extends PointGE2D
 				// calculate the corresponding azimuthal direction
 				double phi1 = Math.atan2(l1.y, l1.x);
 				
-				rpp.graphicElements.removeAll(ls.getLenses());
+				// rpp.graphicElements.removeAll(ls.getLenses());
 				ls.getOpticalComponents().removeAll(ls.getLenses());
 				ls.getGraphicElements().removeAll(ls.getLenses());
 
@@ -184,7 +184,7 @@ public class LensStarPointGE2D extends PointGE2D
 				ls.setN((int)(2.*Math.PI / (phi1 - ls.getPhi0()) + 0.5));
 				ls.createLenses();
 				
-				rpp.graphicElements.addAll(ls.getLenses());
+				// rpp.graphicElements.addAll(ls.getLenses());
 				
 				// set the radius of the lens star accordingly
 				// ls.setR(l1.getLength());
@@ -245,7 +245,7 @@ public class LensStarPointGE2D extends PointGE2D
 		deleteLSMenuItem.getAccessibleContext().setAccessibleDescription("Delete lens star");
 		deleteLSMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				panelWithPopup.graphicElements.removeAll(ls.getGraphicElements());
+				// panelWithPopup.graphicElements.removeAll(ls.getGraphicElements());
 				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
 				panelWithPopup.iocs.remove(ls);
 				panelWithPopup.repaint();
@@ -278,7 +278,7 @@ public class LensStarPointGE2D extends PointGE2D
 		turnIntoIndividualLensesMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// remove the lens star
-				panelWithPopup.graphicElements.removeAll(ls.getGraphicElements());
+				// panelWithPopup.graphicElements.removeAll(ls.getGraphicElements());
 				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
 				panelWithPopup.iocs.remove(ls);
 				
@@ -287,7 +287,7 @@ public class LensStarPointGE2D extends PointGE2D
 				{
 					Lens2DIOC lens = new Lens2DIOC(ls.getLens(i));
 					panelWithPopup.iocs.add(lens);
-					panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
+					// panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
 				}
 				
 				panelWithPopup.repaint();

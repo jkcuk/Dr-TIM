@@ -6,7 +6,7 @@ import java.util.ArrayList;
  * A collection of graphic elements.
  * @author johannes
  */
-public class GraphicElementCollection2D
+public class GraphicElementCollection2D1
 {
 	protected String name;
 	

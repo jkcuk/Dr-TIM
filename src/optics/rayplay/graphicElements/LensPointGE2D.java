@@ -219,7 +219,7 @@ public class LensPointGE2D extends PointGE2D
 		deleteLensMenuItem.getAccessibleContext().setAccessibleDescription("Delete lens");
 		deleteLensMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				panelWithPopup.graphicElements.removeAll(lens.getGraphicElements());
+				// panelWithPopup.graphicElements.removeAll(lens.getGraphicElements());
 				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
 				panelWithPopup.iocs.remove(lens);
 				panelWithPopup.repaint();

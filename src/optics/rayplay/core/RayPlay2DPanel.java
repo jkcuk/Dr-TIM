@@ -12,12 +12,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 
-import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
 
 import math.MyMath;
 import math.Vector2D;
@@ -49,15 +48,15 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 	// the interactive optical components
 	public ArrayList<InteractiveOpticalComponent2D> iocs = new ArrayList<InteractiveOpticalComponent2D>();
 
-	// the light sources
-	public ArrayList<PointRaySource2D> lss = new ArrayList<PointRaySource2D>();
+//	// the light sources
+//	public ArrayList<PointRaySource2D> lss = new ArrayList<PointRaySource2D>();
 
 	// the optical components
 	// public OpticalComponentCollection2D opticalComponents = new OpticalComponentCollection2D("Components");
 
 	// the graphic elements;
 	// note that these get drawn in the order in which they appear in the ArrayList
-	public ArrayList<GraphicElement2D> graphicElements = new ArrayList<GraphicElement2D>();
+	// public ArrayList<GraphicElement2D> graphicElements = new ArrayList<GraphicElement2D>();
 
 	// the rays
 	// private ArrayList<Ray2D> rays = new ArrayList<Ray2D>();
@@ -114,15 +113,15 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 				Colour.RED,
 				255	// maxTraceLevel
 				);
-		lss.add(ls1);
+		iocs.add(ls1);
 		
-		// add to the list of graphic elements the graphic elements associated with the interactive optical components...
-		for(InteractiveOpticalComponent2D ioc:iocs)
-			graphicElements.addAll(ioc.getGraphicElements());
-
-		// ... and with the light sources
-		for(PointRaySource2D ls:lss)
-			graphicElements.addAll(ls.getGraphicElements());
+//		// add to the list of graphic elements the graphic elements associated with the interactive optical components...
+//		for(InteractiveOpticalComponent2D ioc:iocs)
+//			graphicElements.addAll(ioc.getGraphicElements());
+//
+//		// ... and with the light sources
+//		for(PointRaySource2D ls:lss)
+//			graphicElements.addAll(ls.getGraphicElements());
 
 		xCentre = 0;
 		yCentre = 0;
@@ -138,11 +137,11 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		//		requestFocus();
 		//		addKeyListener(this);
 
-		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('+'), "addRay");
-		getActionMap().put("addRay", new AddRayAction());
-
-		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('-'), "subtractRay");
-		getActionMap().put("subtractRay", new SubtractRayAction());
+//		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('+'), "addRay");
+//		getActionMap().put("addRay", new AddRayAction());
+//
+//		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('-'), "subtractRay");
+//		getActionMap().put("subtractRay", new SubtractRayAction());
 	}
 
 
@@ -164,8 +163,8 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		for(InteractiveOpticalComponent2D ioc:iocs)
 			ioc.writeParameters(printStream);
 
-		for(PointRaySource2D ls:lss)
-			ls.writeParameters(printStream);
+//		for(PointRaySource2D ls:lss)
+//			ls.writeParameters(printStream);
 	}
 
 	/**
@@ -202,14 +201,15 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		try {
 			SVGWriter.startSVGFile(filename, getSize());
 
-			// draw rays
-			for(PointRaySource2D ls:lss)
-				ls.writeSVGCode(this);
+//			// draw rays
+//			for(PointRaySource2D ls:lss)
+//				ls.writeSVGCode(this);
 
 			// draw the interactive optical components
 			for(InteractiveOpticalComponent2D ioc:iocs)
-				for(GraphicElement2D g:ioc.getGraphicElements())
-					g.writeSVGCode(this);
+				ioc.writeSVGCode(this);
+//				for(GraphicElement2D g:ioc.getGraphicElements())
+//					g.writeSVGCode(this);
 //			{
 //				for(OLLensType type:OLLensType.values())
 //					if(o.getLens(type) != null) SVGWriter.writeSVGLine(o.getLens(type).getA(), o.getLens(type).getB(), this, "cyan", 3, "opacity=\"0.7\"");
@@ -276,6 +276,28 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		return xWidth*GOOD_DISTANCE/getSize().width;
 	}
 
+	private ArrayList<OpticalComponent2D> collectOpticalComponents()
+	{
+		ArrayList<OpticalComponent2D> opticalComponents = new ArrayList<OpticalComponent2D>();
+		
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			opticalComponents.addAll(ioc.getOpticalComponents());
+		
+		return opticalComponents;
+	}
+
+	private ArrayList<GraphicElement2D> collectGraphicElements()
+	{
+		ArrayList<GraphicElement2D> graphicElements = new ArrayList<GraphicElement2D>();
+		
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			graphicElements.addAll(ioc.getGraphicElements());
+		
+//		for(PointRaySource2D ls:lss)
+//			graphicElements.addAll(ls.getGraphicElements());
+		
+		return graphicElements;
+	}
 
 	@Override
 	public void paintComponent(Graphics g) {
@@ -289,44 +311,61 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		// draw into a Graphics2D (much easier than Graphics)
 		Graphics2D g2 = (Graphics2D)g;
 
+		// ... gather together all the optical components, ...
+//		ArrayList<OpticalComponent2D> opticalComponents = new ArrayList<OpticalComponent2D>();
+//		for(InteractiveOpticalComponent2D ioc:iocs)
+//			opticalComponents.addAll(ioc.getOpticalComponents());
+//
 		// draw all graphic elements
 		// go through the GraphicElements2D in reverse order so that the one that's drawn last (i.e. on top) is checked first
-		for(int i=graphicElements.size()-1; i>=0; i--)
-			// for(GraphicElement2D g:graphicElements)
-		{
-			GraphicElement2D ge = graphicElements.get(i);
-			ge.draw(this, g2, graphicElementNearMouse == ge, mouseI, mouseJ);
-		}
+		ArrayList<GraphicElement2D> graphicElementsR = collectGraphicElements();
+		Collections.reverse(graphicElementsR);
+		
+		// draw graphic elements
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			ioc.drawGraphicElements(this, g2, graphicElementNearMouse, mouseI, mouseJ);
+//		for(GraphicElement2D ge:graphicElementsR)
+//			ge.draw(this, g2, graphicElementNearMouse == ge, mouseI, mouseJ);
+
+
+//		for(int i=graphicElements.size()-1; i>=0; i--)
+//			// for(GraphicElement2D g:graphicElements)
+//		{
+//			GraphicElement2D ge = graphicElements.get(i);
+//			ge.draw(this, g2, graphicElementNearMouse == ge, mouseI, mouseJ);
+//		}
 
 		// initialise all light sources, ...
-		for(PointRaySource2D ls:lss)
+		for(InteractiveOpticalComponent2D ioc:iocs)
+		// for(PointRaySource2D ls:lss)
 		{
-			ls.initialiseRays();
+			ioc.initialiseRays();
 		}
 		
-		// ... gather together all the optical components, ...
-		ArrayList<OpticalComponent2D> opticalComponents = new ArrayList<OpticalComponent2D>();
-		for(InteractiveOpticalComponent2D ioc:iocs)
-			opticalComponents.addAll(ioc.getOpticalComponents());
-
 		// ... and trace the rays from all light sources through the optical components
-		for(PointRaySource2D ls:lss)
-			for(Ray2D ray:ls.getRays())
-				ray.traceThrough(opticalComponents);
-
-
+		for(InteractiveOpticalComponent2D ioc:iocs)
+		// for(PointRaySource2D ls:lss)
+			for(Ray2D ray:ioc.getRays())
+				ray.traceThrough(collectOpticalComponents());
+		
 		// draw rays
-		for(PointRaySource2D ls:lss)
-			ls.drawRays(this, g2);
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			ioc.drawRays(this, g2, graphicElementNearMouse, mouseI, mouseJ);
 
 		// and draw all the GraphicElements
 		// go through the GraphicElements2D in reverse order so that the one that's drawn last (i.e. on top) is checked first
-		for(int i=graphicElements.size()-1; i>=0; i--)
-			// for(GraphicElement2D g:graphicElements)
-		{
-			GraphicElement2D ge = graphicElements.get(i);
-			ge.drawOnTop(this, g2, graphicElementNearMouse == ge, mouseI, mouseJ);
-		}
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			ioc.drawOnTop(this, g2, graphicElementNearMouse, mouseI, mouseJ);
+
+//		for(GraphicElement2D ge:graphicElementsR)
+//			ge.drawOnTop(this, g2, graphicElementNearMouse == ge, mouseI, mouseJ);
+
+//		for(int i=graphicElements.size()-1; i>=0; i--)
+//			// for(GraphicElement2D g:graphicElements)
+//		{
+//			GraphicElement2D ge = graphicElements.get(i);
+//			ge.drawOnTop(this, g2, graphicElementNearMouse == ge, mouseI, mouseJ);
+//		}
 
 		// finally, draw additional information for the element the mouse is close to (if it is close to one)
 		if(graphicElementNearMouse != null)
@@ -384,8 +423,10 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 	public void mouseClicked(MouseEvent e)
 	{
 		// run each GraphicElement2D's mouseClicked method
-		for(GraphicElement2D g:graphicElements)
-			g.mouseClicked(this, graphicElementNearMouse == g, e);
+//		for(GraphicElement2D g:graphicElements)
+//			g.mouseClicked(this, graphicElementNearMouse == g, e);
+		if(graphicElementNearMouse != null)
+			graphicElementNearMouse.mouseClicked(this, true, e);
 
 		repaint();
 	}
@@ -403,34 +444,50 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 	}
 	
 	private void maybeShowPopup(MouseEvent e) {
-		boolean eventHandled = false;
+//		boolean eventHandled = false;
 
 		// run each GraphicElement2D's mousePressed method...
-		for(GraphicElement2D g:graphicElements)
+//		for(GraphicElement2D g:graphicElements)
+//		{
+//			eventHandled = g.mousePressed(this, graphicElementNearMouse == g, e);
+//
+//			if(eventHandled)
+//			{
+//				// ... until one has handled the event
+//				break;
+//			}
+//		}
+		if(graphicElementNearMouse != null)
 		{
-			eventHandled = g.mousePressed(this, graphicElementNearMouse == g, e);
-
-			if(eventHandled)
-			{
-				// ... until one has handled the event
-				break;
-			}
+			// eventHandled = 
+			graphicElementNearMouse.mousePressed(this, true, e);
 		}
-
-		if(!eventHandled)
+		else
 		{
 			// do anything that needs to happen here and that isn't done by the graphic elements
 			if (e.isPopupTrigger())
 			{
-				if(graphicElementNearMouse == null)
-				{
-					// the mouse isn't near any graphicElement -- show the (empty)spacePopup
-					popupMenuX = e.getX();
-					popupMenuY = e.getY();
-					spacePopup.show(e.getComponent(), e.getX(), e.getY());
-				}
+				// the mouse isn't near any graphicElement -- show the (empty)spacePopup
+				popupMenuX = e.getX();
+				popupMenuY = e.getY();
+				spacePopup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		}
+
+//		if(!eventHandled)
+//		{
+//			// do anything that needs to happen here and that isn't done by the graphic elements
+//			if (e.isPopupTrigger())
+//			{
+//				if(graphicElementNearMouse == null)
+//				{
+//					// the mouse isn't near any graphicElement -- show the (empty)spacePopup
+//					popupMenuX = e.getX();
+//					popupMenuY = e.getY();
+//					spacePopup.show(e.getComponent(), e.getX(), e.getY());
+//				}
+//			}
+//		}
 
 		repaint();
 		//		showPopup(e);
@@ -472,7 +529,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 
 	public GraphicElement2D topGraphicElementNearMouse()
 	{
-		for(GraphicElement2D g:graphicElements)
+		for(GraphicElement2D g:collectGraphicElements())
 		{
 			if(g.isInteractive())
 			{
@@ -502,36 +559,36 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		}
 	}
 
-	public class AddRayAction extends AbstractAction
-	{
-		private static final long serialVersionUID = -3396160829458102617L;
-
-		public void actionPerformed(ActionEvent e)
-		{
-			// increase the number of rays in all light sources
-			for(PointRaySource2D ls:lss)
-			{
-				ls.setRayBundleNoOfRays(ls.getRayBundleNoOfRays()+1);
-			}
-			repaint();
-		}
-	}
-
-	public class SubtractRayAction extends AbstractAction
-	{
-		private static final long serialVersionUID = 3631627329424475924L;
-
-		public void actionPerformed(ActionEvent e)
-		{
-			// decrease the number of rays in all light sources
-			for(PointRaySource2D ls:lss)
-			{
-				if(ls.getRayBundleNoOfRays() > 2) ls.setRayBundleNoOfRays(ls.getRayBundleNoOfRays()-1);
-				else ls.setRayBundleNoOfRays(2);
-			}
-			repaint();
-		}
-	}
+//	public class AddRayAction extends AbstractAction
+//	{
+//		private static final long serialVersionUID = -3396160829458102617L;
+//
+//		public void actionPerformed(ActionEvent e)
+//		{
+//			// increase the number of rays in all light sources
+//			for(PointRaySource2D ls:lss)
+//			{
+//				ls.setRayBundleNoOfRays(ls.getRayBundleNoOfRays()+1);
+//			}
+//			repaint();
+//		}
+//	}
+//
+//	public class SubtractRayAction extends AbstractAction
+//	{
+//		private static final long serialVersionUID = 3631627329424475924L;
+//
+//		public void actionPerformed(ActionEvent e)
+//		{
+//			// decrease the number of rays in all light sources
+//			for(PointRaySource2D ls:lss)
+//			{
+//				if(ls.getRayBundleNoOfRays() > 2) ls.setRayBundleNoOfRays(ls.getRayBundleNoOfRays()-1);
+//				else ls.setRayBundleNoOfRays(2);
+//			}
+//			repaint();
+//		}
+//	}
 
 
 	// popup menus
@@ -566,7 +623,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 						Vector2D.sum(p, new Vector2D(0, -0.5))	// endPoint2
 						);
 				iocs.add(lens);
-				graphicElements.addAll(lens.getGraphicElements());
+				// graphicElements.addAll(lens.getGraphicElements());
 
 				repaint();
 			}
@@ -594,7 +651,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 						);
 				iocs.add(ls);
 				// opticalComponents.addAll(ol.getOpticalComponents());
-				graphicElements.addAll(ls.getGraphicElements());
+				// graphicElements.addAll(ls.getGraphicElements());
 
 				repaint();
 			}
@@ -626,7 +683,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 						);
 				iocs.add(ol);
 				// opticalComponents.addAll(ol.getOpticalComponents());
-				graphicElements.addAll(ol.getGraphicElements());
+				// graphicElements.addAll(ol.getGraphicElements());
 
 				repaint();
 			}
@@ -655,8 +712,8 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 						Colour.GREEN,
 						255	// maxTraceLevel
 						);
-				lss.add(ls);
-				graphicElements.addAll(ls.getGraphicElements());
+				iocs.add(ls);
+				// graphicElements.addAll(ls.getGraphicElements());
 
 				repaint();
 			}

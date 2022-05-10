@@ -1,5 +1,7 @@
 package optics.rayplay.core;
 
+import java.util.ArrayList;
+
 /**
  * An optical component.
  * This interface makes available the methods that enable tracing of rays through the component.
@@ -10,6 +12,7 @@ package optics.rayplay.core;
  * @see optics.rayplay.core.GraphicElement2D
  */
 public interface OpticalComponent2D {
+	public static final ArrayList<OpticalComponent2D> NO_COMPONENTS = new ArrayList<OpticalComponent2D>();
 	
 	public String getName();
 

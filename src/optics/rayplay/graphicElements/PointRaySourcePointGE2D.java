@@ -101,6 +101,27 @@ public class PointRaySourcePointGE2D extends PointGE2D
 	
 	// GraphicElement2D methods
 	
+	private Vector2D calculatePosition(RayPlay2DPanel p, PointRaySource2DPointType pt)
+	{
+		// calculate the position
+		if(pt == PointRaySource2DPointType.S) return rs.getRayStartPoint();
+		else 
+		{
+			double phi = 0;
+			if(pt == PointRaySource2DPointType.D) phi = rs.getRayAngle();
+			else if(pt == PointRaySource2DPointType.A) phi = rs.getRayAngle()+0.5*rs.getRayBundleAngle();
+			else if(pt == PointRaySource2DPointType.N)
+			{
+				if(rs.isRayBundleIsotropic()) phi = rs.getRayAngle() + 2.*Math.PI/rs.getRayBundleNoOfRays();
+				else phi = rs.getRayAngle()+(0.5 - 1./(rs.getRayBundleNoOfRays()-1))*rs.getRayBundleAngle();
+			}
+			return Vector2D.sum(
+					rs.getRayStartPoint(),
+					new Vector2D(p.getGoodDistanceXY()*Math.cos(phi), p.getGoodDistanceXY()*Math.sin(phi))
+					);
+		}
+	}
+	
 	@Override
 	public void drawOnTop(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
 	{
@@ -115,18 +136,7 @@ public class PointRaySourcePointGE2D extends PointGE2D
 			// calculate the position
 			if(pt != PointRaySource2DPointType.S)
 			{
-				double phi = 0;
-				if(pt == PointRaySource2DPointType.D) phi = rs.getRayAngle();
-				else if(pt == PointRaySource2DPointType.A) phi = rs.getRayAngle()+0.5*rs.getRayBundleAngle();
-				else if(pt == PointRaySource2DPointType.N)
-				{
-					if(rs.isRayBundleIsotropic()) phi = rs.getRayAngle() + 2.*Math.PI/rs.getRayBundleNoOfRays();
-					else phi = rs.getRayAngle()+(0.5 - 1./(rs.getRayBundleNoOfRays()-1))*rs.getRayBundleAngle();
-				}
-				position.setCoordinatesToThoseOf(Vector2D.sum(
-						rs.getRayStartPoint(),
-						new Vector2D(p.getGoodDistanceXY()*Math.cos(phi), p.getGoodDistanceXY()*Math.sin(phi))
-						));
+				position.setCoordinatesToThoseOf(calculatePosition(p, pt));
 			}
 
 			super.drawOnTop(p,  g,  mouseNear, mouseI, mouseJ);
@@ -426,8 +436,8 @@ public class PointRaySourcePointGE2D extends PointGE2D
 		deleteRayBundleMenuItem.getAccessibleContext().setAccessibleDescription("Delete light source");
 		deleteRayBundleMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				panelAssociatedWithPopup.graphicElements.removeAll(rs.getGraphicElements());
-				panelAssociatedWithPopup.lss.remove(rs);
+				panelAssociatedWithPopup.iocs.remove(rs);
+				// panelAssociatedWithPopup.graphicElements.removeAll(rs.getGraphicElements());
 				panelAssociatedWithPopup.repaint();
 			}
 		});

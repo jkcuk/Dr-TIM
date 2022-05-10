@@ -15,7 +15,6 @@ import math.MyMath;
 import math.Vector2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
-import optics.rayplay.geometry2D.Line2D;
 import optics.rayplay.interactiveOpticalComponents.Lens2DIOC;
 import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D;
 import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D.OmnidirectionalLensLensType;
@@ -38,17 +37,23 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 	 */
 	public enum OmnidirectionalLensPointType
 	{
-		P0("P0"),
-		P1("P1"),
-		P2("P2"),
-		P3("P3"),
-		V1("V1"),
-		V2("V2"),
-		FD("Focal point of lens D");
+		P0("P0", 5),
+		P1("P1", 3),
+		P2("P2", 3),
+		P3("P3", 3),
+		V1("V1", 3),
+		V2("V2", 3),
+		FD("Focal point of lens D", 4),
+		C1("Fully cloaked point C1", 3);
 
 		public final String name;
+		public final int radius;
 
-		OmnidirectionalLensPointType(String name) {this.name = name;}
+		OmnidirectionalLensPointType(String name, int radius)
+		{
+			this.name = name;
+			this.radius = radius;
+		}
 	}
 
 	protected OmnidirectionalLensPointType pt;
@@ -65,19 +70,7 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 
 	public OmnidirectionalLensPointGE2D(String name, Vector2D position, OmnidirectionalLens2D ol, OmnidirectionalLensPointType pt)
 	{
-		this(name, position, 3, new BasicStroke(1), Color.gray, true, ol, pt);
-		
-		switch(pt)
-		{
-		case P0:
-			setRadius(5);
-			break;
-		case FD:
-			setRadius(4);
-			break;
-		default:
-			setRadius(3);
-		}
+		this(name, position, pt.radius, new BasicStroke(1), Color.gray, true, ol, pt);
 	}
 
 	public OmnidirectionalLensPointGE2D(String name, OmnidirectionalLens2D ol, OmnidirectionalLensPointType pt)
@@ -151,7 +144,10 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 			g.drawString(
 					getName() + " (f_D =" + DoubleFormatter.format(ol.getfD()) + ")", 
 					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
-					);	
+					);
+			break;
+		case C1:
+			super.drawAdditionalInfoWhenMouseNear(p, g, mouseI, mouseJ);
 		}
 	}
 
@@ -241,10 +237,14 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 								ol.getcHat()
 								)
 						);
+				break;
+			case C1:
+				// ignore dragging -- this point is not interactive
 			}
 			
-			ol.calculatePointParameters();
-			ol.calculateLensParameters();
+			ol.calculateInternalParameters();
+//			ol.calculatePointParameters();
+//			ol.calculateLensParameters();
 		}
 	}
 
@@ -286,7 +286,7 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 		deleteOLMenuItem.getAccessibleContext().setAccessibleDescription("Delete omnidirectional lens");
 		deleteOLMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				panelWithPopup.graphicElements.removeAll(ol.getGraphicElements());
+				// panelWithPopup.graphicElements.removeAll(ol.getGraphicElements());
 				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
 				panelWithPopup.iocs.remove(ol);
 				panelWithPopup.repaint();
@@ -303,7 +303,7 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 		turnIntoIndividualLensesMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// remove the omnidirectional lens
-				panelWithPopup.graphicElements.removeAll(ol.getGraphicElements());
+				// panelWithPopup.graphicElements.removeAll(ol.getGraphicElements());
 				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
 				panelWithPopup.iocs.remove(ol);
 				
@@ -312,7 +312,7 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 				{
 					Lens2DIOC lens = new Lens2DIOC(ol.getLens(olLensType));
 					panelWithPopup.iocs.add(lens);
-					panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
+					// panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
 				}
 				
 				panelWithPopup.repaint();
@@ -328,20 +328,20 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 	    addRaySourceMenuItem.getAccessibleContext().setAccessibleDescription("Add ray source constrained to the omnidirectional lens's C line");
 	    addRaySourceMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// find intersection of focal plane of lens C1 in cell 2a with the horizontal line through P1
-				// works only if f of lens C1 is > 0
-				Vector2D focalPointC1 = ol.getLens(OmnidirectionalLensLensType.C1).getFocalPoint();
-				Vector2D directionC1 = ol.getLens(OmnidirectionalLensLensType.C1).getDirection();
-				double alpha1 = Geometry2D.getAlpha1ForLineLineIntersection2D(
-						focalPointC1,	// a1, i.e. point on line 1
-						directionC1,	// d1, i.e. direction of line 1
-						ol.getLens(OmnidirectionalLensLensType.C1).getPrincipalPoint(),	// a2, i.e. point on line 2
-						ol.getLens(OmnidirectionalLensLensType.D).getDirection()	// d2, i.e. direction of line 2
-					);
-				Vector2D cPoint = Vector2D.sum(focalPointC1, directionC1.getProductWith(alpha1));
+//				// find intersection of focal plane of lens C1 in cell 2a with the horizontal line through P1
+//				// works only if f of lens C1 is > 0
+//				Vector2D focalPointC1 = ol.getLens(OmnidirectionalLensLensType.C1).getFocalPoint();
+//				Vector2D directionC1 = ol.getLens(OmnidirectionalLensLensType.C1).getDirection();
+//				double alpha1 = Geometry2D.getAlpha1ForLineLineIntersection2D(
+//						focalPointC1,	// a1, i.e. point on line 1
+//						directionC1,	// d1, i.e. direction of line 1
+//						ol.getLens(OmnidirectionalLensLensType.C1).getPrincipalPoint(),	// a2, i.e. point on line 2
+//						ol.getLens(OmnidirectionalLensLensType.D).getDirection()	// d2, i.e. direction of line 2
+//					);
+//				Vector2D cPoint = Vector2D.sum(focalPointC1, directionC1.getProductWith(alpha1));
 				PointRaySource2D ls = new PointRaySource2D(
 						"Point ray source constrained to C line",	// name
-						cPoint,	// raysStartPoint
+						new Vector2D(ol.getPoint(OmnidirectionalLensPointType.C1).getPosition()),	// raysStartPoint
 						MyMath.deg2rad(0), // centralRayAngle
 						false,	// forwardRaysOnly
 						true, // rayBundle
@@ -352,9 +352,12 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 						255	// maxTraceLevel
 						);
 				// set the line constraining the source position
-				ls.setLineConstrainingStartPoint(new Line2D(cPoint, ol.getPoint(OmnidirectionalLensPointType.V1).getPosition()));
-				panelWithPopup.lss.add(ls);
-				panelWithPopup.graphicElements.addAll(ls.getGraphicElements());
+				ls.setLineConstrainingStartPoint(
+						ol.getC1Line()
+						// new Line2D(cPoint, ol.getPoint(OmnidirectionalLensPointType.V1).getPosition())
+					);
+				panelWithPopup.iocs.add(ls);
+				// panelWithPopup.graphicElements.addAll(ls.getGraphicElements());
 
 				panelWithPopup.repaint();
 			}

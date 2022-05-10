@@ -15,7 +15,9 @@ import optics.rayplay.graphicElements.PointRaySourcePointGE2D;
 import optics.rayplay.graphicElements.PointRaySourcePointGE2D.PointRaySource2DPointType;
 import optics.rayplay.util.Colour;
 import optics.rayplay.util.SVGWriter;
-import optics.rayplay.core.GraphicElementCollection2D;
+import optics.rayplay.core.GraphicElement2D;
+import optics.rayplay.core.InteractiveOpticalComponent2D;
+import optics.rayplay.core.OpticalComponent2D;
 import optics.rayplay.core.Ray2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Line2D;
@@ -24,8 +26,10 @@ import optics.rayplay.geometry2D.Line2D;
  * A source of light ray(s)
  * @author johannes
  */
-public class PointRaySource2D extends GraphicElementCollection2D
+public class PointRaySource2D implements InteractiveOpticalComponent2D
 {
+	private String name;
+	
 	// ray / ray bundle
 	private Vector2D raysStartPoint;
 
@@ -78,6 +82,8 @@ public class PointRaySource2D extends GraphicElementCollection2D
 
 	private ArrayList<Ray2D> rays;
 	
+	private ArrayList<GraphicElement2D> graphicElements;
+	
 	private HashMap<PointRaySource2DPointType, PointRaySourcePointGE2D> points;
 
 
@@ -98,8 +104,9 @@ public class PointRaySource2D extends GraphicElementCollection2D
 //			Color pointColor
 		)
 	{
-		super(name);
+		// super(name);
 
+		this.name = name;
 		this.raysStartPoint = raysStartPoint;
 		this.centralRayAngle = centralRayAngle;
 		this.forwardRaysOnly = forwardRaysOnly;
@@ -114,6 +121,7 @@ public class PointRaySource2D extends GraphicElementCollection2D
 		this.maxTraceLevel = maxTraceLevel;
 
 		points = new HashMap<PointRaySource2DPointType, PointRaySourcePointGE2D>();
+		graphicElements = new ArrayList<GraphicElement2D>();
 
 		for(PointRaySource2DPointType pt:PointRaySource2DPointType.values())
 		{
@@ -143,6 +151,14 @@ public class PointRaySource2D extends GraphicElementCollection2D
 
 
 	// setters & getters
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public Vector2D getRayStartPoint() {
 		return raysStartPoint;
@@ -338,7 +354,9 @@ public class PointRaySource2D extends GraphicElementCollection2D
 		}
 	}
 	
-	public void drawRays(RayPlay2DPanel rpp, Graphics2D g2)
+	@Override
+	public void drawRays(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	// public void drawRays(RayPlay2DPanel rpp, Graphics2D g2)
 	{
 		// draw a ray
 		g2.setStroke(new BasicStroke(1));
@@ -365,6 +383,20 @@ public class PointRaySource2D extends GraphicElementCollection2D
 		g2.setComposite(c);
 	}
 	
+	@Override
+	public void drawGraphicElements(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	{
+		for(GraphicElement2D ge:getGraphicElements())
+			ge.draw(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+	}
+
+	@Override
+	public void drawOnTop(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	{
+		for(GraphicElement2D ge:getGraphicElements())
+			ge.drawOnTop(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+	}
+
 	public void writeSVGCode(RayPlay2DPanel rpp)
 	{
 		for(Ray2D ray:rays)
@@ -407,5 +439,31 @@ public class PointRaySource2D extends GraphicElementCollection2D
 		writer.println("Bundle angle="+getRayBundleAngle());
 		writer.println("No of rays="+getRayBundleNoOfRays());
 		writer.println("Forward rays only="+isForwardRaysOnly());
+	}
+
+	
+	//
+	// InteractiveOpticalComponent2D methods
+	//
+
+
+	@Override
+	public ArrayList<OpticalComponent2D> getOpticalComponents() {
+		return OpticalComponent2D.NO_COMPONENTS;
+	}
+
+
+
+	@Override
+	public ArrayList<GraphicElement2D> getGraphicElements() {
+		return graphicElements;
+	}
+
+
+
+	@Override
+	public InteractiveOpticalComponent2D readFromCSV(String filename) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

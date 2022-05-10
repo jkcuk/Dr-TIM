@@ -1,5 +1,6 @@
 package optics.rayplay.interactiveOpticalComponents;
 
+import java.awt.Graphics2D;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -9,6 +10,8 @@ import math.Vector2D;
 import optics.rayplay.core.GraphicElement2D;
 import optics.rayplay.core.InteractiveOpticalComponent2D;
 import optics.rayplay.core.OpticalComponent2D;
+import optics.rayplay.core.Ray2D;
+import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Line2D;
 import optics.rayplay.graphicElements.LensStarPointGE2D;
 import optics.rayplay.graphicElements.LensStarPointGE2D.LensStarPointType;
@@ -211,6 +214,25 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	}
 
 	@Override
+	public void drawGraphicElements(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	{
+		for(GraphicElement2D ge:getGraphicElements())
+			ge.draw(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+	}
+
+	@Override
+	public void drawOnTop(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	{
+		for(GraphicElement2D ge:getGraphicElements())
+			ge.drawOnTop(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+	}
+
+	@Override
+	public void drawRays(RayPlay2DPanel p, Graphics2D g, GraphicElement2D graphicElementNearMouse, int mouseI,
+			int mouseJ)
+	{}
+
+	@Override
 	public void writeParameters(PrintStream printStream)
 	{
 		printStream.println("\nLens star \""+ name +"\"\n");
@@ -354,5 +376,20 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	{
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public void writeSVGCode(RayPlay2DPanel rpp)
+	{
+		for(GraphicElement2D g:getGraphicElements())
+			g.writeSVGCode(rpp);
+	}
+
+	@Override
+	public void initialiseRays()
+	{}
+	
+	@Override
+	public ArrayList<Ray2D> getRays() {
+		return Ray2D.NO_RAYS;
 	}
 }
