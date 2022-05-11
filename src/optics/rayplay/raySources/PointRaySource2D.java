@@ -20,6 +20,7 @@ import optics.rayplay.core.InteractiveOpticalComponent2D;
 import optics.rayplay.core.OpticalComponent2D;
 import optics.rayplay.core.Ray2D;
 import optics.rayplay.core.RayPlay2DPanel;
+import optics.rayplay.geometry2D.Geometry2D;
 import optics.rayplay.geometry2D.Line2D;
 
 /**
@@ -299,6 +300,14 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 		Vector2D dC = getCentralRayDirection();
 		rays = new ArrayList<Ray2D>();
 		
+		if(lineConstrainingStartPoint != null)
+		{
+			// use this opportunity to check if the source position is still on the line
+			raysStartPoint.setCoordinatesToThoseOf(
+					Geometry2D.getPointOnLineClosestToPoint(lineConstrainingStartPoint, raysStartPoint)
+				);
+		}
+		
 		if(rayBundle)
 		{
 			if(rayBundleIsotropic)
@@ -395,6 +404,11 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 	{
 		for(GraphicElement2D ge:getGraphicElements())
 			ge.drawOnTop(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+	}
+
+	@Override
+	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ)
+	{
 	}
 
 	public void writeSVGCode(RayPlay2DPanel rpp)

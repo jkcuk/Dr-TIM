@@ -44,7 +44,7 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 		V1("V1", 3),
 		V2("V2", 3),
 		FD("Focal point of lens D", 4),
-		C1("Fully cloaked point C1", 3);
+		C1("Fully cloaked point C_2a", 3);
 
 		public final String name;
 		public final int radius;
@@ -102,6 +102,35 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 	// GraphicElement2D methods
 	
 	@Override
+	public boolean isMouseNear(RayPlay2DPanel p, int i, int j)
+	{
+		switch(pt)
+		{
+		case C1:
+			if(ol.isShowC1PointAndLine())
+				return super.isMouseNear(p, i, j);
+			else
+				return false;
+		default:
+			return super.isMouseNear(p, i, j);
+		}
+	}
+
+	@Override
+	public void drawOnTop(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
+	{
+		switch(pt)
+		{
+		case C1:
+			if(ol.isShowC1PointAndLine())
+				super.drawOnTop(p, g, mouseNear, mouseI, mouseJ);
+			break;
+		default:
+			super.drawOnTop(p, g, mouseNear, mouseI, mouseJ);
+		}
+	}
+
+	@Override
 	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ)
 	{
 		switch(pt)
@@ -147,7 +176,8 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 					);
 			break;
 		case C1:
-			super.drawAdditionalInfoWhenMouseNear(p, g, mouseI, mouseJ);
+			if(ol.isShowC1PointAndLine())
+				super.drawAdditionalInfoWhenMouseNear(p, g, mouseI, mouseJ);
 		}
 	}
 
@@ -323,9 +353,21 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 		// Separator
 	    popup.addSeparator();
 
-	    JMenuItem addRaySourceMenuItem = new JMenuItem("Add ray source constrained to C line");
+	    JMenuItem showC1ItemsMenuItem = new JMenuItem("Show C_2a point and line");
+	    showC1ItemsMenuItem.setEnabled(true);
+	    showC1ItemsMenuItem.getAccessibleContext().setAccessibleDescription("Show C_2a point and line");
+	    showC1ItemsMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ol.setShowC1PointAndLine(!ol.isShowC1PointAndLine());
+
+				panelWithPopup.repaint();
+			}
+		});
+		popup.add(showC1ItemsMenuItem);
+		
+	    JMenuItem addRaySourceMenuItem = new JMenuItem("Add ray source at C_2a point and constrained to C_2a line");
 	    addRaySourceMenuItem.setEnabled(true);
-	    addRaySourceMenuItem.getAccessibleContext().setAccessibleDescription("Add ray source constrained to the omnidirectional lens's C line");
+	    addRaySourceMenuItem.getAccessibleContext().setAccessibleDescription("Add ray source at C1 point and constrained to the omnidirectional lens's C_2a line");
 	    addRaySourceMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 //				// find intersection of focal plane of lens C1 in cell 2a with the horizontal line through P1
@@ -340,7 +382,7 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 //					);
 //				Vector2D cPoint = Vector2D.sum(focalPointC1, directionC1.getProductWith(alpha1));
 				PointRaySource2D ls = new PointRaySource2D(
-						"Point ray source constrained to C line",	// name
+						"Point ray source constrained to C_2a line",	// name
 						new Vector2D(ol.getPoint(OmnidirectionalLensPointType.C1).getPosition()),	// raysStartPoint
 						MyMath.deg2rad(0), // centralRayAngle
 						false,	// forwardRaysOnly
@@ -363,7 +405,7 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 			}
 		});
 		popup.add(addRaySourceMenuItem);
-}
+	}
 	
 	private void updatePopup()
 	{

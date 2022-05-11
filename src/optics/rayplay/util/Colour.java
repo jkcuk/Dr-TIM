@@ -7,7 +7,8 @@ public enum Colour {
 		GREEN("Green", "green", Color.GREEN),
 		BLUE("Blue", "blue", Color.BLUE),
 		ORANGE("Orange", "orange", Color.ORANGE),
-		CYAN("Cyan", "cyan", Color.CYAN);
+		CYAN("Cyan", "cyan", Color.CYAN),
+		GRAY("Gray", "gray", Color.GRAY);
 	
 		public static Colour RAY_COLOURS[] = {RED, GREEN, BLUE, ORANGE};
 		

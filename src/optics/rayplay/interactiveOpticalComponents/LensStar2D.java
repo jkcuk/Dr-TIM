@@ -228,6 +228,11 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	}
 
 	@Override
+	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ)
+	{
+	}
+
+	@Override
 	public void drawRays(RayPlay2DPanel p, Graphics2D g, GraphicElement2D graphicElementNearMouse, int mouseI,
 			int mouseJ)
 	{}
@@ -319,7 +324,7 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 		for(int i=0; i<n; i++)
 		{
 			// create the lens, ...
-			Lens2D l = new Lens2D("Lens "+n);
+			Lens2D l = new Lens2D("Lens "+i+"/"+n+" in \""+name+"\"");
 
 			// ... add it to the array of lenses, ...
 			lenses.add(l);
@@ -392,4 +397,6 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	public ArrayList<Ray2D> getRays() {
 		return Ray2D.NO_RAYS;
 	}
+
+
 }

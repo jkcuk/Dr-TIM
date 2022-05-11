@@ -25,11 +25,21 @@ public interface InteractiveOpticalComponent2D
 
 	public ArrayList<GraphicElement2D> getGraphicElements();
 	
+	// drawing
+	
 	public void drawRays(RayPlay2DPanel p, Graphics2D g, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ);
 
 	public void drawGraphicElements(RayPlay2DPanel p, Graphics2D g, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ);
 
 	public void drawOnTop(RayPlay2DPanel p, Graphics2D g, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ);
+	
+	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ);
+
+
+	// drawing into an SVG file
+	
+	public void writeSVGCode(RayPlay2DPanel rpp);
+	
 
 	public void writeParameters(PrintStream printStream);
 	
@@ -39,5 +49,4 @@ public interface InteractiveOpticalComponent2D
 
 	public void writeToCSV(PrintWriter writer);
 	
-	public void writeSVGCode(RayPlay2DPanel rpp);
 }

@@ -110,19 +110,26 @@ public class PointGE2D implements GraphicElement2D
 	@Override
 	public void drawOnTop(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
 	{
-		g.setStroke(stroke);
+		// g.setStroke(stroke);
 		g.setColor(color);
 
 		int pointI = p.x2i(position.x);
 		int pointJ = p.y2j(position.y);
 
 		// is the mouse within the radius from the point?
+//		if(mouseNear)
+//		{
+//			g.fillOval(pointI-radius, pointJ-radius, 2*radius, 2*radius);
+//		}
+//		else
+//			g.drawOval(pointI-radius, pointJ-radius, 2*radius, 2*radius);			
+		
 		if(mouseNear)
-		{
-			g.fillOval(pointI-radius, pointJ-radius, 2*radius, 2*radius);
-		}
+			g.setStroke(new BasicStroke(((BasicStroke)stroke).getLineWidth()+2));
 		else
-			g.drawOval(pointI-radius, pointJ-radius, 2*radius, 2*radius);			
+			g.setStroke(stroke);
+
+		g.drawOval(pointI-radius, pointJ-radius, 2*radius, 2*radius);
 	}
 	
 	
@@ -150,9 +157,10 @@ public class PointGE2D implements GraphicElement2D
 	}
 
 	@Override
-	public void mouseClicked(RayPlay2DPanel p, boolean mouseNear, MouseEvent e)
+	public boolean mouseClicked(RayPlay2DPanel p, boolean mouseNear, MouseEvent e)
 	{
-		// ignore	
+		// don't do anything
+		return false;
 	}
 
 	@Override

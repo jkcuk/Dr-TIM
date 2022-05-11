@@ -14,6 +14,9 @@ import optics.rayplay.core.Ray2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
 import optics.rayplay.geometry2D.Line2D;
+import optics.rayplay.graphicElements.LineSegmentGE2D;
+import optics.rayplay.graphicElements.OmnidirectionalLensLineGE2D;
+import optics.rayplay.graphicElements.OmnidirectionalLensLineGE2D.OmnidirectionalLensLineType;
 import optics.rayplay.graphicElements.OmnidirectionalLensPointGE2D;
 import optics.rayplay.graphicElements.OmnidirectionalLensPointGE2D.OmnidirectionalLensPointType;
 import optics.rayplay.graphicElements.PointGE2D;
@@ -73,6 +76,8 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	 * unit vector in the direction of the central axis, pointing from P_D to the other principal points
 	 */
 	private Vector2D cHat;
+	
+	private boolean showC1PointAndLine;
 
 
 
@@ -120,7 +125,11 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 
 	private HashMap<OmnidirectionalLensPointType, PointGE2D> points;
 
-	// private Vector2D point[];
+	/**
+	 * the lenses
+	 */
+	// private Lens2D lens[];
+	private HashMap<OmnidirectionalLensLineType, LineSegmentGE2D> lines;
 
 
 
@@ -135,7 +144,8 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 			double h,
 			Vector2D pD,
 			Vector2D dHat,
-			Vector2D cHat
+			Vector2D cHat,
+			boolean showC1PointAndLine
 			)
 	{
 		this.name = name;
@@ -147,17 +157,13 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		this.pD = pD;
 		this.dHat = dHat;
 		this.cHat = cHat;
+		this.showC1PointAndLine = showC1PointAndLine;
 
-		// create the points, ...
-		createPoints();
-
-		// ..., the lenses, ...
-		createLenses();
+		// create the points, lines and the lenses, ...
+		createInternalArrays();
 
 		// ... and set their parameters
 		calculateInternalParameters();
-//		calculatePointParameters();
-//		calculateLensParameters();
 	}
 
 
@@ -227,6 +233,17 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		this.cHat = c.getNormalised();
 	}
 
+	public boolean isShowC1PointAndLine() {
+		return showC1PointAndLine;
+	}
+
+	public void setShowC1PointAndLine(boolean showC1PointAndLine) {
+		this.showC1PointAndLine = showC1PointAndLine;
+	}
+
+
+	
+	
 	public PointGE2D getPoint(OmnidirectionalLensPointType type)
 	{
 		return points.get(type);
@@ -277,6 +294,7 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		printStream.println("  pD = "+pD);
 		printStream.println("  dHat = "+dHat);
 		printStream.println("  cHat = "+cHat);
+		printStream.println("  showC1PointAndLine = "+showC1PointAndLine);
 		
 		printStream.println("  Lens focal lengths:");
 		printStream.println("  	 fA = "+getLens(OmnidirectionalLensLensType.A1).getFocalLength());
@@ -304,7 +322,7 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		return new Line2D(pD, Vector2D.sum(pD, dHat));
 	}
 
-	private void createPoints()
+	private void createInternalArrays()
 	{
 		// initialise the array of points
 		points = new HashMap<OmnidirectionalLensPointType, PointGE2D>();
@@ -315,34 +333,20 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 			OmnidirectionalLensPointGE2D point = new OmnidirectionalLensPointGE2D(olPointType.name, this, olPointType);
 			points.put(olPointType, point);
 			graphicElements.add(point);
-			// TODO
-			// if(olPointType == OLPointType.P0) setPosition(pD);
-//			switch(olPointType)
-//			{
-//			case P0:
-//				// P0 can be moved freely
-//				OLP0GE2D p0 = new OLP0GE2D(olPointType.name, pD, this, olPointType);
-//				points.put(olPointType, p0);
-//				graphicElements.add(p0);
-//				break;
-//			case P3:
-//				// P3 can be moved freely
-//				OLPointGE2D p3 = new OLPointGE2D(olPointType.name, this, olPointType);
-//				p3.setRadius(4);
-//				points.put(olPointType, p3);
-//				graphicElements.add(p3);
-//				break;
-//			default:
-//				// all other points are moveable on a line, represented by a OLPointMoveableOnLineGE2D
-//				OLPointMoveableOnLineGE2D pml = new OLPointMoveableOnLineGE2D(olPointType.name, this, olPointType);
-//				points.put(olPointType, pml);
-//				graphicElements.add(pml);
-//			}
 		}
-	}
 
-	private void createLenses()
-	{
+		// the lines
+		lines = new HashMap<OmnidirectionalLensLineType, LineSegmentGE2D>();
+
+		// and add them all to the list graphicElements
+		for(OmnidirectionalLensLineType olLineType : OmnidirectionalLensLineType.values())
+		{
+			OmnidirectionalLensLineGE2D line = new OmnidirectionalLensLineGE2D(olLineType.name, this, olLineType);
+			lines.put(olLineType, line);
+			graphicElements.add(line);
+		}
+
+		
 		// initialise the array of lenses
 		// lens = new Lens2D[OLLensType.values().length];
 		lenses = new HashMap<OmnidirectionalLensLensType, Lens2D>();
@@ -350,7 +354,7 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		for(OmnidirectionalLensLensType olLensType : OmnidirectionalLensLensType.values())
 		{
 			// create the lens, ...
-			Lens2D l = new Lens2D(olLensType.toString());
+			Lens2D l = new Lens2D("Lens \""+olLensType.toString()+"\" in \""+name+"\"");
 
 			// ... add it to the array of lenses, ...
 			lenses.put(olLensType, l);
@@ -359,107 +363,6 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 			opticalComponents.add(l);
 			graphicElements.add(l);
 		}
-	}
-
-	public void calculatePointParameters1()
-	{		
-		// all the points that can move on a line move on one of two lines
-//		Line2D lineThroughPrincipalPoints = new Line2D(pD, Vector2D.sum(pD, cHat));
-//		Line2D lineOfLensD = new Line2D(pD, Vector2D.sum(pD, dHat));
-
-		// the bottom vertices
-		points.get(OmnidirectionalLensPointType.V1).setCoordinatesToThoseOf(Vector2D.sum(pD, dHat.getProductWith(-rD)));
-		points.get(OmnidirectionalLensPointType.V2).setCoordinatesToThoseOf(Vector2D.sum(pD, dHat.getProductWith( rD)));
-//		((OLPointMoveableOnLineGE2D)points.get(OLPointType.V1)).setLine(lineOfLensD);
-//		((OLPointMoveableOnLineGE2D)points.get(OLPointType.V2)).setLine(lineOfLensD);
-
-		// the lower inner vertex
-		points.get(OmnidirectionalLensPointType.P1).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(h1)));
-//		((OLPointMoveableOnLineGE2D)points.get(OLPointType.P1)).setLine(lineThroughPrincipalPoints);
-
-		// the upper inner vertex
-		// System.out.println("OmnidirectionalLens2D::calculatePointAndLensParameters: h2="+h2);
-		points.get(OmnidirectionalLensPointType.P2).setCoordinatesToThoseOf(
-				// new Vector2D(0.2, 0.4)
-				Vector2D.sum(pD, cHat.getProductWith(h2))
-				);
-//		((OLPointMoveableOnLineGE2D)points.get(OLPointType.P2)).setLine(lineThroughPrincipalPoints);
-
-		// the top vertex
-		points.get(OmnidirectionalLensPointType.P3).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(h)));
-
-		// the principal point of lens D
-		points.get(OmnidirectionalLensPointType.P0).setCoordinatesToThoseOf(pD);
-
-		// the (inside) focal point of lens D
-		points.get(OmnidirectionalLensPointType.FD).setCoordinatesToThoseOf(Vector2D.sum(pD, cHat.getProductWith(fD)));
-//		((OLPointMoveableOnLineGE2D)points.get(OLPointType.FD)).setLine(lineThroughPrincipalPoints);
-		
-		// calculate the C1 point
-		Vector2D focalPointC1 = getLens(OmnidirectionalLensLensType.C1).getFocalPoint();
-		Vector2D directionC1 = getLens(OmnidirectionalLensLensType.C1).getDirection();
-		double alpha1 = Geometry2D.getAlpha1ForLineLineIntersection2D(
-				focalPointC1,	// a1, i.e. point on line 1
-				directionC1,	// d1, i.e. direction of line 1
-				getLens(OmnidirectionalLensLensType.C1).getPrincipalPoint(),	// a2, i.e. point on line 2
-				getLens(OmnidirectionalLensLensType.D).getDirection()	// d2, i.e. direction of line 2
-			);
-		points.get(OmnidirectionalLensPointType.C1).setCoordinatesToThoseOf(
-				Vector2D.sum(focalPointC1, directionC1.getProductWith(alpha1))
-			);
-	}
-
-	public void calculateLensParameters1()
-	{
-		// calculate the focal lengths from fD and r, h1, h2, h -- see AllLoopTheorems 2D.nb
-		double r2 = rD*rD;
-		double fA = ((-fD*h + (fD + h)*h1)*(h - h2)*rD)/(h1*h2*Math.sqrt(h*h + r2));
-		double fB = (fD*(h - h2)*(-h1 + h2)*rD)/(h*h1*Math.sqrt(h2*h2 + r2));
-		double fC = ((fD*h - (fD + h)*h1)*(h1 - h2)*rD)/(h*h2*Math.sqrt(h1*h1 + r2));
-		double fE = ((fD*h - (fD + h)*h1)*(h1 - h2)*rD)/(2*h*h1*h2);
-		double fF = ((fD*h - (fD + h)*h1)*(h  - h2)*rD)/(2*h*h1*h2);
-
-		// lenses A
-		lenses.get(OmnidirectionalLensLensType.A1).setEndPoints(points.get(OmnidirectionalLensPointType.V1).getPosition(), points.get(OmnidirectionalLensPointType.P3).getPosition());
-		lenses.get(OmnidirectionalLensLensType.A1).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P3).getPosition());
-		lenses.get(OmnidirectionalLensLensType.A1).setFocalLength(fA);
-
-		lenses.get(OmnidirectionalLensLensType.A2).setEndPoints(points.get(OmnidirectionalLensPointType.V2).getPosition(), points.get(OmnidirectionalLensPointType.P3).getPosition());
-		lenses.get(OmnidirectionalLensLensType.A2).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P3).getPosition());
-		lenses.get(OmnidirectionalLensLensType.A2).setFocalLength(fA);
-
-		// lenses B
-		lenses.get(OmnidirectionalLensLensType.B1).setEndPoints(points.get(OmnidirectionalLensPointType.V1).getPosition(), points.get(OmnidirectionalLensPointType.P2).getPosition());
-		lenses.get(OmnidirectionalLensLensType.B1).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P2).getPosition());
-		lenses.get(OmnidirectionalLensLensType.B1).setFocalLength(fB);
-
-		lenses.get(OmnidirectionalLensLensType.B2).setEndPoints(points.get(OmnidirectionalLensPointType.V2).getPosition(), points.get(OmnidirectionalLensPointType.P2).getPosition());
-		lenses.get(OmnidirectionalLensLensType.B2).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P2).getPosition());
-		lenses.get(OmnidirectionalLensLensType.B2).setFocalLength(fB);
-
-		// lenses C
-		lenses.get(OmnidirectionalLensLensType.C1).setEndPoints(points.get(OmnidirectionalLensPointType.V1).getPosition(), points.get(OmnidirectionalLensPointType.P1).getPosition());
-		lenses.get(OmnidirectionalLensLensType.C1).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P1).getPosition());
-		lenses.get(OmnidirectionalLensLensType.C1).setFocalLength(fC);
-
-		lenses.get(OmnidirectionalLensLensType.C2).setEndPoints(points.get(OmnidirectionalLensPointType.V2).getPosition(), points.get(OmnidirectionalLensPointType.P1).getPosition());
-		lenses.get(OmnidirectionalLensLensType.C2).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P1).getPosition());
-		lenses.get(OmnidirectionalLensLensType.C2).setFocalLength(fC);
-
-		// the "base lens", lens D
-		lenses.get(OmnidirectionalLensLensType.D).setEndPoints(points.get(OmnidirectionalLensPointType.V1).getPosition(), points.get(OmnidirectionalLensPointType.V2).getPosition());
-		lenses.get(OmnidirectionalLensLensType.D).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P0).getPosition());
-		lenses.get(OmnidirectionalLensLensType.D).setFocalLength(fD);
-
-		// lens E
-		lenses.get(OmnidirectionalLensLensType.E).setEndPoints(points.get(OmnidirectionalLensPointType.P1).getPosition(), points.get(OmnidirectionalLensPointType.P2).getPosition());
-		lenses.get(OmnidirectionalLensLensType.E).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P1).getPosition());
-		lenses.get(OmnidirectionalLensLensType.E).setFocalLength(fE);
-
-		// lens F
-		lenses.get(OmnidirectionalLensLensType.F).setEndPoints(points.get(OmnidirectionalLensPointType.P2).getPosition(), points.get(OmnidirectionalLensPointType.P3).getPosition());
-		lenses.get(OmnidirectionalLensLensType.F).setPrincipalPoint(points.get(OmnidirectionalLensPointType.P3).getPosition());
-		lenses.get(OmnidirectionalLensLensType.F).setFocalLength(fF);
 	}
 
 	public void calculateInternalParameters()
@@ -550,6 +453,16 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		points.get(OmnidirectionalLensPointType.C1).setCoordinatesToThoseOf(
 				Vector2D.sum(focalPointC1, directionC1.getProductWith(alpha1))
 			);
+		
+		
+		// calculate the C1 line
+		Line2D c1 = getC1Line();
+		alpha1 = Geometry2D.getAlpha1ForLineLineIntersection2D(
+				c1.getA(), c1.getA2B(),	// the (unrestricted) c1 line
+				lenses.get(OmnidirectionalLensLensType.C2).getA(), lenses.get(OmnidirectionalLensLensType.C2).getA2B()
+			);
+		lines.get(OmnidirectionalLensLineType.C1).setA(points.get(OmnidirectionalLensPointType.V1).getPosition());
+		lines.get(OmnidirectionalLensLineType.C1).setB(Vector2D.sum(c1.getA(), c1.getA2B().getProductWith(alpha1)));
 	}
 
 
@@ -595,6 +508,11 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	{
 		for(GraphicElement2D ge:getGraphicElements())
 			ge.drawOnTop(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+	}
+
+	@Override
+	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ)
+	{
 	}
 
 	@Override

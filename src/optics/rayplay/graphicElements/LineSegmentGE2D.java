@@ -2,13 +2,22 @@ package optics.rayplay.graphicElements;
 
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+
+import math.MyMath;
 import math.Vector2D;
 import optics.rayplay.core.GraphicElement2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
 import optics.rayplay.geometry2D.LineSegment2D;
+import optics.rayplay.raySources.PointRaySource2D;
 import optics.rayplay.util.Colour;
 import optics.rayplay.util.SVGWriter;
 
@@ -27,6 +36,8 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 		this.colour = colour;
 		this.svgLineThickness = svgLineThickness;
 		this.svgStyle = svgStyle;
+		
+		initPopup();
 	}
 
 	@Override
@@ -52,6 +63,14 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 	{
 		// by default, just ignore the mouse; override to change this
 
+		if(mouseNear)
+		{
+			float lineWidth = ((BasicStroke)stroke).getLineWidth();
+			g.setStroke(new BasicStroke(lineWidth+4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			g.setColor(Color.gray);
+			p.drawLine(a, b, g);
+		}
+		
 		g.setStroke(stroke);
 		g.setColor(colour.getColor());
 		p.drawLine(a, b, g);
@@ -73,7 +92,78 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 	}
 	
 	@Override
-	public void mouseClicked(RayPlay2DPanel p, boolean mouseNear, MouseEvent e)
-	{	
+	public boolean mouseClicked(RayPlay2DPanel p, boolean mouseNear, MouseEvent e)
+	{
+		// don't do anything
+		return false;
 	}
+	
+	
+	private RayPlay2DPanel panelWithPopup;
+	
+	@Override
+	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
+	{
+		System.out.println("Hi");
+		if(mouseNear && e.isPopupTrigger())
+		{
+			panelWithPopup = rpp;
+			popupMenuX = e.getX();
+			popupMenuY = e.getY();
+			
+			updatePopup();
+
+			popup.show(e.getComponent(), e.getX(), e.getY());
+			
+			// say that the event has been handled
+			return true;
+		}
+		return false;
+	}
+
+
+	// 
+	// popup menu
+	// 
+	
+	private int popupMenuX, popupMenuY;
+	final JPopupMenu popup = new JPopupMenu();
+	
+	private void initPopup()
+	{
+	    JMenuItem addRaySourceMenuItem = new JMenuItem("Add ray source constrained to this line");
+	    addRaySourceMenuItem.setEnabled(true);
+	    addRaySourceMenuItem.getAccessibleContext().setAccessibleDescription("Add ray source constrained to this line");
+	    addRaySourceMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				PointRaySource2D ls = new PointRaySource2D(
+						"Point ray source constrained to line \""+LineSegmentGE2D.this.getName()+"\"",	// name
+						Geometry2D.getPointOnLineClosestToPoint(LineSegmentGE2D.this, new Vector2D(panelWithPopup.i2x(popupMenuX), panelWithPopup.j2y(popupMenuY))),	// raysStartPoint
+						MyMath.deg2rad(0), // centralRayAngle
+						false,	// forwardRaysOnly
+						true, // rayBundle
+						true,	// rayBundleIsotropic
+						MyMath.deg2rad(30), // rayBundleAngle
+						64,	// rayBundleNoOfRays
+						Colour.GREEN,
+						255	// maxTraceLevel
+						);
+				// set the line constraining the source position
+				ls.setLineConstrainingStartPoint(
+						LineSegmentGE2D.this
+					);
+				panelWithPopup.iocs.add(ls);
+				// panelWithPopup.graphicElements.addAll(ls.getGraphicElements());
+
+				panelWithPopup.repaint();
+			}
+		});
+		popup.add(addRaySourceMenuItem);
+}
+	
+	private void updatePopup()
+	{
+		// enable/disable + text
+	}	
+
 }

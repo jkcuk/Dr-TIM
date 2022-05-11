@@ -52,7 +52,13 @@ public interface GraphicElement2D
 		
 	public void mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ);
 	
-	public void mouseClicked(RayPlay2DPanel p, boolean mouseNear, MouseEvent e);
+	/**
+	 * @param p
+	 * @param mouseNear
+	 * @param e
+	 * @return	true if the MouseEvent has been fully handled
+	 */
+	public boolean mouseClicked(RayPlay2DPanel p, boolean mouseNear, MouseEvent e);
 
 	/**
 	 * @param c

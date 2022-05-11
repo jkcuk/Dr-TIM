@@ -252,7 +252,7 @@ implements OpticalComponent2D, Bijection2D
 	{
 		g.setColor(Color.GRAY);
 		g.drawString(
-				"Lens "+getName()+", f = "+DoubleFormatter.format(getFocalLength()), 
+				getName()+", f = "+DoubleFormatter.format(getFocalLength()), 
 				mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 				);
 	}
