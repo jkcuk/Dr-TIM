@@ -90,9 +90,9 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 	}
 	
 	@Override
-	public void mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ)
+	public boolean mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ)
 	{
-		// ignore
+		return false;
 	}
 	
 	@Override

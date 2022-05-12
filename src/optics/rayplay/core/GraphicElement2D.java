@@ -52,7 +52,7 @@ public interface GraphicElement2D
 	
 	public boolean isMouseNear(RayPlay2DPanel p, int i, int j);
 		
-	public void mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ);
+	public boolean mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ);
 	
 	/**
 	 * @param p

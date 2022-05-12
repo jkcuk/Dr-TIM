@@ -544,18 +544,20 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		
 		if(graphicElementNearMouse != null)
 		{
-			Vector2D delta = new Vector2D(mouseX - mouseDraggedToX, mouseY - mouseDraggedToY);
+			if(!graphicElementNearMouse.mouseDragged(this, true, e.getX(), e.getY()))
+			{
+				Vector2D delta = new Vector2D(mouseX - mouseDraggedToX, mouseY - mouseDraggedToY);
 
-			for(InteractiveOpticalComponent2D ioc:selectedIOCs)
-				ioc.move(delta);
-			
-			if(iocNearMouse != null)
-				if(!selectedIOCs.contains(iocNearMouse))
-					iocNearMouse.move(delta);
-			
-			mouseDraggedToX = mouseX;
-			mouseDraggedToY = mouseY;
-			// graphicElementNearMouse.mouseDragged(this, true, e.getX(), e.getY());
+				for(InteractiveOpticalComponent2D ioc:selectedIOCs)
+					ioc.move(delta);
+
+				if(iocNearMouse != null)
+					if(!selectedIOCs.contains(iocNearMouse))
+						iocNearMouse.move(delta);
+
+				mouseDraggedToX = mouseX;
+				mouseDraggedToY = mouseY;
+			}
 		}
 		else
 		{

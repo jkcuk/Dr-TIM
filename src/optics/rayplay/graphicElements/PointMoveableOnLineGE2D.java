@@ -51,7 +51,7 @@ public class PointMoveableOnLineGE2D extends PointGE2D
 	// GraphicElement2D methods
 	
 	@Override
-	public void mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ)
+	public boolean mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ)
 	{
 		if(mouseNear)
 		{
@@ -59,5 +59,7 @@ public class PointMoveableOnLineGE2D extends PointGE2D
 			
 			position.setCoordinatesToThoseOf(Geometry2D.getPointOnLineClosestToPoint(line, v));
 		}
+		
+		return mouseNear;
 	}
 }

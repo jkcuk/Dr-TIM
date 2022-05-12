@@ -159,13 +159,14 @@ public class PointGE2D implements GraphicElement2D
 
 	
 	@Override
-	public void mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ)
+	public boolean mouseDragged(RayPlay2DPanel p, boolean mouseNear, int mouseI, int mouseJ)
 	{
 		if(mouseNear)
 		{
 			position.x = p.i2x(mouseI);
 			position.y = p.j2y(mouseJ);
 		}
+		return mouseNear;
 //		for(GraphicElement2DEventHandler h:graphicElement2DEventHandlers)
 //			h.mouseDragged(this, mouseNear, mouseI, mouseJ);
 	}

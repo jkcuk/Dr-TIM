@@ -169,8 +169,9 @@ public class OmnidirectionalLensLineGE2D extends LineSegmentGE2D
 
 	
 	@Override
-	public void mouseDragged(RayPlay2DPanel rpp, boolean mouseNear, int mouseI, int mouseJ)
+	public boolean mouseDragged(RayPlay2DPanel rpp, boolean mouseNear, int mouseI, int mouseJ)
 	{
+		return false;
 	}
 
 }

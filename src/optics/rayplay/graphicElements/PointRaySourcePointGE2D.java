@@ -200,7 +200,7 @@ public class PointRaySourcePointGE2D extends PointGE2D
 	}
 		
 	@Override
-	public void mouseDragged(RayPlay2DPanel rpp, boolean mouseNear, int mouseI, int mouseJ)
+	public boolean mouseDragged(RayPlay2DPanel rpp, boolean mouseNear, int mouseI, int mouseJ)
 	{
 		if(mouseNear)
 		{
@@ -250,9 +250,10 @@ public class PointRaySourcePointGE2D extends PointGE2D
 					rs.setRayBundleNoOfRays((int)(rs.getRayBundleAngle()/phi12+0.5));
 				}
 			}
+			return true;
 		}
 		else
-			super.mouseDragged(rpp, mouseNear, mouseI, mouseJ);
+			return super.mouseDragged(rpp, mouseNear, mouseI, mouseJ);
 	}
 
 	

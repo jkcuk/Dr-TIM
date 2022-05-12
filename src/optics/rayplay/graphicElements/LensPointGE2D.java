@@ -141,7 +141,7 @@ public class LensPointGE2D extends PointGE2D
 
 
 	@Override
-	public void mouseDragged(RayPlay2DPanel rpp, boolean mouseNear, int mouseI, int mouseJ)
+	public boolean mouseDragged(RayPlay2DPanel rpp, boolean mouseNear, int mouseI, int mouseJ)
 	{
 //		super.mouseDragged(c, mouseNear, mouseI, mouseJ);
 		
@@ -205,7 +205,10 @@ public class LensPointGE2D extends PointGE2D
 			}
 			
 			lens.calculatePointParameters();
+			
+			return true;
 		}
+		return false;
 	}
 
 	
