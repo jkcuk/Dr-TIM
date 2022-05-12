@@ -4,22 +4,11 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
-import math.MyMath;
 import math.Vector2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
-import optics.rayplay.interactiveOpticalComponents.Lens2DIOC;
 import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D;
-import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D.OmnidirectionalLensLensType;
-import optics.rayplay.raySources.PointRaySource2D;
-import optics.rayplay.util.Colour;
 import optics.rayplay.util.DoubleFormatter;
 
 /**
@@ -65,7 +54,7 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 		this.ol = ol;
 		this.pt = pt;
 		
-		initPopup();
+		// initPopup();
 	}
 
 	public OmnidirectionalLensPointGE2D(String name, Vector2D position, OmnidirectionalLens2D ol, OmnidirectionalLensPointType pt)
@@ -117,16 +106,30 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 	}
 
 	@Override
-	public void drawOnTop(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
+	public void drawInFront(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
 	{
 		switch(pt)
 		{
 		case C1:
 			if(ol.isShowC1PointAndLine())
-				super.drawOnTop(p, g, mouseNear, mouseI, mouseJ);
+				super.drawInFront(p, g, mouseNear, mouseI, mouseJ);
 			break;
 		default:
-			super.drawOnTop(p, g, mouseNear, mouseI, mouseJ);
+			super.drawInFront(p, g, mouseNear, mouseI, mouseJ);
+		}
+	}
+
+	@Override
+	public void drawBehind(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
+	{
+		switch(pt)
+		{
+		case C1:
+			if(ol.isShowC1PointAndLine())
+				super.drawBehind(p, g, mouseNear, mouseI, mouseJ);
+			break;
+		default:
+			super.drawBehind(p, g, mouseNear, mouseI, mouseJ);
 		}
 	}
 
@@ -277,139 +280,139 @@ public class OmnidirectionalLensPointGE2D extends PointGE2D
 //			ol.calculateLensParameters();
 		}
 	}
-
-	private RayPlay2DPanel panelWithPopup;
 	
-	@Override
-	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
-	{
-		if(mouseNear && e.isPopupTrigger())
-		{
-			panelWithPopup = rpp;
-			
-			updatePopup();
-
-			popup.show(e.getComponent(), e.getX(), e.getY());
-			
-			// say that the event has been handled
-			return true;
-		}
-		return false;
-	}
-
-
-	// 
-	// popup menu
-	// 
-	
-	final JPopupMenu popup = new JPopupMenu();
-	
-	// menu items
-//	JMenuItem
-//		deleteOLMenuItem,
-//		turnIntoIndividualLensesMenuItem;
-
-	private void initPopup()
-	{
-		JMenuItem deleteOLMenuItem = new JMenuItem("Delete omnidirectional lens");
-		deleteOLMenuItem.setEnabled(true);
-		deleteOLMenuItem.getAccessibleContext().setAccessibleDescription("Delete omnidirectional lens");
-		deleteOLMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// panelWithPopup.graphicElements.removeAll(ol.getGraphicElements());
-				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
-				panelWithPopup.iocs.remove(ol);
-				panelWithPopup.repaint();
-			}
-		});
-		popup.add(deleteOLMenuItem);
-		
-		// Separator
-	    popup.addSeparator();
-
-	    JMenuItem turnIntoIndividualLensesMenuItem = new JMenuItem("Turn omnidirectional lens into individual lenses");
-		turnIntoIndividualLensesMenuItem.setEnabled(true);
-		turnIntoIndividualLensesMenuItem.getAccessibleContext().setAccessibleDescription("Turn omnidirectional lens into individual lenses");
-		turnIntoIndividualLensesMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// remove the omnidirectional lens
-				// panelWithPopup.graphicElements.removeAll(ol.getGraphicElements());
-				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
-				panelWithPopup.iocs.remove(ol);
-				
-				// and add all the lenses
-				for(OmnidirectionalLensLensType olLensType:OmnidirectionalLensLensType.values())
-				{
-					Lens2DIOC lens = new Lens2DIOC(ol.getLens(olLensType));
-					panelWithPopup.iocs.add(lens);
-					// panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
-				}
-				
-				panelWithPopup.repaint();
-			}
-		});
-		popup.add(turnIntoIndividualLensesMenuItem);
-
-		// Separator
-	    popup.addSeparator();
-
-	    JMenuItem showC1ItemsMenuItem = new JMenuItem("Show C_2a point and line");
-	    showC1ItemsMenuItem.setEnabled(true);
-	    showC1ItemsMenuItem.getAccessibleContext().setAccessibleDescription("Show C_2a point and line");
-	    showC1ItemsMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				ol.setShowC1PointAndLine(!ol.isShowC1PointAndLine());
-
-				panelWithPopup.repaint();
-			}
-		});
-		popup.add(showC1ItemsMenuItem);
-		
-	    JMenuItem addRaySourceMenuItem = new JMenuItem("Add ray source at C_2a point and constrained to C_2a line");
-	    addRaySourceMenuItem.setEnabled(true);
-	    addRaySourceMenuItem.getAccessibleContext().setAccessibleDescription("Add ray source at C1 point and constrained to the omnidirectional lens's C_2a line");
-	    addRaySourceMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-//				// find intersection of focal plane of lens C1 in cell 2a with the horizontal line through P1
-//				// works only if f of lens C1 is > 0
-//				Vector2D focalPointC1 = ol.getLens(OmnidirectionalLensLensType.C1).getFocalPoint();
-//				Vector2D directionC1 = ol.getLens(OmnidirectionalLensLensType.C1).getDirection();
-//				double alpha1 = Geometry2D.getAlpha1ForLineLineIntersection2D(
-//						focalPointC1,	// a1, i.e. point on line 1
-//						directionC1,	// d1, i.e. direction of line 1
-//						ol.getLens(OmnidirectionalLensLensType.C1).getPrincipalPoint(),	// a2, i.e. point on line 2
-//						ol.getLens(OmnidirectionalLensLensType.D).getDirection()	// d2, i.e. direction of line 2
+//	private RayPlay2DPanel panelWithPopup;
+//	
+//	@Override
+//	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
+//	{
+//		if(mouseNear && e.isPopupTrigger())
+//		{
+//			panelWithPopup = rpp;
+//			
+//			updatePopup();
+//
+//			popup.show(e.getComponent(), e.getX(), e.getY());
+//			
+//			// say that the event has been handled
+//			return true;
+//		}
+//		return false;
+//	}
+//
+//
+//	// 
+//	// popup menu
+//	// 
+//	
+//	final JPopupMenu popup = new JPopupMenu();
+//	
+//	// menu items
+////	JMenuItem
+////		deleteOLMenuItem,
+////		turnIntoIndividualLensesMenuItem;
+//
+//	private void initPopup()
+//	{
+//		JMenuItem deleteOLMenuItem = new JMenuItem("Delete omnidirectional lens");
+//		deleteOLMenuItem.setEnabled(true);
+//		deleteOLMenuItem.getAccessibleContext().setAccessibleDescription("Delete omnidirectional lens");
+//		deleteOLMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				// panelWithPopup.graphicElements.removeAll(ol.getGraphicElements());
+//				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
+//				panelWithPopup.iocs.remove(ol);
+//				panelWithPopup.repaint();
+//			}
+//		});
+//		popup.add(deleteOLMenuItem);
+//		
+//		// Separator
+//	    popup.addSeparator();
+//
+//	    JMenuItem turnIntoIndividualLensesMenuItem = new JMenuItem("Turn omnidirectional lens into individual lenses");
+//		turnIntoIndividualLensesMenuItem.setEnabled(true);
+//		turnIntoIndividualLensesMenuItem.getAccessibleContext().setAccessibleDescription("Turn omnidirectional lens into individual lenses");
+//		turnIntoIndividualLensesMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				// remove the omnidirectional lens
+//				// panelWithPopup.graphicElements.removeAll(ol.getGraphicElements());
+//				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
+//				panelWithPopup.iocs.remove(ol);
+//				
+//				// and add all the lenses
+//				for(OmnidirectionalLensLensType olLensType:OmnidirectionalLensLensType.values())
+//				{
+//					Lens2DIOC lens = new Lens2DIOC(ol.getLens(olLensType));
+//					panelWithPopup.iocs.add(lens);
+//					// panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
+//				}
+//				
+//				panelWithPopup.repaint();
+//			}
+//		});
+//		popup.add(turnIntoIndividualLensesMenuItem);
+//
+//		// Separator
+//	    popup.addSeparator();
+//
+//	    JMenuItem showC1ItemsMenuItem = new JMenuItem("Show C_2a point and line");
+//	    showC1ItemsMenuItem.setEnabled(true);
+//	    showC1ItemsMenuItem.getAccessibleContext().setAccessibleDescription("Show C_2a point and line");
+//	    showC1ItemsMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				ol.setShowC1PointAndLine(!ol.isShowC1PointAndLine());
+//
+//				panelWithPopup.repaint();
+//			}
+//		});
+//		popup.add(showC1ItemsMenuItem);
+//		
+//	    JMenuItem addRaySourceMenuItem = new JMenuItem("Add ray source at C_2a point and constrained to C_2a line");
+//	    addRaySourceMenuItem.setEnabled(true);
+//	    addRaySourceMenuItem.getAccessibleContext().setAccessibleDescription("Add ray source at C1 point and constrained to the omnidirectional lens's C_2a line");
+//	    addRaySourceMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+////				// find intersection of focal plane of lens C1 in cell 2a with the horizontal line through P1
+////				// works only if f of lens C1 is > 0
+////				Vector2D focalPointC1 = ol.getLens(OmnidirectionalLensLensType.C1).getFocalPoint();
+////				Vector2D directionC1 = ol.getLens(OmnidirectionalLensLensType.C1).getDirection();
+////				double alpha1 = Geometry2D.getAlpha1ForLineLineIntersection2D(
+////						focalPointC1,	// a1, i.e. point on line 1
+////						directionC1,	// d1, i.e. direction of line 1
+////						ol.getLens(OmnidirectionalLensLensType.C1).getPrincipalPoint(),	// a2, i.e. point on line 2
+////						ol.getLens(OmnidirectionalLensLensType.D).getDirection()	// d2, i.e. direction of line 2
+////					);
+////				Vector2D cPoint = Vector2D.sum(focalPointC1, directionC1.getProductWith(alpha1));
+//				PointRaySource2D ls = new PointRaySource2D(
+//						"Point ray source constrained to C_2a line",	// name
+//						new Vector2D(ol.getPoint(OmnidirectionalLensPointType.C1).getPosition()),	// raysStartPoint
+//						MyMath.deg2rad(0), // centralRayAngle
+//						false,	// forwardRaysOnly
+//						true, // rayBundle
+//						true,	// rayBundleIsotropic
+//						MyMath.deg2rad(30), // rayBundleAngle
+//						64,	// rayBundleNoOfRays
+//						Colour.GREEN,
+//						255	// maxTraceLevel
+//						);
+//				// set the line constraining the source position
+//				ls.setLineConstrainingStartPoint(
+//						ol.getC1Line()
+//						// new Line2D(cPoint, ol.getPoint(OmnidirectionalLensPointType.V1).getPosition())
 //					);
-//				Vector2D cPoint = Vector2D.sum(focalPointC1, directionC1.getProductWith(alpha1));
-				PointRaySource2D ls = new PointRaySource2D(
-						"Point ray source constrained to C_2a line",	// name
-						new Vector2D(ol.getPoint(OmnidirectionalLensPointType.C1).getPosition()),	// raysStartPoint
-						MyMath.deg2rad(0), // centralRayAngle
-						false,	// forwardRaysOnly
-						true, // rayBundle
-						true,	// rayBundleIsotropic
-						MyMath.deg2rad(30), // rayBundleAngle
-						64,	// rayBundleNoOfRays
-						Colour.GREEN,
-						255	// maxTraceLevel
-						);
-				// set the line constraining the source position
-				ls.setLineConstrainingStartPoint(
-						ol.getC1Line()
-						// new Line2D(cPoint, ol.getPoint(OmnidirectionalLensPointType.V1).getPosition())
-					);
-				panelWithPopup.iocs.add(ls);
-				// panelWithPopup.graphicElements.addAll(ls.getGraphicElements());
-
-				panelWithPopup.repaint();
-			}
-		});
-		popup.add(addRaySourceMenuItem);
-	}
-	
-	private void updatePopup()
-	{
-		// enable/disable + text
-	}	
+//				panelWithPopup.iocs.add(ls);
+//				// panelWithPopup.graphicElements.addAll(ls.getGraphicElements());
+//
+//				panelWithPopup.repaint();
+//			}
+//		});
+//		popup.add(addRaySourceMenuItem);
+//	}
+//	
+//	private void updatePopup()
+//	{
+//		// enable/disable + text
+//	}	
 
 }

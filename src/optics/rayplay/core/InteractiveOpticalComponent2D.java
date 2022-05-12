@@ -1,9 +1,12 @@
 package optics.rayplay.core;
 
 import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+
+import math.Vector2D;
 
 
 /**
@@ -23,18 +26,26 @@ public interface InteractiveOpticalComponent2D
 
 	public ArrayList<OpticalComponent2D> getOpticalComponents();
 
-	public ArrayList<GraphicElement2D> getGraphicElements();
+	public ArrayList<GraphicElement2D> getGraphicElements(boolean isSelected, boolean isMouseNear);
+	
+	public void move(Vector2D delta);
 	
 	// drawing
 	
 	public void drawRays(RayPlay2DPanel p, Graphics2D g, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ);
 
-	public void drawGraphicElements(RayPlay2DPanel p, Graphics2D g, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ);
+	public void drawGraphicElements(RayPlay2DPanel p, Graphics2D g, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ);
 
-	public void drawOnTop(RayPlay2DPanel p, Graphics2D g, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ);
+	public void drawGraphicElementsInFront(RayPlay2DPanel p, Graphics2D g, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ);
+	
+	public void drawGraphicElementsBehind(RayPlay2DPanel p, Graphics2D g, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ);
 	
 	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ);
 
+	
+	// mouse stuff
+	
+	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e);
 
 	// drawing into an SVG file
 	

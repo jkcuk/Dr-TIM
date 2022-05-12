@@ -4,10 +4,16 @@ import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Composite;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 import math.MyMath;
 import math.Vector2D;
@@ -83,7 +89,8 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 
 	private ArrayList<Ray2D> rays;
 	
-	private ArrayList<GraphicElement2D> graphicElements;
+	private ArrayList<GraphicElement2D> displayGraphicElements = new ArrayList<GraphicElement2D>();
+	private ArrayList<GraphicElement2D> controlGraphicElements = new ArrayList<GraphicElement2D>();
 	
 	private HashMap<PointRaySource2DPointType, PointRaySourcePointGE2D> points;
 
@@ -122,13 +129,19 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 		this.maxTraceLevel = maxTraceLevel;
 
 		points = new HashMap<PointRaySource2DPointType, PointRaySourcePointGE2D>();
-		graphicElements = new ArrayList<GraphicElement2D>();
 
 		for(PointRaySource2DPointType pt:PointRaySource2DPointType.values())
 		{
 			PointRaySourcePointGE2D p = new PointRaySourcePointGE2D(this, pt);
 			points.put(pt, p);
-			graphicElements.add(p);
+			switch(pt)
+			{
+			case S:
+				displayGraphicElements.add(p);
+				break;
+			default:
+				controlGraphicElements.add(p);
+			}
 		}
 //		rayBundleStartPoint = new PointRaySourcePointGE2D(
 //				raysStartPoint,	// position -- set value later
@@ -147,6 +160,8 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 //		graphicElements.add(rayBundleStartPoint);
 //		graphicElements.add(raysCharacteristicsPoint);
 //		// graphicElements.add(numberOfRaysPoint);
+		
+		initPopup();
 	}
 
 
@@ -364,6 +379,21 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 	}
 	
 	@Override
+	public void move(Vector2D delta)
+	{
+		raysStartPoint.setCoordinatesToThoseOf(Vector2D.sum(raysStartPoint, delta));
+		
+		if(lineConstrainingStartPoint != null)
+		{
+			// yes, it's constrained to a line
+			raysStartPoint.setCoordinatesToThoseOf(Geometry2D.getPointOnLineClosestToPoint(lineConstrainingStartPoint, raysStartPoint));
+		}
+
+		// construct ray point 2 as the new ray start point + d
+		// getPoint(PointRaySource2DPointType.D).setCoordinatesToThoseOf(Vector2D.sum(position, d));
+	}
+	
+	@Override
 	public void drawRays(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
 	// public void drawRays(RayPlay2DPanel rpp, Graphics2D g2)
 	{
@@ -393,18 +423,38 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 	}
 	
 	@Override
-	public void drawGraphicElements(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	public void drawGraphicElements(RayPlay2DPanel rpp, Graphics2D g2, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
 	{
-		for(GraphicElement2D ge:getGraphicElements())
+		for(GraphicElement2D ge:displayGraphicElements)
+			ge.draw(rpp, g2, isSelected || isMouseNear, mouseI, mouseJ);
+
+		if(isSelected)
+		for(GraphicElement2D ge:controlGraphicElements)
 			ge.draw(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
 	}
 
 	@Override
-	public void drawOnTop(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	public void drawGraphicElementsInFront(RayPlay2DPanel rpp, Graphics2D g2, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
 	{
-		for(GraphicElement2D ge:getGraphicElements())
-			ge.drawOnTop(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+		for(GraphicElement2D ge:displayGraphicElements)
+			ge.drawInFront(rpp, g2, isSelected || isMouseNear, mouseI, mouseJ);
+		
+		if(isSelected)
+		for(GraphicElement2D ge:controlGraphicElements)
+			ge.drawInFront(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
 	}
+
+	@Override
+	public void drawGraphicElementsBehind(RayPlay2DPanel rpp, Graphics2D g2, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	{
+		for(GraphicElement2D ge:displayGraphicElements)
+			ge.drawBehind(rpp, g2, isSelected || isMouseNear, mouseI, mouseJ);
+		
+		if(isSelected)
+		for(GraphicElement2D ge:controlGraphicElements)
+			ge.drawBehind(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+	}
+
 
 	@Override
 	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ)
@@ -469,8 +519,17 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 
 
 	@Override
-	public ArrayList<GraphicElement2D> getGraphicElements() {
-		return graphicElements;
+	public ArrayList<GraphicElement2D> getGraphicElements(boolean isSelected, boolean isMouseNear)
+	{
+		if(!isSelected)
+			return displayGraphicElements;
+		else
+		{
+			ArrayList<GraphicElement2D> ges = new ArrayList<GraphicElement2D>();
+			ges.addAll(controlGraphicElements);
+			ges.addAll(displayGraphicElements);
+			return ges;
+		}
 	}
 
 
@@ -480,4 +539,218 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	
+	private RayPlay2DPanel panelAssociatedWithPopup;
+	
+	@Override
+	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
+	{
+		if(mouseNear && e.isPopupTrigger())
+		{
+			panelAssociatedWithPopup = rpp;
+			
+			updatePopup();
+
+			popup.show(e.getComponent(), e.getX(), e.getY());
+			
+			// say that the event has been handled
+			return true;
+		}
+		return false;
+	}
+	
+	
+	// 
+	// popup menu
+	// 
+	
+	final JPopupMenu popup = new JPopupMenu();
+	
+	// menu items
+	JMenuItem
+		forwardRaysOnlyMenuItem,
+		rayBundleMenuItem,
+		rayBundleIsotropicMenuItem,
+		darkenExhaustedRaysMenuItem,
+		releaseSourcePositionFromLineMenuItem;
+	
+	private void initPopup()
+	{
+		forwardRaysOnlyMenuItem = new JMenuItem("-");
+		// menuItem.setMnemonic(KeyEvent.VK_P);
+		forwardRaysOnlyMenuItem.getAccessibleContext().setAccessibleDescription("Toggle forward rays only");
+		forwardRaysOnlyMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setForwardRaysOnly(!isForwardRaysOnly());
+				panelAssociatedWithPopup.repaint();
+			}
+		});
+		popup.add(forwardRaysOnlyMenuItem);
+
+		rayBundleMenuItem = new JMenuItem("-");
+		// menuItem.setMnemonic(KeyEvent.VK_P);
+		rayBundleMenuItem.getAccessibleContext().setAccessibleDescription("Toggle ray bundle");
+		rayBundleMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setRayBundle(!isRayBundle());
+				panelAssociatedWithPopup.repaint();
+			}
+		});
+		popup.add(rayBundleMenuItem);
+
+		rayBundleIsotropicMenuItem = new JMenuItem("-");
+		// menuItem.setMnemonic(KeyEvent.VK_P);
+		rayBundleIsotropicMenuItem.setEnabled(true);
+		rayBundleIsotropicMenuItem.getAccessibleContext().setAccessibleDescription("Toggle isotropic ray bundle");
+		rayBundleIsotropicMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setRayBundleIsotropic(!isRayBundleIsotropic());
+				panelAssociatedWithPopup.repaint();
+			}
+		});
+		popup.add(rayBundleIsotropicMenuItem);
+		
+		// Separator
+	    popup.addSeparator();
+		
+//		JMenuItem doubleNoOfRaysMenuItem = new JMenuItem("Double no of rays in bundle");
+//		doubleNoOfRaysMenuItem.setEnabled(true);
+//		doubleNoOfRaysMenuItem.getAccessibleContext().setAccessibleDescription("Double no of rays in bundle");
+//		doubleNoOfRaysMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				rs.setRayBundleNoOfRays(2*rs.getRayBundleNoOfRays());
+//				panelWithPopup.repaint();
+//			}
+//		});
+//		popup.add(doubleNoOfRaysMenuItem);
+//		
+//		JMenuItem halfNoOfRaysMenuItem = new JMenuItem("Halve no of rays in bundle");
+//		halfNoOfRaysMenuItem.setEnabled(true);
+//		halfNoOfRaysMenuItem.getAccessibleContext().setAccessibleDescription("Halve no of rays in bundle");
+//		halfNoOfRaysMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				if(rs.getRayBundleNoOfRays() > 2)
+//				{
+//					rs.setRayBundleNoOfRays(rs.getRayBundleNoOfRays()/2);
+//					panelWithPopup.repaint();
+//				}
+//			}
+//		});
+//		popup.add(halfNoOfRaysMenuItem);
+		
+//		int rayNumbers[] = {1, 2, 4, 8, 16, 32, 64, 128, 1024};
+//		for(int rayNumber:rayNumbers)
+//		{
+//			JMenuItem rayNumberMenuItem = new JMenuItem(rayNumber + ((rayNumber == 1)?" ray":" rays"));
+//			rayNumberMenuItem.setEnabled(true);
+//			rayNumberMenuItem.getAccessibleContext().setAccessibleDescription("Set number of rays to "+rayNumber);
+//			rayNumberMenuItem.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e) {
+//					rs.setRayBundleNoOfRays(rayNumber);
+//					rs.setRayBundle(rayNumber > 1);
+//					panelAssociatedWithPopup.repaint();
+//				}
+//			});
+//			popup.add(rayNumberMenuItem);
+//
+//		}
+//
+//		// Separator
+//	    popup.addSeparator();
+
+	    for(Colour c:Colour.RAY_COLOURS)
+	    {
+	    	JMenuItem colourMenuItem = new JMenuItem(c.getName());
+	    	colourMenuItem.setEnabled(true);
+	    	colourMenuItem.getAccessibleContext().setAccessibleDescription("Set colour to "+c.getName());
+	    	colourMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					setColour(c);
+					panelAssociatedWithPopup.repaint();
+				}
+			});
+			popup.add(colourMenuItem);
+
+	    }
+	    
+		// Separator
+	    popup.addSeparator();
+
+	    darkenExhaustedRaysMenuItem = new JMenuItem("-");	// "Switch darkening of exhausted rays "+(rs.isDarkenExhaustedRays()?"off":"on"));
+	    darkenExhaustedRaysMenuItem.setEnabled(true);
+	    darkenExhaustedRaysMenuItem.getAccessibleContext().setAccessibleDescription("Toggle darken exhausted rays");
+	    darkenExhaustedRaysMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setDarkenExhaustedRays(!isDarkenExhaustedRays());
+				// darkenExhaustedRaysMenuItem.setText("Switch darkening of exhausted rays "+(rs.isDarkenExhaustedRays()?"off":"on"));
+				panelAssociatedWithPopup.repaint();
+			}
+		});
+		popup.add(darkenExhaustedRaysMenuItem);
+
+		// Separator
+	    popup.addSeparator();
+	    
+		int maxTraceLevels[] = {1, 2, 3, 4, 16, 64, 256, 1024};
+		for(int maxTraceLevel:maxTraceLevels)
+		{
+			JMenuItem maxTraceLevelMenuItem = new JMenuItem("max. trace level = "+maxTraceLevel);
+			maxTraceLevelMenuItem.setEnabled(true);
+			maxTraceLevelMenuItem.getAccessibleContext().setAccessibleDescription("Set max. trace level to "+maxTraceLevel);
+			maxTraceLevelMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					setMaxTraceLevel(maxTraceLevel);
+					panelAssociatedWithPopup.repaint();
+				}
+			});
+			popup.add(maxTraceLevelMenuItem);
+		}
+	    
+		// Separator
+	    popup.addSeparator();
+	    
+	    JMenuItem deleteRayBundleMenuItem = new JMenuItem("Delete light source");
+		deleteRayBundleMenuItem.setEnabled(true);
+		deleteRayBundleMenuItem.getAccessibleContext().setAccessibleDescription("Delete light source");
+		deleteRayBundleMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				panelAssociatedWithPopup.iocs.remove(PointRaySource2D.this);
+				// panelAssociatedWithPopup.graphicElements.removeAll(rs.getGraphicElements());
+				panelAssociatedWithPopup.repaint();
+			}
+		});
+		popup.add(deleteRayBundleMenuItem);
+
+		// Separator
+	    popup.addSeparator();
+	    
+	    releaseSourcePositionFromLineMenuItem = new JMenuItem("Release source position from line");
+	    releaseSourcePositionFromLineMenuItem.setEnabled(getLineConstrainingStartPoint() != null);
+	    releaseSourcePositionFromLineMenuItem.getAccessibleContext().setAccessibleDescription("Delete light source");
+	    releaseSourcePositionFromLineMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setLineConstrainingStartPoint(null);
+			}
+		});
+		popup.add(releaseSourcePositionFromLineMenuItem);
+}
+	
+	private void updatePopup()
+	{
+		// enable/disable + text
+		
+		forwardRaysOnlyMenuItem.setText(isForwardRaysOnly()?"Make ray(s) bidirectional":"Make ray(s) unidirectional");
+		forwardRaysOnlyMenuItem.setEnabled(!isRayBundleIsotropic());
+		
+		rayBundleMenuItem.setText(isRayBundle()?"Change to single ray":"Change to ray bundle");
+		rayBundleMenuItem.setEnabled(!isRayBundleIsotropic());
+		
+		rayBundleIsotropicMenuItem.setText(isRayBundleIsotropic()?"Make ray bundle directional":"Make ray bundle isotropic");
+		rayBundleIsotropicMenuItem.setEnabled(isRayBundle());
+		
+		darkenExhaustedRaysMenuItem.setText("Switch darkening of exhausted rays "+(isDarkenExhaustedRays()?"off":"on"));
+		
+	    releaseSourcePositionFromLineMenuItem.setEnabled(getLineConstrainingStartPoint() != null);
+	}		
 }

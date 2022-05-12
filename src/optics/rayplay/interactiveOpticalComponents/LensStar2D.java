@@ -1,10 +1,16 @@
 package optics.rayplay.interactiveOpticalComponents;
 
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 import math.Vector2D;
 import optics.rayplay.core.GraphicElement2D;
@@ -70,7 +76,8 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	/**
 	 * list of graphic elements
 	 */
-	private ArrayList<GraphicElement2D> graphicElements = new ArrayList<GraphicElement2D>();
+	private ArrayList<GraphicElement2D> displayGraphicElements = new ArrayList<GraphicElement2D>();
+	private ArrayList<GraphicElement2D> controlGraphicElements = new ArrayList<GraphicElement2D>();
 
 	
 	/**
@@ -110,6 +117,8 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 		// ... and set their parameters
 		calculatePointParameters();
 		calculateLensParameters();
+		
+		initPopup();
 	}
 
 
@@ -183,7 +192,7 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 
 	@Override
 	public String getName() {
-		return null;
+		return name;
 	}
 
 	
@@ -194,13 +203,29 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	{
 		return lenses.get(i);
 	}
+	
+	public void removeLensesFromOpticalComponentsAndGraphicElements()
+	{
+		opticalComponents.removeAll(lenses);
+		displayGraphicElements.removeAll(lenses);
+	}
 
 
 	//
 	// InteractiveOpticalComponent2D methods
 	//
 
-
+	@Override
+	public void move(Vector2D delta)
+	{
+		setC(
+				Vector2D.sum(getC(), delta)
+			);
+		
+		calculatePointParameters();
+		calculateLensParameters();
+	}
+	
 	@Override
 	public ArrayList<OpticalComponent2D> getOpticalComponents()
 	{
@@ -208,23 +233,50 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	}
 
 	@Override
-	public ArrayList<GraphicElement2D> getGraphicElements()
+	public ArrayList<GraphicElement2D> getGraphicElements(boolean isSelected, boolean isMouseNear)
 	{
-		return graphicElements;
+		if(!isSelected)
+			return displayGraphicElements;
+		else
+		{
+			ArrayList<GraphicElement2D> ges = new ArrayList<GraphicElement2D>();
+			ges.addAll(controlGraphicElements);
+			ges.addAll(displayGraphicElements);
+			return ges;
+		}
 	}
 
 	@Override
-	public void drawGraphicElements(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	public void drawGraphicElements(RayPlay2DPanel rpp, Graphics2D g2, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
 	{
-		for(GraphicElement2D ge:getGraphicElements())
+		for(GraphicElement2D ge:displayGraphicElements)
+			ge.draw(rpp, g2, isSelected || isMouseNear, mouseI, mouseJ);
+
+		if(isSelected)
+		for(GraphicElement2D ge:controlGraphicElements)
 			ge.draw(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
 	}
 
 	@Override
-	public void drawOnTop(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	public void drawGraphicElementsInFront(RayPlay2DPanel rpp, Graphics2D g2, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
 	{
-		for(GraphicElement2D ge:getGraphicElements())
-			ge.drawOnTop(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+		for(GraphicElement2D ge:displayGraphicElements)
+			ge.drawInFront(rpp, g2, isSelected || isMouseNear, mouseI, mouseJ);
+		
+		if(isSelected)
+		for(GraphicElement2D ge:controlGraphicElements)
+			ge.drawInFront(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+	}
+
+	@Override
+	public void drawGraphicElementsBehind(RayPlay2DPanel rpp, Graphics2D g2, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	{
+		for(GraphicElement2D ge:displayGraphicElements)
+			ge.drawBehind(rpp, g2, isSelected || isMouseNear, mouseI, mouseJ);
+		
+		if(isSelected)
+		for(GraphicElement2D ge:controlGraphicElements)
+			ge.drawBehind(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
 	}
 
 	@Override
@@ -294,7 +346,8 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	private void createPointsAndLenses()
 	{
 		opticalComponents.clear();
-		graphicElements.clear();
+		displayGraphicElements.clear();
+		controlGraphicElements.clear();
 		
 		createPoints();
 		createLenses();
@@ -311,7 +364,7 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 		{
 			LensStarPointGE2D point = new LensStarPointGE2D(lsPointType.name, new Vector2D(0, 0), this, lsPointType);
 			points.put(lsPointType, point);
-			graphicElements.add(point);
+			controlGraphicElements.add(point);
 		}
 	}
 
@@ -331,7 +384,7 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 
 			// ... and add it to the list of optical components and the list of graphic elements
 			opticalComponents.add(l);
-			graphicElements.add(l);
+			displayGraphicElements.add(l);
 		}
 	}
 
@@ -385,7 +438,7 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	
 	public void writeSVGCode(RayPlay2DPanel rpp)
 	{
-		for(GraphicElement2D g:getGraphicElements())
+		for(GraphicElement2D g:getGraphicElements(false, false))
 			g.writeSVGCode(rpp);
 	}
 
@@ -397,6 +450,104 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	public ArrayList<Ray2D> getRays() {
 		return Ray2D.NO_RAYS;
 	}
+
+
+	
+	private RayPlay2DPanel panelWithPopup;
+	
+	@Override
+	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
+	{
+		if(mouseNear && e.isPopupTrigger())
+		{
+			panelWithPopup = rpp;
+			
+			updatePopup();
+
+			popup.show(e.getComponent(), e.getX(), e.getY());
+			
+			// say that the event has been handled
+			return true;
+		}
+		return false;
+	}
+
+
+	
+
+	// 
+	// popup menu
+	// 
+	
+	final JPopupMenu popup = new JPopupMenu();
+	
+	// menu items
+	JMenuItem
+		deleteLSMenuItem,
+		turnIntoIndividualLensesMenuItem;
+
+	private void initPopup()
+	{
+		deleteLSMenuItem = new JMenuItem("Delete lens star");
+		deleteLSMenuItem.setEnabled(true);
+		deleteLSMenuItem.getAccessibleContext().setAccessibleDescription("Delete lens star");
+		deleteLSMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// panelWithPopup.graphicElements.removeAll(ls.getGraphicElements());
+				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
+				panelWithPopup.iocs.remove(LensStar2D.this);
+				panelWithPopup.repaint();
+			}
+		});
+		popup.add(deleteLSMenuItem);
+		
+		// Separator
+	    popup.addSeparator();
+
+	    JMenuItem setRP0MenuItem = new JMenuItem("Set rP (distance of principal points from centre) to 0");
+		setRP0MenuItem.setEnabled(true);
+		setRP0MenuItem.getAccessibleContext().setAccessibleDescription("Set rP (distance of principal points from centre) to 0");
+		setRP0MenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setrP(0);
+				calculatePointParameters();
+				calculateLensParameters();
+				panelWithPopup.repaint();
+			}
+		});
+		popup.add(setRP0MenuItem);
+		
+		// Separator
+	    popup.addSeparator();
+
+		turnIntoIndividualLensesMenuItem = new JMenuItem("Turn lens star into individual lenses");
+		turnIntoIndividualLensesMenuItem.setEnabled(true);
+		turnIntoIndividualLensesMenuItem.getAccessibleContext().setAccessibleDescription("Turn lens star into individual lenses");
+		turnIntoIndividualLensesMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// remove the lens star
+				// panelWithPopup.graphicElements.removeAll(ls.getGraphicElements());
+				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
+				panelWithPopup.iocs.remove(LensStar2D.this);
+				
+				// and add all the lenses
+				for(int i=0; i<getN(); i++)
+				{
+					Lens2DIOC lens = new Lens2DIOC(getLens(i));
+					panelWithPopup.iocs.add(lens);
+					// panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
+				}
+				
+				panelWithPopup.repaint();
+			}
+		});
+		popup.add(turnIntoIndividualLensesMenuItem);
+	}
+	
+	private void updatePopup()
+	{
+		// enable/disable + text
+	}	
 
 
 }

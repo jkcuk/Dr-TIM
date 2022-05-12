@@ -4,17 +4,10 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 
 import math.Vector2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
-import optics.rayplay.interactiveOpticalComponents.Lens2DIOC;
 import optics.rayplay.interactiveOpticalComponents.LensStar2D;
 import optics.rayplay.util.DoubleFormatter;
 
@@ -57,7 +50,7 @@ public class LensStarPointGE2D extends PointGE2D
 		this.ls = ls;
 		this.pt = pt;
 		
-		initPopup();
+		// initPopup();
 	}
 
 	public LensStarPointGE2D(String name, Vector2D position, LensStar2D ls, LensStarPointType pt)
@@ -92,7 +85,7 @@ public class LensStarPointGE2D extends PointGE2D
 		case F0:
 			g.setColor(Color.GRAY);
 			g.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));	// dashed
-			p.drawLine(ls.getC(), position, g);
+			p.drawLine(ls.getP0(), position, g);
 
 			g.drawString(
 					getName() + " (f =" + DoubleFormatter.format(ls.getF()) + ")", 
@@ -177,8 +170,7 @@ public class LensStarPointGE2D extends PointGE2D
 				double phi1 = Math.atan2(l1.y, l1.x);
 				
 				// rpp.graphicElements.removeAll(ls.getLenses());
-				ls.getOpticalComponents().removeAll(ls.getLenses());
-				ls.getGraphicElements().removeAll(ls.getLenses());
+				ls.removeLensesFromOpticalComponentsAndGraphicElements();
 
 				// set the number of lenses accordingly
 				ls.setN((int)(2.*Math.PI / (phi1 - ls.getPhi0()) + 0.5));
@@ -207,98 +199,98 @@ public class LensStarPointGE2D extends PointGE2D
 		}
 	}
 
-	private RayPlay2DPanel panelWithPopup;
-	
-	@Override
-	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
-	{
-		if(mouseNear && e.isPopupTrigger())
-		{
-			panelWithPopup = rpp;
-			
-			updatePopup();
-
-			popup.show(e.getComponent(), e.getX(), e.getY());
-			
-			// say that the event has been handled
-			return true;
-		}
-		return false;
-	}
-
-
-	// 
-	// popup menu
-	// 
-	
-	final JPopupMenu popup = new JPopupMenu();
-	
-	// menu items
-	JMenuItem
-		deleteLSMenuItem,
-		turnIntoIndividualLensesMenuItem;
-
-	private void initPopup()
-	{
-		deleteLSMenuItem = new JMenuItem("Delete lens star");
-		deleteLSMenuItem.setEnabled(true);
-		deleteLSMenuItem.getAccessibleContext().setAccessibleDescription("Delete lens star");
-		deleteLSMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// panelWithPopup.graphicElements.removeAll(ls.getGraphicElements());
-				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
-				panelWithPopup.iocs.remove(ls);
-				panelWithPopup.repaint();
-			}
-		});
-		popup.add(deleteLSMenuItem);
-		
-		// Separator
-	    popup.addSeparator();
-
-	    JMenuItem setRP0MenuItem = new JMenuItem("Set rP (distance of principal points from centre) to 0");
-		setRP0MenuItem.setEnabled(true);
-		setRP0MenuItem.getAccessibleContext().setAccessibleDescription("Set rP (distance of principal points from centre) to 0");
-		setRP0MenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				ls.setrP(0);
-				ls.calculatePointParameters();
-				ls.calculateLensParameters();
-				panelWithPopup.repaint();
-			}
-		});
-		popup.add(setRP0MenuItem);
-		
-		// Separator
-	    popup.addSeparator();
-
-		turnIntoIndividualLensesMenuItem = new JMenuItem("Turn lens star into individual lenses");
-		turnIntoIndividualLensesMenuItem.setEnabled(true);
-		turnIntoIndividualLensesMenuItem.getAccessibleContext().setAccessibleDescription("Turn lens star into individual lenses");
-		turnIntoIndividualLensesMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// remove the lens star
-				// panelWithPopup.graphicElements.removeAll(ls.getGraphicElements());
-				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
-				panelWithPopup.iocs.remove(ls);
-				
-				// and add all the lenses
-				for(int i=0; i<ls.getN(); i++)
-				{
-					Lens2DIOC lens = new Lens2DIOC(ls.getLens(i));
-					panelWithPopup.iocs.add(lens);
-					// panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
-				}
-				
-				panelWithPopup.repaint();
-			}
-		});
-		popup.add(turnIntoIndividualLensesMenuItem);
-	}
-	
-	private void updatePopup()
-	{
-		// enable/disable + text
-	}	
+//	private RayPlay2DPanel panelWithPopup;
+//	
+//	@Override
+//	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
+//	{
+//		if(mouseNear && e.isPopupTrigger())
+//		{
+//			panelWithPopup = rpp;
+//			
+//			updatePopup();
+//
+//			popup.show(e.getComponent(), e.getX(), e.getY());
+//			
+//			// say that the event has been handled
+//			return true;
+//		}
+//		return false;
+//	}
+//
+//
+//	// 
+//	// popup menu
+//	// 
+//	
+//	final JPopupMenu popup = new JPopupMenu();
+//	
+//	// menu items
+//	JMenuItem
+//		deleteLSMenuItem,
+//		turnIntoIndividualLensesMenuItem;
+//
+//	private void initPopup()
+//	{
+//		deleteLSMenuItem = new JMenuItem("Delete lens star");
+//		deleteLSMenuItem.setEnabled(true);
+//		deleteLSMenuItem.getAccessibleContext().setAccessibleDescription("Delete lens star");
+//		deleteLSMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				// panelWithPopup.graphicElements.removeAll(ls.getGraphicElements());
+//				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
+//				panelWithPopup.iocs.remove(ls);
+//				panelWithPopup.repaint();
+//			}
+//		});
+//		popup.add(deleteLSMenuItem);
+//		
+//		// Separator
+//	    popup.addSeparator();
+//
+//	    JMenuItem setRP0MenuItem = new JMenuItem("Set rP (distance of principal points from centre) to 0");
+//		setRP0MenuItem.setEnabled(true);
+//		setRP0MenuItem.getAccessibleContext().setAccessibleDescription("Set rP (distance of principal points from centre) to 0");
+//		setRP0MenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				ls.setrP(0);
+//				ls.calculatePointParameters();
+//				ls.calculateLensParameters();
+//				panelWithPopup.repaint();
+//			}
+//		});
+//		popup.add(setRP0MenuItem);
+//		
+//		// Separator
+//	    popup.addSeparator();
+//
+//		turnIntoIndividualLensesMenuItem = new JMenuItem("Turn lens star into individual lenses");
+//		turnIntoIndividualLensesMenuItem.setEnabled(true);
+//		turnIntoIndividualLensesMenuItem.getAccessibleContext().setAccessibleDescription("Turn lens star into individual lenses");
+//		turnIntoIndividualLensesMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				// remove the lens star
+//				// panelWithPopup.graphicElements.removeAll(ls.getGraphicElements());
+//				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
+//				panelWithPopup.iocs.remove(ls);
+//				
+//				// and add all the lenses
+//				for(int i=0; i<ls.getN(); i++)
+//				{
+//					Lens2DIOC lens = new Lens2DIOC(ls.getLens(i));
+//					panelWithPopup.iocs.add(lens);
+//					// panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
+//				}
+//				
+//				panelWithPopup.repaint();
+//			}
+//		});
+//		popup.add(turnIntoIndividualLensesMenuItem);
+//	}
+//	
+//	private void updatePopup()
+//	{
+//		// enable/disable + text
+//	}	
 
 }

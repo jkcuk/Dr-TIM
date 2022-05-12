@@ -12,7 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -38,7 +38,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 	/**
 	 * a good distance, not too small, not too big, to be easily visible
 	 */
-	public static final int GOOD_DISTANCE = 100;
+	public static final int GOOD_DISTANCE = 70;
 	
 	//	private static final String RAYS_START_POINT_NAME = "Start point of ray(s)";
 	//	private static final String RAYS_CHARACTERISTICS_POINT_NAME = "Point controlling ray/ray bundle characteristics";
@@ -68,7 +68,21 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 	private double yHeight;
 
 
+	// internal variables
+	
+	private transient int mouseI, mouseJ, mousePressedI, mousePressedJ;
+	private transient double mouseX, mouseY, mousePressedX, mousePressedY, mouseDraggedToX, mouseDraggedToY;
+	private transient double mousePressedXCentre, mousePressedYCentre;
 
+	/**
+	 * the GraphicElement2D that's currently close to the mouse
+	 */
+	private transient GraphicElement2D graphicElementNearMouse;
+	private transient InteractiveOpticalComponent2D iocNearMouse;
+	private transient HashSet<InteractiveOpticalComponent2D> selectedIOCs = new HashSet<InteractiveOpticalComponent2D>();
+
+	
+	
 	// constructor
 
 	public RayPlay2DPanel()
@@ -287,18 +301,18 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		return opticalComponents;
 	}
 
-	private ArrayList<GraphicElement2D> collectGraphicElements()
-	{
-		ArrayList<GraphicElement2D> graphicElements = new ArrayList<GraphicElement2D>();
-		
-		for(InteractiveOpticalComponent2D ioc:iocs)
-			graphicElements.addAll(ioc.getGraphicElements());
-		
-//		for(PointRaySource2D ls:lss)
-//			graphicElements.addAll(ls.getGraphicElements());
-		
-		return graphicElements;
-	}
+//	private ArrayList<GraphicElement2D> collectGraphicElements1()
+//	{
+//		ArrayList<GraphicElement2D> graphicElements = new ArrayList<GraphicElement2D>();
+//		
+//		for(InteractiveOpticalComponent2D ioc:iocs)
+//			graphicElements.addAll(ioc.getGraphicElements());
+//		
+////		for(PointRaySource2D ls:lss)
+////			graphicElements.addAll(ls.getGraphicElements());
+//		
+//		return graphicElements;
+//	}
 
 	@Override
 	public void paintComponent(Graphics g) {
@@ -314,12 +328,15 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 
 		// draw all graphic elements
 		// go through the GraphicElements2D in reverse order so that the one that's drawn last (i.e. on top) is checked first
-		ArrayList<GraphicElement2D> graphicElementsR = collectGraphicElements();
-		Collections.reverse(graphicElementsR);
+		// ArrayList<GraphicElement2D> graphicElementsR1 = collectGraphicElements();
+		// Collections.reverse(graphicElementsR);
 		
 		// draw graphic elements
 		for(InteractiveOpticalComponent2D ioc:iocs)
-			ioc.drawGraphicElements(this, g2, graphicElementNearMouse, mouseI, mouseJ);
+			ioc.drawGraphicElementsBehind(this, g2, selectedIOCs.contains(ioc), iocNearMouse == ioc, graphicElementNearMouse, mouseI, mouseJ);
+
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			ioc.drawGraphicElements(this, g2, selectedIOCs.contains(ioc), iocNearMouse == ioc, graphicElementNearMouse, mouseI, mouseJ);
 
 		// initialise all light sources, ...
 		for(InteractiveOpticalComponent2D ioc:iocs)
@@ -328,8 +345,8 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		}
 		
 		// ... and trace the rays from all light sources through the optical components
-		for(InteractiveOpticalComponent2D ioc:iocs)
-			for(Ray2D ray:ioc.getRays())
+		for(InteractiveOpticalComponent2D ioc1:iocs)
+			for(Ray2D ray:ioc1.getRays())
 				ray.traceThrough(collectOpticalComponents());
 		
 		// draw rays
@@ -339,14 +356,14 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		// and draw all the GraphicElements
 		// go through the GraphicElements2D in reverse order so that the one that's drawn last (i.e. on top) is checked first
 		for(InteractiveOpticalComponent2D ioc:iocs)
-			ioc.drawOnTop(this, g2, graphicElementNearMouse, mouseI, mouseJ);
+			ioc.drawGraphicElementsInFront(this, g2, selectedIOCs.contains(ioc), iocNearMouse == ioc, graphicElementNearMouse, mouseI, mouseJ);
 
 		// finally, draw additional information for the element the mouse is close to (if it is close to one)
 		if(graphicElementNearMouse != null)
 			graphicElementNearMouse.drawAdditionalInfoWhenMouseNear(this, g2, mouseI, mouseJ);
 		
-		if(iocNearMouse != null)
-			iocNearMouse.drawAdditionalInfoWhenMouseNear(this, g2, mouseI, mouseJ);
+//		if(iocNearMouse != null)
+//			iocNearMouse.drawAdditionalInfoWhenMouseNear(this, g2, mouseI, mouseJ);
 	}
 
 	/**
@@ -389,40 +406,57 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 
 	// MouseListener methods
 
-	private int mouseI, mouseJ;
-
-	/**
-	 * the GraphicElement2D that's currently close to the mouse
-	 */
-	private GraphicElement2D graphicElementNearMouse;
-	private InteractiveOpticalComponent2D iocNearMouse;
-
 	@Override
 	public void mouseClicked(MouseEvent e)
 	{
-		// run each GraphicElement2D's mouseClicked method
-//		for(GraphicElement2D g:graphicElements)
-//			g.mouseClicked(this, graphicElementNearMouse == g, e);
-		if(graphicElementNearMouse != null)
+		if(!e.isPopupTrigger())
 		{
-			if(!graphicElementNearMouse.mouseClicked(this, true, e))
+			if(graphicElementNearMouse != null)
 			{
-				// the event hasn't been handled;
-				// add graphicElementNearMouse to the selected graphic elements
-				// TODO add here
+				// some element is near the mouse; ask it to handle the click
+				if(!graphicElementNearMouse.mouseClicked(this, true, e))
+				{
+					// the selected element didn't handle the event
+					// add graphicElementNearMouse to the selected graphic elements
+					if(e.isShiftDown())
+					{
+						// shift-click -- add iocNearMouse to the list of selected IOCs
+						selectedIOCs.add(iocNearMouse);
+					}
+					else
+					{
+						// no modifiers -- straight click;
+						// make the IOC near the mouse the only selected IOC
+						selectedIOCs.clear();
+						selectedIOCs.add(iocNearMouse);
+					}
+				}
 			}
+			else
+			{
+				// click in the middle of nowhere
+				selectedIOCs.clear();
+			}
+			
+//			System.out.println("Selected optical components:");
+//			for(InteractiveOpticalComponent2D ioc:selectedIOCs)
+//			{
+//				System.out.println("  "+ioc.getName());
+//			}
 
 			repaint();
-		}
+		}		
 	}
 	
-	int mousePressedI, mousePressedJ;
-	double mousePressedXCentre, mousePressedYCentre;
 
 	@Override
 	public void mousePressed(MouseEvent e) {
 		mousePressedI = e.getX();
 		mousePressedJ = e.getY();
+		mousePressedX = i2x(mousePressedI);
+		mousePressedY = j2y(mousePressedJ);
+		mouseDraggedToX = mousePressedX;
+		mouseDraggedToY = mousePressedY;
 		mousePressedXCentre = xCentre;
 		mousePressedYCentre = yCentre;
 		maybeShowPopup(e);
@@ -442,10 +476,15 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 //				break;
 //			}
 //		}
-		if(graphicElementNearMouse != null)
+		if(iocNearMouse != null)
 		{
-			// eventHandled = 
-			graphicElementNearMouse.mousePressed(this, true, e);
+			boolean eventHandled = iocNearMouse.mousePressed(this, true, e);
+			if(!eventHandled)
+				if(graphicElementNearMouse != null)
+				{
+					// eventHandled = 
+					graphicElementNearMouse.mousePressed(this, true, e);
+				}
 		}
 		else
 		{
@@ -494,6 +533,9 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 	{
 		mouseI = e.getX();
 		mouseJ = e.getY();
+		mouseX = i2x(mouseI);
+		mouseY = j2y(mouseJ);
+		
 
 //		for(GraphicElement2D g:graphicElements)
 //		{
@@ -502,31 +544,46 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		
 		if(graphicElementNearMouse != null)
 		{
-			graphicElementNearMouse.mouseDragged(this, true, e.getX(), e.getY());
+			Vector2D delta = new Vector2D(mouseX - mouseDraggedToX, mouseY - mouseDraggedToY);
+
+			for(InteractiveOpticalComponent2D ioc:selectedIOCs)
+				ioc.move(delta);
+			
+			if(iocNearMouse != null)
+				if(!selectedIOCs.contains(iocNearMouse))
+					iocNearMouse.move(delta);
+			
+			mouseDraggedToX = mouseX;
+			mouseDraggedToY = mouseY;
+			// graphicElementNearMouse.mouseDragged(this, true, e.getX(), e.getY());
 		}
 		else
 		{
-			xCentre = mousePressedXCentre - i2x(mouseI) + i2x(mousePressedI);
-			yCentre = mousePressedYCentre - j2y(mouseJ) + j2y(mousePressedJ);
+			xCentre = mousePressedXCentre - (mouseX - mousePressedX);
+			yCentre = mousePressedYCentre - (mouseY - mousePressedY);
 		}
 		repaint();
 	}
 
-	public GraphicElement2D topGraphicElementNearMouse()
+	public void setElementsNearMouse()
 	{
-		for(GraphicElement2D g:collectGraphicElements())
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			for(GraphicElement2D g:ioc.getGraphicElements(selectedIOCs.contains(ioc), false))
 		{
 			if(g.isInteractive())
 			{
 				if(g.isMouseNear(this, mouseI, mouseJ))
 				{
-					return g;
+					graphicElementNearMouse = g;
+					iocNearMouse = ioc;
+					return;
 				}
 			}
 		}
-
-		// the mouse isn't close to any GraphicElement
-		return null;
+		
+		// none of the graphic elements are near the mouse
+		graphicElementNearMouse = null;
+		iocNearMouse = null;
 	}
 
 	@Override
@@ -534,12 +591,12 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		mouseI = e.getX();
 		mouseJ = e.getY();
 
+		GraphicElement2D oldGraphicElementNearMouse = graphicElementNearMouse;
 		// is the mouse near any of the GraphicElement2Ds?
-		GraphicElement2D g = topGraphicElementNearMouse();
-		if(g != graphicElementNearMouse)
+		setElementsNearMouse();
+		if(oldGraphicElementNearMouse != graphicElementNearMouse)
 		{
 			// the GraphicElement2D near the mouse has changed
-			graphicElementNearMouse = g;
 			repaint();
 		}
 	}

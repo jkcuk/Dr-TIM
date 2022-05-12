@@ -125,6 +125,18 @@ public class OmnidirectionalLensLineGE2D extends LineSegmentGE2D
 	}
 
 	@Override
+	public void drawBehind(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
+	{	
+		switch(lt)
+		{
+		case C1:
+			if(ol.isShowC1PointAndLine())
+				super.drawBehind(p, g, mouseNear, mouseI, mouseJ);
+			break;
+		}
+	}
+
+	@Override
 	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ)
 	{
 		switch(lt)

@@ -63,22 +63,26 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 	{
 		// by default, just ignore the mouse; override to change this
 
-		if(mouseNear)
-		{
-			float lineWidth = ((BasicStroke)stroke).getLineWidth();
-			g.setStroke(new BasicStroke(lineWidth+4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-			g.setColor(Color.gray);
-			p.drawLine(a, b, g);
-		}
-		
 		g.setStroke(stroke);
 		g.setColor(colour.getColor());
 		p.drawLine(a, b, g);
 	}
 	
 	@Override
-	public void drawOnTop(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
+	public void drawInFront(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
 	{}
+	
+	@Override
+	public void drawBehind(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
+	{
+		if(mouseNear)
+		{
+			float lineWidth = ((BasicStroke)stroke).getLineWidth();
+			g.setStroke(new BasicStroke(lineWidth+4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			g.setColor(Color.LIGHT_GRAY);
+			p.drawLine(a, b, g);
+		}
+	}
 	
 	public void writeSVGCode(RayPlay2DPanel rpp)
 	{

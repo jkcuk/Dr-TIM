@@ -1,10 +1,16 @@
 package optics.rayplay.interactiveOpticalComponents;
 
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 import math.Vector2D;
 import optics.rayplay.core.GraphicElement2D;
@@ -23,7 +29,8 @@ implements InteractiveOpticalComponent2D
 	// internal variables
 	
 	private ArrayList<OpticalComponent2D> opticalComponents = new ArrayList<OpticalComponent2D>();
-	private ArrayList<GraphicElement2D> graphicElements = new ArrayList<GraphicElement2D>();
+	private ArrayList<GraphicElement2D> displayGraphicElements = new ArrayList<GraphicElement2D>();
+	private ArrayList<GraphicElement2D> controlGraphicElements = new ArrayList<GraphicElement2D>();
 	
 	private HashMap<LensPointType, PointGE2D> points;
 
@@ -47,7 +54,9 @@ implements InteractiveOpticalComponent2D
 		calculatePointParameters();
 
 		opticalComponents.add(this);
-		graphicElements.add(this);
+		displayGraphicElements.add(this);
+		
+		initPopup();
 	}
 	
 	public Lens2DIOC(Lens2D lens)
@@ -94,7 +103,14 @@ implements InteractiveOpticalComponent2D
 //			}
 			
 			points.put(lensPointType, p);
-			graphicElements.add(p);
+			switch(lensPointType)
+			{
+			case P:
+				displayGraphicElements.add(p);
+				break;
+			default:				
+				controlGraphicElements.add(p);
+			}
 		}
 	}
 
@@ -105,7 +121,9 @@ implements InteractiveOpticalComponent2D
 		points.get(LensPointType.P).setCoordinatesToThoseOf(getPrincipalPoint());
 		points.get(LensPointType.E1).setCoordinatesToThoseOf(a);
 		points.get(LensPointType.E2).setCoordinatesToThoseOf(b);
-		points.get(LensPointType.L).setCoordinatesToThoseOf(Vector2D.sum(getPrincipalPoint(), getDirection().getWithLength(0.1)));
+		
+		// calculate the position of type L at the time of drawing
+		// points.get(LensPointType.L).setCoordinatesToThoseOf(Vector2D.sum(getPrincipalPoint(), getDirection().getWithLength(bla)));
 	}
 
 	
@@ -114,15 +132,39 @@ implements InteractiveOpticalComponent2D
 	//
 
 	@Override
+	public void move(Vector2D delta)
+	{
+		setEndPoints(
+				Vector2D.sum(getA(), delta),
+				Vector2D.sum(getB(), delta)
+			);
+		
+		// finally, set the principal point to its new position
+		setPrincipalPoint(
+				Vector2D.sum(getPrincipalPoint(), delta)
+			);
+		
+		calculatePointParameters();
+	}
+	
+	@Override
 	public ArrayList<OpticalComponent2D> getOpticalComponents()
 	{
 		return opticalComponents;
 	}
 
 	@Override
-	public ArrayList<GraphicElement2D> getGraphicElements()
+	public ArrayList<GraphicElement2D> getGraphicElements(boolean isSelected, boolean isMouseNear)
 	{
-		return graphicElements;
+		if(!isSelected)
+			return displayGraphicElements;
+		else
+		{
+			ArrayList<GraphicElement2D> ges = new ArrayList<GraphicElement2D>();
+			ges.addAll(controlGraphicElements);
+			ges.addAll(displayGraphicElements);
+			return ges;
+		}
 	}
 
 	@Override
@@ -137,22 +179,49 @@ implements InteractiveOpticalComponent2D
 	}
 	
 	@Override
-	public void drawGraphicElements(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	public void drawGraphicElements(RayPlay2DPanel rpp, Graphics2D g2, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
 	{
-		draw(rpp, g2, this == graphicElementNearMouse, mouseI, mouseJ);
-		
-		for(GraphicElement2D graphicElement:graphicElements)
-			graphicElement.draw(rpp,  g2, graphicElement == graphicElementNearMouse, mouseI, mouseJ);
+		for(GraphicElement2D ge:displayGraphicElements)
+			ge.draw(rpp, g2, isSelected || isMouseNear, mouseI, mouseJ);
+
+		if(isSelected)
+		for(GraphicElement2D ge:controlGraphicElements)
+			ge.draw(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
 	}
 
 	@Override
-	public void drawOnTop(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	public void drawGraphicElementsInFront(RayPlay2DPanel rpp, Graphics2D g2, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
 	{
-		drawOnTop(rpp, g2, this == graphicElementNearMouse, mouseI, mouseJ);
+		for(GraphicElement2D ge:displayGraphicElements)
+			ge.drawInFront(rpp, g2, isSelected || isMouseNear, mouseI, mouseJ);
 		
-		for(GraphicElement2D graphicElement:graphicElements)
-			graphicElement.drawOnTop(rpp,  g2, graphicElement == graphicElementNearMouse, mouseI, mouseJ);
+		if(isSelected)
+		for(GraphicElement2D ge:controlGraphicElements)
+			ge.drawInFront(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
 	}
+
+	@Override
+	public void drawGraphicElementsBehind(RayPlay2DPanel rpp, Graphics2D g2, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+	{
+		for(GraphicElement2D ge:displayGraphicElements)
+			ge.drawBehind(rpp, g2, isSelected || isMouseNear, mouseI, mouseJ);
+		
+		if(isSelected)
+		for(GraphicElement2D ge:controlGraphicElements)
+			ge.drawBehind(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+	}
+
+//	@Override
+//	public void drawGraphicElementsBehind(RayPlay2DPanel rpp, Graphics2D g2, boolean isSelected, boolean isMouseNear, GraphicElement2D graphicElementNearMouse, int mouseI, int mouseJ)
+//	{
+//		if(isSelected || isMouseNear)
+//			for(GraphicElement2D ge:displayGraphicElements)
+//				ge.drawOnTop(rpp, g2, true, mouseI, mouseJ);
+//		
+//		if(isSelected)
+//		for(GraphicElement2D ge:controlGraphicElements)
+//			ge.drawOnTop(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+//	}
 
 	@Override
 	public InteractiveOpticalComponent2D readFromCSV(String filename) {
@@ -168,7 +237,7 @@ implements InteractiveOpticalComponent2D
 	
 	public void writeSVGCode(RayPlay2DPanel rpp)
 	{
-		for(GraphicElement2D g:getGraphicElements())
+		for(GraphicElement2D g:getGraphicElements(false, false))
 			g.writeSVGCode(rpp);
 	}
 	
@@ -185,4 +254,57 @@ implements InteractiveOpticalComponent2D
 	public void drawRays(RayPlay2DPanel p, Graphics2D g, GraphicElement2D graphicElementNearMouse, int mouseI,
 			int mouseJ)
 	{}
+	
+	
+	private RayPlay2DPanel panelWithPopup;
+	
+	@Override
+	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
+	{
+		if(mouseNear && e.isPopupTrigger())
+		{
+			panelWithPopup = rpp;
+			
+			updatePopup();
+
+			popup.show(e.getComponent(), e.getX(), e.getY());
+			
+			// say that the event has been handled
+			return true;
+		}
+		return false;
+	}
+
+
+	// 
+	// popup menu
+	// 
+	
+	final JPopupMenu popup = new JPopupMenu();
+	
+	// menu items
+	JMenuItem
+		deleteLensMenuItem;
+
+	private void initPopup()
+	{
+		deleteLensMenuItem = new JMenuItem("Delete lens");
+		deleteLensMenuItem.setEnabled(true);
+		deleteLensMenuItem.getAccessibleContext().setAccessibleDescription("Delete lens");
+		deleteLensMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// panelWithPopup.graphicElements.removeAll(lens.getGraphicElements());
+				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
+				panelWithPopup.iocs.remove(Lens2DIOC.this);
+				panelWithPopup.repaint();
+			}
+		});
+		popup.add(deleteLensMenuItem);
+	}
+	
+	private void updatePopup()
+	{
+		// enable/disable + text
+	}	
+
 }

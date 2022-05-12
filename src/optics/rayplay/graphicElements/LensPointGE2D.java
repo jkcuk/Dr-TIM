@@ -4,13 +4,8 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
+import math.MyMath;
 import math.Vector2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
@@ -47,7 +42,7 @@ public class LensPointGE2D extends PointGE2D
 		this.lens = lens;
 		this.pt = pt;
 		
-		initPopup();
+		// initPopup();
 	}
 
 	public LensPointGE2D(String name, Vector2D position, Lens2DIOC lens, LensPointType pt)
@@ -96,16 +91,48 @@ public class LensPointGE2D extends PointGE2D
 	// GraphicElement2D methods
 	
 	@Override
+	public void drawInFront(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
+	{
+			// calculate the position
+			if(pt == LensPointType.L)
+			{
+				position.setCoordinatesToThoseOf(Vector2D.sum(lens.getPrincipalPoint(), lens.getDirection().getWithLength(p.getGoodDistanceXY())));
+			}
+
+			super.drawInFront(p,  g,  mouseNear, mouseI, mouseJ);
+	}
+
+	@Override
 	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ)
 	{
 		switch(pt)
 		{
 		case F:
 			g.setColor(Color.GRAY);
+			
+			// draw part of the optical axis
+			g.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));	// dashed
+			p.drawLine(lens.getPrincipalPoint(), position, g);
+
 			g.drawString(
 					getName() + " (f =" + DoubleFormatter.format(lens.getFocalLength()) + ")", 
 					mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
 					);
+			break;
+		case L:
+			g.setColor(Color.GRAY);
+			g.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));	// dashed
+			
+			p.drawLine(lens.getPrincipalPoint(), position, g);
+			p.drawCircle(
+					lens.getPrincipalPoint(),	// centre
+					p.getGoodDistanceXY(),	// radius
+					g
+				);
+			
+			// give some info
+			g.drawString("Angle with horizontal = "+DoubleFormatter.format(MyMath.rad2deg(Math.atan2(lens.getDirection().y, lens.getDirection().x)))+" degrees",
+					p.x2i(position.x)+10, p.y2j(position.y)+5);
 			break;
 		default:
 			super.drawAdditionalInfoWhenMouseNear(p, g, mouseI, mouseJ);
@@ -182,55 +209,55 @@ public class LensPointGE2D extends PointGE2D
 	}
 
 	
-	private RayPlay2DPanel panelWithPopup;
-	
-	@Override
-	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
-	{
-		if(mouseNear && e.isPopupTrigger())
-		{
-			panelWithPopup = rpp;
-			
-			updatePopup();
-
-			popup.show(e.getComponent(), e.getX(), e.getY());
-			
-			// say that the event has been handled
-			return true;
-		}
-		return false;
-	}
-
-
-	// 
-	// popup menu
-	// 
-	
-	final JPopupMenu popup = new JPopupMenu();
-	
-	// menu items
-	JMenuItem
-		deleteLensMenuItem;
-
-	private void initPopup()
-	{
-		deleteLensMenuItem = new JMenuItem("Delete lens");
-		deleteLensMenuItem.setEnabled(true);
-		deleteLensMenuItem.getAccessibleContext().setAccessibleDescription("Delete lens");
-		deleteLensMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// panelWithPopup.graphicElements.removeAll(lens.getGraphicElements());
-				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
-				panelWithPopup.iocs.remove(lens);
-				panelWithPopup.repaint();
-			}
-		});
-		popup.add(deleteLensMenuItem);
-	}
-	
-	private void updatePopup()
-	{
-		// enable/disable + text
-	}	
-
+//	private RayPlay2DPanel panelWithPopup;
+//	
+//	@Override
+//	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
+//	{
+//		if(mouseNear && e.isPopupTrigger())
+//		{
+//			panelWithPopup = rpp;
+//			
+//			updatePopup();
+//
+//			popup.show(e.getComponent(), e.getX(), e.getY());
+//			
+//			// say that the event has been handled
+//			return true;
+//		}
+//		return false;
+//	}
+//
+//
+//	// 
+//	// popup menu
+//	// 
+//	
+//	final JPopupMenu popup = new JPopupMenu();
+//	
+//	// menu items
+//	JMenuItem
+//		deleteLensMenuItem;
+//
+//	private void initPopup()
+//	{
+//		deleteLensMenuItem = new JMenuItem("Delete lens");
+//		deleteLensMenuItem.setEnabled(true);
+//		deleteLensMenuItem.getAccessibleContext().setAccessibleDescription("Delete lens");
+//		deleteLensMenuItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				// panelWithPopup.graphicElements.removeAll(lens.getGraphicElements());
+//				// panelWithPopup.opticalComponents.removeAll(ol.getOpticalComponents());
+//				panelWithPopup.iocs.remove(lens);
+//				panelWithPopup.repaint();
+//			}
+//		});
+//		popup.add(deleteLensMenuItem);
+//	}
+//	
+//	private void updatePopup()
+//	{
+//		// enable/disable + text
+//	}	
+//
 }
