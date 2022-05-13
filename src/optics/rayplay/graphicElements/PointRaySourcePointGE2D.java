@@ -235,7 +235,7 @@ public class PointRaySourcePointGE2D extends PointGE2D
 			case A:
 				dx = rpp.i2x(mouseI) - rs.getRayStartPoint().x;
 				dy = rpp.j2y(mouseJ) - rs.getRayStartPoint().y;
-				rs.setRayBundleAngle(2*(Math.atan2(dy, dx) - rs.getRayAngle()));
+				rs.setRayBundleAngle(2*Math.IEEEremainder(Math.atan2(dy, dx) - rs.getRayAngle(), Math.PI));
 				break;
 			case N:
 				dx = rpp.i2x(mouseI) - rs.getRayStartPoint().x;
