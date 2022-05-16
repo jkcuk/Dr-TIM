@@ -68,6 +68,11 @@ public abstract class SceneObjectPrimitive extends SceneObjectClass implements S
 	public DoubleColour getColourAtIntersection(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	throws RayTraceException
 	{
+		if(r.isReportToConsole())
+		{
+			System.out.println("Intersection: "+i);
+		}
+
 		// null surfaces should be shown as black silhouettes
 		if (surfaceProperty==null)
 		{
