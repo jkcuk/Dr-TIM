@@ -70,7 +70,7 @@ public abstract class SceneObjectPrimitive extends SceneObjectClass implements S
 	{
 		if(r.isReportToConsole())
 		{
-			System.out.println("Intersection: "+i);
+			System.out.println("Intersection: "+i+", normal: "+getNormalisedOutwardsSurfaceNormal(i.p));
 		}
 
 		// null surfaces should be shown as black silhouettes
