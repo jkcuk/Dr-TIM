@@ -249,15 +249,15 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		// init parameters
 
 		// azimuthal Fresnel wedge
-		aFwB = -0.02;
+		aFwB = -9;
 		// aFwSimulateHonestly = true;
 		aFwN = 100;
 		
 		//pixelated Fresnel wedge
-		aFwBPixel = -0.02;
-		latticeSpanVector1 = new Vector3D(5,0,0).getProductWith(MM);
-		latticeSpanVector2 = new Vector3D(0,5,0).getProductWith(MM);
-		diffractiveBlurPixelatedFresnelWedge = false;
+		aFwBPixel = -9;
+		latticeSpanVector1 = new Vector3D(0.1,0,0).getProductWith(MM);
+		latticeSpanVector2 = new Vector3D(0,0.1,0).getProductWith(MM);
+		diffractiveBlurPixelatedFresnelWedge = true;
 		
 		// moiré rotator
 		mmF = 10*CM;
@@ -286,19 +286,19 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 		// rest of scene
 		studioInitialisation = StudioInitialisationType.LATTICE;	// the backdrop
-		variableLattice = false;
+		variableLattice = true;
 		objectRotationAngle = 0;
-		objectDistance = 10;
+		objectDistance = 1;
 
 		// camera
-		cameraRotation = 0;
+		cameraRotation = -10;
 		cameraViewCentre = new Vector3D(0, 0, 0);
-		cameraDistance = 1000*CM;
+		cameraDistance = 1.5*CM;
 		cameraViewDirection = new Vector3D(0, 0, 1);
 		cameraTopDirection = new Vector3D(0,1,0);
-		cameraHorizontalFOVDeg = 15;
+		cameraHorizontalFOVDeg = 130;
 		cameraApertureSize = ApertureSizeType.EYE;
-		cameraFocussingDistance = 20*M;
+		cameraFocussingDistance = 1*M;
 		
 		if(nonInteractiveTIMAction == NonInteractiveTIMActionEnum.INTERACTIVE)
 		{
@@ -465,7 +465,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 									632.8e-9,// lambda (wave length)
 									SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
 									false,	// reflective
-									true	// shadowThrowing
+									false	// shadowThrowing
 									),	// surfaceProperty
 							scene,	// parent
 							studio

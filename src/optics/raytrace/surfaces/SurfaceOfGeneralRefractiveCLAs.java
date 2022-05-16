@@ -6,7 +6,7 @@ import optics.raytrace.sceneObjects.RefractiveBoxLens;
 import optics.raytrace.voxellations.SetOfEquidistantParallelPlanes;
 import optics.raytrace.voxellations.Voxellation;
 
-public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
+public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfRefractiveComponentArray
 {
 	
 	private static final long serialVersionUID = 2324669416292713452L;
@@ -87,7 +87,7 @@ public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 	}
 
 	@Override
-	public SurfaceOfVoxellatedLensArray clone() {
+	public SurfaceOfRefractiveComponentArray clone() {
 		return new SurfaceOfGeneralRefractiveCLAs(this);
 	}
 	/**
@@ -160,7 +160,7 @@ public class SurfaceOfGeneralRefractiveCLAs extends SurfaceOfVoxellatedLensArray
 	
 	// the vaguely fascinating bits
 	@Override
-	public RefractiveBoxLens getRefractiveLens(int[] voxelIndices) {
+	public RefractiveBoxLens getRefractiveComponent(int[] voxelIndices) {
 		Vector3D centreclearAperture = Vector3D.sum(centreOfLensclearAperture00, uPeriodclearAperture.getProductWith(voxelIndices[0]), vPeriodclearAperture.getProductWith(voxelIndices[1]));
 		Vector3D centrePrincipalPoint = Vector3D.sum(centreOfLensPrincipalPoint00, uPeriodPrincipalPoint.getProductWith(voxelIndices[0]), vPeriodPrincipalPoint.getProductWith(voxelIndices[1]));
 		

@@ -9,7 +9,7 @@ import optics.raytrace.voxellations.FanOfPlanes;
 import optics.raytrace.voxellations.SetOfEquidistantParallelPlanes;
 import optics.raytrace.voxellations.Voxellation;
 
-public class SurfaceOfGaborSupererRefractiveCLAs extends SurfaceOfVoxellatedLensArray
+public class SurfaceOfGaborSupererRefractiveCLAs extends SurfaceOfRefractiveComponentArray
 {
 	
 
@@ -187,7 +187,7 @@ public class SurfaceOfGaborSupererRefractiveCLAs extends SurfaceOfVoxellatedLens
 	}
 
 	@Override
-	public SurfaceOfVoxellatedLensArray clone() {
+	public SurfaceOfRefractiveComponentArray clone() {
 		return new SurfaceOfGaborSupererRefractiveCLAs(this);
 	}
 	
@@ -381,7 +381,7 @@ public class SurfaceOfGaborSupererRefractiveCLAs extends SurfaceOfVoxellatedLens
 
 	// the vaguely fascinating bits
 	@Override
-	public SceneObject getRefractiveLens(int[] voxelIndices) {
+	public SceneObject getRefractiveComponent(int[] voxelIndices) {
 		// Vector3D centreclearAperture = Vector3D.sum(lens00ClearApertureCentre, clearApertureArrayBasisVector1.getProductWith(voxelIndices[0]), clearApertureArrayBasisVector2.getProductWith(voxelIndices[1]));
 		Vector3D centrePrincipalPointLensArray1 = Vector3D.sum(lens00PrincipalPointArray1, principalPointArrayBasisVector1Array1.getProductWith(voxelIndices[0]), principalPointArrayBasisVector2Array1.getProductWith(voxelIndices[1]));
 		Vector3D centrePrincipalPointLensArray2 = Vector3D.sum(lens00PrincipalPointArray2, principalPointArrayBasisVector1Array2.getProductWith(voxelIndices[0]), principalPointArrayBasisVector2Array2.getProductWith(voxelIndices[1]));
