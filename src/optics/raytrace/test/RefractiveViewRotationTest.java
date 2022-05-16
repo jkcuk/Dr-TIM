@@ -15,7 +15,6 @@ import javax.swing.JTextArea;
 import math.*;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.Plane;
-import optics.raytrace.sceneObjects.RefractiveTranslationWedge;
 import optics.raytrace.sceneObjects.TimHead;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.RefractiveViewRotator;
