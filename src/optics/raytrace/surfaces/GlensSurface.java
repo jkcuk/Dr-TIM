@@ -1020,7 +1020,7 @@ public class GlensSurface extends SurfacePropertyPrimitive
 						
 		// launch a new ray from here
 		return scene.getColourAvoidingOrigin(
-			ray.getBranchRay(i.p, getRefractedLightRayDirection(ray.getD(), i.p), i.t),
+			ray.getBranchRay(i.p, getRefractedLightRayDirection(ray.getD(), i.p), i.t, ray.isReportToConsole()),
 			i.o,
 			l,
 			scene,

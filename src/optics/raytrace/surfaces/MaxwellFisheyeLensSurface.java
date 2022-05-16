@@ -158,7 +158,7 @@ public class MaxwellFisheyeLensSurface extends SurfacePropertyPrimitive
 			
 			// launch a new ray from here
 			return scene.getColourAvoidingOrigin(
-					r.getBranchRay(newStartingPoint, newRayDirection, i.t - dt),	// dt is subtracted as ray is traced backwards
+					r.getBranchRay(newStartingPoint, newRayDirection, i.t - dt, r.isReportToConsole()),	// dt is subtracted as ray is traced backwards
 					i.o,	// object to avoid
 					l,
 					scene,

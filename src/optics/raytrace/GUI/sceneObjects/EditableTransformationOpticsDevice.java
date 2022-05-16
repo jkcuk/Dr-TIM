@@ -451,7 +451,7 @@ implements Serializable
 			dMin = Double.POSITIVE_INFINITY;
 			dMin2 = Double.POSITIVE_INFINITY;
 
-			Ray ray = new Ray(startingPoint, direction, 0);
+			Ray ray = new Ray(startingPoint, direction, 0, false);
 
 			// go through all the other surfaces
 			for(int i=0; i<surfaces.length; i++)

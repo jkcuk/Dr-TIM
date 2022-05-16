@@ -162,7 +162,7 @@ public class StandardPanorama3DGeometry extends AbstractPanorama3DGeometry
 		// System.out.println("StandardPanorama3DGeometry::getRayForAngles: 0.5*interpupillaryDistance*side.toFactor()="+0.5*interpupillaryDistance*side.toFactor());
 		
 		// the ray from the camera position in the direction d is then
-		return new Ray(c, d, 0);	// start time = 0
+		return new Ray(c, d, 0, false);	// start time = 0
 	}
 
 

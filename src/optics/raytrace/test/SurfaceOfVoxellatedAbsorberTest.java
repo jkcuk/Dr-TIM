@@ -116,7 +116,8 @@ public class SurfaceOfVoxellatedAbsorberTest
 		Ray r = new Ray(
 				new Vector3D(0, 0, 0),	// start point
 				new Vector3D(0, 0, 1),	// direction
-				0	// time
+				0,	// time
+				false
 			);
 		// ... and launch it at the sphere
 		try {

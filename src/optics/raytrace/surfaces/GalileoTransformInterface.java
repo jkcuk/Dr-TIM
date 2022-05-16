@@ -130,7 +130,7 @@ public class GalileoTransformInterface extends SurfacePropertyPrimitive
 		// launch a new ray from here
 		
 		return scene.getColourAvoidingOrigin(
-			ray.getBranchRay(intersection.p, newRayDirection, intersection.t),	// creating the new ray using the original ray's getSecondaryRay method ensures the ray trajectory is recorded correctly
+			ray.getBranchRay(intersection.p, newRayDirection, intersection.t, ray.isReportToConsole()),	// creating the new ray using the original ray's getSecondaryRay method ensures the ray trajectory is recorded correctly
 			intersection.o,	// the primitive scene object being intersected
 			lights,	// the light source(s)
 			scene,	// the entire scene

@@ -481,7 +481,7 @@ implements Derivatives
 		}
 				
 		// create a new ray, starting from the intersection point with the surface and the new k vector, and return it
-		return incidentRay.getBranchRay(intersectionWithSurface.p, kNew, dNew, intersectionWithSurface.t);
+		return incidentRay.getBranchRay(intersectionWithSurface.p, kNew, dNew, intersectionWithSurface.t, incidentRay.isReportToConsole());
 	}
 
 	/**

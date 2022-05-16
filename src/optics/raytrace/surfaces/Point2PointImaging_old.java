@@ -181,7 +181,7 @@ public class Point2PointImaging_old extends SurfacePropertyPrimitive
 		// launch a new ray from here
 		
 		return scene.getColourAvoidingOrigin(
-			ray.getBranchRay(p, dPrime, intersection.t),
+			ray.getBranchRay(p, dPrime, intersection.t, ray.isReportToConsole()),
 			intersection.o,
 			lights,
 			scene,

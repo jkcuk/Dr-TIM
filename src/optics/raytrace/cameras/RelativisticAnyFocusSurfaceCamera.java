@@ -293,7 +293,8 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 				new Ray(
 						rayStartPointSceneFrame,
 						rayDirectionSceneFrame,
-						startTimeSceneFrame
+						startTimeSceneFrame,
+						false	// reportToConsole
 					),
 				lights,
 				sceneFrameScene,
@@ -316,7 +317,8 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 			pixelImagePositionInFront
 				?(pointOnPupil2Image)
 				:(pointOnPupil2Image.getReverse()),	// initial direction
-			shutterModel.getAperturePlaneTransmissionTime(pointOnEntrancePupil, pixelImagePosition, pixelImagePositionInFront)	// time
+			shutterModel.getAperturePlaneTransmissionTime(pointOnEntrancePupil, pixelImagePosition, pixelImagePositionInFront),	// time
+			false	// reportToConsole
 		);
 	}
 

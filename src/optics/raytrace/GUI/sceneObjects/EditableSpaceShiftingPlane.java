@@ -269,7 +269,8 @@ implements IPanelComponent
 						r.getBranchRay(
 								newStartPosition,
 								r.getD(),
-								i.t	// not sure what to do with this -- just leave the time unchanged
+								i.t,	// not sure what to do with this -- just leave the time unchanged
+								r.isReportToConsole()
 								),
 						i.o,
 						l,

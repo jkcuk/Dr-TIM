@@ -240,13 +240,15 @@ public class RelativisticDistortionEllipsoidConstructionSurface extends SurfaceP
 		RaySceneObjectIntersection i1 = ellipsoid.getClosestRayIntersection(new Ray(
 				cameraPosition,	// start position
 				d,	// direction
-				ray.getT()
+				ray.getT(),
+				ray.isReportToConsole()
 				));
 		
 		Ray ray1 = new Ray(
 				(i1 != RaySceneObjectIntersection.NO_INTERSECTION)?i1.p:cameraPosition,	// start position
 				d,	// direction
-				ray.getT()	// start time
+				ray.getT(),	// start time
+				ray.isReportToConsole()
 				);
 		
 		// the colour of the surface point is therefore

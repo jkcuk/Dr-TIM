@@ -53,11 +53,12 @@ public class Ray {
 	 * @param d The direction in which the ray propagates.
 	 * @param t	The time when the ray is at position p.
 	 */
-	public Ray(Vector3D p, Vector3D d, double t)
+	public Ray(Vector3D p, Vector3D d, double t, boolean reportToConsole)
 	{
 		this.p = p;	// setP(p);
 		setD(d);
 		this.t = t;
+		this.reportToConsole = reportToConsole;
 	}
 
 	/**
@@ -67,12 +68,13 @@ public class Ray {
 	 * @param d The direction in which the ray propagates.
 	 * @param t	The time when the ray is at position p.
 	 */
-	public Ray(Vector3D p, Vector3D k, Vector3D d, double t)
+	public Ray(Vector3D p, Vector3D k, Vector3D d, double t, boolean reportToConsole)
 	{
 		this.p = p;	// setP(p);
 		setK(k);
 		setD(d);
 		this.t = t;
+		this.reportToConsole = reportToConsole;
 	}
 	
 	/**
@@ -85,7 +87,8 @@ public class Ray {
 				original.p,
 				original.k,
 				original.d,
-				original.t
+				original.t,
+				original.reportToConsole
 			);
 	}
 
@@ -106,14 +109,14 @@ public class Ray {
 	 * @param t	ray start time
 	 * @return
 	 */
-	public Ray getBranchRay(Vector3D p, Vector3D d, double t)
+	public Ray getBranchRay(Vector3D p, Vector3D d, double t, boolean reportToConsole)
 	{
-		return new Ray(p, d, t);
+		return new Ray(p, d, t, reportToConsole);
 	}
 	
-	public Ray getBranchRay(Vector3D p, Vector3D k, Vector3D d, double t)
+	public Ray getBranchRay(Vector3D p, Vector3D k, Vector3D d, double t, boolean reportToConsole)
 	{
-		return new Ray(p, k, d, t);
+		return new Ray(p, k, d, t, reportToConsole);
 	}
 	
 	/**
@@ -206,7 +209,7 @@ public class Ray {
 	{
 		// TODO this is wrong in a medium
 		// as the ray is a backwards-traced ray, "advancing" it means going backwards in time
-		return new Ray(p.getSumWith(d.getProductWith(a)), d, t-a/SpaceTimeTransformation.c);
+		return new Ray(p.getSumWith(d.getProductWith(a)), d, t-a/SpaceTimeTransformation.c, reportToConsole);
 	}
 
 	/**
@@ -215,9 +218,9 @@ public class Ray {
 	public Ray getReversedRay()
 	{
 		if(k != null)
-			return new Ray(p, k.getReverse(), d.getReverse(), t);
+			return new Ray(p, k.getReverse(), d.getReverse(), t, reportToConsole);
 		else
-			return new Ray(p, d.getReverse(), t);
+			return new Ray(p, d.getReverse(), t, reportToConsole);
 	}
 
 	/**

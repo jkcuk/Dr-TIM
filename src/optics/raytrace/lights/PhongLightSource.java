@@ -80,7 +80,7 @@ public class PhongLightSource extends LightSource implements Serializable
 
 		// calculate other shadows: send a light ray from the intersection point to the light source...
 		// TODO is time 0 appropriate?
-		Ray r2=new Ray(i.p,	d, 0);	// ray from the intersection point to the light source
+		Ray r2=new Ray(i.p,	d, 0, false);	// ray from the intersection point to the light source
 
 		// ... and see if it intersects with anything BEFORE it hits the light source
 		RaySceneObjectIntersection i2=scene.getClosestRayIntersectionWithShadowThrowingSceneObjectAvoidingOrigin(r2, i.o);

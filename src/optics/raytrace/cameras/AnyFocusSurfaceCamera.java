@@ -306,7 +306,8 @@ public class AnyFocusSurfaceCamera extends PinholeCamera implements Serializable
 			pixelImagePositionInFront
 			?(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil))
 			:(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil).getReverse()),
-			0	// time of this "event"; modify this to change shutter model
+			0,	// time of this "event"; modify this to change shutter model
+			false	// reportToConsole
 		);
 	}
  

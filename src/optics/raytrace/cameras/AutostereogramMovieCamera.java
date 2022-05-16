@@ -401,7 +401,8 @@ public class AutostereogramMovieCamera extends PinholeCamera
 				Vector3D.difference(
 						stereogramIntersectionPoint,
 						eye1Position),
-				0	// start time of ray --- not important here (?)
+				0,	// start time of ray --- not important here (?)
+				false	// reportToConsole
 		);
 
 		Vector3D sceneIntersectionPoint = scene.getClosestRayIntersection(ray).p;
@@ -412,7 +413,8 @@ public class AutostereogramMovieCamera extends PinholeCamera
 						sceneIntersectionPoint,
 						eye2Position
 				),
-				0	// start time of ray --- not important here (?)
+				0,	// start time of ray --- not important here (?)
+				false	// reportToConsole
 		).getAdvancedRay(-MyMath.HUGE);
 
 		sceneIntersectionPoint = ccd.getClosestRayIntersection(ray).p;

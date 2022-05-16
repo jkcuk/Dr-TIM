@@ -233,7 +233,8 @@ public class PictureSurfaceSpecular extends SurfaceProperty implements SurfacePr
 				ray.getBranchRay(
 						i.p,
 						ray.getD(),
-						i.t
+						i.t,
+						ray.isReportToConsole()
 				),
 				i.o,
 				l,

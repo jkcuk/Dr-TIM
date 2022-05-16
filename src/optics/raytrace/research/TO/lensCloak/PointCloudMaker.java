@@ -163,7 +163,8 @@ public class PointCloudMaker
 				{	//the origin of the rays is defined with respect to the centre of the lens
 					Ray pointMaker = new Ray(new Vector3D(x,y,1*CM),//Vector3D.sum(centreOfOriginPlane, basis1.getProductWith(x), basis2.getProductWith(y)),// //position
 							new Vector3D(0,0,-1), //direction
-							0//time
+							0,	//time
+							false
 							);
 					RaySceneObjectIntersection intersection = lensSurface.getClosestRayIntersection(pointMaker);//lensToBeMachined.getClosestRayIntersection(pointMaker);
 					if (intersection==RaySceneObjectIntersection.NO_INTERSECTION)
@@ -234,7 +235,8 @@ public class PointCloudMaker
 				{	//the origin of the rays is defined with respect to the centre of the lens
 					Ray pointMaker = new Ray(new Vector3D(x,y,1*CM),//Vector3D.sum(centreOfOriginPlane, basis1.getProductWith(x), basis2.getProductWith(y)),// //position
 							new Vector3D(0,0,-1), //direction
-							0//time
+							0,	//time
+							false
 							);
 					RaySceneObjectIntersection intersection = lensSurface.getClosestRayIntersection(pointMaker);//lensToBeMachined.getClosestRayIntersection(pointMaker);
 					if (intersection==RaySceneObjectIntersection.NO_INTERSECTION)

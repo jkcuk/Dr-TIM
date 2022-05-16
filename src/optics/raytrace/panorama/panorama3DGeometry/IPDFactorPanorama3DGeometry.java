@@ -74,6 +74,6 @@ public class IPDFactorPanorama3DGeometry extends StandardPanorama3DGeometry
 			);
 		
 		// the ray from the camera position in the direction d is then
-		return new Ray(c, d, 0);	// start time = 0
+		return new Ray(c, d, 0, false);	// start time = 0
 	}
 }

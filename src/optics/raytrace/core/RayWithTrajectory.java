@@ -42,7 +42,7 @@ public class RayWithTrajectory extends Ray
 	 */
 	public RayWithTrajectory(Vector3D p, Vector3D d, double t, boolean reportToConsole)
 	{
-		super(p, d, t);
+		super(p, d, t, reportToConsole);
 		
 		// initialise intersectionPoints vector
 		intersectionPoints = new Vector<Vector3D>();
@@ -55,7 +55,6 @@ public class RayWithTrajectory extends Ray
 		setP(p);	// this adds the start point to the list of intersection points
 		setT(t);
 
-		setReportToConsole(reportToConsole);
 		firstReport();
 	}
 	
@@ -79,12 +78,11 @@ public class RayWithTrajectory extends Ray
 	 */
 	public RayWithTrajectory(Vector3D p, Vector3D d, double t, Vector<Vector3D> intersectionPoints, Vector<Double> intersectionTimes, Vector<RayWithTrajectory> branchRays, boolean reportToConsole)
 	{
-		super(p, d, t);
+		super(p, d, t, reportToConsole);
 		
 		this.intersectionPoints = intersectionPoints;
 		this.intersectionTimes = intersectionTimes;
 		this.branchRays = branchRays;
-		setReportToConsole(reportToConsole);
 		firstReport();
 	}
 	
@@ -110,9 +108,9 @@ public class RayWithTrajectory extends Ray
 	 * @return
 	 */
 	@Override
-	public RayWithTrajectory getBranchRay(Vector3D p, Vector3D d, double t)
+	public RayWithTrajectory getBranchRay(Vector3D p, Vector3D d, double t, boolean reportToConsole)
 	{
-		RayWithTrajectory branchRay = new RayWithTrajectory(p, d, t, isReportToConsole());
+		RayWithTrajectory branchRay = new RayWithTrajectory(p, d, t, reportToConsole);
 		
 		addBranchRay(branchRay);
 		
@@ -120,9 +118,9 @@ public class RayWithTrajectory extends Ray
 	}
 
 	@Override
-	public RayWithTrajectory getBranchRay(Vector3D p, Vector3D k, Vector3D d, double t)
+	public RayWithTrajectory getBranchRay(Vector3D p, Vector3D k, Vector3D d, double t, boolean reportToConsole)
 	{
-		RayWithTrajectory branchRay = new RayWithTrajectory(p, k, d, t, isReportToConsole());
+		RayWithTrajectory branchRay = new RayWithTrajectory(p, k, d, t, reportToConsole);
 		
 		addBranchRay(branchRay);
 		

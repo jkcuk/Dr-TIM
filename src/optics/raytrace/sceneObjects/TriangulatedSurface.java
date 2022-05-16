@@ -502,7 +502,8 @@ public class TriangulatedSurface extends SceneObjectPrimitive implements Seriali
 		RaySceneObjectIntersection intersection = getClosestRayIntersection(new Ray(
 				p,	// position on ray
 				direction,
-				0	// time when ray is at p
+				0,	// time when ray is at p
+				false
 			));
 
 		// calculate the scalar product of the ray direction and the outwards normal

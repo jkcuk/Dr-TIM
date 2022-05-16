@@ -217,7 +217,8 @@ public class PinholeCamera extends CameraClass implements CameraWithRayForImageP
 		return new Ray(
 				pinholePosition, // start point
 				Vector3D.difference(getCCD().getPositionOnPixel(i,j), pinholePosition),	// direction
-				0	// start time of ray --- not important here (?)
+				0,	// start time of ray --- not important here (?)
+				false	// reportToConsole
 			);
 	}
 	
@@ -232,7 +233,8 @@ public class PinholeCamera extends CameraClass implements CameraWithRayForImageP
 		return new Ray(
 				pinholePosition, // start point
 				Vector3D.difference(getCCD().getPixelCentrePosition(i,j), pinholePosition),	// direction
-				0	// start time of ray --- not important here (?)
+				0,	// start time of ray --- not important here (?)
+				false	// reportToConsole
 			);
 	}
 	
@@ -266,7 +268,8 @@ public class PinholeCamera extends CameraClass implements CameraWithRayForImageP
 							),
 						getPinholePosition()
 					),	// direction
-				0	// start time of ray --- not important here (?)
+				0,	// start time of ray --- not important here (?)
+				false	// reportToConsole
 			);
 	}
 

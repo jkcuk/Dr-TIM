@@ -88,7 +88,7 @@ public class OrthographicCamera extends CameraClass implements CameraWithRayForI
 	public Ray getRayForPixel(double i, double j)
 	{
 		// find ray direction by subtracting pixel position from pinhole position
-		return new Ray(ccd.getPositionOnPixel(i,j), viewDirection, 0);
+		return new Ray(ccd.getPositionOnPixel(i,j), viewDirection, 0, false);
 	}
 	
 	/* (non-Javadoc)
@@ -98,7 +98,7 @@ public class OrthographicCamera extends CameraClass implements CameraWithRayForI
 	public Ray getCentralRayForPixel(double i, double j)
 	{
 		// find ray direction by subtracting pixel position from pinhole position
-		return new Ray(ccd.getPixelCentrePosition(i,j), viewDirection, 0);
+		return new Ray(ccd.getPixelCentrePosition(i,j), viewDirection, 0, false);
 	}
 	
 	/**
@@ -123,7 +123,8 @@ public class OrthographicCamera extends CameraClass implements CameraWithRayForI
 						j*getDetectorPixelsVertical()/imagePixelsVertical
 					),
 				viewDirection,
-				0	// start time of ray --- not important here (?)
+				0,	// start time of ray --- not important here (?)
+				false	// reportToConsole
 			);
 	}
 

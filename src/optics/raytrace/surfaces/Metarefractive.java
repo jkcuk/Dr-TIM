@@ -140,7 +140,7 @@ public class Metarefractive extends SurfacePropertyPrimitive
 		// launch a new ray from here
 		
 		return scene.getColourAvoidingOrigin(
-			ray.getBranchRay(intersection.p, newRayDirection, intersection.t),
+			ray.getBranchRay(intersection.p, newRayDirection, intersection.t, ray.isReportToConsole()),
 			intersection.o,
 			lights,
 			scene,

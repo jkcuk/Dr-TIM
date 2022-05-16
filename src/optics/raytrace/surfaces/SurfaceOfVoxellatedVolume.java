@@ -283,7 +283,8 @@ public abstract class SurfaceOfVoxellatedVolume extends SurfacePropertyPrimitive
 				new Ray(
 						i.p,	// starting point
 						r.getD(),	// direction
-						i.t	// starting time
+						i.t,	// starting time
+						r.isReportToConsole()
 					).getAdvancedRay(MyMath.TINY),
 					i.o
 				);

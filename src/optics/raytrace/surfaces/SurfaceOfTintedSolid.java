@@ -148,7 +148,8 @@ public class SurfaceOfTintedSolid extends SurfaceProperty implements SurfaceProp
 				ray.getBranchRay(
 						i.p,
 						ray.getD(),
-						i.t
+						i.t,
+						ray.isReportToConsole()
 				),
 				i.o,
 				lights,

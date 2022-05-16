@@ -273,7 +273,7 @@ public abstract class PhaseHologram extends SurfacePropertyPrimitive
 			// launch a new ray from here
 			
 			return scene.getColourAvoidingOrigin(
-				ray.getBranchRay(p, dPrime, intersection.t),
+				ray.getBranchRay(p, dPrime, intersection.t, ray.isReportToConsole()),
 				intersection.o,
 				lights,
 				scene,

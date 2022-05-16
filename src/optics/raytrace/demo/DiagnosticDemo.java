@@ -1063,7 +1063,8 @@ public class DiagnosticDemo extends NonInteractiveTIMEngine
 						{
 							Ray pointMaker = new Ray(new Vector3D(x,y,1), //position
 									new Vector3D(0,0,-1), //direction
-									0//time
+									0,//time
+									false	// reportToConsole
 									);
 							RaySceneObjectIntersection intersectionPoint = lensToBeMachined.getClosestRayIntersection(pointMaker);
 							String intersectionPointString = intersectionPoint.toString();//(lensToBeMachined.getClosestRayIntersection(pointMaker)).toString();   

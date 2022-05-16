@@ -267,7 +267,8 @@ public class Pixellation extends SurfaceProperty
 						ray.getBranchRay(
 								rayStartPosition,
 								rayDirection,
-								rayStartTime
+								rayStartTime,
+								ray.isReportToConsole()
 								),
 						intersection.o,
 						lights,

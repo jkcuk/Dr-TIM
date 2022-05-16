@@ -245,7 +245,8 @@ extends SurfacePropertyPrimitive
 		return rayBeforeInteractingWithSurface.getBranchRay(
 				intersection.p,
 				rayBeforeInteractingWithSurface.getD(),
-				intersection.t
+				intersection.t,
+				rayBeforeInteractingWithSurface.isReportToConsole()
 				);
 	}
 
@@ -281,7 +282,8 @@ extends SurfacePropertyPrimitive
 					ray.getBranchRay(
 							newRay.getP(),
 							newRay.getD(),
-							newRay.getT()
+							newRay.getT(),
+							ray.isReportToConsole()
 							),
 					intersection.o,
 					lightSource,

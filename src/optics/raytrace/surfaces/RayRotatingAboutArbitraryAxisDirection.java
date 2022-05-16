@@ -162,7 +162,7 @@ public class RayRotatingAboutArbitraryAxisDirection extends SurfacePropertyPrimi
 		// launch a new ray from here
 		
 		return scene.getColourAvoidingOrigin(
-			ray.getBranchRay(i.p, newRayDirection, i.t),
+			ray.getBranchRay(i.p, newRayDirection, i.t, ray.isReportToConsole()),
 			i.o,
 			l,
 			scene,

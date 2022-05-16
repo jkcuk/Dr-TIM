@@ -766,11 +766,11 @@ public class NestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 		for(Vector3D vertex:abyssCloakIVertexImages)
 		{
 			if(abyssCloakO.getClosestRayIntersection(
-					new Ray(positionOfImageDueToBothCloaks, Vector3D.difference(vertex, positionOfImageDueToBothCloaks), 0)
+					new Ray(positionOfImageDueToBothCloaks, Vector3D.difference(vertex, positionOfImageDueToBothCloaks), 0, false)
 				) != RaySceneObjectIntersection.NO_INTERSECTION) return true;
 
 			if(abyssCloakO.getClosestRayIntersection(
-					new Ray(positionOfImageDueToBothCloaks, Vector3D.difference(positionOfImageDueToBothCloaks, vertex), 0)
+					new Ray(positionOfImageDueToBothCloaks, Vector3D.difference(positionOfImageDueToBothCloaks, vertex), 0, false)
 				) != RaySceneObjectIntersection.NO_INTERSECTION) return true;
 		}
 

@@ -151,7 +151,7 @@ public class Teleporting_Old extends SurfacePropertyPrimitive
 
 		// launch a new ray from here
 		return scene.getColourAvoidingOrigin(
-				r.getBranchRay(newStartingPoint, newRayDirection, i.t),
+				r.getBranchRay(newStartingPoint, newRayDirection, i.t, r.isReportToConsole()),
 				i.o,
 				l,
 				scene,

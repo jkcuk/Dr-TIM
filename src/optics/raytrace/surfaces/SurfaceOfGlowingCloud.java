@@ -131,7 +131,8 @@ public class SurfaceOfGlowingCloud extends SurfaceProperty implements SurfacePro
 				ray.getBranchRay(
 						i.p,
 						ray.getD(),
-						i.t
+						i.t,
+						ray.isReportToConsole()
 				),
 				i.o,
 				lights,

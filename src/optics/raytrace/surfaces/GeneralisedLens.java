@@ -128,7 +128,7 @@ public class GeneralisedLens extends SurfacePropertyPrimitive
 		// launch a new ray from here
 		
 		return scene.getColourAvoidingOrigin(
-			r.getBranchRay(i.p, d1, i.t),	// creating the new ray using the original ray's getSecondaryRay method ensures the ray trajectory is recorded correctly
+			r.getBranchRay(i.p, d1, i.t, r.isReportToConsole()),	// creating the new ray using the original ray's getSecondaryRay method ensures the ray trajectory is recorded correctly
 			i.o,	// the primitive scene object being intersected
 			l,	// the light source(s)
 			scene,	// the entire scene

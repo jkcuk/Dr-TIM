@@ -187,7 +187,7 @@ public class PositiveSpaceOnlyOrthographicCamera extends CameraClass implements 
 		}
 		
 		// find ray direction by subtracting pixel position from pinhole position
-		return new Ray(newStartPosition, negativeSpaceWedgeStar.getAxisDirection(), 0);
+		return new Ray(newStartPosition, negativeSpaceWedgeStar.getAxisDirection(), 0, false);
 	}
 	
 	/* (non-Javadoc)

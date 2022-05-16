@@ -179,13 +179,13 @@ public abstract class SceneObjectClass implements SceneObject, Serializable, Clo
 	@Override
 	public RaySceneObjectIntersection getNextClosestRayIntersection(Ray ray, RaySceneObjectIntersection i)
 	{
-		return getClosestRayIntersection(new Ray(i.p, ray.getD(), i.t).advance(MyMath.TINY));
+		return getClosestRayIntersection(new Ray(i.p, ray.getD(), i.t, ray.isReportToConsole()).advance(MyMath.TINY));
 	}
 
 	@Override
 	public RaySceneObjectIntersection getNextClosestRayIntersectionWithShadowThrowingSceneObject(Ray ray, RaySceneObjectIntersection i)
 	{
-		return getClosestRayIntersectionWithShadowThrowingSceneObject(new Ray(i.p, ray.getD(), i.t).advance(MyMath.TINY));
+		return getClosestRayIntersectionWithShadowThrowingSceneObject(new Ray(i.p, ray.getD(), i.t, ray.isReportToConsole()).advance(MyMath.TINY));
 	}
 
 	/**
@@ -204,14 +204,14 @@ public abstract class SceneObjectClass implements SceneObject, Serializable, Clo
 //		if(ray.hasTrajectory())
 //			return getClosestRayIntersectionAvoidingOrigin(new RayWithTrajectory(i.p.add(ray.getD().multiply(MyMath.TINY)), ray.getD()), originObject);
 
-		return getClosestRayIntersectionAvoidingOrigin(new Ray(i.p, ray.getD(), i.t).advance(MyMath.TINY), excludeObject);
+		return getClosestRayIntersectionAvoidingOrigin(new Ray(i.p, ray.getD(), i.t, ray.isReportToConsole()).advance(MyMath.TINY), excludeObject);
 	}
 
 	@Override
 	public RaySceneObjectIntersection getNextClosestRayIntersectionWithShadowThrowingSceneObjectAvoidingOrigin(Ray ray, SceneObjectPrimitive originObject, RaySceneObjectIntersection i)
 	{
 		return getClosestRayIntersectionWithShadowThrowingSceneObjectAvoidingOrigin(
-				new Ray(i.p, ray.getD(), i.t).advance(MyMath.TINY),
+				new Ray(i.p, ray.getD(), i.t, ray.isReportToConsole()).advance(MyMath.TINY),
 				originObject);
 	}
 

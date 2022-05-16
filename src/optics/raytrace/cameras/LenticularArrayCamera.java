@@ -182,7 +182,8 @@ public class LenticularArrayCamera extends CameraClass implements Serializable
 		return new Ray(
 				ccd.getPositionOnPixel(i, j),
 				viewDirections.get(((int)i) % getPixelsPerCylindricalLens()),
-				0	// start time of ray --- not important here (?)
+				0,	// start time of ray --- not important here (?)
+				false	// reportToConsole
 			).getAdvancedRay(-MyMath.HUGE);
 	}
 
@@ -195,7 +196,8 @@ public class LenticularArrayCamera extends CameraClass implements Serializable
 		return new Ray(
 				ccd.getPixelCentrePosition(i, j),
 				viewDirections.get(((int)i) % getPixelsPerCylindricalLens()),
-				0	// start time of ray --- not important here (?)
+				0,	// start time of ray --- not important here (?)
+				false	// reportToConsole
 			).getAdvancedRay(-MyMath.HUGE);
 	}
 

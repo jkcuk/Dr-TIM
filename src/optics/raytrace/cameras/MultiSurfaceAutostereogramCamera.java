@@ -481,7 +481,8 @@ public class MultiSurfaceAutostereogramCamera extends PinholeCamera
 						dotPosition,
 						eye1Position
 					),
-				0	// start time of ray --- not important here (?)
+				0,	// start time of ray --- not important here (?)
+				false	// reportToConsole
 			);
 
 		Vector3D sceneIntersectionPoint = scene.getClosestRayIntersection(ray).p;
@@ -494,7 +495,8 @@ public class MultiSurfaceAutostereogramCamera extends PinholeCamera
 						sceneIntersectionPoint,
 						eye2Position
 				),
-				0	// start time of ray --- not important here (?)
+				0,	// start time of ray --- not important here (?)
+				false	// reportToConsole
 		).getAdvancedRay(-MyMath.HUGE);
 
 		return ccd.getClosestRayIntersection(ray).p;

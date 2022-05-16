@@ -74,6 +74,6 @@ public class GeneralisedStandardPanorama3DGeometry extends StandardPanorama3DGeo
 		Vector3D P = Vector3D.sum(M, d.getProductWith(R));
 		
 		// the ray from the camera position in the direction d is then
-		return new Ray(c, Vector3D.difference(P, c), 0);	// start time = 0
+		return new Ray(c, Vector3D.difference(P, c), 0, false);	// start time = 0
 	}
 }

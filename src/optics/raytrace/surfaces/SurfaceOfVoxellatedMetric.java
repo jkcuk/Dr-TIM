@@ -204,7 +204,7 @@ public class SurfaceOfVoxellatedMetric extends SurfaceOfVoxellatedVolume
 			
 			// calculate the ray immediately after it has entered the volume
 			// the ray direction gets refracted according to (generalised?) Snell's law
-			Ray r2 = r.getBranchRay(i.p, d2, i.t);
+			Ray r2 = r.getBranchRay(i.p, d2, i.t, r.isReportToConsole());
 			
 			// now we're within the volume, so let the getColourUponStartingWithinVolume method do the job
 			return getColourUponStartingWithinVolume(r2, i, scene, l, stepsLeft-1, traceLevel, raytraceExceptionHandler).multiply(getTransmissionCoefficient());
@@ -220,7 +220,8 @@ public class SurfaceOfVoxellatedMetric extends SurfaceOfVoxellatedVolume
 							r.getD(),	// incident light-ray direction
 							i.getNormalisedOutwardsSurfaceNormal()	// surfaceNormal
 						),
-					i.t
+					i.t,
+					r.isReportToConsole()
 			);
 			
 			// continue tracing the ray through the scene outside the volume
@@ -280,7 +281,8 @@ public class SurfaceOfVoxellatedMetric extends SurfaceOfVoxellatedVolume
 					        GlobalOrLocalCoordinateSystemType.GLOBAL_BASIS,
 							false	//allow complex path lengths?				
 						),					
-					i.t
+					i.t,
+					r.isReportToConsole()
 				);
 
 			// now we're within the volume, so let the getColourUponStartingWithinVolume method do the job
@@ -297,7 +299,8 @@ public class SurfaceOfVoxellatedMetric extends SurfaceOfVoxellatedVolume
 							r.getD(),	// incident light-ray direction
 							i.getNormalisedOutwardsSurfaceNormal()	// surfaceNormal
 						),
-					i.t
+					i.t,
+					r.isReportToConsole()
 			);
 			
 			// we're still within the volume, so let the getColourUponStartingWithinVolume method do the job
@@ -342,7 +345,8 @@ public class SurfaceOfVoxellatedMetric extends SurfaceOfVoxellatedVolume
 					        GlobalOrLocalCoordinateSystemType.GLOBAL_BASIS,
 							false	//allow complex path lengths?				
 						),					
-					i.t
+					i.t,
+					r.isReportToConsole()
 				);
 
 			// continue tracing the ray through the scene
@@ -362,7 +366,8 @@ public class SurfaceOfVoxellatedMetric extends SurfaceOfVoxellatedVolume
 							r.getD(),	// incident light-ray direction
 							i.getNormalisedOutwardsSurfaceNormal()	// surfaceNormal
 						),
-					i.t
+					i.t,
+					r.isReportToConsole()
 			);
 			
 			// we're still within the volume, so let the getColourUponStartingWithinVolume method do the job

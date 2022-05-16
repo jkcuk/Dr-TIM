@@ -62,7 +62,8 @@ public abstract class Diffusion extends SurfaceProperty
 						ray.getBranchRay(
 								intersection.p,	// start position
 								rayDirection,	// ray direction
-								intersection.t	// start time
+								intersection.t,	// start time
+								ray.isReportToConsole()
 								),
 						intersection.o,
 						lights,

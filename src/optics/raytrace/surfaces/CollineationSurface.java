@@ -210,7 +210,7 @@ public class CollineationSurface extends SurfacePropertyPrimitive
 		// from the same surface
 		
 		// construct a test ray that starts from p1Prime in the direction of p2Prime
-		Ray testRay = new Ray(p1Prime, Vector3D.difference(p2Prime, p1Prime), intersection.t);
+		Ray testRay = new Ray(p1Prime, Vector3D.difference(p2Prime, p1Prime), intersection.t, false);
 		
 		// does this test ray intersect the surface?
 		RaySceneObjectIntersection testIntersection = intersection.o.getClosestRayIntersection(testRay);
@@ -264,7 +264,7 @@ public class CollineationSurface extends SurfacePropertyPrimitive
 		// with the same ray direction as the test ray
 		
 		return scene.getColourAvoidingOrigin(
-			ray.getBranchRay(testIntersection.p, outgoingLightRayDirection, intersection.t),
+			ray.getBranchRay(testIntersection.p, outgoingLightRayDirection, intersection.t, ray.isReportToConsole()),
 			intersection.o,
 			lights,
 			scene,

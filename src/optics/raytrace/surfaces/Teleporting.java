@@ -184,7 +184,7 @@ public class Teleporting extends SurfacePropertyPrimitive
 
 			// Now assume that the second surface is the one the light ray re-directed by the first surface would hit,
 			// and calculate where it would hit.
-			Ray r2 = r.getBranchRay(i.p, intermediateRayDirection, i.t);
+			Ray r2 = r.getBranchRay(i.p, intermediateRayDirection, i.t, r.isReportToConsole());
 			newStartingPoint = ((SceneObject)getDestinationObject()).getClosestRayIntersection(r2).p;
 			if(newStartingPoint == null)
 			{
@@ -318,7 +318,7 @@ public class Teleporting extends SurfacePropertyPrimitive
 
 		// launch a new ray from here, leaving the same time the incident ray hit
 		return scene.getColourAvoidingOrigin(
-				r.getBranchRay(newStartingPoint, newRayDirection, i.t),
+				r.getBranchRay(newStartingPoint, newRayDirection, i.t, r.isReportToConsole()),
 				(SceneObjectPrimitive)getDestinationObject(),	// object to avoid
 				l,
 				scene,

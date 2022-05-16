@@ -293,7 +293,8 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 				r = r.getBranchRay(
 						i.p,
 						newRayDirection,
-						i.t
+						i.t,
+						r.isReportToConsole()
 				);
 			}
 			else if(v.getSceneObjectPrimitives().contains(i.o))	// is the intersection with the voxellation surfaces?
@@ -347,7 +348,8 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 		Ray r2 = r.getBranchRay(
 				i.p,
 				r.getD(),
-				i.t
+				i.t,
+				r.isReportToConsole()
 		);
 
 		// then do whatever rays do within the volume
@@ -378,7 +380,8 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 		Ray r2 = r.getBranchRay(
 				i.p,
 				r.getD(),
-				i.t
+				i.t,
+				r.isReportToConsole()
 		);
 		
 		// then do whatever rays do within the volume
@@ -410,7 +413,8 @@ public abstract class SurfaceOfVoxellatedLensArray extends SurfaceOfVoxellatedVo
 		Ray r2 = r.getBranchRay(
 				i.p,
 				r.getD(),
-				i.t
+				i.t,
+				r.isReportToConsole()
 		);
 
 		// continue tracing the ray through the scene

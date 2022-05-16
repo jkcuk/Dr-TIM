@@ -294,7 +294,8 @@ public class PictureSurface extends SurfaceProperty implements SurfacePropertyWi
 				ray.getBranchRay(
 						i.p,
 						ray.getD(),
-						i.t
+						i.t,
+						ray.isReportToConsole()
 				),
 				i.o,
 				l,

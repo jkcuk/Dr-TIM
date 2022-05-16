@@ -100,7 +100,8 @@ public class SurfaceOfVolumeWithColouredVoxelBoundaries extends SurfaceOfVoxella
 		Ray r2 = r.getBranchRay(
 				i.p,
 				r.getD(),
-				i.t
+				i.t,
+				r.isReportToConsole()
 		);
 
 		// then do whatever rays do within the volume
@@ -187,7 +188,8 @@ public class SurfaceOfVolumeWithColouredVoxelBoundaries extends SurfaceOfVoxella
 		Ray r2 = r.getBranchRay(
 				i.p,
 				r.getD(),
-				i.t
+				i.t,
+				r.isReportToConsole()
 		);
 
 		// continue tracing the ray through the scene

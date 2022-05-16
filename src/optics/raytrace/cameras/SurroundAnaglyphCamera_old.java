@@ -248,7 +248,8 @@ public class SurroundAnaglyphCamera_old extends CameraClass implements Serializa
 							forward0deg.getWithLength(cosPhi),
 							up.getWithLength(tanHalfVerticalAngleOfView-2*tanHalfVerticalAngleOfView*j/getCCD().getDetectorPixelsVertical())
 					),	// direction
-					0	// start time of ray --- not important here (?)
+					0,	// start time of ray --- not important here (?)
+					false	// reportToConsole
 			);
 		case SPHERICAL_COSINE:
 			return new Ray(
@@ -262,7 +263,8 @@ public class SurroundAnaglyphCamera_old extends CameraClass implements Serializa
 							forward0deg.getWithLength(cosTheta*cosPhi),	// forward0deg.getWithLength(cosTheta*cosPhi)
 							up.getWithLength(sinTheta)	// up.getWithLength(sinTheta)
 					),	// direction
-					0	// start time of ray --- not important here (?)
+					0,	// start time of ray --- not important here (?)
+					false	// reportToConsole
 			);
 		case TEST:
 			double scaleFactor = cosTheta;	// replace with ratio of actual to apparent distance
@@ -277,7 +279,8 @@ public class SurroundAnaglyphCamera_old extends CameraClass implements Serializa
 							forward0deg.getWithLength(cosTheta*cosPhi),	// forward0deg.getWithLength(cosTheta*cosPhi)
 							up.getWithLength(sinTheta)	// up.getWithLength(sinTheta)
 					),	// direction
-					0	// start time of ray --- not important here (?)					
+					0,	// start time of ray --- not important here (?)					
+					false	// reportToConsole
 			);
 		case SPHERICAL:
 		default:
@@ -292,7 +295,8 @@ public class SurroundAnaglyphCamera_old extends CameraClass implements Serializa
 							forward0deg.getWithLength(cosTheta*cosPhi),	// forward0deg.getWithLength(cosTheta*cosPhi)
 							up.getWithLength(sinTheta)	// up.getWithLength(sinTheta)
 					),	// direction
-					0	// start time of ray --- not important here (?)
+					0,	// start time of ray --- not important here (?)
+					false	// reportToConsole
 			);
 		}
 	}
