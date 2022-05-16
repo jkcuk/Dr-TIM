@@ -36,6 +36,13 @@ public class Ray {
 	 * This is used for relativistic ray tracing (see RelativisticAnyFocusSurfaceCamera)
 	 */
 	private double t;
+	
+	/**
+	 * if true, the ray tracer reports on this ray's progress on the console.
+	 */
+	protected boolean reportToConsole = false;
+	
+
 
 //	public static final Ray
 //		NO_RAY = new Ray((Vector3D)null, (Vector3D)null, 0);
@@ -162,6 +169,15 @@ public class Ray {
 	public void setT(double t) {
 		this.t = t;
 	}
+
+	public boolean isReportToConsole() {
+		return reportToConsole;
+	}
+
+	public void setReportToConsole(boolean reportToConsole) {
+		this.reportToConsole = reportToConsole;
+	}
+	
 
 	/**
 	 * Advance this light ray a distance <i>a</i> in the direction <b>d</b> to a

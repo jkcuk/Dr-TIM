@@ -34,11 +34,6 @@ public class RayWithTrajectory extends Ray
 	private Vector<RayWithTrajectory> branchRays;
 	
 	/**
-	 * if true, the ray tracer reports on this ray's progress on the console.
-	 */
-	private boolean reportToConsole;
-	
-	/**
 	 * A light ray is defined by an initial position and a direction in which it propagates.
 	 * @param p The position of the light ray.
 	 * @param d The direction in which the ray propagates.
@@ -99,14 +94,6 @@ public class RayWithTrajectory extends Ray
 		return true;
 	}
 
-	public boolean isReportToConsole() {
-		return reportToConsole;
-	}
-
-	public void setReportToConsole(boolean reportToConsole) {
-		this.reportToConsole = reportToConsole;
-	}
-	
 	/**
 	 * Create the first report on this ray's progress
 	 */

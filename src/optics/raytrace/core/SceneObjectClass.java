@@ -244,6 +244,11 @@ public abstract class SceneObjectClass implements SceneObject, Serializable, Clo
 		
 		RaySceneObjectIntersection intersection = getClosestRayIntersection(ray);
 
+		if(ray.isReportToConsole())
+		{
+			System.out.println("Intersection: "+intersection);
+		}
+		
 		return getColourAtIntersection(
 				intersection,
 				ray,
