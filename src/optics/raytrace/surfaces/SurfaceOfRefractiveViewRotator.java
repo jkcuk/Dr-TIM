@@ -288,7 +288,7 @@ public SceneObject getRefractiveComponent(int[] voxelIndices) {
 		
 		// calculate the direction of a ray from the eye that has passed through the ocular surface through the centre of the pixel
 		Vector3D ocularPixelSurfaceCentre = Vector3D.sum(ocularPlaneCentre, periodVector1.getProductWith(voxelIndices[0]), periodVector2.getProductWith(voxelIndices[1]));
-		Vector3D dOcular = Vector3D.difference(ocularPixelSurfaceCentre, eyePosition);
+		Vector3D dOcular = Vector3D.difference(ocularPixelSurfaceCentre, eyePosition).getNormalised();
 		
 		// calculate the outwards-facing (i.e. towards the eye) surface normal of the ocular plane
 		Vector3D ocularPlaneNormalOutwards = ocularPlaneNormal.getWithLength(-Math.signum(Vector3D.scalarProduct(dOcular, ocularPlaneNormal)));
@@ -296,11 +296,15 @@ public SceneObject getRefractiveComponent(int[] voxelIndices) {
 		// refract this direction into the pixel
 		Vector3D dInside;
 		try {
-			dInside = RefractiveSimple.getRefractedLightRayDirection(dOcular, ocularPlaneNormalOutwards, refractiveIndex).getNormalised();
+			dInside = RefractiveSimple.getRefractedLightRayDirection(dOcular, ocularPlaneNormalOutwards, 1/refractiveIndex).getNormalised();
 		} catch (EvanescentException e) {
 			(new RayTraceException("Evanescence when there should be none!?")).printStackTrace();
 			return c;
 		}
+		
+		//dInside = dOcular.getProductWith(refractiveIndex).getDifferenceWith(ocularPlaneNormalOutwards);
+		//System.out.println("dInside "+dInside);
+		
 		
 		// to get the right thickness of the pixel wedge at the centre, calculate the position where the ray would...
 		Vector3D objectivePixelSurfaceCentre;
@@ -317,7 +321,7 @@ public SceneObject getRefractiveComponent(int[] voxelIndices) {
 		}
 		
 		// also calculate the position where we want that ray from the objective pixel surface centre to go
-		Vector3D dRotated = Geometry.rotate(dOcular, rotationAxisDirection, MyMath.deg2rad(-rotationAngle));
+		Vector3D dRotated = Geometry.rotate(dOcular, rotationAxisDirection, MyMath.deg2rad(rotationAngle));
 		RaySceneObjectIntersection intersection = viewObject.getClosestRayIntersection(new Ray(eyePosition, dRotated, 0, false));
 		if(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
 		{   //System.out.println(intersection);
@@ -327,7 +331,7 @@ public SceneObject getRefractiveComponent(int[] voxelIndices) {
 			Vector3D dObjective = Vector3D.difference(intersection.p, objectivePixelSurfaceCentre).getNormalised();
 			
 			// calculate the normal of the refractive surface that turns dInside into dObjective
-			Vector3D nObjective = Vector3D.difference(dInside.getProductWith(1/refractiveIndex), dObjective);
+			Vector3D nObjective = Vector3D.difference(dInside.getProductWith(refractiveIndex), dObjective);
 			
 			// ... and make sure it faces outwards
 			nObjective = nObjective.getWithLength(Math.signum(Vector3D.scalarProduct(dObjective, nObjective)));

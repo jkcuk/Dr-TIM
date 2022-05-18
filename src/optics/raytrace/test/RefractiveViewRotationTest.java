@@ -23,7 +23,6 @@ import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
 import optics.raytrace.core.*;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.exceptions.SceneException;
-import optics.raytrace.research.idealLensWormhole.IdealLensWormholeVisualiserFinalInteractive.ParametersInitialisationType;
 import optics.raytrace.NonInteractiveTIMEngine;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
@@ -54,7 +53,7 @@ public class RefractiveViewRotationTest extends NonInteractiveTIMEngine
 	//Rotator settings
 	private Vector3D frontSurfaceNormal, rotationCentre, periodVector1, periodVector2, centre,eyePosition,rotationAxisDirection;
 	
-	private double eyeDistance, rotationAngle, refractiveIndex, wedgeThickness;
+	private double rotationAngle, refractiveIndex, wedgeThickness;
 	
 	private boolean showTrajectory;
 
@@ -89,12 +88,11 @@ public class RefractiveViewRotationTest extends NonInteractiveTIMEngine
 		 * Setting the paramterers for a specs setup
 		 */
 
-		boundingBoxCentre = new Vector3D(0,0,0+0.5*wedgeThickness);
+		boundingBoxCentre = new Vector3D(0,0,0.001499999);
 		boundingBoxSpanVector1 =new Vector3D(0.05,0,0);
 		boundingBoxSpanVector2 = new Vector3D(0,0.05,0);
-		boundingBoxSpanVector3 =new Vector3D(0,0,0.005);
+		boundingBoxSpanVector3 =new Vector3D(0,0,0.003);
 		frontSurfaceNormal = new Vector3D(0,0,-1);
-		eyeDistance = 0.015;
 		centre = new Vector3D(0,0,0);
 		rotationCentre = new Vector3D(0,0,2);
 		rotationAngle = 10;
