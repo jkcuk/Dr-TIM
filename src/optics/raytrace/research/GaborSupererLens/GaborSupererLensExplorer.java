@@ -18,10 +18,8 @@ import math.*;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.LensType;
 import optics.raytrace.sceneObjects.Plane;
-import optics.raytrace.sceneObjects.RefractiveLensSurfaces;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.GaborSupererRefractiveCLAs;
-import optics.raytrace.surfaces.SimpleRefractiveCLAs;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.exceptions.SceneException;
@@ -42,7 +40,6 @@ import optics.raytrace.GUI.sceneObjects.EditableLensletArrayForGaborSupererLens;
 import optics.raytrace.GUI.sceneObjects.EditableRectangularLens;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedSphere;
 import optics.raytrace.GUI.sceneObjects.EditableTimHead;
-import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 

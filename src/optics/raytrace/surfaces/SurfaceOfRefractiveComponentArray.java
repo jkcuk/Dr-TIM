@@ -239,7 +239,7 @@ public abstract class SurfaceOfRefractiveComponentArray extends SurfaceOfVoxella
 		}
 		s.addSceneObject(v);
 		
-		// add the lens corresponding to this voxel
+		// add the refractive component corresponding to this voxel
 		SceneObject refractiveComponent = getRefractiveComponent(voxelIndices);
 		s.addSceneObject(refractiveComponent);
 		
@@ -267,6 +267,7 @@ public abstract class SurfaceOfRefractiveComponentArray extends SurfaceOfVoxella
 			if(r.isReportToConsole()) {
 				System.out.println("Intersection within surface of refractive component array: "+i);
 				System.out.println("Voxel Indicies: "+voxelIndices[0]+","+voxelIndices[1]);
+				System.out.println("stepsLeft = "+stepsLeft);
 			}
 
 			if(i == RaySceneObjectIntersection.NO_INTERSECTION)

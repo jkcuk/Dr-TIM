@@ -247,7 +247,7 @@ implements Serializable	// , AnisotropicSurface, ParametrisedObject
 
 	 @Override
 	public boolean insideObject(Vector3D p) {
-		 return 0 < getNormalisedOutwardsSurfaceNormal(null).getScalarProductWith( p.getDifferenceWith(centre) );
+		 return 0 < getNormalisedOutwardsSurfaceNormal(p).getScalarProductWith( p.getDifferenceWith(centre) );
 	 }
 
 	 @Override

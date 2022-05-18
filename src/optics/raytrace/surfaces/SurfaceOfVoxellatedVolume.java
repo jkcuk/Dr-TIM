@@ -152,14 +152,7 @@ public abstract class SurfaceOfVoxellatedVolume extends SurfacePropertyPrimitive
 	
 	// it shouldn't normally be necessary to override the following methods
 	
-	/**
-	 * For raytracing of a ray inside the volume.
-	 * Calculates the first intersection between the ray and a collection of scene objects that includes
-	 * the plane sets and the bounding surface.
-	 * @param r	the ray
-	 * @return	the first intersection
-	 */
-	protected RaySceneObjectIntersection getIntersectionWithVoxelSurface(Ray r, SceneObjectPrimitive originObject)
+	protected SceneObjectContainer getVoxelSurface(int[] voxelIndices)
 	{
 		// create a collection of scene objects...
 		SceneObjectContainer s = new SceneObjectContainer(
@@ -178,15 +171,43 @@ public abstract class SurfaceOfVoxellatedVolume extends SurfacePropertyPrimitive
 		// Ray rA = r.getAdvancedRay(MyMath.TINY);
 		
 		// if(planeSets != null)	// planeSets simply mustn't be null!
-		for(Voxellation voxellation : voxellations)
+		for(int i=0; i<voxellations.length; i++)
+		// for(Voxellation voxellation : voxellations)
 		{
 			try {
-				s.addSceneObject(voxellation.getSurfaceOfVoxel(voxellation.getVoxelIndex(r.getP())));
+				s.addSceneObject(voxellations[i].getSurfaceOfVoxel(voxelIndices[i]));
+				// s.addSceneObject(voxellation.getSurfaceOfVoxel(voxellation.getVoxelIndex(positionInsideVoxel)));
 			} catch (Exception e) {
 				// not sure under which circumstances this would happen; print the stack trace
 				System.err.println("SurfaceOfVoxellatedVolume::getIntersectionWithVoxelSurface: exception?!");
 				e.printStackTrace();
 			}
+		}
+
+		return s;
+	}
+
+	protected SceneObjectContainer getVoxelSurface(Vector3D positionInsideVoxel)
+	{
+		return getVoxelSurface(getVoxelIndices(positionInsideVoxel));
+	}
+	
+	/**
+	 * For raytracing of a ray inside the volume.
+	 * Calculates the first intersection between the ray and a collection of scene objects that includes
+	 * the plane sets and the bounding surface.
+	 * @param r	the ray
+	 * @return	the first intersection
+	 */
+	protected RaySceneObjectIntersection getIntersectionWithVoxelSurface(Ray r, SceneObjectPrimitive originObject)
+	{
+		// create a collection of scene objects...
+		SceneObjectContainer s = getVoxelSurface(r.getP());
+		
+		// quick check
+		if(!s.insideObject(r.getP()))
+		{
+			new RayTraceException("r.getP() is not inside the surface of the pixel constructed around it?!").printStackTrace();
 		}
 		
 		RaySceneObjectIntersection i = s.getClosestRayIntersectionAvoidingOrigin(r, null); // was originObject);
@@ -271,11 +292,12 @@ public abstract class SurfaceOfVoxellatedVolume extends SurfacePropertyPrimitive
 	/**
 	 * @param r
 	 * @param i
-	 * @return	the indices of the voxel behind the intersection i, in the direction of ray r
+	 * @return	the indices of the voxel in front of the intersection i, in the direction of ray r
 	 */
 	public int[] getVoxelIndicesInFront(Ray r, RaySceneObjectIntersection i)
 	{
-		// work out which voxel it is behind the intersection
+		// work out which voxel is in front of the intersection
+		// return getVoxelIndices(Vector3D.sum(i.p, r.getD().getWithLength(MyMath.TINY)));
 		
 		// calculate the next intersection between the ray (with the initial direction, which doesn't matter here as
 		// we just want to know which voxel we are in) and the plane sets (or the bounding surface)
@@ -290,7 +312,7 @@ public abstract class SurfaceOfVoxellatedVolume extends SurfacePropertyPrimitive
 				);
 		
 		if(iTest == RaySceneObjectIntersection.NO_INTERSECTION)
-			System.out.println("SurfaceOfVoxellatedVolume::getVoxelIndicesInFront: Warning --- no intersection!");
+			System.out.println("SurfaceOfVoxellatedVolume::getVoxelIndicesInFront: Warning --- no intersection! Ray = "+r+", intersection = "+i);
 				
 		// which voxel are we entering?
 		return getVoxelIndices(Vector3D.mean(i.p, iTest.p));
