@@ -88,7 +88,7 @@ public class RefractiveViewRotationTest extends NonInteractiveTIMEngine
 		 * Setting the paramterers for a specs setup
 		 */
 
-		boundingBoxCentre = new Vector3D(0,0,0.001499999);
+		boundingBoxCentre = new Vector3D(0,0,0.00149999);
 		boundingBoxSpanVector1 =new Vector3D(0.05,0,0);
 		boundingBoxSpanVector2 = new Vector3D(0,0.05,0);
 		boundingBoxSpanVector3 =new Vector3D(0,0,0.003);
