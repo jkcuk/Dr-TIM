@@ -59,6 +59,8 @@ public class RefractiveViewRotator extends Parallelepiped2
 			SceneObject viewObject,
 			double refractiveIndex,
 			double wedgeThickness,
+			boolean simulateDiffractiveBlur,
+			double lambda,
 			int maxSteps, 
 			double surfaceTransmissionCoefficient, 
 			boolean shadowThrowing,
@@ -92,6 +94,8 @@ public class RefractiveViewRotator extends Parallelepiped2
 				refractiveIndex,
 				wedgeThickness,
 				this,	// bounding box
+				simulateDiffractiveBlur,
+				lambda,
 				surfaceTransmissionCoefficient,
 				shadowThrowing,
 				maxSteps
@@ -122,6 +126,8 @@ public class RefractiveViewRotator extends Parallelepiped2
 				original.getViewObject(),
 				original.getRefractiveIndex(),
 				original.getWedgeThickness(),
+				original.isSimulateDiffractiveBlur(),
+				original.getLambda(),
 				original.getMaxSteps(), 
 				original.getSurfaceTransmissionCoefficient(), 
 				original.isShadowThrowing(),
@@ -272,6 +278,23 @@ public class RefractiveViewRotator extends Parallelepiped2
 		surface.setSurfaceTransmissionCoefficient(surfaceTransmissionCoefficient);
 	}
 
+	public boolean isSimulateDiffractiveBlur() {
+		return surface.isSimulateDiffractiveBlur();
+	}
+
+	public void setSimulateDiffractiveBlur(boolean simulateDiffractiveBlur) {
+		surface.setSimulateDiffractiveBlur(simulateDiffractiveBlur);
+	}
+	
+	
+	public double getLambda() {
+		return surface.getLambda();
+	}
+
+	public void setLambda(double lambda) {
+		surface.setLambda(lambda);
+	}
+	
 	public boolean isShadowThrowing() {
 		return surface.isShadowThrowing();
 	}

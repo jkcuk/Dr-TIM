@@ -4,13 +4,17 @@ import math.Geometry;
 import math.MathException;
 import math.MyMath;
 import math.Vector3D;
+import optics.DoubleColour;
+import optics.raytrace.core.LightSource;
 import optics.raytrace.core.Ray;
 import optics.raytrace.core.RaySceneObjectIntersection;
+import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
+import optics.raytrace.utility.SingleSlitDiffraction;
 import optics.raytrace.voxellations.FanOfPlanes;
 import optics.raytrace.voxellations.Voxellation;
 
@@ -79,6 +83,12 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponent
 	private double wedgeThickness;
 	
 	/**
+	 * To simulate diffraction
+	 */
+	private boolean simulateDiffractiveBlur;
+	private double lambda; 
+
+	/**
 	 * transmission coefficient of each of the lens surfaces
 	 */
 	private double surfaceTransmissionCoefficient;
@@ -120,6 +130,8 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponent
 			double refractiveIndex,
 			double wedgeThickness,
 			SceneObject boundingBox,
+			boolean simulateDiffractiveBlur,
+			double lambda,
 			double surfaceTransmissionCoefficient,
 			boolean shadowThrowing,
 			int maxSteps
@@ -140,6 +152,8 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponent
 	this.viewObject = viewObject;
 	this.refractiveIndex = refractiveIndex;
 	this.wedgeThickness = wedgeThickness;
+	this.lambda = lambda;
+	this.simulateDiffractiveBlur =simulateDiffractiveBlur;
 	this.surfaceTransmissionCoefficient = surfaceTransmissionCoefficient;
 	this.shadowThrowing =shadowThrowing;
 	}
@@ -163,6 +177,8 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponent
 				o.getRefractiveIndex(),
 				o.getWedgeThickness(),
 				o.getSurface(),
+				o.isSimulateDiffractiveBlur(),
+				o.getLambda(),
 				o.getSurfaceTransmissionCoefficient(),
 				o.isShadowThrowing(),
 				o.getMaxSteps()
@@ -264,6 +280,22 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponent
 	public void setWedgeThickness(double wedgeThickness) {
 		this.wedgeThickness = wedgeThickness;
 	}
+	
+	public boolean isSimulateDiffractiveBlur() {
+		return simulateDiffractiveBlur;
+	}
+
+	public void setSimulateDiffractiveBlur(boolean simulateDiffractiveBlur) {
+		this.simulateDiffractiveBlur = simulateDiffractiveBlur;
+	}
+
+	public double getLambda() {
+		return lambda;
+	}
+
+	public void setLambda(double lambda) {
+		this.lambda = lambda;
+	}
 
 	public double getSurfaceTransmissionCoefficient() {
 		return surfaceTransmissionCoefficient;
@@ -322,13 +354,17 @@ public SceneObject getRefractiveComponent(int[] voxelIndices) {
 		
 		// also calculate the position where we want that ray from the objective pixel surface centre to go
 		Vector3D dRotated = Geometry.rotate(dOcular, rotationAxisDirection, MyMath.deg2rad(rotationAngle));
-		RaySceneObjectIntersection intersection = viewObject.getClosestRayIntersection(new Ray(eyePosition, dRotated, 0, false));
+		Vector3D dRotatedAndScaled = Vector3D.sum(
+				dRotated.getPartParallelTo(rotationAxisDirection),
+				dRotated.getPartPerpendicularTo(rotationAxisDirection).getProductWith(1/magnificationFactor)
+				);
+		RaySceneObjectIntersection intersection = viewObject.getClosestRayIntersection(new Ray(eyePosition, dRotatedAndScaled, 0, false));
 		if(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
 		{   //System.out.println(intersection);
 			// there is an intersection -- good!
 		
 			// calculate the ray direction on the other side...
-			Vector3D dObjective = Vector3D.difference(intersection.p, objectivePixelSurfaceCentre).getNormalised();
+			Vector3D dObjective = Vector3D.difference(intersection.p, objectivePixelSurfaceCentre).getNormalised();			
 			
 			// calculate the normal of the refractive surface that turns dInside into dObjective
 			Vector3D nObjective = Vector3D.difference(dInside.getProductWith(refractiveIndex), dObjective);
@@ -365,7 +401,27 @@ public SceneObject getRefractiveComponent(int[] voxelIndices) {
 		
 		return c;
 	}
-
+	
+	//Add a diffractive blur for a given pixel span vector
+	@Override
+	public DoubleColour getColourUponLeavingVolume(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int stepsLeft, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+	throws RayTraceException {
+		
+		if(simulateDiffractiveBlur)
+		{	//
+			Vector3D lightRayDirectionChange = SingleSlitDiffraction.getTangentialDirectionComponentChange(
+				lambda,
+				periodVector1.getLength(),	// pixelSideLengthU
+				periodVector2.getLength(),	// pixelSideLengthV
+				periodVector1.getNormalised(),	// uHat
+				periodVector2.getNormalised()	// vHat
+				);
+			r.setD(Vector3D.sum(r.getD(), lightRayDirectionChange));
+		}
+		return super.getColourUponLeavingVolume(r, i, scene, l, stepsLeft, traceLevel, raytraceExceptionHandler);
+	}
+	
+	
 
 	public static Voxellation[] createVoxellations(Vector3D periodVector1, Vector3D periodVector2, Vector3D ocularPlaneCentre, Vector3D ocularPlaneNormal, Vector3D eyePosition, double refractiveIndex)
 	{

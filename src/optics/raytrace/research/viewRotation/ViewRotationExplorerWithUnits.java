@@ -10,6 +10,7 @@ import javax.swing.JTabbedPane;
 
 import math.*;
 import net.miginfocom.swing.MigLayout;
+import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.AzimuthalPixelatedFresnelWedge;
 import optics.raytrace.surfaces.IdealThinCylindricalLensSurfaceSimple;
@@ -17,6 +18,7 @@ import optics.raytrace.surfaces.IdealisedDovePrismArray;
 import optics.raytrace.surfaces.PhaseHologramOfCylindricalLens;
 import optics.raytrace.surfaces.PhaseHologramOfRadialLenticularArray;
 import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArray;
+import optics.raytrace.surfaces.RefractiveViewRotator;
 import optics.raytrace.surfaces.RotationallySymmetricPhaseHologram;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
@@ -55,6 +57,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	
 	public enum ViewRotationComponentType
 	{
+		REFRACTIVE_PIXELATED_FRESNEL_WEDGE("refractive pixelated fresnel wedge"),
 		AZIMUTHAL_FRESNEL_WEDGE("Azimuthal Fresnel wedge"),
 		PIXELATED_AZIMUTHAL_FRESNEL_WEDGE("Non-countinous Azimuthal Fresnel wedge"),
 		MOIRE_ROTATOR("Moiré rotator"),
@@ -114,6 +117,37 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	 * diffraction blur gets added when true
 	 */
 	private boolean diffractiveBlurPixelatedFresnelWedge;
+	
+	//
+	//refractive fresnel wedge to view rotate
+	//
+	
+	/**
+	 * Span vectors of the array
+	 */
+	private Vector3D refractiveLatticeSpanVector1, refractiveLatticeSpanVector2;
+	/**
+	 * Bounding box settings
+	 */
+	private Vector3D boundingBoxCentre, boundingBoxSpanVector1, boundingBoxSpanVector2, boundingBoxSpanVector3;
+	/**
+	 * wedge thickness and refractive index
+	 */
+	private double thickness, refractiveIndex; 
+	/**
+	 * position of the eye to allow for independent camera movement. 
+	 */
+	private Vector3D eyePosition;
+	/**
+	 * the angle of rotation anti-clockwise when positive, in degrees.
+	 */
+	private double rotationAngle;
+	
+	/**
+	 * Diffractive blur activated when true
+	 */
+	private boolean diffractuveBlurRefractiveFresnelWedge;
+	
 	
 	//
 	// moiré rotator
@@ -259,6 +293,20 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		latticeSpanVector2 = new Vector3D(0,0.1,0).getProductWith(MM);
 		diffractiveBlurPixelatedFresnelWedge = true;
 		
+		//refractive pixelated fresnel wedge
+		refractiveLatticeSpanVector1 = new Vector3D(0.5,0,0).getProductWith(MM);
+		refractiveLatticeSpanVector2 = new Vector3D(0,0.5,0).getProductWith(MM);
+		rotationAngle = 10;//degrees
+		diffractuveBlurRefractiveFresnelWedge = true;
+		boundingBoxCentre = new Vector3D (0,0,1.4999).getProductWith(MM);
+		boundingBoxSpanVector1 = new Vector3D(5,0,0).getProductWith(CM);
+		boundingBoxSpanVector2 = new Vector3D(0,5,0).getProductWith(CM);
+		boundingBoxSpanVector3 = new Vector3D(0,0,3).getProductWith(MM);
+		thickness = 1*MM;
+		eyePosition = new Vector3D(0,0,-1.5).getProductWith(CM);
+		refractiveIndex = 1.5;//glass
+
+		
 		// moiré rotator
 		mmF = 10*CM;
 		mmPitch = 0.01;
@@ -288,7 +336,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		studioInitialisation = StudioInitialisationType.LATTICE;	// the backdrop
 		variableLattice = true;
 		objectRotationAngle = 0;
-		objectDistance = 1;
+		objectDistance = 2*M;
 
 		// camera
 		cameraRotation = -10;
@@ -355,6 +403,17 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 				+ " cltRotationAngleDeg="+cltRotationAngleDeg
 				+ " cltCylindricalLensType="+cltCylindricalLensType;
 			break;
+		case REFRACTIVE_PIXELATED_FRESNEL_WEDGE:
+			componentParams = 
+			"span vectors="+refractiveLatticeSpanVector1+","+ refractiveLatticeSpanVector2
+			+ "rotation Angle="+rotationAngle
+			+ "with diffraction ="+diffractuveBlurRefractiveFresnelWedge
+			+ "bounding Box centre ="+boundingBoxCentre
+			+ "Bounidng Box span vetcors ="	+boundingBoxSpanVector1+","+boundingBoxSpanVector2+","+	boundingBoxSpanVector3
+			+ "wedge thickness =" +thickness
+			+ "eye positon ="+eyePosition
+			+ "refractive index="+refractiveIndex;
+			
 		case NOTHING:
 			componentParams = "";
 			break;
@@ -717,6 +776,41 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 							)
 					);
 			break;
+			
+			
+		case REFRACTIVE_PIXELATED_FRESNEL_WEDGE:
+			scene.addSceneObject( new RefractiveViewRotator(
+					"refractive view rotator",// description,
+					boundingBoxCentre, 
+					boundingBoxSpanVector1,
+					boundingBoxSpanVector2,
+					boundingBoxSpanVector3,
+					new Vector3D(0,0,-1),// ocularSurfaceNormal,
+					eyePosition,
+					Vector3D.O, //centre
+					rotationAngle,
+					new Vector3D(0,0,-1), //rotation axis direction
+					1,// magnificationFactor,
+					refractiveLatticeSpanVector1,
+					refractiveLatticeSpanVector2,
+					new Plane("test", 
+							new Vector3D(0, 0, 2), 
+							Vector3D.Z, 
+							null,
+							null, 
+							null
+							),
+					refractiveIndex,
+					thickness,
+					diffractuveBlurRefractiveFresnelWedge, 
+					632.8e-9,// lambda (wave length)
+					100, //max steps
+					1, //trasnmission coef
+					true, //shadow throwing
+					scene, 
+					studio
+					));
+		
 		case NOTHING:
 			// don't add anything
 			break;
@@ -771,6 +865,12 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private DoublePanel aFwBPixelPanel;
 	private Vector3DPanel latticeSpanVector1Panel, latticeSpanVector2Panel;
 	private JCheckBox diffractiveBlurPixelatedFresnelWedgeCheckBox;
+	
+	//refractive fresnel wedge
+	private DoublePanel rotationAnglePanel, thicknessPanel, refractiveIndexPanel;
+	private Vector3DPanel refractiveLatticeSpanVector1Panel, refractiveLatticeSpanVector2Panel, boundingBoxCentrePanel, boundingBoxSpanVector1Panel,
+	boundingBoxSpanVector2Panel, boundingBoxSpanVector3Panel, eyePositionPanel;
+	private JCheckBox diffractuveBlurRefractiveFresnelWedgeCheckBox;
 	
 	// moiré rotator
 	private DoublePanel mmFPanel;
@@ -1008,7 +1108,59 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 		viewRotatingComponentTabbedPane.addTab("Cylindrical-lens telescopes", cylindricalLensTelescopesPanel);
 
-
+		//refractive fresnel wedge view rotator
+		JPanel refractiveFresnelWedgePanel = new JPanel();
+		// rayRotationSheetPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Ray-rotation sheet"));
+		refractiveFresnelWedgePanel.setLayout(new MigLayout("insets 0"));
+		refractiveFresnelWedgePanel.add(new JLabel("Refractive Fresnel Wedges"), "wrap");
+		
+		rotationAnglePanel = new DoublePanel();
+		rotationAnglePanel.setNumber(rotationAngle);
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("Rotation angle", rotationAnglePanel, "<html>&deg;</html>,"),"wrap");
+		
+		refractiveLatticeSpanVector1Panel = new Vector3DPanel();
+		refractiveLatticeSpanVector1Panel.setVector3D(refractiveLatticeSpanVector1.getProductWith(1/MM));
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("pixel span vector 1", refractiveLatticeSpanVector1Panel, "mm"),"wrap");
+		
+		refractiveLatticeSpanVector2Panel = new Vector3DPanel();
+		refractiveLatticeSpanVector2Panel.setVector3D(refractiveLatticeSpanVector2.getProductWith(1/MM));
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("pixel span vector 2", refractiveLatticeSpanVector2Panel, "mm"),"wrap");
+		
+		eyePositionPanel = new Vector3DPanel();
+		eyePositionPanel.setVector3D(eyePosition.getProductWith(1/CM));
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("eye position", eyePositionPanel, "cm"),"wrap");
+		
+		thicknessPanel = new DoublePanel();
+		thicknessPanel.setNumber(thickness/MM);
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("wedge thickness", thicknessPanel, "mm"),"wrap");
+		
+		refractiveIndexPanel = new DoublePanel();
+		refractiveIndexPanel.setNumber(refractiveIndex);
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("refractive index", refractiveIndexPanel),"wrap");
+		
+		diffractuveBlurRefractiveFresnelWedgeCheckBox = new JCheckBox();
+		diffractuveBlurRefractiveFresnelWedgeCheckBox.setSelected(diffractuveBlurRefractiveFresnelWedge);
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("show diffraction", diffractuveBlurRefractiveFresnelWedgeCheckBox),"wrap");
+		
+		boundingBoxCentrePanel = new Vector3DPanel();
+		boundingBoxCentrePanel.setVector3D(boundingBoxCentre.getProductWith(1/MM));
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("bounding box centre", boundingBoxCentrePanel, "mm"),"wrap");
+		
+		boundingBoxSpanVector1Panel = new Vector3DPanel();
+		boundingBoxSpanVector1Panel.setVector3D(boundingBoxSpanVector1.getProductWith(1/CM));
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("bounding box span vector 1", boundingBoxSpanVector1Panel, "cm"),"wrap");
+		
+		boundingBoxSpanVector2Panel = new Vector3DPanel();
+		boundingBoxSpanVector2Panel.setVector3D(boundingBoxSpanVector2.getProductWith(1/CM));
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("bounding box span vector 2", boundingBoxSpanVector2Panel, "cm"),"wrap");
+		
+		boundingBoxSpanVector3Panel = new Vector3DPanel();
+		boundingBoxSpanVector3Panel.setVector3D(boundingBoxSpanVector3.getProductWith(1/MM));
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("bounding box thickness span vector", boundingBoxSpanVector3Panel, "mm"),"wrap");	
+		
+		viewRotatingComponentTabbedPane.addTab("Refractive Fresnel Wedges", refractiveFresnelWedgePanel);
+		
+		
 		// nothing
 		
 		viewRotatingComponentTabbedPane.addTab("Nothing", new JPanel());
@@ -1032,7 +1184,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		backgroundPane.add(GUIBitsAndBobs.makeRow("Rotation angle", objectRotationAnglePanel,"<html>&deg;</html>,"));
 		
 		objectDistancePanel = new DoublePanel();
-		objectDistancePanel.setNumber(objectDistance);
+		objectDistancePanel.setNumber(objectDistance/M);
 		backgroundPane.add(GUIBitsAndBobs.makeRow("Distance", objectDistancePanel,"m"));
 		
 
@@ -1106,8 +1258,13 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			break;
 
 		case 6:
+			viewRotationComponentType = ViewRotationComponentType.REFRACTIVE_PIXELATED_FRESNEL_WEDGE;
+			break;
+		
+		case 7:
 			viewRotationComponentType = ViewRotationComponentType.NOTHING;
 			break;
+			
 
 		}
 
@@ -1119,6 +1276,21 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		latticeSpanVector1 = latticeSpanVector1Panel.getVector3D().getProductWith(MM);
 		latticeSpanVector2 = latticeSpanVector2Panel.getVector3D().getProductWith(MM);
 		diffractiveBlurPixelatedFresnelWedge = diffractiveBlurPixelatedFresnelWedgeCheckBox.isSelected();
+		
+		//refractive fresnel wedge
+		rotationAngle = rotationAnglePanel.getNumber();
+		thickness = thicknessPanel.getNumber()*MM;
+		refractiveIndex = refractiveIndexPanel.getNumber();
+		diffractuveBlurRefractiveFresnelWedge = diffractuveBlurRefractiveFresnelWedgeCheckBox.isSelected();
+		refractiveLatticeSpanVector1 = refractiveLatticeSpanVector1Panel.getVector3D().getProductWith(MM);
+		refractiveLatticeSpanVector2 = refractiveLatticeSpanVector2Panel.getVector3D().getProductWith(MM);
+		boundingBoxCentre = boundingBoxCentrePanel.getVector3D().getProductWith(MM);
+		boundingBoxSpanVector1 = boundingBoxSpanVector1Panel.getVector3D().getProductWith(CM);
+		boundingBoxSpanVector2 = boundingBoxSpanVector2Panel.getVector3D().getProductWith(CM);
+		boundingBoxSpanVector3 = boundingBoxSpanVector3Panel.getVector3D().getProductWith(MM);
+		eyePosition = eyePositionPanel.getVector3D().getProductWith(CM);
+
+
 
 		mmF = mmFPanel.getNumber()*CM;
 		mmPitch = mmPitchPanel.getNumber();
@@ -1144,7 +1316,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		variableLattice = variableLatticeCheckBox.isSelected();
 		objectRotationAngle = objectRotationAnglePanel.getNumber();
-		objectDistance = objectDistancePanel.getNumber();
+		objectDistance = objectDistancePanel.getNumber()*M;
 		
 		// cameraViewDirection = cameraViewDirectionPanel.getVector3D();
 		cameraRotation = cameraRotationPanel.getNumber();
