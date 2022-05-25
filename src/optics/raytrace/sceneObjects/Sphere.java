@@ -8,6 +8,7 @@ import optics.raytrace.core.*;
 
 /**
  * Calculates the intersection between a ray and a sphere.
+ * Note that a negative radius is interpreted as an inside-out sphere.
  * 
  * @author Dean et al.
  *
@@ -19,7 +20,7 @@ public class Sphere extends SceneObjectPrimitive implements Serializable
 
 	private Vector3D centre;	//current sphere's center
 	private double radius;	//current sphere's radius
-
+		
 	//JTextField centreXPanel, centreYPanel, centreZPanel, radiusPanel;
 	// protected JPanel panel;
 
@@ -49,14 +50,14 @@ public class Sphere extends SceneObjectPrimitive implements Serializable
 	 */
 	public Sphere(Sphere original)
 	{
-		super(
+		this(
 				original.description,
+				original.getCentre().clone(),
+				original.getRadius(),
 				original.getSurfaceProperty().clone(),
 				original.getParent(),
 				original.getStudio()
 			);
-		centre = original.getCentre().clone();
-		radius = original.getRadius();
 	}
 	
 	/* (non-Javadoc)
@@ -115,8 +116,9 @@ public class Sphere extends SceneObjectPrimitive implements Serializable
 	@Override
 	public Vector3D getNormalisedOutwardsSurfaceNormal(Vector3D p)
 	{
-		// the surface normal at p is simply given by p-c
-		return Vector3D.difference(p, centre).getNormalised();	
+		// the surface normal at p is simply given by p-c,
+		// multiplied by the sign of the radius so that the (outwards-facing) surface normal points towards the centre if r<0
+		return Vector3D.difference(p, centre).getWithLength(Math.signum(radius));
 	}
 
 	@Override
@@ -140,7 +142,7 @@ public class Sphere extends SceneObjectPrimitive implements Serializable
 	@Override
 	public boolean insideObject(Vector3D p)
 	{
-		return (centre.getDifferenceWith(p).getModSquared() < MyMath.square(radius));
+		return ((MyMath.square(radius) - centre.getDifferenceWith(p).getModSquared())*Math.signum(radius) > 0);
 	}
 
 	public Vector3D getCentre() {

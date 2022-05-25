@@ -2,6 +2,8 @@ package optics.raytrace.voxellations;
 
 import math.Vector3D;
 import optics.raytrace.core.SceneObject;
+import optics.raytrace.core.SurfaceProperty;
+import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 
 
@@ -22,6 +24,31 @@ import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 public abstract class SetOfSurfaces extends Voxellation
 {		
 	private static final long serialVersionUID = 6218432787524758463L;
+	
+	public enum OutwardsNormalOrientation
+	{
+		POSITIVE("Positive", +1),
+		NEGATIVE("Negative", -1);
+
+		private String description;
+		private int sign;
+		
+		private OutwardsNormalOrientation(String description, int sign)
+		{
+			this.description = description;
+			this.sign = sign;
+		}
+		
+		public String toString()
+		{
+			return description;
+		}
+		
+		public int getSign()
+		{
+			return sign;
+		}
+	}
 
 	/**
 	 * Return the surface with index <i>i</i>.
@@ -31,7 +58,7 @@ public abstract class SetOfSurfaces extends Voxellation
 	 * @return	if <i>i</i> is an integer, the surface with index <i>i</i>, otherwise a surface at a position corresponding to the index <i>i</i>
 	 * @throws	null if the index r is out of bounds 
 	 */
-	public abstract SceneObject getSurface(double i);
+	public abstract SceneObject getSurface(double i, OutwardsNormalOrientation outwardsNormalOrientation, SurfaceProperty surfaceProperty);
 	// throws Exception;
 		
 	/**
@@ -54,52 +81,27 @@ public abstract class SetOfSurfaces extends Voxellation
 		return (int)(Math.floor(getSurfaceIndex(position)+1));
 	}
 	
-//	/**
-//	 * @param r	position relative to the surfaces (e.g. 1.5 = half-way between surfaces 1 and 2)
-//	 * @return	surface #floor(r)
-//	 * @throws	Exception if the index r is out of bounds 
-//	 */
-//	public SceneObject getPreviousSurface(double r)
-//	throws Exception
-//	{
-//		double f = Math.floor(r);
-//		
-//		// does the relative position r correspond to a position on a surface?
-//		if(r-f < MyMath.EPSILON)
-//		{
-//			// r corresponds to a position on a surface; return the previous surface
-//			return getSurface(f-1);
-//		}
-//		else
-//		{
-//			// r corresponds to a position between two surfaces; return the "previous" one
-//			return getSurface(f);
-//		}
-//	}
-//
-//	/**
-//	 * @param r	position relative to the surfaces (e.g. 1.5 = half-way between surfaces 1 and 2)
-//	 * @return	surface #ceil(r)
-//	 * @throws	Exception if the index r is out of bounds 
-//	 */
-//	public SceneObject getNextSurface(double r)
-//	throws Exception
-//	{
-//		double c = Math.ceil(r);
-//
-//		// does the relative position r correspond to a position on a surface?
-//		if(c-r < MyMath.EPSILON)
-//		{
-//			// r corresponds to a position on a surface; return the next surface
-//			return getSurface(c+1);
-//		}
-//		else
-//		{
-//			// r corresponds to a position between two surfaces; return the "next" one
-//			return getSurface(c);
-//		}
-//	}
-
+	/**
+	 * @param i
+	 * @param deltaI	either +1 or -1
+	 * @return	the surface that forms the boundary between voxels #i and #(i+deltaI), where deltaI is either +1 or -1
+	 */
+	public SceneObject getBoundaryBetweenVoxels(int i, int deltaI, SurfaceProperty surfaceProperty)
+	{
+		switch(deltaI)
+		{
+		case -1:
+			// the boundary between voxels i and i-1 is surface i-1
+			return getSurface(i-1, OutwardsNormalOrientation.NEGATIVE, surfaceProperty);
+		case +1:
+			// the boundary between voxels i and i+1 is surface i
+			return getSurface(i,   OutwardsNormalOrientation.POSITIVE, surfaceProperty);
+		default:
+			(new RayTraceException("deltaI should take values -1 or +1, not "+deltaI)).printStackTrace();
+			return null;
+		}
+	}
+	
 	@Override
 	public SceneObject getSurfaceOfVoxel(int i)
 	{
@@ -110,44 +112,12 @@ public abstract class SetOfSurfaces extends Voxellation
 			);
 				
 		// voxel #i is defined to lie between surface #i-1 and surface #i
-		
-		// System.out.println("i="+i);
 		try {
-			// System.out.println("getSurface(i-1)="+getSurface(i-1));
-			// System.out.println("getSurface(i)="+getSurface(i));
-			// if(i>0) 
-//			surface.addSceneObject(new SceneObjectPartOfVoxellation(getSurface(i-1), this, i-1));
-//			surface.addSceneObject(new SceneObjectPartOfVoxellation(getSurface(i), this, i));
-			surface.addSceneObject(getSurface(i-1));
-			surface.addSceneObject(getSurface(i));
+			surface.addSceneObject(getBoundaryBetweenVoxels(i, -1, null));
+			surface.addSceneObject(getBoundaryBetweenVoxels(i, +1, null));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		// System.exit(-1);
 		return surface;
-	}
-	
-//	@Override
-//	public SceneObject getSurfaceOfVoxelAvoidingSurface(int i, int avoidSurface)
-//	{		SceneObjectContainer surface = new SceneObjectContainer(
-//			"surface of voxel #" + i,
-//			null,	// parent
-//			null	// studio
-//		);
-//			
-//	// voxel #i is defined to lie between surface #i-1 and surface #i
-//	
-//	// System.out.println("i="+i);
-//	try {
-//		// System.out.println("getSurface(i-1)="+getSurface(i-1));
-//		// System.out.println("getSurface(i)="+getSurface(i));
-//		// if(i>0) 
-//		if(avoidSurface != i-1) surface.addSceneObject(new SceneObjectPartOfVoxellation(getSurface(i-1), this, i-1));
-//		if(avoidSurface != i) surface.addSceneObject(new SceneObjectPartOfVoxellation(getSurface(i), this, i));
-//	} catch (Exception e) {
-//		e.printStackTrace();
-//	}
-//	// System.exit(-1);
-//	return surface;
-//}	
+	}	
 }

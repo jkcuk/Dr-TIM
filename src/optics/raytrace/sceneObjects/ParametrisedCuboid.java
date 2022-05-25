@@ -8,6 +8,12 @@ import optics.raytrace.core.*;
 import optics.raytrace.surfaces.*;
 import optics.raytrace.sceneObjects.solidGeometry.*;
 
+/**
+ * A cuboid.
+ * Negative width, height and depth are interpreted as the cuboid being inverted in that dimension (i.e. the "inside" of the cuboid lies further out)
+ * @author johannes
+ *
+ */
 public class ParametrisedCuboid extends SceneObjectIntersection implements Serializable
 {
 	private static final long serialVersionUID = -3315907591510079916L;

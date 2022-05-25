@@ -205,7 +205,7 @@ public class CylinderMantle extends SceneObjectPrimitive
 	public Vector3D getNormalisedOutwardsSurfaceNormal(Vector3D p)
 	{
 		Vector3D Ap = Vector3D.difference(p, startPoint);
-		return Ap.getDifferenceWith(Ap.getProjectionOnto(axis)).getNormalised();	// the surface normal at p is simply given by p-A, projected into plane perpendicular to a
+		return Ap.getDifferenceWith(Ap.getProjectionOnto(axis)).getWithLength(Math.signum(radius));	// the surface normal at p is simply given by p-A, projected into plane perpendicular to a
 	}
 	
 	@Override
@@ -232,7 +232,8 @@ public class CylinderMantle extends SceneObjectPrimitive
 		if(w<0 || w>length) return false;	// no, it isn't
 
 		Vector3D u = v.getDifferenceWith(axis.getProductWith(w));	// v, projected into a plane perpendicular to h
-		return u.getModSquared() <= radius*radius;
+		return (radius*radius - u.getModSquared())*Math.signum(radius) > 0;
+				// u.getModSquared() <= radius*radius;
 	}
 
 	@Override

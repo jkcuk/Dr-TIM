@@ -3,6 +3,7 @@ package optics.raytrace.voxellations;
 
 
 import optics.raytrace.core.SceneObject;
+import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.sceneObjects.ParametrisedCylinder;
 import optics.raytrace.sceneObjects.ParametrisedCylinderMantle;
 import math.Vector3D;
@@ -82,7 +83,7 @@ public class SetOfCoaxialInfiniteCylinderMantles extends SetOfSurfaces
 	 * @throws	Exception if the index r corresponds to a cylinder mantle of negative radius
 	 */
 	@Override
-	public SceneObject getSurface(double i)
+	public SceneObject getSurface(double i, OutwardsNormalOrientation outwardsNormalOrientation, SurfaceProperty surfaceProperty)
 	// throws Exception
 	{
 		double r = getRadius(i);
@@ -92,8 +93,8 @@ public class SetOfCoaxialInfiniteCylinderMantles extends SetOfSurfaces
 				"Cylinder mantle #"+i,	// description
 				Vector3D.sum(pointOnAxis, axisDirection.getProductWith(-10000)),	// start point
 				Vector3D.sum(pointOnAxis, axisDirection.getProductWith(10000)),	// end point
-				r,	// radius
-				null,	// surface property
+				r*outwardsNormalOrientation.getSign(),	// radius;  -ve if the outwards normal orientation is -ve, which is represented by an inverted cylinder (with a -ve radius)
+				surfaceProperty,	// surface property
 				null,	// parent
 				null	// studio
 			);

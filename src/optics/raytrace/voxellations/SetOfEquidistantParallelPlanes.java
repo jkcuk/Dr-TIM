@@ -1,5 +1,6 @@
 package optics.raytrace.voxellations;
 
+import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.sceneObjects.Plane;
 import math.Vector3D;
 
@@ -29,7 +30,7 @@ public class SetOfEquidistantParallelPlanes extends SetOfSurfaces
 	protected Vector3D p;
 	
 	/**
-	 * Normalised normal to the planes
+	 * Normalised normal to the planes, pointing in the direction of more positive plane indices
 	 */
 	protected Vector3D n;
 	
@@ -64,13 +65,13 @@ public class SetOfEquidistantParallelPlanes extends SetOfSurfaces
 	 * @return	if <i>i</i> is an integer, the plane with index <i>i</i>, otherwise a plane at a position corresponding to the index <i>i</i>
 	 */
 	@Override
-	public Plane getSurface(double i)
+	public Plane getSurface(double i, OutwardsNormalOrientation outwardsNormalOrientation, SurfaceProperty surfaceProperty)
 	{
 		return new Plane(
 				"Plane #"+i,	// description
-				Vector3D.sum(p, n.getProductWith(i*s)),	// point on plane
+				Vector3D.sum(p, n.getProductWith(i*s*outwardsNormalOrientation.getSign())),	// point on plane
 				n,	// normal
-				null,	// surface property
+				surfaceProperty,	// surface property
 				null,	// parent
 				null	// studio
 			);

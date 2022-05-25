@@ -2,6 +2,7 @@ package optics.raytrace.voxellations; // Eventual package optics.raytrace.surfac
 
 import math.Vector3D;
 import optics.raytrace.core.SceneObject;
+import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.sceneObjects.ParametrisedCuboid;
 
 /**
@@ -80,18 +81,21 @@ public class SetOfConcentricCubes extends SetOfSurfaces
 	 * @throws	Exception if the index r corresponds to a cube of negative side
 	 */
 	@Override
-	public SceneObject getSurface(double i)
+	public SceneObject getSurface(double i, OutwardsNormalOrientation outwardsNormalOrientation, SurfaceProperty surfaceProperty)
 	// throws Exception
 	{
 		// calculate the side length of the cube with index i
 		double d = 2*(radiusOfCube0 + i * deltaRadius);
 		if(d <= 0.0) return null;
 		
+		// make d -ve if the outwards normal orientation is -ve, which is represented by an inverted cube (with a -ve radius)
+		if(outwardsNormalOrientation == OutwardsNormalOrientation.NEGATIVE) d *= -1;
+		
 		return new ParametrisedCuboid(
 				"Cube #"+i,	// description
 				d, d, d, // width, height, depth
 				centre,	// centre
-				null,	// surface property
+				surfaceProperty,	// surface property
 				null,	// parent
 				null	// studio
 			);

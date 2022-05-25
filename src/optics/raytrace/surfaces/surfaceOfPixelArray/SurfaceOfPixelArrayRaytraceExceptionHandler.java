@@ -1,4 +1,4 @@
-package optics.raytrace.surfaces;
+package optics.raytrace.surfaces.surfaceOfPixelArray;
 
 import optics.DoubleColour;
 import optics.raytrace.core.LightSource;
@@ -7,21 +7,18 @@ import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.exceptions.RayTraceException;
 
-public class SurfaceOfVoxellatedLensArrayRaytraceExceptionHandler
+public class SurfaceOfPixelArrayRaytraceExceptionHandler
 implements RaytraceExceptionHandler
 {
 	private SceneObject normalScene;
 	private RaytraceExceptionHandler normalRaytraceExceptionHandler;
-	private int normalTraceLevel;
 	
-	public SurfaceOfVoxellatedLensArrayRaytraceExceptionHandler(
+	public SurfaceOfPixelArrayRaytraceExceptionHandler(
 			SceneObject normalScene,
-			int normalTraceLevel,
 			RaytraceExceptionHandler normalRaytraceExceptionHandler
 		)
 	{
 		this.normalScene = normalScene;
-		this.normalTraceLevel = normalTraceLevel;
 		this.normalRaytraceExceptionHandler = normalRaytraceExceptionHandler;
 	}
 
@@ -30,7 +27,7 @@ implements RaytraceExceptionHandler
 			int traceLevel)
 	throws RayTraceException
 	{
-		return normalScene.getColour(ray, l, originObject, normalTraceLevel, normalRaytraceExceptionHandler);
+		return normalScene.getColour(ray, l, originObject, traceLevel, normalRaytraceExceptionHandler);
 	}
 
 }

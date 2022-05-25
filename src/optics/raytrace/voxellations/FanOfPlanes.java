@@ -1,5 +1,6 @@
 package optics.raytrace.voxellations;
 
+import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.sceneObjects.Plane;
 import math.Geometry;
 import math.Vector3D;
@@ -63,17 +64,32 @@ public class FanOfPlanes extends SetOfSurfaces
 	 * @return	if <i>i</i> is an integer, the plane with index <i>i</i>, otherwise a plane at a position corresponding to the index <i>i</i>
 	 */
 	@Override
-	public Plane getSurface(double i)
+	public Plane getSurface(double i, OutwardsNormalOrientation outwardsNormalOrientation, SurfaceProperty surfaceProperty)
 	{
+		Vector3D p0top1 = Vector3D.difference(p1, p0);
+		Vector3D normal = Plane.getNormalToPlaneThroughPoints(c1, c2, Vector3D.sum(p0, p0top1.getProductWith(i)));
+		// check that the normal is pointing in the direction defined by outwardsNormalOrientation
+		if(Math.signum(Vector3D.scalarProduct(normal, p0top1)) != outwardsNormalOrientation.getSign())
+		{
+			normal = normal.getReverse();
+		}
 		return new Plane(
-				"Plane #"+i,	// description
-				c1,	// point1OnPlane
-				c2,	// point2OnPlane
-				Vector3D.sum(p0, Vector3D.difference(p1, p0).getProductWith(i)),	// point3OnPlane
-				null,	// surface property
+				"Plane #"+i,	// description 
+				c1,	// pointOnPlane
+				normal,	// normal
+				surfaceProperty,	// surface property
 				null,	// parent
 				null	// studio
 			);
+//		return new Plane(
+//				"Plane #"+i,	// description
+//				c1,	// point1OnPlane
+//				c2,	// point2OnPlane
+//				Vector3D.sum(p0, Vector3D.difference(p1, p0).getProductWith(i)),	// point3OnPlane
+//				null,	// surface property
+//				null,	// parent
+//				null	// studio
+//			);
 	}
 	
 	/**

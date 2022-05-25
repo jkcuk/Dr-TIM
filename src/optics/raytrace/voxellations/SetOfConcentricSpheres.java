@@ -1,9 +1,8 @@
 package optics.raytrace.voxellations;
 
 
-
 import optics.raytrace.core.SceneObject;
-import optics.raytrace.sceneObjects.ParametrisedSphere;
+import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.sceneObjects.Sphere;
 import math.Vector3D;
 
@@ -84,19 +83,28 @@ public class SetOfConcentricSpheres extends SetOfSurfaces
 	 * @throws	Exception if the index r corresponds to a sphere of negative radius
 	 */
 	@Override
-	public SceneObject getSurface(double i)
+	public SceneObject getSurface(double i, OutwardsNormalOrientation outwardsNormalOrientation, SurfaceProperty surfaceProperty)
 	{
 		double r = getRadius1(i);
 		if(r <= 0.0) return null;
 		
-		return new ParametrisedSphere(
+		return new Sphere(
 				"Sphere #"+i+", radius="+r,	// description
 				centre,	// centre
-				r,	// radius
-				null,	// surface property
+				r*outwardsNormalOrientation.getSign(),	// radius; -ve if the outwards normal orientation is -ve, which is represented by an inverted sphere (with a -ve radius)
+				surfaceProperty,	// surface property
 				null,	// parent
 				null	// studio
 			);
+
+//		return new ParametrisedSphere(
+//				"Sphere #"+i+", radius="+r,	// description
+//				centre,	// centre
+//				r,	// radius
+//				null,	// surface property
+//				null,	// parent
+//				null	// studio
+//			);
 	}
 	
 	/**
