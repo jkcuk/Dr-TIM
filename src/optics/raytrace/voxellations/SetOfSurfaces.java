@@ -83,7 +83,7 @@ public abstract class SetOfSurfaces extends Voxellation
 	
 	/**
 	 * @param i
-	 * @param deltaI	either +1 or -1
+	 * @param deltaI	either +1 or -1, indicating which one of the two boundary surfaces this is
 	 * @return	the surface that forms the boundary between voxels #i and #(i+deltaI), where deltaI is either +1 or -1
 	 */
 	public SceneObject getBoundaryBetweenVoxels(int i, int deltaI, SurfaceProperty surfaceProperty)

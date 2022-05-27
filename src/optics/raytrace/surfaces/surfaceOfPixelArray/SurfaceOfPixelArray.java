@@ -12,6 +12,7 @@ import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.WrappedSceneObject;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.voxellations.SetOfSurfaces;
 import optics.raytrace.voxellations.SetOfSurfaces.OutwardsNormalOrientation;
 
@@ -28,7 +29,7 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 	 * the sets of voxellations, all of type SetOfSurfaces
 	 */
 	protected SetOfSurfaces[] voxellations;
-	
+
 	/**
 	 * the (surface of the) scene-object this surface property is associated with
 	 */
@@ -38,7 +39,7 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 	 * the scene, including the object with this surface property
 	 */
 	private SceneObject scene;
-	
+
 	/**
 	 * @param voxellations
 	 * @param boundingBox
@@ -50,13 +51,13 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 			SetOfSurfaces[] voxellations,
 			SceneObject boundingBox,
 			SceneObject scene
-		)
+			)
 	{
 		this.voxellations = voxellations;
 		this.boundingBox = boundingBox;
 		this.scene = scene;
 	}
-	
+
 	/**
 	 * Clone the original transformation-optics-element surface
 	 * @param original
@@ -67,22 +68,22 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 				original.getVoxellations(),
 				original.getBoundingBox(),
 				original.getScene()
-			);
+				);
 	}
-	
-	
+
+
 	// override these methods to customise the behaviour of the ray inside the surface
-	
+
 	/**
 	 * @param voxelIndices
 	 * @return	the SceneObject representing the refractive lens corresponding to the voxel with the given voxelIndices
 	 */
 	public abstract SceneObject getSceneObjectsInPixel(int[] voxelIndices);
 
-	
-	
+
+
 	// getters & setters
-	
+
 	public SetOfSurfaces[] getVoxellations() {
 		return voxellations;
 	}
@@ -95,12 +96,12 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 	{
 		return boundingBox;
 	}
-	
+
 	public void setBoundingBox(SceneObject boundingBox)
 	{
 		this.boundingBox = boundingBox;
 	}
-	
+
 	public SceneObject getScene() {
 		return scene;
 	}
@@ -109,7 +110,7 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 		this.scene = scene;
 	}
 
-	
+
 	//
 	// SurfaceProperty methods
 	//
@@ -119,44 +120,52 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 	 */
 	@Override
 	public DoubleColour getColour(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
-	throws RayTraceException
+			throws RayTraceException
 	{
 		if (traceLevel < 0) return DoubleColour.BLACK;
-		
+
+		Ray r2;
+
 		// check if the ray is exiting the volume bounded by the surface
 		if(Orientation.getOrientation(r.getD(), i.getNormalisedOutwardsSurfaceNormal()) == Orientation.OUTWARDS)
 		{
 			// the (test) ray hit the bounding box from the inside, so it started within the bounding box;
 			// we need to trace through any pixels inside the bounding box
-			
+
 			if(r.isRayWithTrajectory())
 				// the last intersection point is with the outer surface, but it was just an intersection of the "test ray";
 				// remove the intersection
 				((RayWithTrajectory)r).removeLastIntersectionPoint();
+
+			r2 = r;
+		}
+		else
+		{
+			r2 = r.getBranchRay(i.p, r.getD(), i.t, r.isReportToConsole());
 		}
 
 		// trace the ray through a collection of scene objects that includes the components making up the pixel and the boundary of the voxel
-		
+
 		// calculate the indices of the voxel we are currently tracing in
 		int voxelIndices[] = new int[voxellations.length];
 		for(int v=0; v<voxellations.length; v++)
 			voxelIndices[v] = voxellations[v].getVoxelIndex(r.getP());
-		
-		return getColourStartingInPixel(voxelIndices, r, i, scene, l, traceLevel, raytraceExceptionHandler);
+
+		return getColourStartingInPixel(voxelIndices, r2, i, scene, l, traceLevel, raytraceExceptionHandler);
 	}
-		
+
 	public DoubleColour getColourStartingInPixel(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
-	throws RayTraceException
+			throws RayTraceException
 	{
 		// create the "pixel scene"
-		
+
 		// create a collection of scene objects...
 		SceneObjectContainer s = new SceneObjectContainer(
 				null,	// description
 				null,	// parent
 				null	// studio
-			);
-		
+				);
+
 		// ... and populate it with the surface associated with this surface property, ...
 		s.addSceneObject(
 				new WrappedSceneObject(
@@ -165,33 +174,32 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 						),
 				true
 				);
-		
+
 		// ... the surfaces of the voxel, ...
 		for(int v=0; v<voxellations.length; v++)
 		{
-			int voxelIndicesOutside[] = new int[voxellations.length];
-			for(int v2=0; v2<voxellations.length; v2++) voxelIndicesOutside[v2] = voxelIndices[v2];
 			// add the surfaces that mark the boundary with the neighbouring voxels
 			for(OutwardsNormalOrientation o:OutwardsNormalOrientation.values())
-			try {
-				s.addSceneObject(
-						voxellations[v].getBoundaryBetweenVoxels(
-								voxelIndices[v], 
-								o.getSign(),
-								new SurfaceSeparatingVoxels(this, voxelIndices, v, o)	// surfaceProperty
-							),
-						false
-					);
-			} catch (Exception e) {
-				// not sure under which circumstances this would happen; print the stack trace
-				System.err.println("SurfaceOfVoxellatedLensArray::getColourUponStartingWithinVolume: exception?!");
-				e.printStackTrace();
-			}
+				try {
+					s.addSceneObject(
+							voxellations[v].getBoundaryBetweenVoxels(
+									voxelIndices[v], 
+									o.getSign(),
+									SurfaceColour.CYAN_MATT
+									// new SurfaceSeparatingVoxels(this, voxelIndices, v, o)	// surfaceProperty
+									),
+							true
+							);
+				} catch (Exception e) {
+					// not sure under which circumstances this would happen; print the stack trace
+					System.err.println("SurfaceOfVoxellatedLensArray::getColourUponStartingWithinVolume: exception?!");
+					e.printStackTrace();
+				}
 		}
-		
+
 		// add the refractive component corresponding to this voxel
 		s.addSceneObject(getSceneObjectsInPixel(voxelIndices), false);
-		
+
 		// and raytrace through the "pixel scene"
 		return s.getColourAvoidingOrigin(
 				r,	// ray
@@ -200,10 +208,10 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 				s,	// scene
 				traceLevel-1,
 				raytraceExceptionHandler
-//				new SurfaceOfPixelArrayRaytraceExceptionHandler(
-//						scene,	// normalScene,
-//						raytraceExceptionHandler	// normalRaytraceExceptionHandler
-//					)	// raytraceExceptionHandler
-			);
+				//				new SurfaceOfPixelArrayRaytraceExceptionHandler(
+				//						scene,	// normalScene,
+				//						raytraceExceptionHandler	// normalRaytraceExceptionHandler
+				//					)	// raytraceExceptionHandler
+				);
 	}
 }

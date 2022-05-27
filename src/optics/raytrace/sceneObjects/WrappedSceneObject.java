@@ -126,6 +126,8 @@ public class WrappedSceneObject extends SceneObjectClass {
 
 		if(ray.isRayWithTrajectory()) ((RayWithTrajectory)ray).addIntersectionPoint(intersection.p);
 		
+		if(intersection.o instanceof WrappedSceneObjectPrimitive) intersection.o = ((WrappedSceneObjectPrimitive)intersection.o).getSceneObjectPrimitive();
+		
 		// different here:  return the colour as calculated by the "wrapped-around" surface property
 		return surfaceProperty.getColour(ray, intersection, scene, l, traceLevel-1, raytraceExceptionHandler);
 		// return intersection.o.getColourAtIntersection(ray, intersection, scene, l, traceLevel-1, raytraceExceptionHandler);
@@ -140,11 +142,6 @@ public class WrappedSceneObject extends SceneObjectClass {
 	}
 
 	@Override
-	public RaySceneObjectIntersection getClosestRayIntersection(Ray ray) {
-		return sceneObject.getClosestRayIntersection(ray);
-	}
-
-	@Override
 	public boolean insideObject(Vector3D p) {
 		return sceneObject.insideObject(p);
 	}
@@ -152,27 +149,43 @@ public class WrappedSceneObject extends SceneObjectClass {
 	@Override
 	public WrappedSceneObject transform(Transformation t) {
 		return new WrappedSceneObject(
-				sceneObject.getDescription() + ", transformed",	// description
+				sceneObject.getDescription() + " (transformed)",	// description
 				sceneObject.transform(t),	// sceneObject
 				surfaceProperty	// surfaceProperty -- does this need to be transformed?
 				);
 	}
 
 	@Override
+	public RaySceneObjectIntersection getClosestRayIntersection(Ray ray) {
+		RaySceneObjectIntersection i = sceneObject.getClosestRayIntersection(ray);
+		if(i != RaySceneObjectIntersection.NO_INTERSECTION) i.o = new WrappedSceneObjectPrimitive(i.o, surfaceProperty);
+		return i;
+
+	}
+
+	@Override
 	public RaySceneObjectIntersection getClosestRayIntersectionWithShadowThrowingSceneObject(Ray ray) {
-		return sceneObject.getClosestRayIntersectionWithShadowThrowingSceneObject(ray);
+		RaySceneObjectIntersection i = sceneObject.getClosestRayIntersectionWithShadowThrowingSceneObject(ray);
+		if(i != RaySceneObjectIntersection.NO_INTERSECTION) i.o = new WrappedSceneObjectPrimitive(i.o, surfaceProperty);
+		return i;
 	}
 
 	@Override
 	public RaySceneObjectIntersection getClosestRayIntersectionAvoidingOrigin(Ray ray,
 			SceneObjectPrimitive originObject) {
-		return sceneObject.getClosestRayIntersectionAvoidingOrigin(ray, originObject);
+		if(originObject instanceof WrappedSceneObjectPrimitive) originObject = ((WrappedSceneObjectPrimitive)originObject).getSceneObjectPrimitive();
+		RaySceneObjectIntersection i = sceneObject.getClosestRayIntersectionAvoidingOrigin(ray, originObject);
+		if(i != RaySceneObjectIntersection.NO_INTERSECTION) i.o = new WrappedSceneObjectPrimitive(i.o, surfaceProperty);
+		return i;
 	}
 
 	@Override
 	public RaySceneObjectIntersection getClosestRayIntersectionWithShadowThrowingSceneObjectAvoidingOrigin(Ray ray,
 			SceneObjectPrimitive originObject) {
-		return sceneObject.getClosestRayIntersectionWithShadowThrowingSceneObjectAvoidingOrigin(ray, originObject);
+		if(originObject instanceof WrappedSceneObjectPrimitive) originObject = ((WrappedSceneObjectPrimitive)originObject).getSceneObjectPrimitive();
+		RaySceneObjectIntersection i =  sceneObject.getClosestRayIntersectionWithShadowThrowingSceneObjectAvoidingOrigin(ray, originObject);
+		if(i != RaySceneObjectIntersection.NO_INTERSECTION) i.o = new WrappedSceneObjectPrimitive(i.o, surfaceProperty);
+		return i;
 	}
 
 	@Override
