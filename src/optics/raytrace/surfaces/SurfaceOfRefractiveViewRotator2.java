@@ -1,7 +1,15 @@
 package optics.raytrace.surfaces;
 
+import math.Geometry;
+import math.MathException;
+import math.MyMath;
 import math.Vector3D;
+import optics.raytrace.core.Ray;
+import optics.raytrace.core.RaySceneObjectIntersection;
 import optics.raytrace.core.SceneObject;
+import optics.raytrace.exceptions.EvanescentException;
+import optics.raytrace.exceptions.RayTraceException;
+import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
 import optics.raytrace.surfaces.surfaceOfPixelArray.SurfaceOfPixelArray;
 import optics.raytrace.voxellations.FanOfPlanes;
@@ -233,82 +241,82 @@ public class SurfaceOfRefractiveViewRotator2 extends SurfaceOfPixelArray
 		//create a scene object collection to which the refractive surfaces can be added
 		SceneObjectPrimitiveIntersection c = new SceneObjectPrimitiveIntersection("Pixel "+voxelIndices[0]+","+voxelIndices[1], null, null);
 		
-//		// calculate the direction of a ray from the eye that has passed through the ocular surface through the centre of the pixel
-//		Vector3D ocularPixelSurfaceCentre = Vector3D.sum(ocularPlaneCentre, periodVector1.getProductWith(voxelIndices[0]), periodVector2.getProductWith(voxelIndices[1]));
-//		Vector3D dOcular = Vector3D.difference(ocularPixelSurfaceCentre, eyePosition).getNormalised();
-//		
-//		// calculate the outwards-facing (i.e. towards the eye) surface normal of the ocular plane
-//		Vector3D ocularPlaneNormalOutwards = ocularPlaneNormal.getWithLength(-Math.signum(Vector3D.scalarProduct(dOcular, ocularPlaneNormal)));
-//		
-//		// refract this direction into the pixel
-//		Vector3D dInside;
-//		try {
-//			dInside = RefractiveSimple.getRefractedLightRayDirection(dOcular, ocularPlaneNormalOutwards, 1/refractiveIndex).getNormalised();
-//		} catch (EvanescentException e) {
-//			(new RayTraceException("Evanescence when there should be none!?")).printStackTrace();
-//			return c;
-//		}
-//		
-//		//dInside = dOcular.getProductWith(refractiveIndex).getDifferenceWith(ocularPlaneNormalOutwards);
-//		//System.out.println("dInside "+dInside);
-//		
-//		
-//		// to get the right thickness of the pixel wedge at the centre, calculate the position where the ray would...
-//		Vector3D objectivePixelSurfaceCentre;
-//		try {
-//			objectivePixelSurfaceCentre = Geometry.linePlaneIntersection(
-//					ocularPixelSurfaceCentre,	// point on line
-//					dInside,	// direction of line
-//					Vector3D.sum(ocularPixelSurfaceCentre, ocularPlaneNormalOutwards.getProductWith(-wedgeThickness)),	// point on plane
-//					ocularPlaneNormal
-//				);
-//		} catch (MathException e) {
-//			e.printStackTrace();
-//			return c;
-//		}
-//		
-//		// also calculate the position where we want that ray from the objective pixel surface centre to go
-//		Vector3D dRotated = Geometry.rotate(dOcular, rotationAxisDirection, MyMath.deg2rad(rotationAngle));
-//		RaySceneObjectIntersection intersection = viewObject.getClosestRayIntersection(new Ray(eyePosition, dRotated, 0, false));
-//		if(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
-//		{   //System.out.println(intersection);
-//			// there is an intersection -- good!
-//		
-//			// calculate the ray direction on the other side...
-//			Vector3D dObjective = Vector3D.difference(intersection.p, objectivePixelSurfaceCentre).getNormalised();
-//			
-//			// calculate the normal of the refractive surface that turns dInside into dObjective
-//			Vector3D nObjective = Vector3D.difference(dInside.getProductWith(refractiveIndex), dObjective);
-//			
-//			// ... and make sure it faces outwards
-//			nObjective = nObjective.getWithLength(Math.signum(Vector3D.scalarProduct(dObjective, nObjective)));
-//			//System.out.println(nObjective);
-//			//create the refractive surface property
-//			RefractiveSimple surfaceN = new RefractiveSimple(refractiveIndex, surfaceTransmissionCoefficient, shadowThrowing);
-//			
-//			c.addPositiveSceneObjectPrimitive(new Plane(
-//					"ocular surface",
-//					ocularPixelSurfaceCentre,// pointOnPlane,
-//					ocularPlaneNormalOutwards,// normal, 
-//					surfaceN,//
-//					getBoundingBox(),// parent,
-//					getBoundingBox().getStudio()// studio
-//					));
-//			
-//			c.addPositiveSceneObjectPrimitive(new Plane(
-//					"objective surface",
-//					objectivePixelSurfaceCentre,// pointOnPlane,
-//					nObjective,// normal, 
-//					surfaceN,//
-//					getBoundingBox(),// parent,
-//					getBoundingBox().getStudio()// studio
-//					));			
-//		}
-//		else
-//		{
-//			// there is no intersection
-//			(new RayTraceException("No intersection between the rotated ray and the view object!?")).printStackTrace();
-//		}
+		// calculate the direction of a ray from the eye that has passed through the ocular surface through the centre of the pixel
+		Vector3D ocularPixelSurfaceCentre = Vector3D.sum(ocularPlaneCentre, periodVector1.getProductWith(voxelIndices[0]), periodVector2.getProductWith(voxelIndices[1]));
+		Vector3D dOcular = Vector3D.difference(ocularPixelSurfaceCentre, eyePosition).getNormalised();
+		
+		// calculate the outwards-facing (i.e. towards the eye) surface normal of the ocular plane
+		Vector3D ocularPlaneNormalOutwards = ocularPlaneNormal.getWithLength(-Math.signum(Vector3D.scalarProduct(dOcular, ocularPlaneNormal)));
+		
+		// refract this direction into the pixel
+		Vector3D dInside;
+		try {
+			dInside = RefractiveSimple.getRefractedLightRayDirection(dOcular, ocularPlaneNormalOutwards, 1/refractiveIndex).getNormalised();
+		} catch (EvanescentException e) {
+			(new RayTraceException("Evanescence when there should be none!?")).printStackTrace();
+			return c;
+		}
+		
+		//dInside = dOcular.getProductWith(refractiveIndex).getDifferenceWith(ocularPlaneNormalOutwards);
+		//System.out.println("dInside "+dInside);
+		
+		
+		// to get the right thickness of the pixel wedge at the centre, calculate the position where the ray would...
+		Vector3D objectivePixelSurfaceCentre;
+		try {
+			objectivePixelSurfaceCentre = Geometry.linePlaneIntersection(
+					ocularPixelSurfaceCentre,	// point on line
+					dInside,	// direction of line
+					Vector3D.sum(ocularPixelSurfaceCentre, ocularPlaneNormalOutwards.getProductWith(-wedgeThickness)),	// point on plane
+					ocularPlaneNormal
+				);
+		} catch (MathException e) {
+			e.printStackTrace();
+			return c;
+		}
+		
+		// also calculate the position where we want that ray from the objective pixel surface centre to go
+		Vector3D dRotated = Geometry.rotate(dOcular, rotationAxisDirection, MyMath.deg2rad(rotationAngle));
+		RaySceneObjectIntersection intersection = viewObject.getClosestRayIntersection(new Ray(eyePosition, dRotated, 0, false));
+		if(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
+		{   //System.out.println(intersection);
+			// there is an intersection -- good!
+		
+			// calculate the ray direction on the other side...
+			Vector3D dObjective = Vector3D.difference(intersection.p, objectivePixelSurfaceCentre).getNormalised();
+			
+			// calculate the normal of the refractive surface that turns dInside into dObjective
+			Vector3D nObjective = Vector3D.difference(dInside.getProductWith(refractiveIndex), dObjective);
+			
+			// ... and make sure it faces outwards
+			nObjective = nObjective.getWithLength(Math.signum(Vector3D.scalarProduct(dObjective, nObjective)));
+			//System.out.println(nObjective);
+			//create the refractive surface property
+			RefractiveSimple surfaceN = new RefractiveSimple(refractiveIndex, surfaceTransmissionCoefficient, shadowThrowing);
+			
+			c.addPositiveSceneObjectPrimitive(new Plane(
+					"ocular surface",
+					ocularPixelSurfaceCentre,// pointOnPlane,
+					ocularPlaneNormalOutwards,// normal, 
+					surfaceN,//
+					getBoundingBox(),// parent,
+					getBoundingBox().getStudio()// studio
+					));
+			
+			c.addPositiveSceneObjectPrimitive(new Plane(
+					"objective surface",
+					objectivePixelSurfaceCentre,// pointOnPlane,
+					nObjective,// normal, 
+					surfaceN,//
+					getBoundingBox(),// parent,
+					getBoundingBox().getStudio()// studio
+					));			
+		}
+		else
+		{
+			// there is no intersection
+			(new RayTraceException("No intersection between the rotated ray and the view object!?")).printStackTrace();
+		}
 		
 		return c;
 	}

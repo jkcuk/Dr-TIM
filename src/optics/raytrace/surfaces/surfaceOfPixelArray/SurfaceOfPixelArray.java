@@ -12,7 +12,6 @@ import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.WrappedSceneObject;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.voxellations.SetOfSurfaces;
 import optics.raytrace.voxellations.SetOfSurfaces.OutwardsNormalOrientation;
 
@@ -119,7 +118,7 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 	 * @see optics.raytrace.core.SurfaceProperty#getColour(optics.raytrace.core.Ray, optics.raytrace.core.RaySceneObjectIntersection, optics.raytrace.core.SceneObject, optics.raytrace.core.LightSource, int)
 	 */
 	@Override
-	public DoubleColour getColour(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+	public DoubleColour getColour(Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 			throws RayTraceException
 	{
 		if (traceLevel < 0) return DoubleColour.BLACK;
@@ -149,16 +148,19 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 		// calculate the indices of the voxel we are currently tracing in
 		int voxelIndices[] = new int[voxellations.length];
 		for(int v=0; v<voxellations.length; v++)
-			voxelIndices[v] = voxellations[v].getVoxelIndex(r.getP());
+			voxelIndices[v] = voxellations[v].getVoxelIndex(r2.getP());
 
 		return getColourStartingInPixel(voxelIndices, r2, i, scene, l, traceLevel, raytraceExceptionHandler);
 	}
 
-	public DoubleColour getColourStartingInPixel(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+	public DoubleColour getColourStartingInPixel(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 			throws RayTraceException
 	{
 		// create the "pixel scene"
 
+//		for(int j=0; j<voxelIndices.length; j++)
+//			System.out.println("voxel index ["+j+"] = "+voxelIndices[j]);
+		
 		// create a collection of scene objects...
 		SceneObjectContainer s = new SceneObjectContainer(
 				null,	// description
@@ -185,8 +187,8 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 							voxellations[v].getBoundaryBetweenVoxels(
 									voxelIndices[v], 
 									o.getSign(),
-									SurfaceColour.CYAN_MATT
-									// new SurfaceSeparatingVoxels(this, voxelIndices, v, o)	// surfaceProperty
+									// SurfaceColour.RED_SHINY
+									new SurfaceSeparatingVoxels(this, voxelIndices, v, o)	// surfaceProperty
 									),
 							true
 							);
@@ -198,7 +200,7 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 		}
 
 		// add the refractive component corresponding to this voxel
-		s.addSceneObject(getSceneObjectsInPixel(voxelIndices), false);
+		s.addSceneObject(getSceneObjectsInPixel(voxelIndices), true);
 
 		// and raytrace through the "pixel scene"
 		return s.getColourAvoidingOrigin(

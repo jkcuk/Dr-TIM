@@ -89,5 +89,10 @@ public class RaySceneObjectIntersection implements Serializable
 		"<time>"+t+"</time>\n"+
 		"</RaySceneObjectIntersection>";
 	}
+	
+	public String toOneLiner()
+	{
+		return "p="+p+", o="+o.description+", t="+t; 
+	}
 
 }

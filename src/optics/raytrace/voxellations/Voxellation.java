@@ -40,4 +40,16 @@ public abstract class Voxellation implements Serializable
 //	public abstract SceneObject getSurfaceOfVoxelAvoidingSurface(int i, int avoidSurface)
 //	throws IndexOutOfBoundsException;
 	
+	public static String toString(int voxellationIndices[])
+	{
+		String s = "{";
+		for(int v=0; v<voxellationIndices.length; v++)
+		{
+			if(v>0) s+=", ";
+			s+=voxellationIndices[v];
+		}
+		s+="}";
+		return s;
+	}
+	
 }
