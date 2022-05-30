@@ -35,7 +35,7 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 	protected SceneObject boundingBox;
 
 	/**
-	 * the scene, including the object with this surface property
+	 * the "global" scene, including the object with this surface property
 	 */
 	private SceneObject scene;
 
@@ -79,6 +79,14 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 	 */
 	public abstract SceneObject getSceneObjectsInPixel(int[] voxelIndices);
 
+	public SurfaceSeparatingVoxels getSurfaceSeparatingVoxels(
+			int voxellationIndicesOnInside[],
+			int voxellationNumber,
+			OutwardsNormalOrientation outwardsNormalOrientation
+		)
+	{
+		return new SurfaceSeparatingVoxels(this, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation);
+	}
 
 
 	// getters & setters
@@ -188,7 +196,11 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 									voxelIndices[v], 
 									o.getSign(),
 									// SurfaceColour.RED_SHINY
-									new SurfaceSeparatingVoxels(this, voxelIndices, v, o)	// surfaceProperty
+									getSurfaceSeparatingVoxels(
+											voxelIndices,	// voxellationIndicesOnInside[],
+											v,	// voxellationNumber,
+											o	// outwardsNormalOrientation
+										)	// surfaceProperty
 									),
 							true
 							);

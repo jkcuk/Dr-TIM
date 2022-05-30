@@ -119,6 +119,11 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 		//object
 		objectRotationAngle = 0;
 		objectDistance = 2;
+		
+		windowTitle = "Dr TIM's Refractive view-rotation test";
+		windowWidth = 1450;
+		windowHeight = 750;
+
 	}
 	
 	public void populateStudio()

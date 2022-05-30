@@ -12,8 +12,10 @@ import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
 import optics.raytrace.surfaces.surfaceOfPixelArray.SurfaceOfPixelArray;
+import optics.raytrace.surfaces.surfaceOfPixelArray.SurfaceSeparatingVoxels;
 import optics.raytrace.voxellations.FanOfPlanes;
 import optics.raytrace.voxellations.SetOfSurfaces;
+import optics.raytrace.voxellations.SetOfSurfaces.OutwardsNormalOrientation;
 
 /*
  * The surface of a component which rotates the view seen through it by a defined angle using a refractive surface.
@@ -112,10 +114,6 @@ public class SurfaceOfRefractiveViewRotator2 extends SurfaceOfPixelArray
 	this.refractiveIndex = refractiveIndex;
 	this.wedgeThickness = wedgeThickness;
 	}
-
-
-	
-	
 	
 	public SurfaceOfRefractiveViewRotator2(SurfaceOfRefractiveViewRotator2 o)
 	{
@@ -320,6 +318,17 @@ public class SurfaceOfRefractiveViewRotator2 extends SurfaceOfPixelArray
 		
 		return c;
 	}
+
+	@Override
+	public SurfaceSeparatingVoxels getSurfaceSeparatingVoxels(
+			int voxellationIndicesOnInside[],
+			int voxellationNumber,
+			OutwardsNormalOrientation outwardsNormalOrientation
+		)
+	{
+		return new SurfaceSeparatingVoxels(this, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation);
+	}
+
 
 
 	public static SetOfSurfaces[] createVoxellations(Vector3D periodVector1, Vector3D periodVector2, Vector3D ocularPlaneCentre, Vector3D ocularPlaneNormal, Vector3D eyePosition, double refractiveIndex)
