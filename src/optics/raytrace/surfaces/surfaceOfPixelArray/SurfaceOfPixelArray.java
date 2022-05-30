@@ -245,4 +245,13 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 				raytraceExceptionHandler
 				);
 	}
+	
+	
+	/**
+	 * calculating shadows would be complicated, so -- for the moment -- we don't
+	 */
+	@Override
+	public boolean isShadowThrowing() {
+		return false;
+	}
 }
