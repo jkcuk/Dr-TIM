@@ -88,6 +88,13 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 		return new SurfaceSeparatingVoxels(this, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation);
 	}
 
+	public BoundingBoxSurface getBoundingBoxSurface(
+			int voxellationIndicesOnInside[],
+			SceneObject scene
+		)
+	{
+		return new BoundingBoxSurface(scene);
+	}
 
 	// getters & setters
 
@@ -132,6 +139,7 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 		if (traceLevel < 0) return DoubleColour.BLACK;
 
 		Ray r2;
+		boolean enterPixelFromOutside;
 
 		// check if the ray is exiting the volume bounded by the surface
 		if(Orientation.getOrientation(r.getD(), i.getNormalisedOutwardsSurfaceNormal()) == Orientation.OUTWARDS)
@@ -145,10 +153,12 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 				((RayWithTrajectory)r).removeLastIntersectionPoint();
 
 			r2 = r;
+			enterPixelFromOutside = false;
 		}
 		else
 		{
 			r2 = r.getBranchRay(i.p, r.getD(), i.t, r.isReportToConsole());
+			enterPixelFromOutside = true;
 		}
 
 		// trace the ray through a collection of scene objects that includes the components making up the pixel and the boundary of the voxel
@@ -158,11 +168,18 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 		for(int v=0; v<voxellations.length; v++)
 			voxelIndices[v] = voxellations[v].getVoxelIndex(r2.getP());
 
-		return getColourStartingInPixel(voxelIndices, r2, i, scene, l, traceLevel, raytraceExceptionHandler);
+		if(enterPixelFromOutside) return getColourEnteringPixelFromOutside(voxelIndices, r2, i, scene, l, traceLevel, raytraceExceptionHandler);
+		else return getColourStartingInPixel(voxelIndices, r2, i, scene, l, traceLevel, raytraceExceptionHandler);
+	}
+
+	public DoubleColour getColourEnteringPixelFromOutside(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+	throws RayTraceException
+	{
+		return getColourStartingInPixel(voxelIndices, r, i, scene_ignore, l, traceLevel, raytraceExceptionHandler);
 	}
 
 	public DoubleColour getColourStartingInPixel(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
-			throws RayTraceException
+	throws RayTraceException
 	{
 		// create the "pixel scene"
 
@@ -180,7 +197,10 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 		s.addSceneObject(
 				new WrappedSceneObject(
 						boundingBox,	// sceneObject to be wrapped
-						new BoundingBoxSurface(scene)	// surfaceProperty
+						getBoundingBoxSurface(
+								voxelIndices,
+								scene	// surfaceProperty
+							)
 						),
 				true
 				);
@@ -212,8 +232,9 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 		}
 
 		// add the refractive component corresponding to this voxel
-		s.addSceneObject(getSceneObjectsInPixel(voxelIndices), true);
-
+		SceneObject sceneObjectsInPixel = getSceneObjectsInPixel(voxelIndices);
+		s.addSceneObject(sceneObjectsInPixel, true);
+		
 		// and raytrace through the "pixel scene"
 		return s.getColourAvoidingOrigin(
 				r,	// ray
@@ -222,10 +243,6 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 				s,	// scene
 				traceLevel-1,
 				raytraceExceptionHandler
-				//				new SurfaceOfPixelArrayRaytraceExceptionHandler(
-				//						scene,	// normalScene,
-				//						raytraceExceptionHandler	// normalRaytraceExceptionHandler
-				//					)	// raytraceExceptionHandler
 				);
 	}
 }

@@ -125,7 +125,7 @@ public class RefractiveSimple extends SurfacePropertyPrimitive
 			scene,
 			traceLevel-1,
 			raytraceExceptionHandler
-		);
+		).multiply(getTransmissionCoefficient());
 	}
 	
 	

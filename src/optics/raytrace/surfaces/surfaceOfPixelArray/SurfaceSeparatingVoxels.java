@@ -22,20 +22,20 @@ public class SurfaceSeparatingVoxels extends SurfaceProperty
 {
 	private static final long serialVersionUID = 7114392782036388908L;
 
-	private SurfaceOfPixelArray surfaceOfPixelArray;
+	protected SurfaceOfPixelArray surfaceOfPixelArray;
 
-	private int voxellationIndicesOnInside[];
+	protected int voxellationIndicesOnInside[];
 
 	/**
 	 * this surface belongs to one particular voxellation;
 	 * the voxellationNumber is the index of that voxellation in the voxellationIndices array
 	 */
-	private int voxellationNumber;
+	protected int voxellationNumber;
 	
 	/**
 	 * does this surface point towards the voxel with the more POSITIVE or more NEGATIVE index?
 	 */
-	private OutwardsNormalOrientation outwardsNormalOrientation;
+	protected OutwardsNormalOrientation outwardsNormalOrientation;
 	
 
 	public SurfaceSeparatingVoxels(

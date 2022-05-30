@@ -17,7 +17,7 @@ public class BoundingBoxSurface extends SurfaceProperty
 {
 	private static final long serialVersionUID = 7048620400194509473L;
 
-	private SceneObject scene;
+	protected SceneObject scene;
 
 	public BoundingBoxSurface(SceneObject scene)
 	{
@@ -33,12 +33,13 @@ public class BoundingBoxSurface extends SurfaceProperty
 		
 		if(traceLevel <= 0) return DoubleColour.BLACK;
 
-		// is the orientation the right way round?
-		if(Orientation.getRayOrientation(r, i) == Orientation.INWARDS)
-		{
-			// this should never happen
-			throw new RayTraceException("Ray intersecting BoundingBoxSurface *inwards*, which should never happen!?");
-		}
+//		// is the orientation the right way round?
+//		if(Orientation.getRayOrientation(r, i) == Orientation.INWARDS)
+//		{
+//			// this should never happen
+//			// System.out.println("TIR?");
+//			throw new RayTraceException("Ray intersecting BoundingBoxSurface *inwards*, which should never happen!?");
+//		}
 		
 		if(i.o instanceof WrappedSceneObjectPrimitive)
 		{

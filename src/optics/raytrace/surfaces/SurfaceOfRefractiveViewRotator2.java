@@ -4,14 +4,20 @@ import math.Geometry;
 import math.MathException;
 import math.MyMath;
 import math.Vector3D;
+import optics.DoubleColour;
+import optics.raytrace.core.LightSource;
 import optics.raytrace.core.Ray;
 import optics.raytrace.core.RaySceneObjectIntersection;
+import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
+import optics.raytrace.surfaces.surfaceOfPixelArray.BoundingBoxSurface;
+import optics.raytrace.surfaces.surfaceOfPixelArray.BoundingBoxSurfaceForRefractiveComponent;
 import optics.raytrace.surfaces.surfaceOfPixelArray.SurfaceOfPixelArray;
+import optics.raytrace.surfaces.surfaceOfPixelArray.SurfaceSeparatingRefractiveVoxels;
 import optics.raytrace.surfaces.surfaceOfPixelArray.SurfaceSeparatingVoxels;
 import optics.raytrace.voxellations.FanOfPlanes;
 import optics.raytrace.voxellations.SetOfSurfaces;
@@ -229,8 +235,20 @@ public class SurfaceOfRefractiveViewRotator2 extends SurfaceOfPixelArray
 	public void setWedgeThickness(double wedgeThickness) {
 		this.wedgeThickness = wedgeThickness;
 	}
+	
+	
 
-	double surfaceTransmissionCoefficient = 0.96;
+	public double getSurfaceTransmissionCoefficient() {
+		return surfaceTransmissionCoefficient;
+	}
+
+	public void setSurfaceTransmissionCoefficient(double surfaceTransmissionCoefficient) {
+		this.surfaceTransmissionCoefficient = surfaceTransmissionCoefficient;
+	}
+
+
+
+	private double surfaceTransmissionCoefficient = 0.9;
 	boolean shadowThrowing = true;
 	
 	@Override
@@ -290,7 +308,9 @@ public class SurfaceOfRefractiveViewRotator2 extends SurfaceOfPixelArray
 			nObjective = nObjective.getWithLength(Math.signum(Vector3D.scalarProduct(dObjective, nObjective)));
 			//System.out.println(nObjective);
 			//create the refractive surface property
-			RefractiveSimple surfaceN = new RefractiveSimple(refractiveIndex, surfaceTransmissionCoefficient, shadowThrowing);
+			RefractiveSimple surfaceN = new RefractiveSimple(refractiveIndex, 
+					surfaceTransmissionCoefficient,
+					shadowThrowing);
 			
 			c.addPositiveSceneObjectPrimitive(new Plane(
 					"ocular surface",
@@ -320,15 +340,54 @@ public class SurfaceOfRefractiveViewRotator2 extends SurfaceOfPixelArray
 	}
 
 	@Override
+	public DoubleColour getColourEnteringPixelFromOutside(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+	throws RayTraceException
+	{
+		// is the ray entering directly into the refractive material?
+		if(getSceneObjectsInPixel(voxelIndices).insideObject(i.p))
+		{
+			// yes, the ray is entering directly into the refractive material
+			// refract it
+
+			Vector3D d2 = RefractiveSimple.getRefractedLightRayDirection(
+					r.getD(),
+					i.getNormalisedOutwardsSurfaceNormal(),
+					1/refractiveIndex
+					).getNormalised();
+			return getColourStartingInPixel(
+					voxelIndices,
+					r.getBranchRay(i.p, d2, i.t, r.isReportToConsole()),
+					i,
+					scene_ignore,
+					l,
+					traceLevel,
+					raytraceExceptionHandler
+					).multiply(surfaceTransmissionCoefficient);
+		}
+
+		// the ray is not entering directly into the refractive material
+		return getColourStartingInPixel(voxelIndices, r, i, scene_ignore, l, traceLevel, raytraceExceptionHandler);
+	}
+
+
+	@Override
 	public SurfaceSeparatingVoxels getSurfaceSeparatingVoxels(
 			int voxellationIndicesOnInside[],
 			int voxellationNumber,
 			OutwardsNormalOrientation outwardsNormalOrientation
 		)
 	{
-		return new SurfaceSeparatingVoxels(this, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation);
+		return new SurfaceSeparatingRefractiveVoxels(this, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation);
 	}
 
+	@Override
+	public BoundingBoxSurface getBoundingBoxSurface(
+			int voxellationIndicesOnInside[],
+			SceneObject scene
+		)
+	{
+		return new BoundingBoxSurfaceForRefractiveComponent(scene, voxellationIndicesOnInside, this);
+	}
 
 
 	public static SetOfSurfaces[] createVoxellations(Vector3D periodVector1, Vector3D periodVector2, Vector3D ocularPlaneCentre, Vector3D ocularPlaneNormal, Vector3D eyePosition, double refractiveIndex)
