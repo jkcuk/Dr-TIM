@@ -32,6 +32,7 @@ import optics.raytrace.GUI.lowLevel.Vector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableCylinderLattice;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedDisc;
 import optics.raytrace.core.LightSource;
+import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.SceneObjectClass;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
@@ -147,6 +148,10 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	 */
 	private boolean diffractuveBlurRefractiveFresnelWedge;
 	
+	/**
+	 * transmission coefficient of refractive material
+	 */
+	private double surfaceTransmissionCoefficient;
 	
 	//
 	// moiré rotator
@@ -296,7 +301,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		refractiveLatticeSpanVector1 = new Vector3D(0.5,0,0).getProductWith(MM);
 		refractiveLatticeSpanVector2 = new Vector3D(0,0.5,0).getProductWith(MM);
 		rotationAngle = 10;//degrees
-		diffractuveBlurRefractiveFresnelWedge = true;
+		diffractuveBlurRefractiveFresnelWedge = false;
 		boundingBoxCentre = new Vector3D (0,0,1.4999).getProductWith(MM);
 		boundingBoxSpanVector1 = new Vector3D(5,0,0).getProductWith(CM);
 		boundingBoxSpanVector2 = new Vector3D(0,5,0).getProductWith(CM);
@@ -304,6 +309,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		thickness = 1*MM;
 		eyePosition = new Vector3D(0,0,-1.5).getProductWith(CM);
 		refractiveIndex = 1.5;//glass
+		surfaceTransmissionCoefficient = 1;
 
 		
 		// moiré rotator
@@ -778,7 +784,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			
 			
 		case REFRACTIVE_PIXELATED_FRESNEL_WEDGE:
-			scene.addSceneObject( new RefractiveViewRotatorOldVoxellation(
+			scene.addSceneObject( new RefractiveViewRotator(
 					"refractive view rotator",// description,
 					boundingBoxCentre, 
 					boundingBoxSpanVector1,
@@ -792,7 +798,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					1,// magnificationFactor,
 					refractiveLatticeSpanVector1,
 					refractiveLatticeSpanVector2,
-					new Plane("test", 
+					new Plane("focus plane", 
 							new Vector3D(0, 0, 2), 
 							Vector3D.Z, 
 							null,
@@ -801,12 +807,9 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 							),
 					refractiveIndex,
 					thickness,
-					diffractuveBlurRefractiveFresnelWedge, 
-					632.8e-9,// lambda (wave length)
-					100, //max steps
-					1, //trasnmission coef
-					true, //shadow throwing
+					surfaceTransmissionCoefficient, //trasnmission coef
 					scene, 
+					scene,
 					studio
 					));
 		
@@ -866,7 +869,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private JCheckBox diffractiveBlurPixelatedFresnelWedgeCheckBox;
 	
 	//refractive fresnel wedge
-	private DoublePanel rotationAnglePanel, thicknessPanel, refractiveIndexPanel;
+	private DoublePanel rotationAnglePanel, thicknessPanel, refractiveIndexPanel, surfaceTransmissionCoefficientPanel;
 	private Vector3DPanel refractiveLatticeSpanVector1Panel, refractiveLatticeSpanVector2Panel, boundingBoxCentrePanel, boundingBoxSpanVector1Panel,
 	boundingBoxSpanVector2Panel, boundingBoxSpanVector3Panel, eyePositionPanel;
 	private JCheckBox diffractuveBlurRefractiveFresnelWedgeCheckBox;
@@ -1141,6 +1144,10 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		diffractuveBlurRefractiveFresnelWedgeCheckBox.setSelected(diffractuveBlurRefractiveFresnelWedge);
 		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("show diffraction", diffractuveBlurRefractiveFresnelWedgeCheckBox),"wrap");
 		
+		surfaceTransmissionCoefficientPanel = new DoublePanel();
+		surfaceTransmissionCoefficientPanel.setNumber(surfaceTransmissionCoefficient);
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("set trasnmission coefficient to", surfaceTransmissionCoefficientPanel),"wrap");
+		
 		boundingBoxCentrePanel = new Vector3DPanel();
 		boundingBoxCentrePanel.setVector3D(boundingBoxCentre.getProductWith(1/MM));
 		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("bounding box centre", boundingBoxCentrePanel, "mm"),"wrap");
@@ -1288,6 +1295,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		boundingBoxSpanVector2 = boundingBoxSpanVector2Panel.getVector3D().getProductWith(CM);
 		boundingBoxSpanVector3 = boundingBoxSpanVector3Panel.getVector3D().getProductWith(MM);
 		eyePosition = eyePositionPanel.getVector3D().getProductWith(CM);
+		surfaceTransmissionCoefficient = surfaceTransmissionCoefficientPanel.getNumber();
+		
 
 
 
