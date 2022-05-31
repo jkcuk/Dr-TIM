@@ -20,7 +20,7 @@ import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
 import optics.raytrace.core.*;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.exceptions.SceneException;
-import optics.raytrace.research.viewRotation.RefractiveViewRotator2;
+import optics.raytrace.research.viewRotation.RefractiveViewRotatorOldVoxellation;
 import optics.raytrace.NonInteractiveTIMEngine;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
@@ -36,14 +36,14 @@ import optics.raytrace.GUI.sceneObjects.EditableRayTrajectory;
 /**
  * Testing the refractive view rotation device.
  *  
- * @author Maik, Johannes
+ * @author Maik
  */
-public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
+public class RefractiveViewRotationTestOldVoxellation extends NonInteractiveTIMEngine
 {	
 	/**
 	 * View rotator
 	 */
-	RefractiveViewRotator2 refractiveViewRotator;
+	RefractiveViewRotatorOldVoxellation refractiveViewRotator;
 	
 	//bounding box settings
 	private Vector3D boundingBoxCentre, boundingBoxSpanVector1,boundingBoxSpanVector2, boundingBoxSpanVector3;
@@ -51,7 +51,7 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 	//Rotator settings
 	private Vector3D frontSurfaceNormal, rotationCentre, periodVector1, periodVector2, centre,eyePosition,rotationAxisDirection;
 	
-	private double rotationAngle, refractiveIndex, wedgeThickness;
+	private double rotationAngle, refractiveIndex, wedgeThickness, magnificationFactor;
 	
 	private boolean showTrajectory;
 
@@ -76,9 +76,10 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 	 */
 	private double objectRotationAngle;
 	private double objectDistance;
+	private boolean simulateDiffraction;
 
 	
-	public RefractiveViewRotationTest2()
+	public RefractiveViewRotationTestOldVoxellation()
 	{
 		super();
 			
@@ -103,6 +104,8 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 		shadowThrowing = false;
 		eyePosition = new Vector3D(0,0,-0.016);
 		rotationAxisDirection = new Vector3D(0,0,-1);
+		magnificationFactor = 1;
+		simulateDiffraction = false;
 	
 		
 		// camera params
@@ -116,14 +119,10 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 		cameraFocussingDistance = 1;
 		showTrajectory = false;
 		
+		
 		//object
 		objectRotationAngle = 0;
 		objectDistance = 2;
-		
-		windowTitle = "Dr TIM's Refractive view-rotation test";
-		windowWidth = 1450;
-		windowHeight = 750;
-
 	}
 	
 	public void populateStudio()
@@ -193,7 +192,7 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 //				studio
 //				);
 //		scene.addSceneObject(refractiveViewRotator);
-		refractiveViewRotator = new RefractiveViewRotator2(
+		refractiveViewRotator = new RefractiveViewRotatorOldVoxellation(
 				"refractive view rotator to test",// description,
 				boundingBoxCentre, 
 				boundingBoxSpanVector1,
@@ -204,7 +203,7 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 				centre,
 				rotationAngle,
 				rotationAxisDirection,
-				1,// magnificationFactor,
+				magnificationFactor,// magnificationFactor,
 				periodVector1,
 				periodVector2,
 				new Plane("test", 
@@ -216,7 +215,11 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 						),
 				refractiveIndex,
 				wedgeThickness,
-				scene,
+				simulateDiffraction,
+				632.8e-9,// lambda (wave length)
+				maxSteps, 
+				surfaceTransmissionCoefficient, 
+				shadowThrowing,
 				scene, 
 				studio
 				);
@@ -304,11 +307,11 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 	private LabelledVector3DPanel boundingBoxCentrePanel, boundingBoxSpanVector1Panel, boundingBoxSpanVector2Panel, boundingBoxSpanVector3Panel;
 	private LabelledIntPanel maxStepSpanel;
 	private LabelledDoublePanel surfaceTransmissionCoefficientPanel, refractiveIndexPanel;
-	private JCheckBox shadowThrowingCheckBox, showTrajectoryPanel;
+	private JCheckBox shadowThrowingCheckBox, showTrajectoryPanel, simulateDiffractionCheckBox;
 	private DoublePanel objectRotationAnglePanel, objectDistancePanel;
 	//rotator stuff
 	private LabelledVector3DPanel frontSurfaceNormalPanel, centrePanel, rotationCentrePanel, periodVector1Panel, periodVector2Panel, eyePositionPanel, rotationAxisDirectionPanel;
-	private LabelledDoublePanel	rotationAnglePanel, wedgeThicknesSpanel;
+	private LabelledDoublePanel	rotationAnglePanel, wedgeThicknesSpanel, magnificationFactorPanel;
 	private JTextArea rayLastClickTextArea;
 	private JButton rayLastClickInfo;
 	
@@ -382,6 +385,10 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 		rotationAnglePanel.setNumber(rotationAngle);
 		scenePanel.add(rotationAnglePanel, "span");
 		
+		magnificationFactorPanel = new LabelledDoublePanel("magnification factor");
+		magnificationFactorPanel.setNumber(magnificationFactor);
+		scenePanel.add(magnificationFactorPanel,"span");
+		
 		wedgeThicknesSpanel = new LabelledDoublePanel("Thickness of individual wedges");
 		wedgeThicknesSpanel.setNumber(wedgeThickness);
 		scenePanel.add(wedgeThicknesSpanel, "span");	
@@ -397,6 +404,10 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 		shadowThrowingCheckBox = new JCheckBox("Shadows");
 		shadowThrowingCheckBox.setSelected(shadowThrowing);
 		scenePanel.add(shadowThrowingCheckBox, "span");
+		
+		simulateDiffractionCheckBox = new JCheckBox("simulate diffraction");
+		simulateDiffractionCheckBox.setSelected(simulateDiffraction);
+		scenePanel.add(simulateDiffractionCheckBox, "span");
 		
 		//
 		//Background stuff
@@ -480,6 +491,7 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 		boundingBoxSpanVector2 = boundingBoxSpanVector2Panel.getVector3D();
 		boundingBoxSpanVector3 = boundingBoxSpanVector3Panel.getVector3D();
 		
+		
 		eyePosition = eyePositionPanel.getVector3D();
 		rotationAxisDirection = rotationAxisDirectionPanel.getVector3D(); 
 		
@@ -490,6 +502,7 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 		periodVector2 = periodVector2Panel.getVector3D();
 		
 //		eyeDistance =eyeDistancePanel.getNumber();
+		magnificationFactor = magnificationFactorPanel.getNumber();
 		rotationAngle = rotationAnglePanel.getNumber();
 		wedgeThickness =wedgeThicknesSpanel.getNumber();
 	
@@ -509,6 +522,7 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 		refractiveIndex=refractiveIndexPanel.getNumber();
 		shadowThrowing=shadowThrowingCheckBox.isSelected();
 		showTrajectory = showTrajectoryPanel.isSelected();
+		simulateDiffraction = simulateDiffractionCheckBox.isSelected();
 		
 	}
 	
@@ -547,7 +561,7 @@ public class RefractiveViewRotationTest2 extends NonInteractiveTIMEngine
 	
 	public static void main(final String[] args)
 	{
-		(new RefractiveViewRotationTest2()).run();
+		(new RefractiveViewRotationTestOldVoxellation()).run();
 	}
 }
 

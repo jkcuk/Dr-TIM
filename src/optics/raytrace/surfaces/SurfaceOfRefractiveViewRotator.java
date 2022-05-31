@@ -14,17 +14,22 @@ import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
-import optics.raytrace.utility.SingleSlitDiffraction;
+import optics.raytrace.surfaces.surfaceOfPixelArray.BoundingBoxSurface;
+import optics.raytrace.surfaces.surfaceOfPixelArray.BoundingBoxSurfaceForRefractiveComponent;
+import optics.raytrace.surfaces.surfaceOfPixelArray.SurfaceOfPixelArray;
+import optics.raytrace.surfaces.surfaceOfPixelArray.SurfaceSeparatingRefractiveVoxels;
+import optics.raytrace.surfaces.surfaceOfPixelArray.SurfaceSeparatingVoxels;
 import optics.raytrace.voxellations.FanOfPlanes;
-import optics.raytrace.voxellations.Voxellation;
+import optics.raytrace.voxellations.SetOfSurfaces;
+import optics.raytrace.voxellations.SetOfSurfaces.OutwardsNormalOrientation;
 
 /*
  * The surface of a component which rotates the view seen through it by a defined angle using a refractive surface.
  * 
  */
-public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponentArray
+public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 {
-	private static final long serialVersionUID = 1616722922232355738L;
+	private static final long serialVersionUID = -2062342228761066401L;
 
 	/**
 	 * Primary flat surface normal, from the surface to the camera position.
@@ -83,39 +88,27 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponent
 	private double wedgeThickness;
 	
 	/**
-	 * To simulate diffraction
-	 */
-	private boolean simulateDiffractiveBlur;
-	private double lambda; 
-
-	/**
-	 * transmission coefficient of each of the lens surfaces
+	 * the transmission coefficient of the material
 	 */
 	private double surfaceTransmissionCoefficient;
 	
 	/**
-	 * True if the lens surfaces throw shadows
+	 * 
+	 * @param ocularPlaneNormal
+	 * @param eyePosition
+	 * @param ocularPlaneCentre
+	 * @param rotationAngle
+	 * @param rotationAxisDirection
+	 * @param magnificationFactor
+	 * @param periodVector1
+	 * @param periodVector2
+	 * @param viewObject
+	 * @param refractiveIndex
+	 * @param wedgeThickness
+	 * @param surfaceTransmissionCoefficient
+	 * @param boundingBox
+	 * @param scene
 	 */
-	private boolean shadowThrowing;
-	
-
-/**
- * 
- * @param ocularPlaneNormal
- * @param eyePosition
- * @param ocularPlaneCentre
- * @param rotationAngle
- * @param rotationAxisDirection
- * @param magnificationFactor
- * @param periodVector1
- * @param periodVector2
- * @param refractiveIndex
- * @param wedgeThickness
- * @param boundingBox
- * @param surfaceTransmissionCoefficient
- * @param shadowThrowing
- * @param maxSteps
- */
 	
 	public SurfaceOfRefractiveViewRotator(
 			Vector3D ocularPlaneNormal,
@@ -129,17 +122,15 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponent
 			SceneObject viewObject,
 			double refractiveIndex,
 			double wedgeThickness,
-			SceneObject boundingBox,
-			boolean simulateDiffractiveBlur,
-			double lambda,
 			double surfaceTransmissionCoefficient,
-			boolean shadowThrowing,
-			int maxSteps
+			SceneObject boundingBox,
+			SceneObject scene
 		)
 	{	
 	super(
 			createVoxellations(periodVector1, periodVector2, ocularPlaneCentre, ocularPlaneNormal, eyePosition, refractiveIndex),
-			boundingBox, maxSteps, 1., shadowThrowing//Voxellation
+			boundingBox,
+			scene
 		);
 	this.ocularPlaneNormal = ocularPlaneNormal;
 	this.eyePosition=eyePosition;
@@ -152,15 +143,8 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponent
 	this.viewObject = viewObject;
 	this.refractiveIndex = refractiveIndex;
 	this.wedgeThickness = wedgeThickness;
-	this.lambda = lambda;
-	this.simulateDiffractiveBlur =simulateDiffractiveBlur;
 	this.surfaceTransmissionCoefficient = surfaceTransmissionCoefficient;
-	this.shadowThrowing =shadowThrowing;
 	}
-
-
-	
-	
 	
 	public SurfaceOfRefractiveViewRotator(SurfaceOfRefractiveViewRotator o)
 	{
@@ -176,17 +160,14 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponent
 				o.getViewObject(),
 				o.getRefractiveIndex(),
 				o.getWedgeThickness(),
-				o.getSurface(),
-				o.isSimulateDiffractiveBlur(),
-				o.getLambda(),
 				o.getSurfaceTransmissionCoefficient(),
-				o.isShadowThrowing(),
-				o.getMaxSteps()
+				o.getBoundingBox(),
+				o.getScene()
 			);
 	}
 
 	@Override
-	public SurfaceOfRefractiveComponentArray clone() {
+	public SurfaceOfRefractiveViewRotator clone() {
 		return new SurfaceOfRefractiveViewRotator(this);
 	}
 	
@@ -281,21 +262,7 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponent
 		this.wedgeThickness = wedgeThickness;
 	}
 	
-	public boolean isSimulateDiffractiveBlur() {
-		return simulateDiffractiveBlur;
-	}
-
-	public void setSimulateDiffractiveBlur(boolean simulateDiffractiveBlur) {
-		this.simulateDiffractiveBlur = simulateDiffractiveBlur;
-	}
-
-	public double getLambda() {
-		return lambda;
-	}
-
-	public void setLambda(double lambda) {
-		this.lambda = lambda;
-	}
+	
 
 	public double getSurfaceTransmissionCoefficient() {
 		return surfaceTransmissionCoefficient;
@@ -305,16 +272,11 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfRefractiveComponent
 		this.surfaceTransmissionCoefficient = surfaceTransmissionCoefficient;
 	}
 
-	public boolean isShadowThrowing() {
-		return shadowThrowing;
-	}
-
-	public void setShadowThrowing(boolean shadowThrowing) {
-		this.shadowThrowing = shadowThrowing;
-	}
+	boolean shadowThrowing = false;
 	
 	@Override
-public SceneObject getRefractiveComponent(int[] voxelIndices) {
+	public SceneObject getSceneObjectsInPixel(int[] voxelIndices)
+	{
 		//create a scene object collection to which the refractive surfaces can be added
 		SceneObjectPrimitiveIntersection c = new SceneObjectPrimitiveIntersection("Pixel "+voxelIndices[0]+","+voxelIndices[1], null, null);
 		
@@ -354,17 +316,13 @@ public SceneObject getRefractiveComponent(int[] voxelIndices) {
 		
 		// also calculate the position where we want that ray from the objective pixel surface centre to go
 		Vector3D dRotated = Geometry.rotate(dOcular, rotationAxisDirection, MyMath.deg2rad(rotationAngle));
-		Vector3D dRotatedAndScaled = Vector3D.sum(
-				dRotated.getPartParallelTo(rotationAxisDirection),
-				dRotated.getPartPerpendicularTo(rotationAxisDirection).getProductWith(1/magnificationFactor)
-				);
-		RaySceneObjectIntersection intersection = viewObject.getClosestRayIntersection(new Ray(eyePosition, dRotatedAndScaled, 0, false));
+		RaySceneObjectIntersection intersection = viewObject.getClosestRayIntersection(new Ray(eyePosition, dRotated, 0, false));
 		if(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
 		{   //System.out.println(intersection);
 			// there is an intersection -- good!
 		
 			// calculate the ray direction on the other side...
-			Vector3D dObjective = Vector3D.difference(intersection.p, objectivePixelSurfaceCentre).getNormalised();			
+			Vector3D dObjective = Vector3D.difference(intersection.p, objectivePixelSurfaceCentre).getNormalised();
 			
 			// calculate the normal of the refractive surface that turns dInside into dObjective
 			Vector3D nObjective = Vector3D.difference(dInside.getProductWith(refractiveIndex), dObjective);
@@ -373,7 +331,9 @@ public SceneObject getRefractiveComponent(int[] voxelIndices) {
 			nObjective = nObjective.getWithLength(Math.signum(Vector3D.scalarProduct(dObjective, nObjective)));
 			//System.out.println(nObjective);
 			//create the refractive surface property
-			RefractiveSimple surfaceN = new RefractiveSimple(refractiveIndex, surfaceTransmissionCoefficient, shadowThrowing);
+			RefractiveSimple surfaceN = new RefractiveSimple(refractiveIndex, 
+					surfaceTransmissionCoefficient,
+					shadowThrowing);
 			
 			c.addPositiveSceneObjectPrimitive(new Plane(
 					"ocular surface",
@@ -401,31 +361,82 @@ public SceneObject getRefractiveComponent(int[] voxelIndices) {
 		
 		return c;
 	}
-	
-	//Add a diffractive blur for a given pixel span vector
-	@Override
-	public DoubleColour getColourUponLeavingVolume(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int stepsLeft, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
-	throws RayTraceException {
-		
-		if(simulateDiffractiveBlur)
-		{	//
-			Vector3D lightRayDirectionChange = SingleSlitDiffraction.getTangentialDirectionComponentChange(
-				lambda,
-				periodVector1.getLength(),	// pixelSideLengthU
-				periodVector2.getLength(),	// pixelSideLengthV
-				periodVector1.getNormalised(),	// uHat
-				periodVector2.getNormalised()	// vHat
-				);
-			r.setD(Vector3D.sum(r.getD(), lightRayDirectionChange));
-		}
-		return super.getColourUponLeavingVolume(r, i, scene, l, stepsLeft, traceLevel, raytraceExceptionHandler);
-	}
-	
-	
 
-	public static Voxellation[] createVoxellations(Vector3D periodVector1, Vector3D periodVector2, Vector3D ocularPlaneCentre, Vector3D ocularPlaneNormal, Vector3D eyePosition, double refractiveIndex)
+	
+//	//Add a diffractive blur for a given pixel span vector
+//	@Override
+//	public DoubleColour getColourStartingInPixel(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+//			throws RayTraceException{
+//		
+//		//if(simulateDiffractiveBlur)
+//		{	//
+//			Vector3D lightRayDirectionChange = SingleSlitDiffraction.getTangentialDirectionComponentChange(
+//				632.8e-9,
+//				periodVector1.getLength(),	// pixelSideLengthU
+//				periodVector2.getLength(),	// pixelSideLengthV
+//				periodVector1.getNormalised(),	// uHat
+//				periodVector2.getNormalised()	// vHat
+//				);
+//			r.setD(Vector3D.sum(r.getD(), lightRayDirectionChange));
+//		}
+//		return super.getColourStartingInPixel(voxelIndices,r, i, scene_ignore, l, traceLevel, raytraceExceptionHandler);
+//	}
+	
+	
+	@Override
+	public DoubleColour getColourEnteringPixelFromOutside(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+	throws RayTraceException
 	{
-		Voxellation voxellations[] = new Voxellation[2];
+		// is the ray entering directly into the refractive material?
+		if(getSceneObjectsInPixel(voxelIndices).insideObject(i.p))
+		{
+			// yes, the ray is entering directly into the refractive material
+			// refract it
+
+			Vector3D d2 = RefractiveSimple.getRefractedLightRayDirection(
+					r.getD(),
+					i.getNormalisedOutwardsSurfaceNormal(),
+					1/refractiveIndex
+					).getNormalised();
+			return getColourStartingInPixel(
+					voxelIndices,
+					r.getBranchRay(i.p, d2, i.t, r.isReportToConsole()),
+					i,
+					scene_ignore,
+					l,
+					traceLevel,
+					raytraceExceptionHandler
+					).multiply(surfaceTransmissionCoefficient);
+		}
+
+		// the ray is not entering directly into the refractive material
+		return getColourStartingInPixel(voxelIndices, r, i, scene_ignore, l, traceLevel, raytraceExceptionHandler);
+	}
+
+
+	@Override
+	public SurfaceSeparatingVoxels getSurfaceSeparatingVoxels(
+			int voxellationIndicesOnInside[],
+			int voxellationNumber,
+			OutwardsNormalOrientation outwardsNormalOrientation
+		)
+	{
+		return new SurfaceSeparatingRefractiveVoxels(this, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation);
+	}
+
+	@Override
+	public BoundingBoxSurface getBoundingBoxSurface(
+			int voxellationIndicesOnInside[],
+			SceneObject scene
+		)
+	{
+		return new BoundingBoxSurfaceForRefractiveComponent(scene, voxellationIndicesOnInside, this);
+	}
+
+
+	public static SetOfSurfaces[] createVoxellations(Vector3D periodVector1, Vector3D periodVector2, Vector3D ocularPlaneCentre, Vector3D ocularPlaneNormal, Vector3D eyePosition, double refractiveIndex)
+	{
+		SetOfSurfaces voxellations[] = new SetOfSurfaces[2];
 		
 		Vector3D pointOnPlane0 = Vector3D.sum(ocularPlaneCentre, periodVector1.getProductWith(0.5), periodVector1.getProductWith(0.5));
 		Vector3D pointOnplane1 = Vector3D.sum(pointOnPlane0, periodVector1, periodVector2);
@@ -450,6 +461,12 @@ public SceneObject getRefractiveComponent(int[] voxelIndices) {
 		
 		//System.out.println(commonIntersectionPoint);
 		return voxellations;
+	}
+
+
+	@Override
+	public boolean isShadowThrowing() {
+		return false;
 	}
 	
 }

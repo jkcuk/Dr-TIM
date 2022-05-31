@@ -11,7 +11,7 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.surfaces.RefractiveSimple;
-import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator2;
+import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator;
 import optics.raytrace.voxellations.Voxellation;
 import optics.raytrace.voxellations.SetOfSurfaces.OutwardsNormalOrientation;
 
@@ -102,19 +102,20 @@ public class SurfaceSeparatingRefractiveVoxels extends SurfaceSeparatingVoxels
 		}
 		else {
 			// the light ray leaves or enters a scene object through a voxel boundary, making the voxel boundary part of the object and having to refract the ray.
-			//TODO check signs on normals i.e may need to be -1.
 
 			double refractiveIndexRatio;
-			if(inside1) refractiveIndexRatio = 1/((SurfaceOfRefractiveViewRotator2)surfaceOfPixelArray).getRefractiveIndex();
-			else refractiveIndexRatio = ((SurfaceOfRefractiveViewRotator2)surfaceOfPixelArray).getRefractiveIndex();
-
+			if(inside1) refractiveIndexRatio = ((SurfaceOfRefractiveViewRotator)surfaceOfPixelArray).getRefractiveIndex();
 			//the ray is within the first object but not the second which means it exits the object through a voxel surface.
+			else refractiveIndexRatio = 1/((SurfaceOfRefractiveViewRotator)surfaceOfPixelArray).getRefractiveIndex();
+			//the ray is not within the first object but within the second -> it enters through a voxel boundary.
+
+
 			d2 = RefractiveSimple.getRefractedLightRayDirection(
 					r.getD(),
 					i.getNormalisedOutwardsSurfaceNormal(),
 					refractiveIndexRatio
 					).getNormalised();
-			t = ((SurfaceOfRefractiveViewRotator2)surfaceOfPixelArray).getSurfaceTransmissionCoefficient();
+			t = ((SurfaceOfRefractiveViewRotator)surfaceOfPixelArray).getSurfaceTransmissionCoefficient();
 		}
 
 		return surfaceOfPixelArray.getColourStartingInPixel(

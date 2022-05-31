@@ -18,7 +18,6 @@ import optics.raytrace.surfaces.IdealisedDovePrismArray;
 import optics.raytrace.surfaces.PhaseHologramOfCylindricalLens;
 import optics.raytrace.surfaces.PhaseHologramOfRadialLenticularArray;
 import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArray;
-import optics.raytrace.surfaces.RefractiveViewRotator;
 import optics.raytrace.surfaces.RotationallySymmetricPhaseHologram;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
@@ -779,7 +778,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			
 			
 		case REFRACTIVE_PIXELATED_FRESNEL_WEDGE:
-			scene.addSceneObject( new RefractiveViewRotator(
+			scene.addSceneObject( new RefractiveViewRotatorOldVoxellation(
 					"refractive view rotator",// description,
 					boundingBoxCentre, 
 					boundingBoxSpanVector1,

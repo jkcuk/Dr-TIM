@@ -5,7 +5,7 @@ import math.Vector3D;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.sceneObjects.Parallelepiped2;
-import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator2;
+import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotatorOldVoxellation;
 
 
 
@@ -14,12 +14,12 @@ import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator2;
  * The rotator is surrounded by a bounding box (Parallelepiped) which is the scene object and handles the raytracing through it's surface property. 
  * The bounding box size is (TODO for now) determined by the user and as such, it needs to be made sure that it fits around the device.
  */
-public class RefractiveViewRotator2 extends Parallelepiped2 
+public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2 
 {
 	private static final long serialVersionUID = 3339913072437353313L;
 	
 	
-	private SurfaceOfRefractiveViewRotator2 surface;
+	private SurfaceOfRefractiveViewRotatorOldVoxellation surface;
 
 /**
  * 
@@ -43,7 +43,7 @@ public class RefractiveViewRotator2 extends Parallelepiped2
  * @param parent
  * @param studio
  */
-	public RefractiveViewRotator2(
+	public RefractiveViewRotatorOldVoxellation(
 			String description,
 			Vector3D boundingBoxCentre, 
 			Vector3D boundingBoxSpanVector1,
@@ -60,7 +60,11 @@ public class RefractiveViewRotator2 extends Parallelepiped2
 			SceneObject viewObject,
 			double refractiveIndex,
 			double wedgeThickness,
-			SceneObject scene,
+			boolean simulateDiffractiveBlur,
+			double lambda,
+			int maxSteps, 
+			double surfaceTransmissionCoefficient, 
+			boolean shadowThrowing,
 			SceneObject parent, 
 			Studio studio
 		)
@@ -68,7 +72,7 @@ public class RefractiveViewRotator2 extends Parallelepiped2
 	{
 		// first create the bounding box...
 		super(
-				"Bounding box of refractive view rotator",	// description
+				"Bounding box",	// description
 				boundingBoxCentre,	// centre
 				boundingBoxSpanVector1,	// u
 				boundingBoxSpanVector2,	// v
@@ -78,7 +82,7 @@ public class RefractiveViewRotator2 extends Parallelepiped2
 				studio
 			);
 		// ... then set its surface property to be a suitable refractive lenslet array
-		surface = new SurfaceOfRefractiveViewRotator2(
+		surface = new SurfaceOfRefractiveViewRotatorOldVoxellation(
 				ocularPlaneNormal,
 				eyePosition,
 				ocularPlaneCentre,
@@ -91,7 +95,11 @@ public class RefractiveViewRotator2 extends Parallelepiped2
 				refractiveIndex,
 				wedgeThickness,
 				this,	// bounding box
-				scene
+				simulateDiffractiveBlur,
+				lambda,
+				surfaceTransmissionCoefficient,
+				shadowThrowing,
+				maxSteps
 			);
 		setSurfaceProperty(surface);
 		
@@ -100,7 +108,7 @@ public class RefractiveViewRotator2 extends Parallelepiped2
 	/**
 	 * @param original
 	 */
-	public RefractiveViewRotator2(RefractiveViewRotator2 original)
+	public RefractiveViewRotatorOldVoxellation(RefractiveViewRotatorOldVoxellation original)
 	{
 		this(
 				original.getDescription(),
@@ -119,7 +127,11 @@ public class RefractiveViewRotator2 extends Parallelepiped2
 				original.getViewObject(),
 				original.getRefractiveIndex(),
 				original.getWedgeThickness(),
-				original.getScene(),
+				original.isSimulateDiffractiveBlur(),
+				original.getLambda(),
+				original.getMaxSteps(), 
+				original.getSurfaceTransmissionCoefficient(), 
+				original.isShadowThrowing(),
 				original.getParent(), 
 				original.getStudio()
 
@@ -251,14 +263,47 @@ public class RefractiveViewRotator2 extends Parallelepiped2
 		surface.setRefractiveIndex(refractiveIndex);
 	}
 
+	public int getMaxSteps() {
+		return surface.getMaxSteps();
+	}
+
+	public void setMaxSteps(int maxSteps) {
+		surface.setMaxSteps(maxSteps);
+	}
+
+	public double getSurfaceTransmissionCoefficient() {
+		return surface.getSurfaceTransmissionCoefficient();
+	}
+
+	public void setSurfaceTransmissionCoefficient(double surfaceTransmissionCoefficient) {
+		surface.setSurfaceTransmissionCoefficient(surfaceTransmissionCoefficient);
+	}
+
+	public boolean isSimulateDiffractiveBlur() {
+		return surface.isSimulateDiffractiveBlur();
+	}
+
+	public void setSimulateDiffractiveBlur(boolean simulateDiffractiveBlur) {
+		surface.setSimulateDiffractiveBlur(simulateDiffractiveBlur);
+	}
+	
+	
+	public double getLambda() {
+		return surface.getLambda();
+	}
+
+	public void setLambda(double lambda) {
+		surface.setLambda(lambda);
+	}
+	
 	public boolean isShadowThrowing() {
 		return surface.isShadowThrowing();
 	}
 
-	public SceneObject getScene()
-	{
-		return surface.getScene();
+	public void setShadowThrowing(boolean shadowThrowing) {
+		surface.setShadowThrowing(shadowThrowing);
 	}
+	
 	
 	@Override
 	public String getType()

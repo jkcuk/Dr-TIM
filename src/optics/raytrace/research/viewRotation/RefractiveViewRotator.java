@@ -1,10 +1,11 @@
-package optics.raytrace.surfaces;
+package optics.raytrace.research.viewRotation;
 
 import math.Vector3D;
 
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.sceneObjects.Parallelepiped2;
+import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator;
 
 
 
@@ -59,11 +60,8 @@ public class RefractiveViewRotator extends Parallelepiped2
 			SceneObject viewObject,
 			double refractiveIndex,
 			double wedgeThickness,
-			boolean simulateDiffractiveBlur,
-			double lambda,
-			int maxSteps, 
-			double surfaceTransmissionCoefficient, 
-			boolean shadowThrowing,
+			double surfaceTransmissionCoefficient,
+			SceneObject scene,
 			SceneObject parent, 
 			Studio studio
 		)
@@ -71,7 +69,7 @@ public class RefractiveViewRotator extends Parallelepiped2
 	{
 		// first create the bounding box...
 		super(
-				"Bounding box",	// description
+				"Bounding box of refractive view rotator",	// description
 				boundingBoxCentre,	// centre
 				boundingBoxSpanVector1,	// u
 				boundingBoxSpanVector2,	// v
@@ -93,12 +91,9 @@ public class RefractiveViewRotator extends Parallelepiped2
 				viewObject,
 				refractiveIndex,
 				wedgeThickness,
-				this,	// bounding box
-				simulateDiffractiveBlur,
-				lambda,
 				surfaceTransmissionCoefficient,
-				shadowThrowing,
-				maxSteps
+				this,	// bounding box
+				scene
 			);
 		setSurfaceProperty(surface);
 		
@@ -126,11 +121,8 @@ public class RefractiveViewRotator extends Parallelepiped2
 				original.getViewObject(),
 				original.getRefractiveIndex(),
 				original.getWedgeThickness(),
-				original.isSimulateDiffractiveBlur(),
-				original.getLambda(),
-				original.getMaxSteps(), 
-				original.getSurfaceTransmissionCoefficient(), 
-				original.isShadowThrowing(),
+				original.getSurfaceTransmissionCoefficient(),
+				original.getScene(),
 				original.getParent(), 
 				original.getStudio()
 
@@ -246,6 +238,15 @@ public class RefractiveViewRotator extends Parallelepiped2
 	}
 	
 	
+	public double getSurfaceTransmissionCoefficient() {
+		return surface.getSurfaceTransmissionCoefficient();
+	}
+	
+	public void setSurfaceTransmissionCoefficient(double surfaceTransmissionCoefficient) {
+		surface.setSurfaceTransmissionCoefficient(surfaceTransmissionCoefficient);
+	}
+	
+	
 	public SceneObject getViewObject() {
 		return surface.getViewObject();
 	}
@@ -262,47 +263,14 @@ public class RefractiveViewRotator extends Parallelepiped2
 		surface.setRefractiveIndex(refractiveIndex);
 	}
 
-	public int getMaxSteps() {
-		return surface.getMaxSteps();
-	}
-
-	public void setMaxSteps(int maxSteps) {
-		surface.setMaxSteps(maxSteps);
-	}
-
-	public double getSurfaceTransmissionCoefficient() {
-		return surface.getSurfaceTransmissionCoefficient();
-	}
-
-	public void setSurfaceTransmissionCoefficient(double surfaceTransmissionCoefficient) {
-		surface.setSurfaceTransmissionCoefficient(surfaceTransmissionCoefficient);
-	}
-
-	public boolean isSimulateDiffractiveBlur() {
-		return surface.isSimulateDiffractiveBlur();
-	}
-
-	public void setSimulateDiffractiveBlur(boolean simulateDiffractiveBlur) {
-		surface.setSimulateDiffractiveBlur(simulateDiffractiveBlur);
-	}
-	
-	
-	public double getLambda() {
-		return surface.getLambda();
-	}
-
-	public void setLambda(double lambda) {
-		surface.setLambda(lambda);
-	}
-	
 	public boolean isShadowThrowing() {
 		return surface.isShadowThrowing();
 	}
 
-	public void setShadowThrowing(boolean shadowThrowing) {
-		surface.setShadowThrowing(shadowThrowing);
+	public SceneObject getScene()
+	{
+		return surface.getScene();
 	}
-	
 	
 	@Override
 	public String getType()
