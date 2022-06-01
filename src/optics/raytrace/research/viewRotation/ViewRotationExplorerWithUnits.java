@@ -813,6 +813,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					refractiveIndex,
 					thickness,
 					surfaceTransmissionCoefficient, //trasnmission coef
+					diffractuveBlurRefractiveFresnelWedge,
 					maxTrace,
 					scene, 
 					scene,

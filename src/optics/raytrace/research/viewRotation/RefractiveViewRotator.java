@@ -61,6 +61,7 @@ public class RefractiveViewRotator extends Parallelepiped2
 			double refractiveIndex,
 			double wedgeThickness,
 			double surfaceTransmissionCoefficient,
+			boolean simulateDiffractionBlur,
 			int MaxStepsInArray,
 			SceneObject scene,
 			SceneObject parent, 
@@ -93,6 +94,7 @@ public class RefractiveViewRotator extends Parallelepiped2
 				refractiveIndex,
 				wedgeThickness,
 				surfaceTransmissionCoefficient,
+				simulateDiffractionBlur,
 				MaxStepsInArray,	// maxStepsInArray
 				this,	// bounding box
 				scene
@@ -124,6 +126,7 @@ public class RefractiveViewRotator extends Parallelepiped2
 				original.getRefractiveIndex(),
 				original.getWedgeThickness(),
 				original.getSurfaceTransmissionCoefficient(),
+				original.isSimulateDiffractionBlur(),
 				original.getMaxStepsInArray(),
 				original.getScene(),
 				original.getParent(), 
@@ -276,6 +279,15 @@ public class RefractiveViewRotator extends Parallelepiped2
 	public void setMaxStepsInArray(int MaxStepsInArray) {
 		surface.setMaxStepsInArray(MaxStepsInArray);
 	}
+	
+	public boolean isSimulateDiffractionBlur() {
+		return surface.isSimulateDiffractionBlur();
+	}
+	
+	public void setSimulateDiffractionBlur(boolean simulateDiffractionBlur) {
+		surface.setSimulateDiffractionBlur(simulateDiffractionBlur);
+	}
+	
 
 	public SceneObject getScene()
 	{

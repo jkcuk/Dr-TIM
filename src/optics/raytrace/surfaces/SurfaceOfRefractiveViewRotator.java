@@ -93,9 +93,13 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 	private double surfaceTransmissionCoefficient;
 	
 	/**
-	 * Max steps
+	 * Max trace level within the component
 	 */
 	private int maxStepsInArray;
+	/**
+	 * simulate diffractive blur blur when true
+	 */
+	private boolean simulateDiffractionBlur;
 	
 	/**
 	 * 
@@ -129,6 +133,7 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 			double refractiveIndex,
 			double wedgeThickness,
 			double surfaceTransmissionCoefficient,
+			boolean simulateDiffractionBlur,
 			int maxStepsInArray,
 			SceneObject boundingBox,
 			SceneObject scene
@@ -152,6 +157,7 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 	this.refractiveIndex = refractiveIndex;
 	this.wedgeThickness = wedgeThickness;
 	this.surfaceTransmissionCoefficient = surfaceTransmissionCoefficient;
+	this.simulateDiffractionBlur = simulateDiffractionBlur;
 	}
 	
 	public SurfaceOfRefractiveViewRotator(SurfaceOfRefractiveViewRotator o)
@@ -169,6 +175,7 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 				o.getRefractiveIndex(),
 				o.getWedgeThickness(),
 				o.getSurfaceTransmissionCoefficient(),
+				o.isSimulateDiffractionBlur(),
 				o.getMaxStepsInArray(),
 				o.getBoundingBox(),
 				o.getScene()
@@ -289,6 +296,16 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 		this.setMaxStepsInArray(maxStepsInArray);
 	}
 	
+	public boolean isSimulateDiffractionBlur() {
+		return simulateDiffractionBlur;
+	}
+
+	public void setSimulateDiffractionBlur(boolean simulateDiffractionBlur) {
+		this.simulateDiffractionBlur = simulateDiffractionBlur;
+	}
+
+
+
 	boolean shadowThrowing = false;
 	
 	@Override
@@ -470,7 +487,7 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 	@Override
 	public boolean isSimulateDiffraction()
 	{
-		return true;
+		return simulateDiffractionBlur;
 	}
 	
 	@Override

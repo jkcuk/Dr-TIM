@@ -65,7 +65,7 @@ public class RefractiveViewRotationTest extends NonInteractiveTIMEngine
 	private int maxSteps; 
 	private boolean shadowThrowing;
 	private double surfaceTransmissionCoefficient;
-
+	private boolean simulateDiffractionBlur;
 
 	
 	/**
@@ -119,6 +119,7 @@ public class RefractiveViewRotationTest extends NonInteractiveTIMEngine
 		cameraFocussingDistance = 1;
 		showTrajectory = false;
 		showTestBox = false;
+		simulateDiffractionBlur = false;
 		
 		//object
 		objectRotationAngle = 0;
@@ -221,6 +222,7 @@ public class RefractiveViewRotationTest extends NonInteractiveTIMEngine
 				refractiveIndex,
 				wedgeThickness,
 				surfaceTransmissionCoefficient,
+				simulateDiffractionBlur,
 				maxSteps,
 				scene,
 				scene, 
@@ -313,7 +315,7 @@ public class RefractiveViewRotationTest extends NonInteractiveTIMEngine
 	private LabelledVector3DPanel boundingBoxCentrePanel, boundingBoxSpanVector1Panel, boundingBoxSpanVector2Panel, boundingBoxSpanVector3Panel;
 	private LabelledIntPanel maxStepSpanel;
 	private LabelledDoublePanel surfaceTransmissionCoefficientPanel, refractiveIndexPanel;
-	private JCheckBox shadowThrowingCheckBox, showTrajectoryPanel;
+	private JCheckBox shadowThrowingCheckBox, showTrajectoryPanel, simulateDiffractionBlurCheckBox;
 	private DoublePanel objectRotationAnglePanel, objectDistancePanel;
 	//rotator stuff
 	private LabelledVector3DPanel frontSurfaceNormalPanel, centrePanel, rotationCentrePanel, periodVector1Panel, periodVector2Panel, eyePositionPanel, rotationAxisDirectionPanel;
@@ -402,6 +404,10 @@ public class RefractiveViewRotationTest extends NonInteractiveTIMEngine
 		surfaceTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient");
 		surfaceTransmissionCoefficientPanel.setNumber(surfaceTransmissionCoefficient);
 		scenePanel.add(surfaceTransmissionCoefficientPanel, "span");
+		
+		simulateDiffractionBlurCheckBox = new JCheckBox("simulate diffraction");
+		simulateDiffractionBlurCheckBox.setSelected(simulateDiffractionBlur);
+		scenePanel.add(simulateDiffractionBlurCheckBox,"span");
 		
 		shadowThrowingCheckBox = new JCheckBox("Shadows");
 		shadowThrowingCheckBox.setSelected(shadowThrowing);
@@ -518,6 +524,7 @@ public class RefractiveViewRotationTest extends NonInteractiveTIMEngine
 		refractiveIndex=refractiveIndexPanel.getNumber();
 		shadowThrowing=shadowThrowingCheckBox.isSelected();
 		showTrajectory = showTrajectoryPanel.isSelected();
+		simulateDiffractionBlur = simulateDiffractionBlurCheckBox.isSelected();
 		
 	}
 	
