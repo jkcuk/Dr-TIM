@@ -23,12 +23,12 @@ public abstract class Diffusion extends SurfaceProperty
 
 
 	/**
-	 * This method describes the ray-direction change
+	 * This method describes the changed ray direction
 	 * @param incidentNormalisedRayDirection
 	 * @param normalisedOutwardsSurfaceNormal
 	 * @return
 	 */
-	public abstract Vector3D calculateDirectionChange(
+	public abstract Vector3D calculateNewRayDirection(
 			Vector3D incidentNormalisedRayDirection,
 			Vector3D normalisedOutwardsSurfaceNormal
 		);
@@ -51,7 +51,7 @@ public abstract class Diffusion extends SurfaceProperty
 	{
 		if(traceLevel <= 0) return DoubleColour.BLACK;
 		
-		Vector3D rayDirection = calculateDirectionChange(
+		Vector3D rayDirection = calculateNewRayDirection(
 						ray.getD().getNormalised(),	// incidentNormalisedRayDirection
 						intersection.getNormalisedOutwardsSurfaceNormal()	// normalisedOutwardsSurfaceNormal
 					);

@@ -106,18 +106,18 @@ public class RectangularPixelDiffraction extends Diffusion
 	 * @see optics.raytrace.surfaces.Diffusion#calculateDirectionChange(math.Vector3D, math.Vector3D)
 	 */
 	@Override
-	public Vector3D calculateDirectionChange(
+	public Vector3D calculateNewRayDirection(
 			Vector3D incidentNormalisedRayDirection,
 			Vector3D normalisedOutwardsSurfaceNormal
 		)
 	{
-		return SingleSlitDiffraction.getTangentialDirectionComponentChange(
+		return Vector3D.sum(incidentNormalisedRayDirection, SingleSlitDiffraction.getTangentialDirectionComponentChange(
 				lambda,
 				pixelSideLengthU,	// pixelSideLengthU
 				pixelSideLengthV,	// pixelSideLengthV
 				uHat,	// uHat
 				vHat	// vHat
-			);
+			));
 	}
 	
 
