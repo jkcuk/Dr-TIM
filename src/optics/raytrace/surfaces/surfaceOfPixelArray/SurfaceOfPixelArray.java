@@ -1,5 +1,6 @@
 package optics.raytrace.surfaces.surfaceOfPixelArray;
 
+import math.Vector3D;
 import optics.DoubleColour;
 import optics.raytrace.core.LightSource;
 import optics.raytrace.core.Orientation;
@@ -12,6 +13,7 @@ import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.WrappedSceneObject;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.utility.SingleSlitDiffraction;
 import optics.raytrace.voxellations.SetOfSurfaces;
 import optics.raytrace.voxellations.SetOfSurfaces.OutwardsNormalOrientation;
 
@@ -38,6 +40,7 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 	 * the "global" scene, including the object with this surface property
 	 */
 	private SceneObject scene;
+	
 
 	/**
 	 * @param voxellations
@@ -93,8 +96,46 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 			SceneObject scene
 		)
 	{
-		return new BoundingBoxSurface(scene);
+		return new BoundingBoxSurface(scene, this);
 	}
+	
+	// for diffraction, which is (approximately) simulated in the BoundingBoxSurface when leaving the bounding box
+	
+	/**
+	 * override to simulate diffraction
+	 * @return	true to simulate diffraction, false otherwise
+	 */
+	public boolean isSimulateDiffraction()
+	{
+		return false;
+	}
+	
+	public double getLambda()
+	{
+		return 550e-9;	// green
+	}
+	
+	public double getPixelSideLengthU()
+	{
+		return 1;
+	}
+	
+	public double getPixelSideLengthV()
+	{
+		return 1;
+	}
+	
+	public Vector3D getuHat()
+	{
+		return Vector3D.X;
+	}
+	
+	public Vector3D getvHat()
+	{
+		return Vector3D.Y;
+	}
+
+
 
 	// getters & setters
 

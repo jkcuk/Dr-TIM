@@ -469,4 +469,41 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 		return false;
 	}
 	
+	
+	
+	@Override
+	public boolean isSimulateDiffraction()
+	{
+		return true;
+	}
+	
+	@Override
+	public double getLambda()
+	{
+		return 550e-9;	// green
+	}
+	
+	@Override
+	public double getPixelSideLengthU()
+	{
+		return periodVector1.getLength();
+	}
+	
+	@Override
+	public double getPixelSideLengthV()
+	{
+		return periodVector2.getLength();
+	}
+	
+	@Override
+	public Vector3D getuHat()
+	{
+		return periodVector1.getNormalised();
+	}
+	
+	@Override
+	public Vector3D getvHat()
+	{
+		return periodVector2.getNormalised();
+	}
 }

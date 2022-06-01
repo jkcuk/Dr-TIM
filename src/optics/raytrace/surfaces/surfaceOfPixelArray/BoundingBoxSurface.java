@@ -1,9 +1,11 @@
 package optics.raytrace.surfaces.surfaceOfPixelArray;
 
+import math.Vector3D;
 import optics.DoubleColour;
 import optics.raytrace.core.*;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.WrappedSceneObjectPrimitive;
+import optics.raytrace.utility.SingleSlitDiffraction;
 
 
 /**
@@ -18,10 +20,12 @@ public class BoundingBoxSurface extends SurfaceProperty
 	private static final long serialVersionUID = 7048620400194509473L;
 
 	protected SceneObject scene;
+	protected SurfaceOfPixelArray surfaceOfPixelArray;
 
-	public BoundingBoxSurface(SceneObject scene)
+	public BoundingBoxSurface(SceneObject scene, SurfaceOfPixelArray surfaceOfPixelArray)
 	{
 		this.scene = scene;
+		this.surfaceOfPixelArray = surfaceOfPixelArray;
 	}
 
 	@Override
@@ -48,12 +52,33 @@ public class BoundingBoxSurface extends SurfaceProperty
 			i.o = ((WrappedSceneObjectPrimitive)i.o).getSceneObjectPrimitive();
 		}
 		
+		Ray r2;
+		if(surfaceOfPixelArray.isSimulateDiffraction())
+		{
+			r2 = r.getBranchRay(
+					i.p,
+					Vector3D.sum(r.getD(), SingleSlitDiffraction.getTangentialDirectionComponentChange(
+							surfaceOfPixelArray.getLambda(),
+							surfaceOfPixelArray.getPixelSideLengthU(),	// pixelSideLengthU
+							surfaceOfPixelArray.getPixelSideLengthV(),	// pixelSideLengthV
+							surfaceOfPixelArray.getuHat(),	// uHat
+							surfaceOfPixelArray.getvHat()	// vHat
+							)),
+					i.t,
+					r.isReportToConsole()
+				);
+		}
+		else
+		{
+			r2 = r;
+		}
+		
 		// the orientation is outwards, which is what this is designed for;
 		// launch a new ray from here
 		return scene.getColourAvoidingOrigin(
-				r.getBranchRay(
+				r2.getBranchRay(
 						i.p,
-						r.getD(),
+						r2.getD(),
 						i.t,
 						r.isReportToConsole()
 						),
@@ -67,7 +92,7 @@ public class BoundingBoxSurface extends SurfaceProperty
 
 	@Override
 	public SurfaceProperty clone() {
-		return new BoundingBoxSurface(scene);
+		return new BoundingBoxSurface(scene, surfaceOfPixelArray);
 	}
 
 	@Override
