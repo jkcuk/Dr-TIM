@@ -93,7 +93,8 @@ public class RefractiveViewRotator extends Parallelepiped2
 				wedgeThickness,
 				surfaceTransmissionCoefficient,
 				this,	// bounding box
-				scene
+				scene,
+				1000	// maxStepsInArray
 			);
 		setSurfaceProperty(surface);
 		

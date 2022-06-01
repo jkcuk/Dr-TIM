@@ -124,13 +124,15 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 			double wedgeThickness,
 			double surfaceTransmissionCoefficient,
 			SceneObject boundingBox,
-			SceneObject scene
+			SceneObject scene,
+			int maxStepsInArray
 		)
 	{	
 	super(
 			createVoxellations(periodVector1, periodVector2, ocularPlaneCentre, ocularPlaneNormal, eyePosition, refractiveIndex),
 			boundingBox,
-			scene
+			scene,
+			maxStepsInArray
 		);
 	this.ocularPlaneNormal = ocularPlaneNormal;
 	this.eyePosition=eyePosition;
@@ -162,7 +164,8 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 				o.getWedgeThickness(),
 				o.getSurfaceTransmissionCoefficient(),
 				o.getBoundingBox(),
-				o.getScene()
+				o.getScene(),
+				o.getMaxStepsInArray()
 			);
 	}
 
@@ -398,7 +401,7 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 					i.getNormalisedOutwardsSurfaceNormal(),
 					1/refractiveIndex
 					).getNormalised();
-			return getColourStartingInPixel(
+			return super.getColourEnteringPixelFromOutside(
 					voxelIndices,
 					r.getBranchRay(i.p, d2, i.t, r.isReportToConsole()),
 					i,
@@ -410,7 +413,7 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 		}
 
 		// the ray is not entering directly into the refractive material
-		return getColourStartingInPixel(voxelIndices, r, i, scene_ignore, l, traceLevel, raytraceExceptionHandler);
+		return super.getColourEnteringPixelFromOutside(voxelIndices, r, i, scene_ignore, l, traceLevel, raytraceExceptionHandler);
 	}
 
 
@@ -418,19 +421,21 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 	public SurfaceSeparatingVoxels getSurfaceSeparatingVoxels(
 			int voxellationIndicesOnInside[],
 			int voxellationNumber,
-			OutwardsNormalOrientation outwardsNormalOrientation
+			OutwardsNormalOrientation outwardsNormalOrientation,
+			int traceLevel
 		)
 	{
-		return new SurfaceSeparatingRefractiveVoxels(this, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation);
+		return new SurfaceSeparatingRefractiveVoxels(this, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation, traceLevel);
 	}
 
 	@Override
 	public BoundingBoxSurface getBoundingBoxSurface(
 			int voxellationIndicesOnInside[],
-			SceneObject scene
+			SceneObject scene,
+			int traceLevel
 		)
 	{
-		return new BoundingBoxSurfaceForRefractiveComponent(scene, voxellationIndicesOnInside, this);
+		return new BoundingBoxSurfaceForRefractiveComponent(scene, voxellationIndicesOnInside, this, traceLevel);
 	}
 
 

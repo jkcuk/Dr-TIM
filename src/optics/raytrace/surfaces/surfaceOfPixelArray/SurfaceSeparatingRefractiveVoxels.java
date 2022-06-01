@@ -19,15 +19,15 @@ public class SurfaceSeparatingRefractiveVoxels extends SurfaceSeparatingVoxels
 {
 	private static final long serialVersionUID = 5865435873080842192L;
 
-
 	public SurfaceSeparatingRefractiveVoxels(
 			SurfaceOfPixelArray surfaceOfPixelArray,
 			int[] voxellationIndicesOnInside,
 			int voxellationNumber,
-			OutwardsNormalOrientation outwardsNormalOrientation
+			OutwardsNormalOrientation outwardsNormalOrientation,
+			int traceLevel
 			)
 	{
-		super(surfaceOfPixelArray, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation);
+		super(surfaceOfPixelArray, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation, traceLevel);
 	}
 
 	@Override
@@ -36,7 +36,8 @@ public class SurfaceSeparatingRefractiveVoxels extends SurfaceSeparatingVoxels
 				surfaceOfPixelArray,
 				voxellationIndicesOnInside,
 				voxellationNumber,
-				outwardsNormalOrientation
+				outwardsNormalOrientation,
+				getTraceLevel()
 				);
 	}
 
@@ -46,11 +47,11 @@ public class SurfaceSeparatingRefractiveVoxels extends SurfaceSeparatingVoxels
 	//
 
 	@Override
-	public DoubleColour getColour(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel,
+	public DoubleColour getColour(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevelInside,
 			RaytraceExceptionHandler raytraceExceptionHandler)
 					throws RayTraceException
 	{		
-		if(traceLevel <= 0) return DoubleColour.BLACK;
+		if(traceLevelInside <= 0) return DoubleColour.BLACK;
 
 		if(Orientation.getRayOrientation(r, i) == Orientation.INWARDS)
 		{
@@ -61,7 +62,8 @@ public class SurfaceSeparatingRefractiveVoxels extends SurfaceSeparatingVoxels
 					i,
 					scene,
 					l,
-					traceLevel-1,
+					getTraceLevel(),
+					traceLevelInside-1,
 					raytraceExceptionHandler
 					);
 		}
@@ -80,7 +82,8 @@ public class SurfaceSeparatingRefractiveVoxels extends SurfaceSeparatingVoxels
 					"Ray passing through surface "+i.o.description
 					+", from voxel "+Voxellation.toString(voxellationIndicesOnInside)
 					+" to voxel "+Voxellation.toString(voxellationIndicesOnOutside)
-					+", traceLevel="+traceLevel
+					+", traceLevel="+getTraceLevel()
+					+", traceLevelInside="+traceLevelInside
 					+" (SurfaceSeparatingVoxels::getColour)"
 					);
 		}
@@ -124,7 +127,8 @@ public class SurfaceSeparatingRefractiveVoxels extends SurfaceSeparatingVoxels
 				i,
 				scene,
 				l,
-				traceLevel-1,
+				getTraceLevel(),
+				traceLevelInside-1,
 				raytraceExceptionHandler
 			).multiply(t);
 

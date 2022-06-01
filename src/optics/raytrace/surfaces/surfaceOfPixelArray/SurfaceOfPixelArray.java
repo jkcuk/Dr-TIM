@@ -13,7 +13,6 @@ import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.WrappedSceneObject;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-import optics.raytrace.utility.SingleSlitDiffraction;
 import optics.raytrace.voxellations.SetOfSurfaces;
 import optics.raytrace.voxellations.SetOfSurfaces.OutwardsNormalOrientation;
 
@@ -41,23 +40,23 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 	 */
 	private SceneObject scene;
 	
-
 	/**
-	 * @param voxellations
-	 * @param boundingBox
-	 * @param maxSteps
-	 * @param transmissionCoefficient
-	 * @param shadowThrowing
+	 * effectively max trace level for tracing inside this surface
 	 */
+	private int maxStepsInArray;
+	
+
 	public SurfaceOfPixelArray(
 			SetOfSurfaces[] voxellations,
 			SceneObject boundingBox,
-			SceneObject scene
+			SceneObject scene,
+			int maxStepsInArray
 			)
 	{
 		this.voxellations = voxellations;
 		this.boundingBox = boundingBox;
 		this.scene = scene;
+		this.maxStepsInArray = maxStepsInArray;
 	}
 
 	/**
@@ -69,7 +68,8 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 		this(
 				original.getVoxellations(),
 				original.getBoundingBox(),
-				original.getScene()
+				original.getScene(),
+				original.getMaxStepsInArray()
 				);
 	}
 
@@ -85,18 +85,20 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 	public SurfaceSeparatingVoxels getSurfaceSeparatingVoxels(
 			int voxellationIndicesOnInside[],
 			int voxellationNumber,
-			OutwardsNormalOrientation outwardsNormalOrientation
+			OutwardsNormalOrientation outwardsNormalOrientation,
+			int traceLevel
 		)
 	{
-		return new SurfaceSeparatingVoxels(this, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation);
+		return new SurfaceSeparatingVoxels(this, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation, traceLevel);
 	}
 
 	public BoundingBoxSurface getBoundingBoxSurface(
 			int voxellationIndicesOnInside[],
-			SceneObject scene
+			SceneObject scene,
+			int traceLevel
 		)
 	{
-		return new BoundingBoxSurface(scene, this);
+		return new BoundingBoxSurface(scene, this, traceLevel);
 	}
 	
 	// for diffraction, which is (approximately) simulated in the BoundingBoxSurface when leaving the bounding box
@@ -165,6 +167,14 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 		this.scene = scene;
 	}
 
+	public int getMaxStepsInArray() {
+		return maxStepsInArray;
+	}
+
+	public void setMaxStepsInArray(int maxStepsInArray) {
+		this.maxStepsInArray = maxStepsInArray;
+	}
+
 
 	//
 	// SurfaceProperty methods
@@ -210,16 +220,16 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 			voxelIndices[v] = voxellations[v].getVoxelIndex(r2.getP());
 
 		if(enterPixelFromOutside) return getColourEnteringPixelFromOutside(voxelIndices, r2, i, scene, l, traceLevel, raytraceExceptionHandler);
-		else return getColourStartingInPixel(voxelIndices, r2, i, scene, l, traceLevel, raytraceExceptionHandler);
+		else return getColourStartingInPixel(voxelIndices, r2, i, scene, l, traceLevel, maxStepsInArray, raytraceExceptionHandler);
 	}
 
 	public DoubleColour getColourEnteringPixelFromOutside(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	throws RayTraceException
 	{
-		return getColourStartingInPixel(voxelIndices, r, i, scene_ignore, l, traceLevel, raytraceExceptionHandler);
+		return getColourStartingInPixel(voxelIndices, r, i, scene_ignore, l, traceLevel, maxStepsInArray, raytraceExceptionHandler);
 	}
 
-	public DoubleColour getColourStartingInPixel(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+	public DoubleColour getColourStartingInPixel(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, int maxStepsInArray, RaytraceExceptionHandler raytraceExceptionHandler)
 	throws RayTraceException
 	{
 		// create the "pixel scene"
@@ -240,7 +250,8 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 						boundingBox,	// sceneObject to be wrapped
 						getBoundingBoxSurface(
 								voxelIndices,
-								scene	// surfaceProperty
+								scene,	// surfaceProperty
+								traceLevel
 							)
 						),
 				true
@@ -260,7 +271,8 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 									getSurfaceSeparatingVoxels(
 											voxelIndices,	// voxellationIndicesOnInside[],
 											v,	// voxellationNumber,
-											o	// outwardsNormalOrientation
+											o,	// outwardsNormalOrientation
+											traceLevel
 										)	// surfaceProperty
 									),
 							true
@@ -282,7 +294,7 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 				i.o,	// originObject
 				l,	// lightSource
 				s,	// scene
-				traceLevel-1,
+				maxStepsInArray,
 				raytraceExceptionHandler
 				);
 	}

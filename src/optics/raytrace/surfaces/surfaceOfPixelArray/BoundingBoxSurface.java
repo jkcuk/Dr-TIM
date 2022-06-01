@@ -21,15 +21,17 @@ public class BoundingBoxSurface extends SurfaceProperty
 
 	protected SceneObject scene;
 	protected SurfaceOfPixelArray surfaceOfPixelArray;
+	protected int traceLevel;
 
-	public BoundingBoxSurface(SceneObject scene, SurfaceOfPixelArray surfaceOfPixelArray)
+	public BoundingBoxSurface(SceneObject scene, SurfaceOfPixelArray surfaceOfPixelArray, int traceLevel)
 	{
 		this.scene = scene;
 		this.surfaceOfPixelArray = surfaceOfPixelArray;
+		this.traceLevel = traceLevel;
 	}
 
 	@Override
-	public DoubleColour getColour(Ray r, RaySceneObjectIntersection i, SceneObject scene2, LightSource l, int traceLevel,
+	public DoubleColour getColour(Ray r, RaySceneObjectIntersection i, SceneObject scene2, LightSource l, int traceLevelInside,
 			RaytraceExceptionHandler raytraceExceptionHandler)
 					throws RayTraceException
 	{
@@ -92,7 +94,7 @@ public class BoundingBoxSurface extends SurfaceProperty
 
 	@Override
 	public SurfaceProperty clone() {
-		return new BoundingBoxSurface(scene, surfaceOfPixelArray);
+		return new BoundingBoxSurface(scene, surfaceOfPixelArray, traceLevel);
 	}
 
 	@Override

@@ -1,9 +1,7 @@
 package optics.raytrace.surfaces.surfaceOfPixelArray;
 
-import math.Vector3D;
 import optics.DoubleColour;
 import optics.raytrace.core.LightSource;
-import optics.raytrace.core.Orientation;
 import optics.raytrace.core.Ray;
 import optics.raytrace.core.RaySceneObjectIntersection;
 import optics.raytrace.core.RaytraceExceptionHandler;
@@ -12,22 +10,21 @@ import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.surfaces.RefractiveSimple;
 import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator;
-import optics.raytrace.utility.SingleSlitDiffraction;
 
 public class BoundingBoxSurfaceForRefractiveComponent extends BoundingBoxSurface {
 	private static final long serialVersionUID = 3473328631960128436L;
 
 	private int voxelIndices[];
 	
-	public BoundingBoxSurfaceForRefractiveComponent(SceneObject scene, int voxelIndices[], SurfaceOfPixelArray surfaceOfPixelArray)
+	public BoundingBoxSurfaceForRefractiveComponent(SceneObject scene, int voxelIndices[], SurfaceOfPixelArray surfaceOfPixelArray, int traceLevel)
 	{
-		super(scene, surfaceOfPixelArray);
+		super(scene, surfaceOfPixelArray, traceLevel);
 		this.voxelIndices = voxelIndices;
 	}
 	
 	@Override
 	public SurfaceProperty clone() {
-		return new BoundingBoxSurfaceForRefractiveComponent(scene, voxelIndices, surfaceOfPixelArray);
+		return new BoundingBoxSurfaceForRefractiveComponent(scene, voxelIndices, surfaceOfPixelArray, traceLevel);
 	}
 
 	@Override

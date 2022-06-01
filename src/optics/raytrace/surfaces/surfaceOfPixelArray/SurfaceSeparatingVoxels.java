@@ -37,23 +37,29 @@ public class SurfaceSeparatingVoxels extends SurfaceProperty
 	 */
 	protected OutwardsNormalOrientation outwardsNormalOrientation;
 	
+	private int traceLevel;
+
+
+	
 
 	public SurfaceSeparatingVoxels(
 			SurfaceOfPixelArray surfaceOfPixelArray,
 			int voxellationIndicesOnInside[],
 			int voxellationNumber,
-			OutwardsNormalOrientation outwardsNormalOrientation
+			OutwardsNormalOrientation outwardsNormalOrientation,
+			int traceLevel
 		)
 	{
 		this.surfaceOfPixelArray = surfaceOfPixelArray;
 		this.voxellationIndicesOnInside = voxellationIndicesOnInside;
 		this.voxellationNumber = voxellationNumber;
 		this.outwardsNormalOrientation = outwardsNormalOrientation;
+		this.traceLevel = traceLevel;
 	}
 
 	@Override
 	public SurfaceProperty clone() {
-		return new SurfaceSeparatingVoxels(surfaceOfPixelArray, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation);
+		return new SurfaceSeparatingVoxels(surfaceOfPixelArray, voxellationIndicesOnInside, voxellationNumber, outwardsNormalOrientation, traceLevel);
 	}
 
 
@@ -62,7 +68,7 @@ public class SurfaceSeparatingVoxels extends SurfaceProperty
 	//
 	
 	@Override
-	public DoubleColour getColour(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel,
+	public DoubleColour getColour(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevelInside,
 			RaytraceExceptionHandler raytraceExceptionHandler)
 					throws RayTraceException
 	{
@@ -94,7 +100,8 @@ public class SurfaceSeparatingVoxels extends SurfaceProperty
 				i,
 				scene,
 				l,
-				traceLevel-1,
+				traceLevel,
+				traceLevelInside-1,
 				raytraceExceptionHandler
 			);
 	}
@@ -103,4 +110,46 @@ public class SurfaceSeparatingVoxels extends SurfaceProperty
 	public boolean isShadowThrowing() {
 		return false;
 	}
+
+	public SurfaceOfPixelArray getSurfaceOfPixelArray() {
+		return surfaceOfPixelArray;
+	}
+
+	public void setSurfaceOfPixelArray(SurfaceOfPixelArray surfaceOfPixelArray) {
+		this.surfaceOfPixelArray = surfaceOfPixelArray;
+	}
+
+	public int[] getVoxellationIndicesOnInside() {
+		return voxellationIndicesOnInside;
+	}
+
+	public void setVoxellationIndicesOnInside(int[] voxellationIndicesOnInside) {
+		this.voxellationIndicesOnInside = voxellationIndicesOnInside;
+	}
+
+	public int getVoxellationNumber() {
+		return voxellationNumber;
+	}
+
+	public void setVoxellationNumber(int voxellationNumber) {
+		this.voxellationNumber = voxellationNumber;
+	}
+
+	public OutwardsNormalOrientation getOutwardsNormalOrientation() {
+		return outwardsNormalOrientation;
+	}
+
+	public void setOutwardsNormalOrientation(OutwardsNormalOrientation outwardsNormalOrientation) {
+		this.outwardsNormalOrientation = outwardsNormalOrientation;
+	}
+
+	public int getTraceLevel() {
+		return traceLevel;
+	}
+
+	public void setTraceLevel(int traceLevel) {
+		this.traceLevel = traceLevel;
+	}
+	
+	
 }
