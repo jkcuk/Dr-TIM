@@ -136,7 +136,18 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 	{
 		return Vector3D.Y;
 	}
+	
+	//for the refractive index and transmission of the bounding surfaces
+	//override to set it other than 1
+	public double getRefractiveIndex()
+	{
+		return 1;
+	}
 
+	public double getSurfaceTransmissionCoefficient()
+	{
+		return 1;
+	}
 
 
 	// getters & setters

@@ -61,6 +61,7 @@ public class RefractiveViewRotator extends Parallelepiped2
 			double refractiveIndex,
 			double wedgeThickness,
 			double surfaceTransmissionCoefficient,
+			int MaxStepsInArray,
 			SceneObject scene,
 			SceneObject parent, 
 			Studio studio
@@ -92,9 +93,9 @@ public class RefractiveViewRotator extends Parallelepiped2
 				refractiveIndex,
 				wedgeThickness,
 				surfaceTransmissionCoefficient,
+				MaxStepsInArray,	// maxStepsInArray
 				this,	// bounding box
-				scene,
-				1000	// maxStepsInArray
+				scene
 			);
 		setSurfaceProperty(surface);
 		
@@ -123,6 +124,7 @@ public class RefractiveViewRotator extends Parallelepiped2
 				original.getRefractiveIndex(),
 				original.getWedgeThickness(),
 				original.getSurfaceTransmissionCoefficient(),
+				original.getMaxStepsInArray(),
 				original.getScene(),
 				original.getParent(), 
 				original.getStudio()
@@ -266,6 +268,13 @@ public class RefractiveViewRotator extends Parallelepiped2
 
 	public boolean isShadowThrowing() {
 		return surface.isShadowThrowing();
+	}
+	
+	public int getMaxStepsInArray() {
+		return surface.getMaxStepsInArray();
+	}
+	public void setMaxStepsInArray(int MaxStepsInArray) {
+		surface.setMaxStepsInArray(MaxStepsInArray);
 	}
 
 	public SceneObject getScene()

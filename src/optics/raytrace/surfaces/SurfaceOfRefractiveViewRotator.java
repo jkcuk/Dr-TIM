@@ -93,6 +93,11 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 	private double surfaceTransmissionCoefficient;
 	
 	/**
+	 * Max steps
+	 */
+	private int maxStepsInArray;
+	
+	/**
 	 * 
 	 * @param ocularPlaneNormal
 	 * @param eyePosition
@@ -106,6 +111,7 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 	 * @param refractiveIndex
 	 * @param wedgeThickness
 	 * @param surfaceTransmissionCoefficient
+	 * @param maxStepsInArray
 	 * @param boundingBox
 	 * @param scene
 	 */
@@ -123,9 +129,9 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 			double refractiveIndex,
 			double wedgeThickness,
 			double surfaceTransmissionCoefficient,
+			int maxStepsInArray,
 			SceneObject boundingBox,
-			SceneObject scene,
-			int maxStepsInArray
+			SceneObject scene
 		)
 	{	
 	super(
@@ -163,9 +169,9 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 				o.getRefractiveIndex(),
 				o.getWedgeThickness(),
 				o.getSurfaceTransmissionCoefficient(),
+				o.getMaxStepsInArray(),
 				o.getBoundingBox(),
-				o.getScene(),
-				o.getMaxStepsInArray()
+				o.getScene()
 			);
 	}
 
@@ -248,7 +254,8 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 	public void setPeriodVector2(Vector3D periodVector2) {
 		this.periodVector2 = periodVector2;
 	}
-
+	
+	@Override
 	public double getRefractiveIndex() {
 		return refractiveIndex;
 	}
@@ -266,7 +273,7 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 	}
 	
 	
-
+	@Override
 	public double getSurfaceTransmissionCoefficient() {
 		return surfaceTransmissionCoefficient;
 	}
@@ -275,6 +282,13 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 		this.surfaceTransmissionCoefficient = surfaceTransmissionCoefficient;
 	}
 
+	public int getMaxStepsInArray() {
+		return maxStepsInArray;
+	}
+	public void setMaxStepsInArray(int maxStepsInArray) {
+		this.setMaxStepsInArray(maxStepsInArray);
+	}
+	
 	boolean shadowThrowing = false;
 	
 	@Override
@@ -364,27 +378,6 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 		
 		return c;
 	}
-
-	
-//	//Add a diffractive blur for a given pixel span vector
-//	@Override
-//	public DoubleColour getColourStartingInPixel(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
-//			throws RayTraceException{
-//		
-//		//if(simulateDiffractiveBlur)
-//		{	//
-//			Vector3D lightRayDirectionChange = SingleSlitDiffraction.getTangentialDirectionComponentChange(
-//				632.8e-9,
-//				periodVector1.getLength(),	// pixelSideLengthU
-//				periodVector2.getLength(),	// pixelSideLengthV
-//				periodVector1.getNormalised(),	// uHat
-//				periodVector2.getNormalised()	// vHat
-//				);
-//			r.setD(Vector3D.sum(r.getD(), lightRayDirectionChange));
-//		}
-//		return super.getColourStartingInPixel(voxelIndices,r, i, scene_ignore, l, traceLevel, raytraceExceptionHandler);
-//	}
-	
 	
 	@Override
 	public DoubleColour getColourEnteringPixelFromOutside(int voxelIndices[], Ray r, RaySceneObjectIntersection i, SceneObject scene_ignore, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
@@ -474,8 +467,6 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 		return false;
 	}
 	
-	
-	
 	@Override
 	public boolean isSimulateDiffraction()
 	{
@@ -511,4 +502,5 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 	{
 		return periodVector2.getNormalised();
 	}
+	
 }

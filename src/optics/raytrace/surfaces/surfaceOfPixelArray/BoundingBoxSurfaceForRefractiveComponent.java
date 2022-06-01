@@ -9,7 +9,6 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.surfaces.RefractiveSimple;
-import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator;
 
 public class BoundingBoxSurfaceForRefractiveComponent extends BoundingBoxSurface {
 	private static final long serialVersionUID = 3473328631960128436L;
@@ -54,11 +53,11 @@ public class BoundingBoxSurfaceForRefractiveComponent extends BoundingBoxSurface
 					RefractiveSimple.getRefractedLightRayDirection(
 							r.getD(),
 							i.getNormalisedOutwardsSurfaceNormal(),
-							((SurfaceOfRefractiveViewRotator)surfaceOfPixelArray).getRefractiveIndex()
+							surfaceOfPixelArray.getRefractiveIndex()
 						),
 					i.t, r.isReportToConsole()
 				);
-			t = ((SurfaceOfRefractiveViewRotator)surfaceOfPixelArray).getSurfaceTransmissionCoefficient(); // TODO
+			t = surfaceOfPixelArray.getSurfaceTransmissionCoefficient(); // TODO
 		}
 
 		return super.getColour(r2, i, scene2, l, traceLevel, raytraceExceptionHandler).multiply(t);

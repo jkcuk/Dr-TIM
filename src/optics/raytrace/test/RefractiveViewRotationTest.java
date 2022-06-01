@@ -221,6 +221,7 @@ public class RefractiveViewRotationTest extends NonInteractiveTIMEngine
 				refractiveIndex,
 				wedgeThickness,
 				surfaceTransmissionCoefficient,
+				maxSteps,
 				scene,
 				scene, 
 				studio

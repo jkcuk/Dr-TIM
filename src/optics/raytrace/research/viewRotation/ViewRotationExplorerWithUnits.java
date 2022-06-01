@@ -32,7 +32,6 @@ import optics.raytrace.GUI.lowLevel.Vector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableCylinderLattice;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedDisc;
 import optics.raytrace.core.LightSource;
-import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.SceneObjectClass;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
@@ -152,6 +151,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	 * transmission coefficient of refractive material
 	 */
 	private double surfaceTransmissionCoefficient;
+	
+	/**
+	 * max steps/ trace level
+	 */
+	private int maxTrace;
 	
 	//
 	// moiré rotator
@@ -310,6 +314,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		eyePosition = new Vector3D(0,0,-1.5).getProductWith(CM);
 		refractiveIndex = 1.5;//glass
 		surfaceTransmissionCoefficient = 1;
+		maxTrace = 200;
 
 		
 		// moiré rotator
@@ -808,6 +813,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					refractiveIndex,
 					thickness,
 					surfaceTransmissionCoefficient, //trasnmission coef
+					maxTrace,
 					scene, 
 					scene,
 					studio
@@ -873,6 +879,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private Vector3DPanel refractiveLatticeSpanVector1Panel, refractiveLatticeSpanVector2Panel, boundingBoxCentrePanel, boundingBoxSpanVector1Panel,
 	boundingBoxSpanVector2Panel, boundingBoxSpanVector3Panel, eyePositionPanel;
 	private JCheckBox diffractuveBlurRefractiveFresnelWedgeCheckBox;
+	private IntPanel maxTracePanel;
 	
 	// moiré rotator
 	private DoublePanel mmFPanel;
@@ -1148,6 +1155,10 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		surfaceTransmissionCoefficientPanel.setNumber(surfaceTransmissionCoefficient);
 		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("set trasnmission coefficient to", surfaceTransmissionCoefficientPanel),"wrap");
 		
+		maxTracePanel = new IntPanel();
+		maxTracePanel.setNumber(maxTrace);
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("trace level", maxTracePanel),"wrap");
+		
 		boundingBoxCentrePanel = new Vector3DPanel();
 		boundingBoxCentrePanel.setVector3D(boundingBoxCentre.getProductWith(1/MM));
 		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("bounding box centre", boundingBoxCentrePanel, "mm"),"wrap");
@@ -1296,6 +1307,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		boundingBoxSpanVector3 = boundingBoxSpanVector3Panel.getVector3D().getProductWith(MM);
 		eyePosition = eyePositionPanel.getVector3D().getProductWith(CM);
 		surfaceTransmissionCoefficient = surfaceTransmissionCoefficientPanel.getNumber();
+		maxTrace = maxTracePanel.getNumber();
 		
 
 
