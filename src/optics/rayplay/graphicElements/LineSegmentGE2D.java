@@ -57,6 +57,41 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 
 		return (Geometry2D.lineSementPointDistance(s, new Vector2D(i, j)) < 3);
 	}
+	
+	
+	//getters and setters
+
+	public Stroke getStroke() {
+		return stroke;
+	}
+
+	public void setStroke(Stroke stroke) {
+		this.stroke = stroke;
+	}
+
+	public Colour getColour() {
+		return colour;
+	}
+
+	public void setColour(Colour colour) {
+		this.colour = colour;
+	}
+
+	public String getSvgStyle() {
+		return svgStyle;
+	}
+
+	public void setSvgStyle(String svgStyle) {
+		this.svgStyle = svgStyle;
+	}
+
+	public int getSvgLineThickness() {
+		return svgLineThickness;
+	}
+
+	public void setSvgLineThickness(int svgLineThickness) {
+		this.svgLineThickness = svgLineThickness;
+	}
 
 	@Override
 	public void draw(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)

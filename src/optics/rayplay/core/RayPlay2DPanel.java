@@ -20,6 +20,7 @@ import javax.swing.JPopupMenu;
 
 import math.MyMath;
 import math.Vector2D;
+import optics.rayplay.interactiveOpticalComponents.IdeaLensWormhole2D;
 import optics.rayplay.interactiveOpticalComponents.Lens2DIOC;
 import optics.rayplay.interactiveOpticalComponents.LensStar2D;
 import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D;
@@ -643,7 +644,8 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		lensNo = 0,
 		lensStarNo = 0,
 		omnidirectionalLensNo = 1,	// 1 because one gets created at the start
-		raySourceNo = 1;	// 1 because one gets created at the start
+		raySourceNo = 1,	// 1 because one gets created at the start
+		ideaLensWormholeNo = 0;
 
 	// menu items
 	JMenuItem forwardRaysOnlyMenuItem, rayBundleMenuItem, rayBundleIsotropicMenuItem;
@@ -734,6 +736,46 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 			}
 		});
 		spacePopup.add(createOmnidirectionalLensMenuItem);
+		
+		
+		JMenuItem createWormholeMenuItem = new JMenuItem("Create ideal lens wormhole");
+		// menuItem.setMnemonic(KeyEvent.VK_P);
+		createWormholeMenuItem.getAccessibleContext().setAccessibleDescription("Create ideal lens wormhole");
+		createWormholeMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				double hO = 1;
+				double hI = 0.5;
+
+				ideaLensWormholeNo++;
+				IdeaLensWormhole2D ILW = new IdeaLensWormhole2D(
+						"Ideal lens wormhole "+ideaLensWormholeNo,// name,
+						0.1*hO,	// fDO
+						0.5*hO,	// rDO
+						2.*hO/3.,	// h1O
+						3.*hO/4.,// h2O,
+						hO,// hO,
+						new Vector2D(i2x(popupMenuX), j2y(popupMenuY)),	//pDO,
+						0.1*hI,	// fDI
+						0.5*hI,	// rDI
+						2.*hI/3.,	// h1I
+						3.*hI/4.,// h2I,
+						hI,// hI,
+						Vector2D.sum(new Vector2D(i2x(popupMenuX), j2y(popupMenuY)), new Vector2D(0, 0.15*hI)),// pDI,
+						0.1,// f1,
+						0.1,// f2,
+						Vector2D.sum(new Vector2D(i2x(popupMenuX), j2y(popupMenuY)),new Vector2D(0,-0.1*hI)),
+						new Vector2D(1, 0),	// dHat
+						new Vector2D(0, 1)	// cHat
+						);
+				iocs.add(ILW);
+				// opticalComponents.addAll(ol.getOpticalComponents());
+				// graphicElements.addAll(ol.getGraphicElements());
+
+				repaint();
+			}
+		});
+		spacePopup.add(createWormholeMenuItem);
 
 		// Separator
 		// spacePopup.addSeparator();

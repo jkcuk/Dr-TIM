@@ -38,6 +38,12 @@ implements OpticalComponent2D, Bijection2D
 	// private Vector2D outwardsVector;
 	
 	
+	/**
+	 * The end points of the lenses. Can be used to change a lens into a line?//TODO
+	 */
+	protected Vector2D endPoint1, endPoint2;
+	
+	
 	// constructors
 	
 	public Lens2D(
@@ -77,6 +83,22 @@ implements OpticalComponent2D, Bijection2D
 	
 	public Vector2D getPrincipalPoint() {
 		return principalPoint;
+	}
+
+	public Vector2D getEndPoint1() {
+		return endPoint1;
+	}
+
+	public void setEndPoint1(Vector2D endPoint1) {
+		this.endPoint1 = endPoint1;
+	}
+
+	public Vector2D getEndPoint2() {
+		return endPoint2;
+	}
+
+	public void setEndpoint2(Vector2D endPoint2) {
+		this.endPoint2 = endPoint2;
 	}
 
 	/**
