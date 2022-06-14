@@ -257,9 +257,14 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	//
 	
 	/**
-	 * camera
+	 * camera rotation
 	 */
 	private double cameraRotation;
+	
+	/**
+	 * Camera view direction controlled by angles
+	 */
+	private double sideAngle, upAngle;
 	
 	/**
 	 * Determines how to initialise the backdrop
@@ -286,7 +291,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		
 		renderQuality = RenderQualityEnum.DRAFT;
 		
-		viewRotationComponentType = ViewRotationComponentType.AZIMUTHAL_FRESNEL_WEDGE;
+		viewRotationComponentType = ViewRotationComponentType.REFRACTIVE_PIXELATED_FRESNEL_WEDGE;
 		
 		// init parameters
 
@@ -349,7 +354,9 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		objectDistance = 2*M;
 
 		// camera
-		cameraRotation = -10;
+		cameraRotation = 10;
+		sideAngle = 0;
+		upAngle = 0;
 		cameraViewCentre = new Vector3D(0, 0, 0);
 		cameraDistance = 1.5*CM;
 		cameraViewDirection = new Vector3D(0, 0, 1);
@@ -825,8 +832,31 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			break;
 		}
 
-		// the camera
-		cameraTopDirection = new Vector3D(Math.sin(Math.toRadians(cameraRotation)),Math.cos(Math.toRadians(cameraRotation)),0);
+		// the camera TODO works now I think...
+		//eye radius given by: https://hypertextbook.com/facts/2002/AniciaNdabahaliye1.shtml
+		//to be about 1.225 cm in radius
+		double eyeRadius = 1.225*CM;
+		double allRadius = (eyeRadius+cameraDistance);
+		
+		if(sideAngle != 0 || upAngle != 0) {
+		//in spherical coordinates where the view along the z axis is upAngle = 0 sideAngle = 0 
+		cameraViewDirection = Geometry.rotate(Geometry.rotate(Vector3D.Z, Vector3D.Y, Math.toRadians(-sideAngle)),
+				Vector3D.X,	Math.toRadians(-upAngle));
+			}
+		
+		Vector3D topDirection = Vector3D.Y.getPartPerpendicularTo(cameraViewDirection);
+		Vector3D cameraCentre;
+			if (cameraApertureSize == ApertureSizeType.EYE) {
+				
+				//The eye centre position
+				cameraCentre = Vector3D.O.getSumWith(Vector3D.Z.getWithLength(-allRadius));
+				cameraViewCentre = cameraCentre.getSumWith(cameraViewDirection.getWithLength(allRadius));
+			}else {
+				cameraCentre = Vector3D.O.getSumWith(Vector3D.Z.getWithLength(-cameraDistance));
+				cameraViewCentre = cameraCentre.getSumWith(cameraViewDirection.getWithLength(cameraDistance));
+			}
+		cameraTopDirection = Geometry.rotate(topDirection, cameraViewDirection, Math.toRadians(cameraRotation)).getSumWith(cameraCentre); 
+		
 		studio.setCamera(getStandardCamera());
 	}
 
@@ -909,7 +939,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 	// camera stuff
 	// private LabelledVector3DPanel cameraViewDirectionPanel;
-	private DoublePanel cameraDistancePanel, cameraRotationPanel;
+	private DoublePanel cameraDistancePanel, cameraRotationPanel, sideAnglePanel, upAnglePanel;
 	private LabelledVector3DPanel cameraViewDirectionPanel;
 	private DoublePanel cameraHorizontalFOVDegPanel;
 	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
@@ -949,7 +979,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		// azimuthal Fresnel wedge
 		
 		JPanel azimuthalFresnelWedgePanel = new JPanel();
-		// azimuthalFresnelWedgePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Azimuthal Fresnel wedge"));
 		azimuthalFresnelWedgePanel.setLayout(new MigLayout("insets 0"));
 
 		aFwBPanel = new DoublePanel();
@@ -957,9 +986,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		azimuthalFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("<html>Phase gradient d<i>&Phi;</i>/d<i>&phi;</i> = <i>k</i>*</html>", aFwBPanel, "<html>*<i>r</i><sup>2</sup>,</html>"), "span");
 		azimuthalFresnelWedgePanel.add(new JLabel("<html>where &phi; is the azimuthal angle and <i>r</i> is the distance from the centre.</html>"), "wrap");
 		
-		// aFwSimulateHonestlyCheckBox = new JCheckBox("Simulate honestly");
-		// aFwSimulateHonestlyCheckBox.setSelected(aFwSimulateHonestly);
-		// azimuthalFresnelWedgePanel.add(aFwSimulateHonestlyCheckBox, "wrap");
 		aFwNPanel = new IntPanel();
 		aFwNPanel.setNumber(aFwN);
 		azimuthalFresnelWedgePanel.add(
@@ -1036,7 +1062,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		// complementary radial lenticular arrays
 	
 		JPanel complementaryRadialLenticularArraysPanel = new JPanel();
-		// complementaryRadialLenticularArraysPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Complementary radial lenticular arrays"));
 		complementaryRadialLenticularArraysPanel.setLayout(new MigLayout("insets 0"));
 		
 		rLAsFPanel = new DoublePanel();
@@ -1069,7 +1094,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		// ray-rotation sheet
 		
 		JPanel rayRotationSheetPanel = new JPanel();
-		// rayRotationSheetPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Ray-rotation sheet"));
 		rayRotationSheetPanel.setLayout(new MigLayout("insets 0"));
 
 		rayRotationSheetPanel.add(new JLabel("Two Dove-prism arrays,"), "wrap");
@@ -1120,7 +1144,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 		//refractive fresnel wedge view rotator
 		JPanel refractiveFresnelWedgePanel = new JPanel();
-		// rayRotationSheetPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Ray-rotation sheet"));
 		refractiveFresnelWedgePanel.setLayout(new MigLayout("insets 0"));
 		refractiveFresnelWedgePanel.add(new JLabel("Refractive Fresnel Wedges"), "wrap");
 		
@@ -1184,7 +1207,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		viewRotatingComponentTabbedPane.addTab("Nothing", new JPanel());
 		
 		JPanel backgroundPane = new JPanel();
-//		scenePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Background"));
 		scenePanel.setLayout(new MigLayout("insets 0"));
 		scenePanel.add(backgroundPane, BorderLayout.SOUTH);
 
@@ -1216,10 +1238,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 		// camera stuff
 		
-//		cameraViewDirectionPanel = new LabelledVector3DPanel("View direction");
-//		cameraViewDirectionPanel.setVector3D(cameraViewDirection);
-//		cameraPanel.add(cameraViewDirectionPanel, "span");
-		
 		cameraDistancePanel = new DoublePanel();
 		cameraDistancePanel.setNumber(cameraDistance/CM);
 		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera distance",cameraDistancePanel,"cm" ),"span");
@@ -1231,6 +1249,14 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		cameraViewDirectionPanel = new LabelledVector3DPanel("View direction");
 		cameraViewDirectionPanel.setVector3D(cameraViewDirection);
 		cameraPanel.add(cameraViewDirectionPanel, "span");
+		
+		upAnglePanel = new DoublePanel();
+		upAnglePanel.setNumber(upAngle);
+		cameraPanel.add(GUIBitsAndBobs.makeRow("A vertical angle of", upAnglePanel, "°"));
+		
+		sideAnglePanel = new DoublePanel();
+		sideAnglePanel.setNumber(sideAngle);
+		cameraPanel.add(GUIBitsAndBobs.makeRow(" and a horizontal angle of", sideAnglePanel, "°"), "span");
 		
 		cameraHorizontalFOVDegPanel = new DoublePanel();
 		cameraHorizontalFOVDegPanel.setNumber(cameraHorizontalFOVDeg);
@@ -1249,7 +1275,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	 * called before rendering;
 	 * override when adding fields
 	 */
-	@Override
 	protected void acceptValuesInInteractiveControlPanel()
 	{
 		super.acceptValuesInInteractiveControlPanel();
@@ -1281,9 +1306,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		
 		case 7:
 			viewRotationComponentType = ViewRotationComponentType.NOTHING;
-			break;
-			
-
+			break;			
 		}
 
 		aFwB = aFwBPanel.getNumber();
@@ -1346,6 +1369,9 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
 		cameraApertureSize = (ApertureSizeType)(cameraApertureSizeComboBox.getSelectedItem());
 		cameraFocussingDistance = cameraFocussingDistancePanel.getNumber()*M;
+		upAngle = upAnglePanel.getNumber();
+		sideAngle = sideAnglePanel.getNumber();
+		
 	}
 
 	//
