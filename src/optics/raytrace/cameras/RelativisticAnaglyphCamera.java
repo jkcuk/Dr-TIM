@@ -36,11 +36,11 @@ public class RelativisticAnaglyphCamera extends RelativisticAnyFocusSurfaceCamer
 	private static final long serialVersionUID = -473629130651311108L;
 	
 	// parameters 
-	private Vector3D eyeSeparation;
-	private boolean colour;
+	protected Vector3D eyeSeparation;
+	protected boolean colour;
 	
 	// private variables
-	private RelativisticAnyFocusSurfaceCamera leftCamera, rightCamera;
+	protected RelativisticAnyFocusSurfaceCamera leftCamera, rightCamera;
 	          
 	
 	/**
