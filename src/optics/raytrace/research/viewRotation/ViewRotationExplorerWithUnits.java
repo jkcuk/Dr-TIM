@@ -31,7 +31,6 @@ import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.GUI.lowLevel.Vector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableCylinderLattice;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedDisc;
-import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
 import optics.raytrace.core.LightSource;
 import optics.raytrace.core.SceneObjectClass;
 import optics.raytrace.core.Studio;
@@ -74,6 +73,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 	private ViewRotationComponentType viewRotationComponentType;
 
+	/**
+	 * A very general object centre, where the component will sit. this does not have to be the centre of rotation. 
+	 */
+	private Vector3D objectCentre;
+	
 	//
 	// azimuthal Fresnel wedge
 	//
@@ -331,23 +335,22 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		boundingBoxSpanVector2 = new Vector3D(0,5,0).getProductWith(CM);
 		boundingBoxSpanVector3 = new Vector3D(0,0,3).getProductWith(MM);
 		thickness = 1*MM;
-		eyePosition = new Vector3D(0,0,-1.5).getProductWith(CM);
 		refractiveIndex = 1.5;//glass
 		surfaceTransmissionCoefficient = 1;
 		maxTrace = 200;
 
 
 		// moiré rotator
-		mmF = 10*CM;
+		mmF = 1*MM;
 		mmPitch = 1*MM;
-		mmDeltaPhiDeg = .1;
+		mmDeltaPhiDeg = .5;
 		mmShowLA1 = true;
 		mmShowLA2 = true;
 
 		// complementary radial lenticular arrays
-		rLAsF = 10*CM;
+		rLAsF = 1*MM;
 		rLAsN = 100;
-		rLAsDeltaPhiDeg = .1;
+		rLAsDeltaPhiDeg = .5;
 		rLAsShowLA1 = true;
 		rLAsShowLA2 = true;
 
@@ -358,7 +361,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		rrShowDPA2 = true;
 
 		// rotated cylindrical-lens telescopes
-		cltFocalLength = 1*M;
+		cltFocalLength = 1*MM;
 		cltRotationAngleDeg = 5;
 		cltCylindricalLensType = CylindricalLensType.IDEAL;
 
@@ -380,27 +383,18 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		cameraHorizontalFOVDeg = 130;
 		cameraApertureSize = ApertureSizeType.EYE;
 		cameraFocussingDistance = 1*M;
+		
+		
+		eyePosition = new Vector3D(0,0,-1.5).getProductWith(CM);
 		componentCentre = Vector3D.O;
+		objectCentre = Vector3D.O;
 
-		if(anaglyphCamera) {
-			Vector3D viewCentre = Vector3D.sum(new Vector3D(0,0,objectDistance),eyeSeparation.getProductWith(-1/2));
-			//Calculate where a ray would hit the component front surface as the view centre is now shifted.
-			Vector3D lightRayDirection = Vector3D.difference(viewCentre, eyePosition);
-			try {
-				componentCentre =  Geometry.linePlaneIntersection(eyePosition, lightRayDirection, Vector3D.O, new Vector3D(0,0,-1));
-			} catch (MathException e) {
-				componentCentre = Vector3D.O;
-				System.err.println("The Object is not infront of the spectacles(Oopsy Doopsy)");
-				e.printStackTrace();
-			}
-
-		}
 
 		if(nonInteractiveTIMAction == NonInteractiveTIMActionEnum.INTERACTIVE)
 		{
 			windowTitle = "Dr TIM's view-rotation explorer";
-			windowWidth = 1600;
-			windowHeight = 700;
+			windowWidth = 1500;
+			windowHeight = 650;
 		}
 	}
 
@@ -497,23 +491,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(SceneObjectClass.getLighterChequerboardFloor(scene, studio));
 
 			// a cylinder lattice...
-			if(anaglyphCamera) {
-				double xShift= eyeSeparation.getLength()*0.5;
-				Vector3D uHat, vHat, zHat;
-				zHat = new Vector3D(0,0,1);
-				uHat = new Vector3D(Math.cos(Math.toRadians(objectRotationAngle)), Math.sin(Math.toRadians(objectRotationAngle)),0);
-				vHat= new Vector3D(-Math.sin(Math.toRadians(objectRotationAngle)), Math.cos(Math.toRadians(objectRotationAngle)),0);
-				scene.addSceneObject(new EditableCylinderLattice(
-						"cylinder lattice",
-						-1-xShift, 1-xShift, 4, uHat,
-						-1+0.02, 1+0.02, 4, vHat,
-						objectDistance, 4*objectDistance, 4, zHat, // this puts the "transverse" cylinders into the planes z=10, 20, 30, 40
-						0.02,
-						scene,
-						studio		
-						));
-
-			}else {
 				Vector3D uHat, vHat, zHat;
 				zHat = new Vector3D(0,0,1);
 				uHat = new Vector3D(Math.cos(Math.toRadians(objectRotationAngle)), Math.sin(Math.toRadians(objectRotationAngle)),0);
@@ -527,7 +504,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 						scene,
 						studio
 						));	
-			}
+//			}
 
 		} else {
 			// initialise the scene and lights
@@ -536,6 +513,28 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					scene,
 					studio
 					);
+		}
+		
+		//if switching to the anaglyph camera, the position of the spectacle has to be changed to go in front of the 'eye'
+		//TODO make this better by placing somewhere else? 
+		if(anaglyphCamera) {
+			Vector3D viewCentre = new Vector3D(0,0,objectDistance);
+			eyePosition = Vector3D.sum(eyeSeparation.getProductWith(0.5) ,new Vector3D(0,0,-cameraDistance));
+			//Calculate where a ray would hit the component front surface as the view centre is now shifted.
+			Vector3D lightRayDirection = Vector3D.difference(viewCentre, eyePosition);
+			objectCentre = Vector3D.sum(Vector3D.O, eyeSeparation.getProductWith(0.5));
+			try {
+				componentCentre =  Geometry.linePlaneIntersection(eyePosition, lightRayDirection, Vector3D.O, new Vector3D(0,0,-1));
+			} catch (MathException e) {
+				componentCentre = Vector3D.O;
+				System.err.println("The Object is not infront of the spectacles(Oopsy Doopsy)");
+				e.printStackTrace();
+			}
+
+		} else {
+			eyePosition = new Vector3D(0,0,-1.5).getProductWith(CM);
+			componentCentre = Vector3D.O;
+			objectCentre = Vector3D.O;
 		}
 
 
@@ -548,7 +547,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"Azimuthal Fresnel wedge",	// description
-							componentCentre,	// centre
+							objectCentre,	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							new RotationallySymmetricPhaseHologram(
@@ -574,7 +573,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"Azimuthal Fresnel wedge",	// description
-							componentCentre,	// centre
+							objectCentre,	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							new AzimuthalPixelatedFresnelWedge(
@@ -604,11 +603,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"Lenslet array 1",	// description
-							centre1,	// centre
+							objectCentre.getSumWith(centre1),	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							new PhaseHologramOfRectangularLensletArray(
-									centre1,
+									componentCentre.getSumWith(centre1),
 									Vector3D.X,	// uHat
 									Vector3D.Y,	// vHat
 									mmF,	// focalLength
@@ -632,11 +631,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"Lenslet array 2",	// description
-							centre2,	// centre
+							objectCentre.getSumWith(centre2),	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							new PhaseHologramOfRectangularLensletArray(
-									centre2,
+									componentCentre.getSumWith(centre2),
 									Vector3D.sum(
 											Vector3D.X.getProductWith(Math.cos(MyMath.deg2rad(mmDeltaPhiDeg))),
 											Vector3D.Y.getProductWith(Math.sin(MyMath.deg2rad(mmDeltaPhiDeg)))
@@ -669,11 +668,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"Radial lenticular array 1",	// description
-							centre1,	// centre
+							objectCentre.getSumWith(centre1),	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							new PhaseHologramOfRadialLenticularArray(
-									centre1,	// centre
+									componentCentre.getSumWith(centre1),	// centre
 									rLAsF,
 									rLAsN,
 									Vector3D.X,	// d0
@@ -691,11 +690,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"Radial lenticular array 2",	// description
-							centre2,	// centre
+							objectCentre.getSumWith(centre2),	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							new PhaseHologramOfRadialLenticularArray(
-									centre2,	// centre
+									componentCentre.getSumWith(centre2),	// centre
 									-rLAsF,
 									rLAsN,
 									Vector3D.sum(
@@ -719,11 +718,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"Dove-prism array 1",	// description
-							centre1,	// centre
+							objectCentre.getSumWith(centre1),	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							new IdealisedDovePrismArray(
-									centre1,	// dovePrism0Centre
+									componentCentre.getSumWith(centre1),	// dovePrism0Centre
 									new Vector3D(1, 0, 0),	// inversionDirection
 									rrPeriod,	// period
 									SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
@@ -739,11 +738,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"Dove-prism array 2",	// description
-							centre2,	// centre
+							objectCentre.getSumWith(centre2),	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							new IdealisedDovePrismArray(
-									centre2,	// dovePrism0Centre
+									componentCentre.getSumWith(centre2),	// dovePrism0Centre
 									Vector3D.sum(
 											Vector3D.X.getProductWith(Math.cos(MyMath.deg2rad(-rrAngleDeg))),
 											Vector3D.Y.getProductWith(Math.sin(MyMath.deg2rad(-rrAngleDeg)))
@@ -758,34 +757,17 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					rrShowDPA2
 					);
 			break;
-			//			scene.addSceneObject(
-			//					new EditableScaledParametrisedDisc(
-			//							"Ray-rotation sheet",	// description
-			//							componentCentre,	// centre
-			//							Vector3D.Z,	// normal
-			//							1,	// radius
-			//							new RayRotating(
-			//									MyMath.deg2rad(rrSheetAlphaDeg),
-			//									SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,
-			//									true	// shadowThrowing
-			//								),	// surfaceProperty
-			//							scene,	// parent
-			//							studio
-			//							)
-			//					);
-			//			break;
 		case CYLINDRICAL_LENS_TELESCOPES:
 			double cltRotationAngleRad2 = 0.5*MyMath.deg2rad(cltRotationAngleDeg);
 			Vector3D centre11 = new Vector3D(0, 0, -MyMath.TINY-2*cltFocalLength);
-			// Vector3D centre11 = new Vector3D(0, 0, -MyMath.TINY-0.5*cltFocalLength);
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"telescope 1, cylindrical lens 1",	// description
-							centre11,	// centre
+							objectCentre.getSumWith(centre11),	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							getCylindricalLensSurface(
-									centre11,	// principalPoint,
+									componentCentre.getSumWith(centre11),	// principalPoint,
 									new Vector3D(Math.cos(cltRotationAngleRad2), Math.sin(cltRotationAngleRad2), 0)	// phaseGradientDirection
 									),	// surfaceProperty
 							scene,	// parent
@@ -793,15 +775,14 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 							)
 					);
 			Vector3D centre12 = new Vector3D(0, 0, -MyMath.TINY);
-			// Vector3D centre12 = new Vector3D(0, 0, -MyMath.TINY+0.5*cltFocalLength);
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"telescope 1, cylindrical lens 2",	// description
-							centre12,	// centre
+							objectCentre.getSumWith(centre12),	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							getCylindricalLensSurface(
-									centre12,	// principalPoint,
+									componentCentre.getSumWith(centre12),	// principalPoint,
 									new Vector3D(Math.cos(cltRotationAngleRad2), Math.sin(cltRotationAngleRad2), 0)	// phaseGradientDirection
 									),	// surfaceProperty
 							scene,	// parent
@@ -809,15 +790,14 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 							)
 					);
 			Vector3D centre21 = new Vector3D(0, 0, +MyMath.TINY+2*cltFocalLength);
-			// Vector3D centre21 = new Vector3D(0, 0, +MyMath.TINY-0.5*cltFocalLength);
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"telescope 2, cylindrical lens 1",	// description
-							centre21,	// centre
+							objectCentre.getSumWith(centre21),	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							getCylindricalLensSurface(
-									centre21,	// principalPoint,
+									componentCentre.getSumWith(centre21),	// principalPoint,
 									new Vector3D(Math.cos(-cltRotationAngleRad2), Math.sin(-cltRotationAngleRad2), 0)	// phaseGradientDirection
 									),	// surfaceProperty
 							scene,	// parent
@@ -825,15 +805,14 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 							)
 					);
 			Vector3D centre22 = new Vector3D(0, 0, MyMath.TINY);
-			// Vector3D centre22 = new Vector3D(0, 0, +MyMath.TINY+0.5*cltFocalLength);
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"telescope 2, cylindrical lens 2",	// description
-							centre22,	// centre
+							objectCentre.getSumWith(centre22),	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							getCylindricalLensSurface(
-									centre22,	// principalPoint,
+									componentCentre.getSumWith(centre22),	// principalPoint,
 									new Vector3D(Math.cos(-cltRotationAngleRad2), Math.sin(-cltRotationAngleRad2), 0)	// phaseGradientDirection
 									),	// surfaceProperty
 							scene,	// parent
@@ -846,7 +825,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		case REFRACTIVE_PIXELATED_FRESNEL_WEDGE:
 			scene.addSceneObject( new RefractiveViewRotator(
 					"refractive view rotator",// description,
-					boundingBoxCentre, 
+					boundingBoxCentre.getSumWith(objectCentre), 
 					boundingBoxSpanVector1,
 					boundingBoxSpanVector2,
 					boundingBoxSpanVector3,
@@ -859,7 +838,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					refractiveLatticeSpanVector1,
 					refractiveLatticeSpanVector2,
 					new Plane("focus plane", 
-							new Vector3D(0, 0, 2), 
+							new Vector3D(0, 0, objectDistance), 
 							Vector3D.Z, 
 							null,
 							null, 
@@ -880,34 +859,37 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			break;
 		}
 
-		// the cameras
+		// the cameras TODO double check quality factors...
 		//eye radius given by: https://hypertextbook.com/facts/2002/AniciaNdabahaliye1.shtml
 		//to be about 1.225 cm in radius
 		double eyeRadius = 1.225*CM;
 		double allRadius = (eyeRadius+cameraDistance);
 		if(anaglyphCamera) {
+//			By default:
+//			cameraPixelsX = 640
+//			cameraPixelsY = 480
 			int
-			quality = 2,	// 1 = normal, 2 = good, 4 = great
-			pixelsX = 640*quality,
-			pixelsY = 480*quality;
+			pixelsX = cameraPixelsX*(int)renderQuality.getAntiAliasingQuality().getAntiAliasingFactor(),
+			pixelsY = cameraPixelsY*(int)renderQuality.getAntiAliasingQuality().getAntiAliasingFactor(),
+			raysPerPixel = renderQuality.getBlurQuality().getRaysPerPixel();
 
 			CyclodeviationAnaglyphCamera cyclodeviationAnaglyphCamera = new CyclodeviationAnaglyphCamera(
 					"Cyclodeviated anaglyph camera",// name,
-					Vector3D.sum(Vector3D.O,Vector3D.Z.getWithLength(-cameraDistance), eyeSeparation.getProductWith(-0.5)),// betweenTheEyes,	// middle between two eyes
-					Geometry.rotate(Geometry.rotate(Vector3D.sum(new Vector3D(0,0,objectDistance),eyeSeparation.getProductWith(-0.5)), Vector3D.Y, Math.toRadians(-sideAngle)),Vector3D.X,Math.toRadians(-upAngle)),// centreOfView,	// the point in the centre of both eyes' field of fiew
-					Geometry.rotate(Vector3D.X, Vector3D.Y, Math.toRadians(-sideAngle)).getWithLength(2*Math.tan(MyMath.deg2rad(cameraHorizontalFOVDeg)/2.)), // horizontalSpanVector,	// a vector along the width of the field of view, pointing to the right
+					Vector3D.sum(Vector3D.O,Vector3D.Z.getWithLength(-cameraDistance)),// betweenTheEyes,	// middle between two eyes
+					Geometry.rotate(Geometry.rotate(new Vector3D(0,0,objectDistance), Vector3D.Y, Math.toRadians(-sideAngle)),Vector3D.X,Math.toRadians(-upAngle)),// centreOfView,	// the point in the centre of both eyes' field of view
+					Geometry.rotate(Vector3D.X, Vector3D.Y, Math.toRadians(-sideAngle)).getWithLength(objectDistance*2*Math.tan(MyMath.deg2rad(cameraHorizontalFOVDeg)/2.)), // horizontalSpanVector,	// a vector along the width of the field of view, pointing to the right
 					Geometry.rotate(Vector3D.Y,Geometry.rotate(Vector3D.X, Vector3D.Y, Math.toRadians(-sideAngle)),Math.toRadians(-upAngle))
-					.getWithLength(-2*Math.tan(MyMath.deg2rad(cameraHorizontalFOVDeg)/2.) * pixelsX / pixelsY),// verticalSpanVector,	// a vector along the height of the field of view, pointing upwards
+					.getWithLength(objectDistance*-2*Math.tan(MyMath.deg2rad(cameraHorizontalFOVDeg)/2.) * pixelsY / pixelsX),// verticalSpanVector,	// a vector along the height of the field of view, pointing upwards
 					eyeSeparation,	// separation between the eyes
 					0,// leftEyeRotationAngle,
 					Math.toRadians(cameraRotation),//rightEyeRotationAngle,
 					pixelsX,// detectorPixelsHorizontal, 
 					pixelsY,// detectorPixelsVertical,
-					ExposureCompensationType.EC0,// exposureCompensation,TODO
+					cameraExposureCompensation,// exposureCompensation default is ExposureCompensationType.EC0;
 					maxTrace,// maxTraceLevel,
-					objectDistance,// focussingDistance,
+					cameraFocussingDistance,// focussingDistance,
 					cameraApertureSize.getApertureRadius(),// apertureRadius,
-					1,// raysPerPixel,
+					raysPerPixel,// raysPerPixel,
 					true// colour
 					);
 			studio.setCamera(cyclodeviationAnaglyphCamera);
@@ -1028,22 +1010,19 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	 * add controls to the interactive control panel;
 	 * override to modify
 	 */
-	@Override
-	protected void createInteractiveControlPanel()
-	{
-		super.createInteractiveControlPanel();
-
-		// the main tabbed pane, with "Scene" and "Camera" tabs
-		JTabbedPane backgroundComponentCameraTabbedPane = new JTabbedPane();
-		interactiveControlPanel.add(backgroundComponentCameraTabbedPane, "span");
-
-		//
-		// the component panel
-		//
-
-		JPanel scenePanel = new JPanel();
-		scenePanel.setLayout(new BorderLayout());
-		backgroundComponentCameraTabbedPane.addTab("Component", scenePanel);
+	@Override	
+protected void createInteractiveControlPanel()	
+{	
+	super.createInteractiveControlPanel();	
+	// the main tabbed pane, with "Scene" and "Camera" tabs	
+	JTabbedPane backgroundComponentCameraTabbedPane = new JTabbedPane();	
+	interactiveControlPanel.add(backgroundComponentCameraTabbedPane, "span");	
+	//	
+	// the component panel	
+	//	
+	JPanel scenePanel = new JPanel();	
+	scenePanel.setLayout(new BorderLayout());	
+	backgroundComponentCameraTabbedPane.addTab("Component", scenePanel);
 
 
 
@@ -1110,14 +1089,14 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		moireRotatorPanel.setLayout(new MigLayout("insets 0"));
 
 		mmFPanel = new DoublePanel();
-		mmFPanel.setNumber(mmF/CM);
+		mmFPanel.setNumber(mmF/MM);
 		mmPitchPanel = new DoublePanel();
 		mmPitchPanel.setNumber(mmPitch/MM);
 		mmDeltaPhiDegPanel = new DoublePanel();
 		mmDeltaPhiDegPanel.setNumber(mmDeltaPhiDeg);
 		moireRotatorPanel.add(new JLabel("Two confocal, complementary, square lenslet arrays,"), "wrap");
 		moireRotatorPanel.add(
-				GUIBitsAndBobs.makeRow("<html>focal lengths &plusmn;</html>", mmFPanel, "cm,"), "wrap");
+				GUIBitsAndBobs.makeRow("<html>focal lengths &plusmn;</html>", mmFPanel, "mm,"), "wrap");
 		moireRotatorPanel.add(
 				GUIBitsAndBobs.makeRow("each with pitch", mmPitchPanel, "mm,"), "wrap");
 		moireRotatorPanel.add(
@@ -1141,7 +1120,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		complementaryRadialLenticularArraysPanel.setLayout(new MigLayout("insets 0"));
 
 		rLAsFPanel = new DoublePanel();
-		rLAsFPanel.setNumber(rLAsF/CM);
+		rLAsFPanel.setNumber(rLAsF/MM);
 		rLAsNPanel = new IntPanel();
 		rLAsNPanel.setNumber(rLAsN);
 		rLAsNPanel.setToolTipText("Number of radial cylindrical lenses in each array");
@@ -1150,7 +1129,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		rLAsDeltaPhiDegPanel.setToolTipText("Relative rotation angle between the two radial cylindrical lenses");
 		complementaryRadialLenticularArraysPanel.add(new JLabel("Two confocal, complementary, radial lenticular arrays,"), "wrap");
 		complementaryRadialLenticularArraysPanel.add(
-				GUIBitsAndBobs.makeRow("<html>focal lengths &plusmn;</html>", rLAsFPanel, "cm,"), "wrap");
+				GUIBitsAndBobs.makeRow("<html>focal lengths &plusmn;</html>", rLAsFPanel, "mm,"), "wrap");
 		complementaryRadialLenticularArraysPanel.add(
 				GUIBitsAndBobs.makeRow("each with", rLAsNPanel, "cylindrical lenses in it,"), "wrap");
 		complementaryRadialLenticularArraysPanel.add(
@@ -1208,9 +1187,9 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 				GUIBitsAndBobs.makeRow("rotated w.r.t. each other by an angle", cltRotationAngleDegPanel, "<html>&deg;</html>,"), "wrap");
 
 		cltFocalLengthPanel = new DoublePanel();
-		cltFocalLengthPanel.setNumber(cltFocalLength/M);
+		cltFocalLengthPanel.setNumber(cltFocalLength/MM);
 		cylindricalLensTelescopesPanel.add(
-				GUIBitsAndBobs.makeRow("each comprising cylindrical lenses of focal length", cltFocalLengthPanel, "m,"), "wrap");
+				GUIBitsAndBobs.makeRow("each comprising cylindrical lenses of focal length", cltFocalLengthPanel, "mm,"), "wrap");
 
 		cltCylindricalLensTypeComboBox = new JComboBox<CylindricalLensType>(CylindricalLensType.values());
 		cltCylindricalLensTypeComboBox.setSelectedItem(cltCylindricalLensType);
@@ -1329,6 +1308,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		
 		objectRotationAnglePanel = new DoublePanel();
 		objectRotationAnglePanel.setNumber(objectRotationAngle);
+
 		objectDistancePanel = new DoublePanel();
 		objectDistancePanel.setNumber(objectDistance/M);
 		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("Rotation angle", objectRotationAnglePanel,"<html>&deg;</html>"), "wrap");
@@ -1462,13 +1442,13 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 
 
-		mmF = mmFPanel.getNumber()*CM;
+		mmF = mmFPanel.getNumber()*MM;
 		mmPitch = mmPitchPanel.getNumber()*MM;
 		mmDeltaPhiDeg = mmDeltaPhiDegPanel.getNumber();
 		mmShowLA1 = mmShowLA1CheckBox.isSelected();
 		mmShowLA2 = mmShowLA2CheckBox.isSelected();
 
-		rLAsF = rLAsFPanel.getNumber()*CM;
+		rLAsF = rLAsFPanel.getNumber()*MM;
 		rLAsN = rLAsNPanel.getNumber();
 		rLAsDeltaPhiDeg = rLAsDeltaPhiDegPanel.getNumber();
 		rLAsShowLA1 = rLAsShowLA1CheckBox.isSelected();
@@ -1480,7 +1460,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		rrShowDPA2 = rrShowDPA2CheckBox.isSelected();
 
 		cltRotationAngleDeg = cltRotationAngleDegPanel.getNumber();
-		cltFocalLength = cltFocalLengthPanel.getNumber();
+		cltFocalLength = cltFocalLengthPanel.getNumber()*MM;
 		cltCylindricalLensType = (CylindricalLensType)(cltCylindricalLensTypeComboBox.getSelectedItem());
 
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());

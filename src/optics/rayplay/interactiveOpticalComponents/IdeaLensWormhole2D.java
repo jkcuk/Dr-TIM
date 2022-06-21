@@ -21,6 +21,7 @@ import optics.rayplay.core.Ray2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
 import optics.rayplay.geometry2D.Line2D;
+import optics.rayplay.geometry2D.LineSegment2D;
 import optics.rayplay.graphicElements.IdealLensWormholePointGE2D;
 import optics.rayplay.graphicElements.IdealLensWormholePointGE2D.IdealLensWormholePointType;
 import optics.rayplay.graphicElements.PointGE2D;
@@ -97,6 +98,11 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 	 * The toggle for the equivalent lenses
 	 */
 	private boolean equivalentLenses = false;
+	
+	/**
+	 * Toggle between having the images formed to size and showing the inside cloak image
+	 */
+	private boolean imageToSizeAndInsideImage = true;
 
 
 
@@ -143,7 +149,10 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 		EL1("image of first lens"),
 		EL2("image of second lens"),
 		EL3("image of third lens"),
-		EL4("image of fourth lens");
+		EL4("image of fourth lens"),
+		ELI("image of inner cloak base lens"),
+		ELI1("image of inner cloak side lens"),
+		ELI2("image of inner cloak side lens");
 
 		public final String name;
 
@@ -596,6 +605,10 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 			case EL4:
 				opticalComponentsEquivalentLenses.add(l);
 				break;
+			case ELI:
+			case ELI1:
+			case ELI2:
+				break;
 			default:
 				opticalComponents.add(l);
 			}
@@ -672,17 +685,6 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 		// the (inside) focal point of lens D
 		points.get(IdealLensWormholePointType.FID).setCoordinatesToThoseOf(Vector2D.sum(pDI, cHat.getProductWith(fDI)));
 		
-		//the position of the first outer image lens
-		points.get(IdealLensWormholePointType.IMGP).setCoordinatesToThoseOf(pImg);
-		
-		//the focal point of this first image lens left of lens centre
-		Vector2D pF1 = Vector2D.sum(pImg, dHat.getProductWith(-0.1*rDI));
-		points.get(IdealLensWormholePointType.IMGF1).setCoordinatesToThoseOf(Vector2D.sum(pF1, cHat.getProductWith(f1)));
-		
-		//the focal point of the second image lens right of lens centre
-		Vector2D pF2 = Vector2D.sum(pImg, dHat.getProductWith(0.1*rDI));
-		points.get(IdealLensWormholePointType.IMGF2).setCoordinatesToThoseOf(Vector2D.sum(pF2, cHat.getProductWith(f2)));
-		
 		
 		//Outer
 		// calculate the focal lengths from fD and r, h1, h2, h -- see AllLoopTheorems 2D.nb
@@ -718,8 +720,16 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 		double f3P = InsideFocalLengths(L3Img, f2, cHat);
 		double f4P = InsideFocalLengths(L4Img, f1, cHat);
 		
+		Vector2D p1ImgCentre = new LineSegment2D(endPointImage(endPoint(L1P,dHat), cHat), endPointImage(endPoint(L1P,dHat.getProductWith(-1)), cHat)).getMidpoint();
+		//the position of the first outer image lens
+		points.get(IdealLensWormholePointType.IMGP).setCoordinatesToThoseOf(p1ImgCentre);//pImg);
+		//the focal point of this first image lens left of lens centre
+		Vector2D pF1 = Vector2D.sum(p1ImgCentre, dHat.getProductWith(-0.1*rDI));
+		points.get(IdealLensWormholePointType.IMGF1).setCoordinatesToThoseOf(Vector2D.sum(pF1, cHat.getProductWith(f1)));
 		
-			
+		//the focal point of the second image lens right of lens centre
+		Vector2D pF2 = Vector2D.sum(p1ImgCentre, dHat.getProductWith(0.1*rDI));
+		points.get(IdealLensWormholePointType.IMGF2).setCoordinatesToThoseOf(Vector2D.sum(pF2, cHat.getProductWith(f2)));
 		
 
 		//outer
@@ -876,30 +886,67 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 		lenses.get(WormholeLensTypes.L4).setStroke(innerLensStroke);
 		lenses.get(WormholeLensTypes.L4).setColour(lensColour);
 		
+		
+		//Add a switch to toggle the endpoints to either be the image or make them look nice but not representative of the image size.
+		if(imageToSizeAndInsideImage) {
+			lenses.get(WormholeLensTypes.EL1).setEndPoints(endPointImage(endPoint(L1P,dHat), cHat), endPointImage(endPoint(L1P,dHat.getProductWith(-1)), cHat));  //Vector2D.sum(L1Img, dHat.getProductWith(-rDI)), Vector2D.sum(L1Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.EL2).setEndPoints(endPointImage(endPoint(L2P,dHat), cHat), endPointImage(endPoint(L2P,dHat.getProductWith(-1)), cHat));//Vector2D.sum(L2Img, dHat.getProductWith(-rDI)), Vector2D.sum(L2Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.EL3).setEndPoints(endPointImage(endPoint(L3P,dHat), cHat), endPointImage(endPoint(L3P,dHat.getProductWith(-1)), cHat));//Vector2D.sum(L3Img, dHat.getProductWith(-rDI)), Vector2D.sum(L3Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.EL4).setEndPoints(endPointImage(endPoint(L4P,dHat), cHat), endPointImage(endPoint(L4P,dHat.getProductWith(-1)), cHat));//Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
+			
+			//create an image of the inner cloak 
+			lenses.get(WormholeLensTypes.ELI).setEndPoints(endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(), cHat), endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI2).getPosition(),cHat));//Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.ELI).setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));
+			lenses.get(WormholeLensTypes.ELI).setColour(Colour.RED);
+			
+			lenses.get(WormholeLensTypes.ELI1).setEndPoints(endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(), cHat), endPointImageInnerCloak(points.get(IdealLensWormholePointType.PI3).getPosition(),cHat));//Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.ELI1).setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));
+			lenses.get(WormholeLensTypes.ELI1).setColour(Colour.RED);
+			
+			lenses.get(WormholeLensTypes.ELI2).setEndPoints(endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI2).getPosition(), cHat), endPointImageInnerCloak(points.get(IdealLensWormholePointType.PI3).getPosition(),cHat));//Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.ELI2).setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));
+			lenses.get(WormholeLensTypes.ELI2).setColour(Colour.RED);
+		}else {
+			lenses.get(WormholeLensTypes.EL1).setEndPoints(Vector2D.sum(L1Img, dHat.getProductWith(-rDI)), Vector2D.sum(L1Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.EL2).setEndPoints(Vector2D.sum(L2Img, dHat.getProductWith(-rDI)), Vector2D.sum(L2Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.EL3).setEndPoints(Vector2D.sum(L3Img, dHat.getProductWith(-rDI)), Vector2D.sum(L3Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.EL4).setEndPoints(Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
+			
+			//create an image of the inner cloak 
+			lenses.get(WormholeLensTypes.ELI).setEndPoints(endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(), cHat), endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(),cHat));//Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.ELI).setStroke(new BasicStroke(0, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));
+			lenses.get(WormholeLensTypes.ELI).setColour(Colour.RED);
+			
+			lenses.get(WormholeLensTypes.ELI1).setEndPoints(endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(), cHat), endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(),cHat));//Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.ELI1).setStroke(new BasicStroke(0, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));
+			lenses.get(WormholeLensTypes.ELI1).setColour(Colour.RED);
+			
+			lenses.get(WormholeLensTypes.ELI2).setEndPoints(endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(), cHat), endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(),cHat));//Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
+			lenses.get(WormholeLensTypes.ELI2).setStroke(new BasicStroke(0, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));
+			lenses.get(WormholeLensTypes.ELI2).setColour(Colour.RED);
+		}
+		
 		//the equivalent lenses
-		lenses.get(WormholeLensTypes.EL1).setEndPoints(Vector2D.sum(L1Img, dHat.getProductWith(-rDI)), Vector2D.sum(L1Img, dHat.getProductWith(rDI)));
 		lenses.get(WormholeLensTypes.EL1).setPrincipalPoint(L1Img);
 		lenses.get(WormholeLensTypes.EL1).setFocalLength(f1);
 		lenses.get(WormholeLensTypes.EL1).setStroke(imageLensStroke);
 		lenses.get(WormholeLensTypes.EL1).setColour(imageColour);
 		
-		lenses.get(WormholeLensTypes.EL2).setEndPoints(Vector2D.sum(L2Img, dHat.getProductWith(-rDI)), Vector2D.sum(L2Img, dHat.getProductWith(rDI)));
 		lenses.get(WormholeLensTypes.EL2).setPrincipalPoint(L2Img);
 		lenses.get(WormholeLensTypes.EL2).setFocalLength(f2);
 		lenses.get(WormholeLensTypes.EL2).setStroke(imageLensStroke);
 		lenses.get(WormholeLensTypes.EL2).setColour(imageColour);
 		
-		lenses.get(WormholeLensTypes.EL3).setEndPoints(Vector2D.sum(L3Img, dHat.getProductWith(-rDI)), Vector2D.sum(L3Img, dHat.getProductWith(rDI)));
 		lenses.get(WormholeLensTypes.EL3).setPrincipalPoint(L3Img);
 		lenses.get(WormholeLensTypes.EL3).setFocalLength(f2);
 		lenses.get(WormholeLensTypes.EL3).setStroke(imageLensStroke);
 		lenses.get(WormholeLensTypes.EL3).setColour(imageColour);
 		
-		lenses.get(WormholeLensTypes.EL4).setEndPoints(Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
 		lenses.get(WormholeLensTypes.EL4).setPrincipalPoint(L4Img);
 		lenses.get(WormholeLensTypes.EL4).setFocalLength(f1);
 		lenses.get(WormholeLensTypes.EL4).setStroke(imageLensStroke);
 		lenses.get(WormholeLensTypes.EL4).setColour(imageColour);
+		
 	}
 	
 	
@@ -949,6 +996,44 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 		return endPoint;
 	}
 	
+	public Vector2D endPointImage(Vector2D insideLensPosEndPoint, Vector2D normal) {
+		Vector2D endPointImage;
+		
+		
+		double sf = fDI + pDI.x*normal.x - insideLensPosEndPoint.x * normal.x + pDI.y*normal.y - insideLensPosEndPoint.y*normal.y;
+		double xfactor = fDI*insideLensPosEndPoint.x+ pDI.x*pDI.x*normal.x - pDI.x*insideLensPosEndPoint.x*normal.x +pDI.x*pDI.y*normal.y-pDI.x*insideLensPosEndPoint.y*normal.y; 
+		double yfactor = fDI*insideLensPosEndPoint.y + pDI.x*normal.x*pDI.y - insideLensPosEndPoint.x*normal.x*pDI.y+pDI.y*pDI.y*normal.y-pDI.y*insideLensPosEndPoint.y*normal.y;
+
+		double xPos = ( normal.x*pDO.x*pDO.x + fDO*(xfactor/sf)-normal.x*pDO.x*(xfactor/sf) - normal.y*pDO.x*(yfactor/sf)+pDO.x*normal.y*pDO.y)/
+				( fDO+ normal.x*pDO.x - normal.x*(xfactor/sf) - normal.y*(yfactor/sf)+normal.y*pDO.y);
+		
+		double yPos = (fDO*(yfactor/sf)+ normal.x*pDO.x*pDO.y - normal.x*pDO.y*(xfactor/sf) - normal.y*pDO.y*(yfactor/sf) +normal.y*pDO.y*pDO.y)/
+				( fDO+ normal.x*pDO.x - normal.x*(xfactor/sf)- normal.y*(yfactor/sf) + normal.y*pDO.y);
+		
+//		double sf = fDI + pDI.x*cHat.x - insideLensPosEndPoint.x * cHat.x + pDI.y*cHat.y - insideLensPosEndPoint.y*cHat.y;
+//		double xfactor = fDI*insideLensPosEndPoint.x+ pDI.x*pDI.x*cHat.x - pDI.x*insideLensPosEndPoint.x*cHat.x +pDI.x*pDI.y*cHat.y-pDI.x*insideLensPosEndPoint.y*cHat.y; 
+//		double yfactor = fDI*insideLensPosEndPoint.y + pDI.x*cHat.x*pDI.y - insideLensPosEndPoint.y*cHat.x*pDI.y+pDI.y*pDI.y*cHat.y-pDI.y*insideLensPosEndPoint.y*cHat.y;
+//
+//		double xPos = ( cHat.x*pDO.x*pDO.x + fDO*(xfactor/sf)-cHat.x*pDO.x*(xfactor/sf) - cHat.y*pDO.x*(yfactor/sf)+pDO.x*cHat.y*pDO.y)/
+//				( fDO+ cHat.x*pDO.x - cHat.x*(xfactor/sf) - cHat.y*(yfactor/sf)+cHat.y*pDO.y);
+//		
+//		double yPos = (fDO*(yfactor/sf)+ cHat.x*pDO.x*pDO.y - cHat.x*pDO.y*(xfactor/sf) - cHat.y*pDO.y*(yfactor/sf) +cHat.y*pDO.y*pDO.y)/
+//				( fDO+ cHat.x*pDO.x - cHat.x*(xfactor/sf)- cHat.y*(yfactor/sf) + cHat.y*pDO.y);
+		
+		endPointImage = new Vector2D(xPos,yPos);
+		return endPointImage;
+	}
+	
+	public Vector2D endPointImageInnerCloak(Vector2D innerPosition, Vector2D normal) {
+		Vector2D endPointImageInnerCloak;
+		double xPos = ( fDO*innerPosition.x + pDO.x*pDO.x*normal.x - pDO.x*innerPosition.x*normal.x+pDO.x*pDO.y*normal.y - pDO.x*innerPosition.y*normal.y)/
+				(fDO + pDO.x*normal.x- innerPosition.x*normal.x+pDO.y*normal.y - innerPosition.y*normal.y);
+		double yPos = ( fDO*innerPosition.y + pDO.x*pDO.y*normal.x - pDO.y*innerPosition.x*normal.x+pDO.y*pDO.y*normal.y - pDO.y*innerPosition.y*normal.y)/
+				(fDO + pDO.x*normal.x- innerPosition.x*normal.x+pDO.y*normal.y - innerPosition.y*normal.y);;
+		
+		endPointImageInnerCloak = new Vector2D (xPos, yPos);
+		return endPointImageInnerCloak;
+	}
 
 	@Override
 	public InteractiveOpticalComponent2D readFromCSV(String filename)
@@ -1067,7 +1152,24 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 			}
 		});
 		popup.add(equivLensesMenuItem);		
-	}
+	
+	// Separator
+    popup.addSeparator();
+    //Equivalent 
+    JMenuItem imagesMenuItem = new JMenuItem("Toggle image sizes between real and simplified");
+    imagesMenuItem.setEnabled(true);
+    imagesMenuItem.getAccessibleContext().setAccessibleDescription("Toggle image sizes");
+    imagesMenuItem.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			
+			imageToSizeAndInsideImage = !imageToSizeAndInsideImage;
+			calculateInternalParameters();
+			panelWithPopup.repaint();
+			
+		}
+	});
+	popup.add(imagesMenuItem);		
+}
 	
 	private void updatePopup()
 	{
