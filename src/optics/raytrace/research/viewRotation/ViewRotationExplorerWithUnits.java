@@ -286,7 +286,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	 */
 	private StudioInitialisationType studioInitialisation;
 
-	private boolean variableLattice;
+	private boolean customBackground;
 	private double objectRotationAngle;
 	private double objectDistance;
 
@@ -364,7 +364,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 		// rest of scene
 		studioInitialisation = StudioInitialisationType.LATTICE;	// the backdrop
-		variableLattice = true;
+		customBackground = true;
 		objectRotationAngle = 0;
 		objectDistance = 2*M;
 
@@ -399,8 +399,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		if(nonInteractiveTIMAction == NonInteractiveTIMActionEnum.INTERACTIVE)
 		{
 			windowTitle = "Dr TIM's view-rotation explorer";
-			windowWidth = 1500;
-			windowHeight = 650;
+			windowWidth = 1600;
+			windowHeight = 700;
 		}
 	}
 
@@ -491,7 +491,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 
 		//setting the lights and backdrop
-		if (variableLattice) {
+		if (customBackground) {
 			studio.setLights(LightSource.getStandardLightsFromBehind());
 			scene.addSceneObject(SceneObjectClass.getSkySphere(scene, studio));
 			scene.addSceneObject(SceneObjectClass.getLighterChequerboardFloor(scene, studio));
@@ -969,7 +969,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	// for interactive version
 	//
 
-	JTabbedPane viewRotatingComponentTabbedPane;
+	JTabbedPane viewRotatingComponentTabbedPane, backgroundTabbedPane;
 
 	// azimuthal Fresnel wedge
 	private DoublePanel aFwBPanel;
@@ -1010,7 +1010,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
-	private JCheckBox variableLatticeCheckBox;
 	private DoublePanel objectRotationAnglePanel, objectDistancePanel;
 
 	// camera stuff
@@ -1035,8 +1034,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		super.createInteractiveControlPanel();
 
 		// the main tabbed pane, with "Scene" and "Camera" tabs
-		JTabbedPane sceneCameraTabbedPane = new JTabbedPane();
-		interactiveControlPanel.add(sceneCameraTabbedPane, "span");
+		JTabbedPane backgroundComponentCameraTabbedPane = new JTabbedPane();
+		interactiveControlPanel.add(backgroundComponentCameraTabbedPane, "span");
 
 		//
 		// the component panel
@@ -1044,7 +1043,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 		JPanel scenePanel = new JPanel();
 		scenePanel.setLayout(new BorderLayout());
-		sceneCameraTabbedPane.addTab("Scene", scenePanel);
+		backgroundComponentCameraTabbedPane.addTab("Component", scenePanel);
 
 
 
@@ -1283,35 +1282,72 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 		viewRotatingComponentTabbedPane.addTab("Nothing", new JPanel());
 
-		JPanel backgroundPane = new JPanel();
-		scenePanel.setLayout(new MigLayout("insets 0"));
-		scenePanel.add(backgroundPane, BorderLayout.SOUTH);
+		switch(viewRotationComponentType)
+		{
+		case AZIMUTHAL_FRESNEL_WEDGE:
+			viewRotatingComponentTabbedPane.setSelectedIndex(0);
+			break;
+		case PIXELATED_AZIMUTHAL_FRESNEL_WEDGE:
+			viewRotatingComponentTabbedPane.setSelectedIndex(1);
+			break;
+		case MOIRE_ROTATOR:
+			viewRotatingComponentTabbedPane.setSelectedIndex(2);
+			break;
+		case RADIAL_LAS:
+			viewRotatingComponentTabbedPane.setSelectedIndex(3);
+			break;
+		case RR_SHEET:
+			viewRotatingComponentTabbedPane.setSelectedIndex(4);
+			break;
+		case CYLINDRICAL_LENS_TELESCOPES:
+			viewRotatingComponentTabbedPane.setSelectedIndex(5);
+			break;
+		case REFRACTIVE_PIXELATED_FRESNEL_WEDGE:
+			viewRotatingComponentTabbedPane.setSelectedIndex(6);
+			break;
+		case NOTHING:
+		default:
+			viewRotatingComponentTabbedPane.setSelectedIndex(5);
+		}
 
+		
+				
+		//
+		// the background panel
+		// 
+		
+		// the tabbed pane that enables selection of the background
+		backgroundTabbedPane = new JTabbedPane();
+		backgroundComponentCameraTabbedPane.addTab("Background", backgroundTabbedPane);
 
 		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
-		backgroundPane.add(GUIBitsAndBobs.makeRow("Background", studioInitialisationComboBox,"or"));
+		backgroundTabbedPane.addTab("Standard background", studioInitialisationComboBox);
 
-		variableLatticeCheckBox = new JCheckBox();
-		variableLatticeCheckBox.setSelected(variableLattice);
-		backgroundPane.add(GUIBitsAndBobs.makeRow("Make an adjustable lattice", variableLatticeCheckBox));
-
+		JPanel customBackgroundPanel = new JPanel();
+		customBackgroundPanel.setLayout(new MigLayout("insets 0"));
+		
 		objectRotationAnglePanel = new DoublePanel();
 		objectRotationAnglePanel.setNumber(objectRotationAngle);
-		backgroundPane.add(GUIBitsAndBobs.makeRow("Rotation angle", objectRotationAnglePanel,"<html>&deg;</html>,"));
-
 		objectDistancePanel = new DoublePanel();
 		objectDistancePanel.setNumber(objectDistance/M);
-		backgroundPane.add(GUIBitsAndBobs.makeRow("Distance", objectDistancePanel,"m"));
+		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("Rotation angle", objectRotationAnglePanel,"<html>&deg;</html>"), "wrap");
+		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("Distance", objectDistancePanel, "m"), "wrap");
 
+		backgroundTabbedPane.addTab("Custom lattice", customBackgroundPanel);
+		
+		if(customBackground) backgroundTabbedPane.setSelectedIndex(1);
+		else backgroundTabbedPane.setSelectedIndex(0);
+		
 
+		
 		//
 		// the Camera panel
 		//
 
 		JPanel cameraPanel = new JPanel();
 		cameraPanel.setLayout(new MigLayout("insets 0"));
-		sceneCameraTabbedPane.addTab("Camera", cameraPanel);
+		backgroundComponentCameraTabbedPane.addTab("Camera", cameraPanel);
 
 		// camera stuff
 
@@ -1389,6 +1425,15 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			viewRotationComponentType = ViewRotationComponentType.NOTHING;
 			break;			
 		}
+		
+		switch(backgroundTabbedPane.getSelectedIndex())
+		{
+		case 0:
+			customBackground = false;
+			break;
+		case 1:
+			customBackground = true;
+		}
 
 		aFwB = aFwBPanel.getNumber();
 		// aFwSimulateHonestly = aFwSimulateHonestlyCheckBox.isSelected();
@@ -1439,7 +1484,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		cltCylindricalLensType = (CylindricalLensType)(cltCylindricalLensTypeComboBox.getSelectedItem());
 
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
-		variableLattice = variableLatticeCheckBox.isSelected();
 		objectRotationAngle = objectRotationAnglePanel.getNumber();
 		objectDistance = objectDistancePanel.getNumber()*M;
 
