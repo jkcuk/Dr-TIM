@@ -515,11 +515,10 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					);
 		}
 		
-		//if switching to the anaglyph camera, the position of the spectacle has to be changed to go in front of the 'eye'
-		//TODO make this better by placing somewhere else? 
+		//if switching to the anaglyph camera, the position of the spectacle has to be changed to go in front of the 'eye' 
 		if(anaglyphCamera) {
 			Vector3D viewCentre = new Vector3D(0,0,objectDistance);
-			eyePosition = Vector3D.sum(eyeSeparation.getProductWith(0.5) ,new Vector3D(0,0,-cameraDistance));
+			eyePosition = Vector3D.sum(eyeSeparation.getProductWith(0.5) ,eyePosition);//new Vector3D(0,0,-cameraDistance));
 			//Calculate where a ray would hit the component front surface as the view centre is now shifted.
 			Vector3D lightRayDirection = Vector3D.difference(viewCentre, eyePosition);
 			objectCentre = Vector3D.sum(Vector3D.O, eyeSeparation.getProductWith(0.5));
@@ -532,7 +531,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			}
 
 		} else {
-			eyePosition = new Vector3D(0,0,-1.5).getProductWith(CM);
+			//eyePosition = new Vector3D(0,0,-1.5).getProductWith(CM);
 			componentCentre = Vector3D.O;
 			objectCentre = Vector3D.O;
 		}

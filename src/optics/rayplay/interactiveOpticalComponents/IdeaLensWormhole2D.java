@@ -102,7 +102,7 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 	/**
 	 * Toggle between having the images formed to size and showing the inside cloak image
 	 */
-	private boolean imageToSizeAndInsideImage = true;
+	private boolean imageToSizeAndInsideImage = false;
 
 
 
@@ -114,7 +114,7 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 	/**
 	 * list of graphic elements
 	 */
-	private ArrayList<GraphicElement2D> displayGraphicElements = new ArrayList<GraphicElement2D>();
+	private ArrayList<GraphicElement2D> displayGraphicElements = new ArrayList<GraphicElement2D>();	
 	private ArrayList<GraphicElement2D> controlGraphicElements = new ArrayList<GraphicElement2D>();
 
 	/**
@@ -446,13 +446,15 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 	@Override
 	public ArrayList<GraphicElement2D> getGraphicElements(boolean isSelected, boolean isMouseNear)
 	{
-		if(!isSelected)
+		if(!isSelected) 
 			return displayGraphicElements;
+		
 		else
 		{
 			ArrayList<GraphicElement2D> ges = new ArrayList<GraphicElement2D>();
 			ges.addAll(controlGraphicElements);
 			ges.addAll(displayGraphicElements);
+			
 			return ges;
 		}
 	}
@@ -580,10 +582,8 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 			IdealLensWormholePointGE2D point = new IdealLensWormholePointGE2D(iLWPointType.name, this, iLWPointType);
 			points.put(iLWPointType, point);
 			controlGraphicElements.add(point);
-		}
 			
-
-
+		}
 		
 		
 		// initialise the array of lenses
@@ -604,15 +604,19 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 			case EL3:
 			case EL4:
 				opticalComponentsEquivalentLenses.add(l);
+				displayGraphicElements.add(l);
 				break;
 			case ELI:
 			case ELI1:
 			case ELI2:
+				if(imageToSizeAndInsideImage) {
+				displayGraphicElements.add(l);
+				}
 				break;
 			default:
 				opticalComponents.add(l);
+				displayGraphicElements.add(l);
 			}
-			displayGraphicElements.add(l);
 		}
 		
 	}
@@ -912,18 +916,6 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 			lenses.get(WormholeLensTypes.EL3).setEndPoints(Vector2D.sum(L3Img, dHat.getProductWith(-rDI)), Vector2D.sum(L3Img, dHat.getProductWith(rDI)));
 			lenses.get(WormholeLensTypes.EL4).setEndPoints(Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
 			
-			//create an image of the inner cloak 
-			lenses.get(WormholeLensTypes.ELI).setEndPoints(endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(), cHat), endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(),cHat));//Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
-			lenses.get(WormholeLensTypes.ELI).setStroke(new BasicStroke(0, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));
-			lenses.get(WormholeLensTypes.ELI).setColour(Colour.RED);
-			
-			lenses.get(WormholeLensTypes.ELI1).setEndPoints(endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(), cHat), endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(),cHat));//Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
-			lenses.get(WormholeLensTypes.ELI1).setStroke(new BasicStroke(0, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));
-			lenses.get(WormholeLensTypes.ELI1).setColour(Colour.RED);
-			
-			lenses.get(WormholeLensTypes.ELI2).setEndPoints(endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(), cHat), endPointImageInnerCloak(points.get(IdealLensWormholePointType.VI1).getPosition(),cHat));//Vector2D.sum(L4Img, dHat.getProductWith(-rDI)), Vector2D.sum(L4Img, dHat.getProductWith(rDI)));
-			lenses.get(WormholeLensTypes.ELI2).setStroke(new BasicStroke(0, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0));
-			lenses.get(WormholeLensTypes.ELI2).setColour(Colour.RED);
 		}
 		
 		//the equivalent lenses
@@ -1009,16 +1001,6 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 		
 		double yPos = (fDO*(yfactor/sf)+ normal.x*pDO.x*pDO.y - normal.x*pDO.y*(xfactor/sf) - normal.y*pDO.y*(yfactor/sf) +normal.y*pDO.y*pDO.y)/
 				( fDO+ normal.x*pDO.x - normal.x*(xfactor/sf)- normal.y*(yfactor/sf) + normal.y*pDO.y);
-		
-//		double sf = fDI + pDI.x*cHat.x - insideLensPosEndPoint.x * cHat.x + pDI.y*cHat.y - insideLensPosEndPoint.y*cHat.y;
-//		double xfactor = fDI*insideLensPosEndPoint.x+ pDI.x*pDI.x*cHat.x - pDI.x*insideLensPosEndPoint.x*cHat.x +pDI.x*pDI.y*cHat.y-pDI.x*insideLensPosEndPoint.y*cHat.y; 
-//		double yfactor = fDI*insideLensPosEndPoint.y + pDI.x*cHat.x*pDI.y - insideLensPosEndPoint.y*cHat.x*pDI.y+pDI.y*pDI.y*cHat.y-pDI.y*insideLensPosEndPoint.y*cHat.y;
-//
-//		double xPos = ( cHat.x*pDO.x*pDO.x + fDO*(xfactor/sf)-cHat.x*pDO.x*(xfactor/sf) - cHat.y*pDO.x*(yfactor/sf)+pDO.x*cHat.y*pDO.y)/
-//				( fDO+ cHat.x*pDO.x - cHat.x*(xfactor/sf) - cHat.y*(yfactor/sf)+cHat.y*pDO.y);
-//		
-//		double yPos = (fDO*(yfactor/sf)+ cHat.x*pDO.x*pDO.y - cHat.x*pDO.y*(xfactor/sf) - cHat.y*pDO.y*(yfactor/sf) +cHat.y*pDO.y*pDO.y)/
-//				( fDO+ cHat.x*pDO.x - cHat.x*(xfactor/sf)- cHat.y*(yfactor/sf) + cHat.y*pDO.y);
 		
 		endPointImage = new Vector2D(xPos,yPos);
 		return endPointImage;
@@ -1163,7 +1145,11 @@ public class IdeaLensWormhole2D implements InteractiveOpticalComponent2D
 		public void actionPerformed(ActionEvent e) {
 			
 			imageToSizeAndInsideImage = !imageToSizeAndInsideImage;
-			calculateInternalParameters();
+			controlGraphicElements.clear();
+			opticalComponents.clear();
+			displayGraphicElements.clear();
+			createInternalArrays();
+			calculateInternalParameters();			
 			panelWithPopup.repaint();
 			
 		}
