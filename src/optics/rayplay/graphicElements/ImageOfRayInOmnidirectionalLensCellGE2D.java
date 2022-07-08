@@ -143,7 +143,7 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 	{
 		g.setStroke(stroke);
 		g.setColor(colour.getColor());
-		Vector2D[] endPoint = getEndPoints();
+		Vector2D[] endPoint = getEndPointsForRayInCell();
 		switch(cellType)
 		{
 		case C0:
@@ -256,7 +256,7 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 			);
 	}
 	
-	public Vector2D[] getEndPoints()
+	public Vector2D[] getEndPointsForRayInCell()
 	{
 		ArrayList<Vector2D> endPoints = new ArrayList<Vector2D>();
 		

@@ -143,7 +143,16 @@ public class LineGE2D extends Line2D implements GraphicElement2D, InteractiveEle
 		g.setStroke(stroke);
 		g.setColor(colour.getColor());
 		Vector2D[] endPoint = getEndPoints();
-		if(endPoint != null) p.drawLine(endPoint[0], endPoint[1], g);
+		
+		if(endPoint != null)
+		{
+			System.out.println("endPoint[0]="+endPoint[0]+", endPoint[1]="+endPoint[1]);
+			p.drawLine(endPoint[0], endPoint[1], g);
+		}
+		else
+		{
+			System.out.println("endPoint=null");
+		}
 	}
 	
 	@Override
