@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import math.Vector2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
+import optics.rayplay.geometry2D.LineSegment2D;
 import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D;
 import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D.OmnidirectionalLens2DCellType;
 import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D.OmnidirectionalLensLensType;
@@ -22,15 +23,15 @@ import optics.rayplay.util.SVGWriter;
 public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 {
 	public final static Stroke IORIOLC_STROKE = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0);	// dashed
-			// new BasicStroke(1);
+	// new BasicStroke(1);
 	public final static Colour IORIOLC_COLOUR = Colour.GRAY;
 	public final static int IORIOLC_SVG_LINE_THICKNESS = 1;
 	public final static String IORIOLC_SVG_STYLE = "stroke-dasharray=\"1,1\" opacity=\"0.7\"";
-	
+
 	protected OmnidirectionalLens2D ol;
 	protected OmnidirectionalLens2DCellType cellType;
 	protected boolean interactive;
-	
+
 	public ImageOfRayInOmnidirectionalLensCellGE2D(
 			String name,
 			Vector2D a,
@@ -41,7 +42,7 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 			Colour colour,
 			int svgLineThickness,
 			String svgStyle
-		)
+			)
 	{
 		super(
 				name,
@@ -52,12 +53,12 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 				svgLineThickness,
 				svgStyle,
 				ol.getRayPlay2DPanel()	// rayPlay2DPanel
-			);
+				);
 
 		this.interactive = true;
 		this.ol = ol;
 		this.cellType = cellType;
-		
+
 		// initPopup();
 	}
 
@@ -68,7 +69,7 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 			OmnidirectionalLens2D ol,
 			OmnidirectionalLens2DCellType cellType,
 			Colour colour
-		)
+			)
 	{
 		this(
 				name,
@@ -80,7 +81,7 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 				colour,	// colour
 				IORIOLC_SVG_LINE_THICKNESS,	// svgLineThickness
 				IORIOLC_SVG_STYLE	// svgStyle
-			);
+				);
 	}
 
 	public ImageOfRayInOmnidirectionalLensCellGE2D(
@@ -89,7 +90,7 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 			Vector2D b,
 			OmnidirectionalLens2D ol,
 			OmnidirectionalLens2DCellType cellType
-		)
+			)
 	{
 		this(
 				name,
@@ -101,13 +102,13 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 				IORIOLC_COLOUR,	// colour
 				IORIOLC_SVG_LINE_THICKNESS,	// svgLineThickness
 				IORIOLC_SVG_STYLE	// svgStyle
-			);
+				);
 	}
 
-	
-	
+
+
 	// getters & setters
-	
+
 	public OmnidirectionalLens2D getOl() {
 		return ol;
 	}
@@ -134,10 +135,10 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 	}
 
 
-	
-	
+
+
 	// GraphicElement2D methods
-	
+
 	@Override
 	public void draw(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
 	{
@@ -156,15 +157,15 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 				{
 					// ... and draw a ray (as in semi-infinite line) that starts at the end point, going outwards
 					(new RayGE2D(
-						endPoint[i],	// start point
-						Vector2D.difference(endPoint[i], endPoint[(i+1)%2]),	// direction
-						"",	// name
-						stroke,
-						colour, 
-						svgLineThickness, 
-						svgStyle, 
-						rayPlay2DPanel
-					)).draw(p, g, mouseNear, mouseI, mouseJ);;
+							endPoint[i],	// start point
+							Vector2D.difference(endPoint[i], endPoint[(i+1)%2]),	// direction
+							"",	// name
+							stroke,
+							colour, 
+							svgLineThickness, 
+							svgStyle, 
+							rayPlay2DPanel
+							)).draw(p, g, mouseNear, mouseI, mouseJ);;
 				}
 			}
 			else
@@ -186,7 +187,7 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 	@Override
 	public void writeSVGCode(RayPlay2DPanel rpp)
 	{
-		Vector2D[] endPoint = getEndPoints();
+		Vector2D[] endPoint = getEndPointsForRayInCell();
 		switch(cellType)
 		{
 		case C0:
@@ -199,15 +200,15 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 				{
 					// ... and draw a ray (as in semi-infinite line) that starts at the end point, going outwards
 					(new RayGE2D(
-						endPoint[i],	// start point
-						Vector2D.difference(endPoint[i], endPoint[(i+1)%2]),	// direction
-						"",	// name
-						stroke,
-						colour, 
-						svgLineThickness, 
-						svgStyle, 
-						rayPlay2DPanel
-					)).writeSVGCode(rpp);
+							endPoint[i],	// start point
+							Vector2D.difference(endPoint[i], endPoint[(i+1)%2]),	// direction
+							"",	// name
+							stroke,
+							colour, 
+							svgLineThickness, 
+							svgStyle, 
+							rayPlay2DPanel
+							)).writeSVGCode(rpp);
 				}
 			}
 			else
@@ -225,25 +226,25 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 			}
 		}
 	}
-	
 
-//	@Override
-//	public boolean isMouseNear(RayPlay2DPanel p, int i, int j)
-//	{
-//		return false;
-//	}
-	
-//	@Override
-//	public void drawInFront(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
-//	{
-//		super.drawInFront(p, g, mouseNear, mouseI, mouseJ);
-//	}
-//
-//	@Override
-//	public void drawBehind(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
-//	{
-//		super.drawBehind(p, g, mouseNear, mouseI, mouseJ);
-//	}
+
+	//	@Override
+	//	public boolean isMouseNear(RayPlay2DPanel p, int i, int j)
+	//	{
+	//		return false;
+	//	}
+
+	//	@Override
+	//	public void drawInFront(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
+	//	{
+	//		super.drawInFront(p, g, mouseNear, mouseI, mouseJ);
+	//	}
+	//
+	//	@Override
+	//	public void drawBehind(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
+	//	{
+	//		super.drawBehind(p, g, mouseNear, mouseI, mouseJ);
+	//	}
 
 	@Override
 	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ)
@@ -253,19 +254,72 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 		g.drawString(
 				getName(), 
 				mouseI+10, mouseJ+5	// x2i(p.x)+10, y2j(p.y)+5
-			);
+				);
 	}
-	
+
+	@Override
+	public boolean isMouseNear(RayPlay2DPanel p, int i, int j)
+	{
+		Vector2D endPoint[] = getEndPointsForRayInCell();
+
+		if(cellType == OmnidirectionalLens2DCellType.C0)
+		{
+			if(endPoint == null)
+			{
+				// no intersection with the omnidirectional lens; calculate the end points as the intersections with a circle around the drawing area...
+				endPoint = getEndPoints();
+
+				// ... and treat as normal
+			}
+			else
+			{
+				// ray intersects the omnidirectional lens; draw only the bits in cell 0, which is the inverse of a triangle
+
+				// go through the end points
+				for(int k=0; k<=1; k++)
+				{
+					// ... and check if we are close to a ray (as in semi-infinite line) that starts at the end point, going outwards
+					if((new RayGE2D(
+							endPoint[k],	// start point
+							Vector2D.difference(endPoint[k], endPoint[(k+1)%2]),	// direction
+							"",	// name
+							stroke,
+							colour, 
+							svgLineThickness, 
+							svgStyle, 
+							rayPlay2DPanel
+							)).isMouseNear(p, i, j)) return true;
+				}
+				return false;
+			}
+		}
+
+		if(endPoint != null)
+		{
+			// the shape of all other cells is a triangle
+			// define the line in (i,j) coordinates
+			LineSegment2D l = new LineSegment2D(
+					new Vector2D(p.x2id(endPoint[0].x), p.y2jd(endPoint[0].y)),
+					new Vector2D(p.x2id(endPoint[1].x), p.y2jd(endPoint[1].y))
+					);
+			double d = Geometry2D.lineSementPointDistance(l, new Vector2D(i, j));
+			return (d < 3);
+		}
+
+		// line is completely outside of the drawing area
+		return false;
+	}
+
 	public Vector2D[] getEndPointsForRayInCell()
 	{
 		ArrayList<Vector2D> endPoints = new ArrayList<Vector2D>();
-		
+
 		for(OmnidirectionalLensLensType lt:cellType.lensTypes)
 		{
 			Vector2D e = Geometry2D.lineSegmentLineIntersection2D(ol.getLens(lt), this);
 			if(e != null) endPoints.add(e);
 		}
-		
+
 		// there are exactly two intersections, so the ray passes through the cell;
 		// return the "real" part of the ray, i.e. the part that passes through the cell
 		if(endPoints.size() == 2)
@@ -275,7 +329,7 @@ public class ImageOfRayInOmnidirectionalLensCellGE2D extends LineGE2D
 			endPointsArray[1] = endPoints.get(1);
 			return endPointsArray;
 		}
-		
+
 		// there aren't two intersections
 		return null;
 	}

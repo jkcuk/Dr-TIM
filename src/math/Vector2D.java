@@ -161,6 +161,16 @@ public class Vector2D implements Serializable
 	{
 		return  Vector2D.scalarProduct(this, v) / v.getModSquared();
 	}
+	
+	
+	/**
+	 * @param max
+	 * @return	a vector with random elements in the range [-max, max]
+	 */
+	public static Vector2D getRandomVector(double max)
+	{
+		return new Vector2D(max*(2*Math.random()-1), max*(2*Math.random()-1));
+	}
 
 
 	/**

@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 
+import math.MyMath;
 import math.Vector2D;
 import optics.rayplay.core.OpticalComponent2D;
 import optics.rayplay.core.LightRay2D;
@@ -245,9 +246,15 @@ implements OpticalComponent2D, Bijection2D
 	{
 		Vector2D pq = Vector2D.difference(q, principalPoint);
 		Vector2D aHat = getNormal(true);	// getA2B().getPerpendicularVector().getNormalised();
+		double denominator = focalLength-Vector2D.scalarProduct(pq, aHat);
+		
+		// avoid mapping to infinity
+		if(denominator == 0.0)
+			return mapOutwards(Vector2D.sum(q, Vector2D.getRandomVector(MyMath.TINY)));
+		
 		return Vector2D.sum(
 				principalPoint,
-				pq.getProductWith(focalLength/(focalLength-Vector2D.scalarProduct(pq, aHat)))
+				pq.getProductWith(focalLength/denominator)
 			);	
 	}
 
@@ -256,9 +263,15 @@ implements OpticalComponent2D, Bijection2D
 	{
 		Vector2D pq = Vector2D.difference(q, principalPoint);
 		Vector2D aHat = getNormal(true);	// getA2B().getPerpendicularVector().getWithLength(-1);
+		double denominator = focalLength+Vector2D.scalarProduct(pq, aHat);
+		
+		// avoid mapping to infinity
+		if(denominator == 0.0)
+			return mapInwards(Vector2D.sum(q, Vector2D.getRandomVector(MyMath.TINY)));
+
 		return Vector2D.sum(
 				principalPoint,
-				pq.getProductWith(focalLength/(focalLength+Vector2D.scalarProduct(pq, aHat)))
+				pq.getProductWith(focalLength/denominator)
 			);	
 	}
 	

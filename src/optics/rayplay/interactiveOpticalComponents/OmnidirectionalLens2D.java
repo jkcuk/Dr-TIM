@@ -650,9 +650,10 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		{
 			OmnidirectionalLens2DCellType cellContainingSourceOfObjectRays = getCellContaining(sourceOfObjectRays.getRayStartPoint());
 			Vector2D rayStartPointCell0 = mapToCell0(sourceOfObjectRays.getRayStartPoint(), cellContainingSourceOfObjectRays);
-			System.out.println("Ray source in cell "+cellContainingSourceOfObjectRays.name);
+			// System.out.println("Ray source in cell "+cellContainingSourceOfObjectRays.name);
 			
 			for(OmnidirectionalLens2DCellType cellType:OmnidirectionalLens2DCellType.values())
+				if(cellType != cellContainingSourceOfObjectRays)
 			{
 				ges.add(new PointGE2D(
 						"Image of ray start point of light source "+sourceOfObjectRays.getName()+" in cell "+cellType.name,	// name
