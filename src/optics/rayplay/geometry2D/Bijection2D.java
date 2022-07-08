@@ -8,6 +8,6 @@ import math.Vector2D;
  */
 public interface Bijection2D {
 
-	public Vector2D mapInwards(Vector2D q);
 	public Vector2D mapOutwards(Vector2D q);
+	public Vector2D mapInwards(Vector2D q);
 }

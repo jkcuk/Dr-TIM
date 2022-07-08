@@ -38,10 +38,10 @@ implements OpticalComponent2D, Bijection2D
 	// private Vector2D outwardsVector;
 	
 	
-	/**
-	 * The end points of the lenses. Can be used to change a lens into a line?//TODO
-	 */
-	protected Vector2D endPoint1, endPoint2;
+//	/**
+//	 * The end points of the lenses. Can be used to change a lens into a line?//TODO
+//	 */
+//	protected Vector2D endPoint1, endPoint2;
 	
 	
 	// constructors
@@ -86,21 +86,21 @@ implements OpticalComponent2D, Bijection2D
 		return principalPoint;
 	}
 
-	public Vector2D getEndPoint1() {
-		return endPoint1;
-	}
-
-	public void setEndPoint1(Vector2D endPoint1) {
-		this.endPoint1 = endPoint1;
-	}
-
-	public Vector2D getEndPoint2() {
-		return endPoint2;
-	}
-
-	public void setEndpoint2(Vector2D endPoint2) {
-		this.endPoint2 = endPoint2;
-	}
+//	public Vector2D getEndPoint1() {
+//		return endPoint1;
+//	}
+//
+//	public void setEndPoint1(Vector2D endPoint1) {
+//		this.endPoint1 = endPoint1;
+//	}
+//
+//	public Vector2D getEndPoint2() {
+//		return endPoint2;
+//	}
+//
+//	public void setEndpoint2(Vector2D endPoint2) {
+//		this.endPoint2 = endPoint2;
+//	}
 
 	/**
 	 * Set the principal point.
@@ -241,25 +241,34 @@ implements OpticalComponent2D, Bijection2D
 
 
 	@Override
+	public Vector2D mapOutwards(Vector2D q)
+	{
+		Vector2D pq = Vector2D.difference(q, principalPoint);
+		Vector2D aHat = getNormal(true);	// getA2B().getPerpendicularVector().getNormalised();
+		return Vector2D.sum(
+				principalPoint,
+				pq.getProductWith(focalLength/(focalLength-Vector2D.scalarProduct(pq, aHat)))
+			);	
+	}
+
+	@Override
 	public Vector2D mapInwards(Vector2D q)
 	{
 		Vector2D pq = Vector2D.difference(q, principalPoint);
-		Vector2D aHat = getA2B().getPerpendicularVector().getNormalised();
+		Vector2D aHat = getNormal(true);	// getA2B().getPerpendicularVector().getWithLength(-1);
 		return Vector2D.sum(
 				principalPoint,
 				pq.getProductWith(focalLength/(focalLength+Vector2D.scalarProduct(pq, aHat)))
 			);	
 	}
-
-	@Override
-	public Vector2D mapOutwards(Vector2D q)
+	
+	public boolean isInside(Vector2D position)
 	{
-		Vector2D pq = Vector2D.difference(q, principalPoint);
-		Vector2D aHat = getA2B().getPerpendicularVector().getNormalised();
-		return Vector2D.sum(
-				principalPoint,
-				pq.getProductWith(focalLength/(focalLength-Vector2D.scalarProduct(pq, aHat)))
-			);	
+		Vector2D aHat = getNormal(false);
+		return Vector2D.scalarProduct(
+				Vector2D.difference(position, a),
+				aHat
+			) > 0;
 	}
 
 	@Override

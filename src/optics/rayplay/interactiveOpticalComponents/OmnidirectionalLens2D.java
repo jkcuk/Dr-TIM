@@ -567,19 +567,19 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		switch(cellType)
 		{
 		case C1:
-			return lenses.get(OmnidirectionalLensLensType.D).mapOutwards(p0);
+			return lenses.get(OmnidirectionalLensLensType.D).mapInwards(p0);
 		case C2A:
-			return lenses.get(OmnidirectionalLensLensType.C1).mapOutwards(
-					lenses.get(OmnidirectionalLensLensType.D).mapOutwards(p0)
+			return lenses.get(OmnidirectionalLensLensType.C1).mapInwards(
+					lenses.get(OmnidirectionalLensLensType.D).mapInwards(p0)
 				);	
 		case C2B:
-			return lenses.get(OmnidirectionalLensLensType.C2).mapInwards(
-					lenses.get(OmnidirectionalLensLensType.D).mapOutwards(p0)	
+			return lenses.get(OmnidirectionalLensLensType.C2).mapOutwards(
+					lenses.get(OmnidirectionalLensLensType.D).mapInwards(p0)	
 				);	
 		case C3A:
-			return lenses.get(OmnidirectionalLensLensType.A1).mapInwards(p0);
+			return lenses.get(OmnidirectionalLensLensType.A1).mapOutwards(p0);
 		case C3B:
-			return lenses.get(OmnidirectionalLensLensType.A2).mapOutwards(p0);
+			return lenses.get(OmnidirectionalLensLensType.A2).mapInwards(p0);
 		case C0:
 		default:
 			return p0;
@@ -591,23 +591,55 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		switch(cellType)
 		{
 		case C1:
-			return lenses.get(OmnidirectionalLensLensType.D).mapInwards(p);
+			return lenses.get(OmnidirectionalLensLensType.D).mapOutwards(p);
 		case C2A:
-			return lenses.get(OmnidirectionalLensLensType.D).mapInwards(
-					lenses.get(OmnidirectionalLensLensType.C1).mapInwards(p)
+			return lenses.get(OmnidirectionalLensLensType.D).mapOutwards(
+					lenses.get(OmnidirectionalLensLensType.C1).mapOutwards(p)
 				);	
 		case C2B:
-			return lenses.get(OmnidirectionalLensLensType.D).mapInwards(
-					lenses.get(OmnidirectionalLensLensType.C2).mapOutwards(p)	
+			return lenses.get(OmnidirectionalLensLensType.D).mapOutwards(
+					lenses.get(OmnidirectionalLensLensType.C2).mapInwards(p)	
 				);	
 		case C3A:
-			return lenses.get(OmnidirectionalLensLensType.A1).mapOutwards(p);
+			return lenses.get(OmnidirectionalLensLensType.A1).mapInwards(p);
 		case C3B:
-			return lenses.get(OmnidirectionalLensLensType.A2).mapInwards(p);
+			return lenses.get(OmnidirectionalLensLensType.A2).mapOutwards(p);
 		case C0:
 		default:
 			return p;
 		}
+	}
+	
+	public Vector2D mapFromCellToCell(Vector2D p, OmnidirectionalLens2DCellType fromCellType, OmnidirectionalLens2DCellType toCellType)
+	{
+		return mapFromCell0(
+				mapToCell0(p, fromCellType),
+				toCellType
+			);
+	}
+
+	
+	public OmnidirectionalLens2DCellType getCellContaining(Vector2D point)
+	{
+		if(
+				getLens(OmnidirectionalLensLensType.A1).isInside(point) || 
+				!getLens(OmnidirectionalLensLensType.A2).isInside(point) ||
+				!getLens(OmnidirectionalLensLensType.D).isInside(point)
+		) return OmnidirectionalLens2DCellType.C0;
+		
+		if(getLens(OmnidirectionalLensLensType.F).isInside(point))
+		{
+			// the point is either in cell 2A, 3A or the left half of 1
+			if(getLens(OmnidirectionalLensLensType.B1).isInside(point)) return OmnidirectionalLens2DCellType.C3A;
+			if(getLens(OmnidirectionalLensLensType.C1).isInside(point)) return OmnidirectionalLens2DCellType.C2A;
+		}
+		else
+		{
+			// the point is either in cell 2B, 3B or the right half of 1
+			if(!getLens(OmnidirectionalLensLensType.B2).isInside(point)) return OmnidirectionalLens2DCellType.C3B;
+			if(!getLens(OmnidirectionalLensLensType.C2).isInside(point)) return OmnidirectionalLens2DCellType.C2B;
+		}
+		return OmnidirectionalLens2DCellType.C1;
 	}
 	
 	public ArrayList<GraphicElement2D> getRayImagesGraphicElements()
@@ -616,12 +648,17 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		
 		if(sourceOfObjectRays != null)
 		{
+			OmnidirectionalLens2DCellType cellContainingSourceOfObjectRays = getCellContaining(sourceOfObjectRays.getRayStartPoint());
+			Vector2D rayStartPointCell0 = mapToCell0(sourceOfObjectRays.getRayStartPoint(), cellContainingSourceOfObjectRays);
+			System.out.println("Ray source in cell "+cellContainingSourceOfObjectRays.name);
+			
 			for(OmnidirectionalLens2DCellType cellType:OmnidirectionalLens2DCellType.values())
 			{
 				ges.add(new PointGE2D(
 						"Image of ray start point of light source "+sourceOfObjectRays.getName()+" in cell "+cellType.name,	// name
 						mapFromCell0(
-								sourceOfObjectRays.getRayStartPoint(),	// p0
+								rayStartPointCell0,	// p0
+								// cellContainingSourceOfObjectRays,
 								cellType
 								),	// position
 						3,	// radius,
@@ -642,14 +679,16 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 							new ImageOfRayInOmnidirectionalLensCellGE2D(
 									"Image of "+ray.getName()+" in cell "+cellType.name,	// name
 									mapFromCell0(
-											ray.getInitialState().getStartPoint(),	// trajectory.get(0),	// .getStartPoint(),	// p0
+											rayStartPointCell0,	// trajectory.get(0),	// .getStartPoint(),	// p0
+											// cellContainingSourceOfObjectRays,
 											cellType
 											),	// a
-									mapFromCell0(
+									mapFromCellToCell(
 											ray.getInitialState().getSecondPointOnRay(),
 //											(trajectory.size() >= 2)
 //												?trajectory.get(1)
 //												:Vector2D.sum(ray.getStartPoint(), ray.getNormalisedDirection()),	// p0
+											cellContainingSourceOfObjectRays,
 											cellType
 											),	// b
 									this,	// ol
@@ -764,6 +803,16 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 			// say that the event has been handled
 			return true;
 		}
+//		else
+//		{
+//			Vector2D position = new Vector2D(rpp.i2x(e.getX()), rpp.j2y(e.getY()));
+////			for(OmnidirectionalLensLensType lensType:OmnidirectionalLensLensType.values())
+////			{
+////				Lens2D lens = getLens(lensType);
+////				System.out.println("Inside lens "+lens.getName()+": "+lens.isInside(position));
+////			}
+//			System.out.println("Position "+position+" is in cell "+getCellContaining(position).name());
+//		}
 		return false;
 	}
 
