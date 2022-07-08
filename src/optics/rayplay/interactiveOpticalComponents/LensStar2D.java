@@ -16,7 +16,7 @@ import math.Vector2D;
 import optics.rayplay.core.GraphicElement2D;
 import optics.rayplay.core.InteractiveOpticalComponent2D;
 import optics.rayplay.core.OpticalComponent2D;
-import optics.rayplay.core.Ray2D;
+import optics.rayplay.core.LightRay2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Line2D;
 import optics.rayplay.graphicElements.LensStarPointGE2D;
@@ -34,6 +34,8 @@ import optics.rayplay.opticalComponents.Lens2D;
 public class LensStar2D implements InteractiveOpticalComponent2D
 {
 	private String name;
+	
+	private RayPlay2DPanel rayPlay2DPanel;
 
 	// the parameters
 
@@ -99,7 +101,8 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 			double rP,
 			Vector2D c,
 			double r,
-			double phi0
+			double phi0,
+			RayPlay2DPanel rayPlay2DPanel
 		)
 	{
 		super();
@@ -110,6 +113,7 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 		this.c = c;
 		this.r = r;
 		this.phi0 = phi0;
+		this.rayPlay2DPanel = rayPlay2DPanel;
 
 		// create the points and lenses ...
 		createPointsAndLenses();
@@ -193,6 +197,14 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	public RayPlay2DPanel getRayPlay2DPanel() {
+		return rayPlay2DPanel;
+	}
+
+	public void setRayPlay2DPanel(RayPlay2DPanel rayPlay2DPanel) {
+		this.rayPlay2DPanel = rayPlay2DPanel;
 	}
 
 	
@@ -377,7 +389,7 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 		for(int i=0; i<n; i++)
 		{
 			// create the lens, ...
-			Lens2D l = new Lens2D("Lens "+i+"/"+n+" in \""+name+"\"");
+			Lens2D l = new Lens2D("Lens "+i+"/"+n+" in \""+name+"\"", rayPlay2DPanel);
 
 			// ... add it to the array of lenses, ...
 			lenses.add(l);
@@ -447,8 +459,8 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 	{}
 	
 	@Override
-	public ArrayList<Ray2D> getRays() {
-		return Ray2D.NO_RAYS;
+	public ArrayList<LightRay2D> getRays() {
+		return LightRay2D.NO_RAYS;
 	}
 
 
@@ -533,7 +545,7 @@ public class LensStar2D implements InteractiveOpticalComponent2D
 				// and add all the lenses
 				for(int i=0; i<getN(); i++)
 				{
-					Lens2DIOC lens = new Lens2DIOC(getLens(i));
+					Lens2DIOC lens = new Lens2DIOC(getLens(i), rayPlay2DPanel);
 					panelWithPopup.iocs.add(lens);
 					// panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
 				}

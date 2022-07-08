@@ -8,18 +8,21 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 import math.MyMath;
 import math.Vector2D;
+import optics.rayplay.geometry2D.Circle2D;
 import optics.rayplay.interactiveOpticalComponents.IdeaLensWormhole2D;
 import optics.rayplay.interactiveOpticalComponents.Lens2DIOC;
 import optics.rayplay.interactiveOpticalComponents.LensStar2D;
@@ -112,7 +115,8 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 				new Vector2D(0, -0.5*h),	// pD
 				new Vector2D(1, 0),	// dHat
 				new Vector2D(0, 1),	// cHat
-				false
+				false,
+				this
 				);
 		iocs.add(ol);
 
@@ -127,7 +131,8 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 				MyMath.deg2rad(30), // rayBundleAngle
 				4,	// rayBundleNoOfRays
 				Colour.RED,
-				255	// maxTraceLevel
+				255,	// maxTraceLevel
+				this
 				);
 		iocs.add(ls1);
 		
@@ -286,6 +291,33 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		return -(j/getSize().height*yHeight - (yCentre+0.5*yHeight));
 	}
 
+	/**
+	 * Adjust xWidth, yHeight, xCentre and yCentre such that the panel is zoomed by a factor f relative to position (i,j)
+	 * @param i
+	 * @param j
+	 * @param f
+	 */
+	public void zoom(int i, int j, double f)
+	{
+		// basically solve
+		// x(xCentreOld, xWidthOld , i) == x(xCentreNew, f*xWidthOld , i) for xCentreNew and
+		// y(yCentreOld, yHeightOld, j) == y(yCentreNew, f*yHeightOld, j) for yCentreNew
+		xCentre = xCentre - (f-1)*(2*popupMenuI-getSize().width)*xWidth/(2*getSize().width);
+		yCentre = yCentre + (f-1)*(2*popupMenuJ-getSize().height)*yHeight/(2*getSize().height);
+		xWidth *= f;
+		yHeight *= f;
+	}
+	
+	/**
+	 * @return	a circle, in (x,y) coordinates, that completely encloses this RayPlay2D panel
+	 */
+	public Circle2D getEnclosingCircle()
+	{
+		return new Circle2D(
+				new Vector2D(xCentre, yCentre),	// centre
+				0.5*Math.sqrt(xWidth*xWidth + yHeight*yHeight)	// as, by Pythagoras, (width/2)^2 + (height/2)^2 = (min. radius)^2
+			);
+	}
 
 	public double getGoodDistanceXY()
 	{
@@ -300,6 +332,16 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 			opticalComponents.addAll(ioc.getOpticalComponents());
 		
 		return opticalComponents;
+	}
+	
+	public ArrayList<PointRaySource2D> collectPointRaySources()
+	{
+		ArrayList<PointRaySource2D> pointRaySources = new ArrayList<PointRaySource2D>();
+
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			if(ioc instanceof PointRaySource2D) pointRaySources.add((PointRaySource2D)ioc);
+		
+		return pointRaySources;
 	}
 
 //	private ArrayList<GraphicElement2D> collectGraphicElements1()
@@ -332,6 +374,12 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		// ArrayList<GraphicElement2D> graphicElementsR1 = collectGraphicElements();
 		// Collections.reverse(graphicElementsR);
 		
+		// initialise all light rays
+		for(InteractiveOpticalComponent2D ioc:iocs)
+		{
+			ioc.initialiseRays();
+		}
+
 		// draw graphic elements
 		for(InteractiveOpticalComponent2D ioc:iocs)
 			ioc.drawGraphicElementsBehind(this, g2, selectedIOCs.contains(ioc), iocNearMouse == ioc, graphicElementNearMouse, mouseI, mouseJ);
@@ -339,15 +387,15 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		for(InteractiveOpticalComponent2D ioc:iocs)
 			ioc.drawGraphicElements(this, g2, selectedIOCs.contains(ioc), iocNearMouse == ioc, graphicElementNearMouse, mouseI, mouseJ);
 
-		// initialise all light sources, ...
-		for(InteractiveOpticalComponent2D ioc:iocs)
-		{
-			ioc.initialiseRays();
-		}
+//		// initialise all light sources, ...
+//		for(InteractiveOpticalComponent2D ioc:iocs)
+//		{
+//			ioc.initialiseRays();
+//		}
 		
-		// ... and trace the rays from all light sources through the optical components
-		for(InteractiveOpticalComponent2D ioc1:iocs)
-			for(Ray2D ray:ioc1.getRays())
+		// trace the rays from all light sources through the optical components
+		for(InteractiveOpticalComponent2D ioc:iocs)
+			for(LightRay2D ray:ioc.getRays())
 				ray.traceThrough(collectOpticalComponents());
 		
 		// draw rays
@@ -493,8 +541,8 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 			if (e.isPopupTrigger())
 			{
 				// the mouse isn't near any graphicElement -- show the (empty)spacePopup
-				popupMenuX = e.getX();
-				popupMenuY = e.getY();
+				popupMenuI = e.getX();
+				popupMenuJ = e.getY();
 				spacePopup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		}
@@ -543,28 +591,55 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 //			g.mouseDragged(this, g==graphicElementNearMouse, e.getX(), e.getY());
 //		}
 		
+		Vector2D delta = new Vector2D(mouseX - mouseDraggedToX, mouseY - mouseDraggedToY);
+
 		if(graphicElementNearMouse != null)
 		{
 			if(!graphicElementNearMouse.mouseDragged(this, true, e.getX(), e.getY()))
 			{
-				Vector2D delta = new Vector2D(mouseX - mouseDraggedToX, mouseY - mouseDraggedToY);
-
 				for(InteractiveOpticalComponent2D ioc:selectedIOCs)
 					ioc.move(delta);
 
 				if(iocNearMouse != null)
 					if(!selectedIOCs.contains(iocNearMouse))
 						iocNearMouse.move(delta);
-
-				mouseDraggedToX = mouseX;
-				mouseDraggedToY = mouseY;
 			}
 		}
 		else
 		{
-			xCentre = mousePressedXCentre - (mouseX - mousePressedX);
-			yCentre = mousePressedYCentre - (mouseY - mousePressedY);
+			// solve x(xCentreOld, mousePressedI) == x(xCentreNew, mouseI) for xCentreNew etc.
+			xCentre = mousePressedXCentre - (mouseI - mousePressedI)*xWidth/getSize().width;
+			yCentre = mousePressedYCentre + (mouseJ - mousePressedJ)*yHeight/getSize().height;
+			// xCentre -= delta.x;
+			// yCentre -= delta.y;
 		}
+
+		mouseDraggedToX = mouseX;
+		mouseDraggedToY = mouseY;
+
+//		if(graphicElementNearMouse != null)
+//		{
+//			if(!graphicElementNearMouse.mouseDragged(this, true, e.getX(), e.getY()))
+//			{
+//				Vector2D delta = new Vector2D(mouseX - mouseDraggedToX, mouseY - mouseDraggedToY);
+//
+//				for(InteractiveOpticalComponent2D ioc:selectedIOCs)
+//					ioc.move(delta);
+//
+//				if(iocNearMouse != null)
+//					if(!selectedIOCs.contains(iocNearMouse))
+//						iocNearMouse.move(delta);
+//
+//				mouseDraggedToX = mouseX;
+//				mouseDraggedToY = mouseY;
+//			}
+//		}
+//		else
+//		{
+//			xCentre = mousePressedXCentre - (mouseX - mousePressedX);
+//			yCentre = mousePressedYCentre - (mouseY - mousePressedY);
+//		}
+		
 		repaint();
 	}
 
@@ -638,8 +713,10 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 
 	// popup menus
 
+    private JFileChooser fileChooser;
+
 	final JPopupMenu spacePopup = new JPopupMenu();
-	private int popupMenuX, popupMenuY;
+	private int popupMenuI, popupMenuJ;
 	private int
 		lensNo = 0,
 		lensStarNo = 0,
@@ -660,13 +737,14 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 			public void actionPerformed(ActionEvent e) {
 
 				lensNo++;
-				Vector2D p = new Vector2D(i2x(popupMenuX), j2y(popupMenuY));
+				Vector2D p = new Vector2D(i2x(popupMenuI), j2y(popupMenuJ));
 				Lens2DIOC lens = new Lens2DIOC(
 						"Lens "+lensNo,	// name
 						p,	// principalPoint
 						1,	// focalLength
 						Vector2D.sum(p, new Vector2D(0, +0.5)),	// endPoint1
-						Vector2D.sum(p, new Vector2D(0, -0.5))	// endPoint2
+						Vector2D.sum(p, new Vector2D(0, -0.5)),	// endPoint2
+						RayPlay2DPanel.this
 						);
 				iocs.add(lens);
 				// graphicElements.addAll(lens.getGraphicElements());
@@ -691,10 +769,11 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 						0.1,	// f
 						10,	// n
 						0,	// rP
-						new Vector2D(i2x(popupMenuX), j2y(popupMenuY)),	// c,
+						new Vector2D(i2x(popupMenuI), j2y(popupMenuJ)),	// c,
 						0.5,	// r,
-						0	// phi0
-						);
+						0,	// phi0
+						RayPlay2DPanel.this
+					);
 				iocs.add(ls);
 				// opticalComponents.addAll(ol.getOpticalComponents());
 				// graphicElements.addAll(ls.getGraphicElements());
@@ -723,11 +802,12 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 						h/3.,	// h1
 						2.*h/3.,	// h2
 						h,	// h
-						new Vector2D(i2x(popupMenuX), j2y(popupMenuY)),	// pD
+						new Vector2D(i2x(popupMenuI), j2y(popupMenuJ)),	// pD
 						new Vector2D(1, 0),	// dHat
 						new Vector2D(0, 1),	// cHat
-						false
-						);
+						false,
+						RayPlay2DPanel.this
+					);
 				iocs.add(ol);
 				// opticalComponents.addAll(ol.getOpticalComponents());
 				// graphicElements.addAll(ol.getGraphicElements());
@@ -755,19 +835,20 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 						2.*hO/3.,	// h1O
 						3.*hO/4.,// h2O,
 						hO,// hO,
-						new Vector2D(i2x(popupMenuX), j2y(popupMenuY)),	//pDO,
+						new Vector2D(i2x(popupMenuI), j2y(popupMenuJ)),	//pDO,
 						0.1*hI,	// fDI
 						0.5*hI,	// rDI
 						2.*hI/3.,	// h1I
 						3.*hI/4.,// h2I,
 						hI,// hI,
-						Vector2D.sum(new Vector2D(i2x(popupMenuX), j2y(popupMenuY)), new Vector2D(0, 0.15*hI)),// pDI,
+						Vector2D.sum(new Vector2D(i2x(popupMenuI), j2y(popupMenuJ)), new Vector2D(0, 0.15*hI)),// pDI,
 						0.1,// f1,
 						0.1,// f2,
-						Vector2D.sum(new Vector2D(i2x(popupMenuX), j2y(popupMenuY)),new Vector2D(0,-0.1*hI)),
+						Vector2D.sum(new Vector2D(i2x(popupMenuI), j2y(popupMenuJ)),new Vector2D(0,-0.1*hI)),
 						new Vector2D(1, 0),	// dHat
-						new Vector2D(0, 1)	// cHat
-						);
+						new Vector2D(0, 1),	// cHat
+						RayPlay2DPanel.this
+					);
 				iocs.add(ILW);
 				// opticalComponents.addAll(ol.getOpticalComponents());
 				// graphicElements.addAll(ol.getGraphicElements());
@@ -789,7 +870,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 				raySourceNo++;
 				PointRaySource2D ls = new PointRaySource2D(
 						"Point ray source "+raySourceNo,	// name
-						new Vector2D(i2x(popupMenuX), j2y(popupMenuY)),	// raysStartPoint
+						new Vector2D(i2x(popupMenuI), j2y(popupMenuJ)),	// raysStartPoint
 						MyMath.deg2rad(0), // centralRayAngle
 						false,	// forwardRaysOnly
 						true, // rayBundle
@@ -797,7 +878,8 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 						MyMath.deg2rad(30), // rayBundleAngle
 						4,	// rayBundleNoOfRays
 						Colour.GREEN,
-						255	// maxTraceLevel
+						255,	// maxTraceLevel
+						RayPlay2DPanel.this
 						);
 				iocs.add(ls);
 				// graphicElements.addAll(ls.getGraphicElements());
@@ -815,11 +897,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		zoomInMenuItem.getAccessibleContext().setAccessibleDescription("Zoom in");
 		zoomInMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				double f = 0.5;	// magnification factor
-				// xCentre += (f-1)*xWidth *(getSize().width -2*popupMenuX)/(2*getSize().width);// ((1-f)*popupMenuX*xWidth + xCentre*getSize().width - 0.5*(xWidth-f)*getSize().width)/getSize().width;
-				// yCentre += (f-1)*yHeight*(getSize().height-2*popupMenuY)/(2*getSize().height);// ((1-f)*popupMenuY*yHeight + yCentre*getSize().height - 0.5*(yHeight-f)*getSize().height)/getSize().height;
-				xWidth *= f;
-				yHeight *= f;
+				zoom(popupMenuI, popupMenuJ, 0.5);
 				repaint();
 			}
 		});
@@ -830,14 +908,41 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		zoomOutMenuItem.getAccessibleContext().setAccessibleDescription("Zoom out");
 		zoomOutMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				double f = 2;	// magnification factor
-				// xCentre += (f-1)*xWidth *(getSize().width -2*popupMenuX)/(2*getSize().width);// ((1-f)*popupMenuX*xWidth + xCentre*getSize().width - 0.5*(xWidth-f)*getSize().width)/getSize().width;
-				// yCentre += (f-1)*yHeight*(getSize().height-2*popupMenuY)/(2*getSize().height);// ((1-f)*popupMenuY*yHeight + yCentre*getSize().height - 0.5*(yHeight-f)*getSize().height)/getSize().height;
-				xWidth *= f;
-				yHeight *= f;
+				zoom(popupMenuI, popupMenuJ, 2);
 				repaint();
 			}
 		});
 		spacePopup.add(zoomOutMenuItem);
+		
+		// Separator
+		spacePopup.addSeparator();
+
+		JMenuItem saveMenuItem = new JMenuItem("Save...");
+		// menuItem.setMnemonic(KeyEvent.VK_P);
+		saveMenuItem.getAccessibleContext().setAccessibleDescription("Save");
+		saveMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(fileChooser == null)
+				{
+					fileChooser = new JFileChooser();
+					fileChooser.setSelectedFile(new File("RayPlay2DSimulation"));
+				}
+				int returnVal = fileChooser.showSaveDialog(RayPlay2DPanel.this);
+				
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+	                File file = fileChooser.getSelectedFile();
+	                
+	                saveSVG(file.getAbsolutePath());
+	    			saveParameters(file.getAbsolutePath());
+
+	    			System.out.println("SVG image and parameters saved as \""+file.getAbsolutePath()+"\".");
+	            }
+				else
+				{
+					System.out.println("Saving cancelled.");
+				}
+			}
+		});
+		spacePopup.add(saveMenuItem);
 	}
 }

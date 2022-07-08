@@ -96,7 +96,7 @@ public class LensPointGE2D extends PointGE2D
 			// calculate the position
 			if(pt == LensPointType.L)
 			{
-				position.setCoordinatesToThoseOf(Vector2D.sum(lens.getPrincipalPoint(), lens.getDirection().getWithLength(p.getGoodDistanceXY())));
+				position.setCoordinatesToThoseOf(Vector2D.sum(lens.getPrincipalPoint(), lens.getNormalisedDirection().getWithLength(p.getGoodDistanceXY())));
 			}
 
 			super.drawInFront(p,  g,  mouseNear, mouseI, mouseJ);
@@ -131,7 +131,7 @@ public class LensPointGE2D extends PointGE2D
 				);
 			
 			// give some info
-			g.drawString("Angle with horizontal = "+DoubleFormatter.format(MyMath.rad2deg(Math.atan2(lens.getDirection().y, lens.getDirection().x)))+" degrees",
+			g.drawString("Angle with horizontal = "+DoubleFormatter.format(MyMath.rad2deg(Math.atan2(lens.getNormalisedDirection().y, lens.getNormalisedDirection().x)))+" degrees",
 					p.x2i(position.x)+10, p.y2j(position.y)+5);
 			break;
 		default:
@@ -188,7 +188,7 @@ public class LensPointGE2D extends PointGE2D
 				lens.setFocalLength(
 						Vector2D.scalarProduct(
 								Vector2D.difference(position, lens.getPrincipalPoint()),
-								lens.getOpticalAxis().getDirection()
+								lens.getOpticalAxis().getNormalisedDirection()
 								)
 						);
 				break;

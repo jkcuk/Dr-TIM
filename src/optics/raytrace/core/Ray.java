@@ -93,7 +93,7 @@ public class Ray {
 	}
 
 	/**
-	 * faster alternative to "instanceof RayWithTrajectory" that reqiures no introspection
+	 * faster alternative to "instanceof RayWithTrajectory" that requires no introspection
 	 * @return
 	 */
 	public boolean isRayWithTrajectory()

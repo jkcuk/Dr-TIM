@@ -16,7 +16,7 @@ import math.Vector2D;
 import optics.rayplay.core.GraphicElement2D;
 import optics.rayplay.core.InteractiveOpticalComponent2D;
 import optics.rayplay.core.OpticalComponent2D;
-import optics.rayplay.core.Ray2D;
+import optics.rayplay.core.LightRay2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.graphicElements.LensPointGE2D;
 import optics.rayplay.graphicElements.LensPointGE2D.LensPointType;
@@ -26,6 +26,7 @@ import optics.rayplay.opticalComponents.Lens2D;
 public class Lens2DIOC extends Lens2D
 implements InteractiveOpticalComponent2D
 {
+
 	// internal variables
 	
 	private ArrayList<OpticalComponent2D> opticalComponents = new ArrayList<OpticalComponent2D>();
@@ -42,10 +43,11 @@ implements InteractiveOpticalComponent2D
 			Vector2D principalPoint,
 			double focalLength,
 			Vector2D endPoint1,
-			Vector2D endPoint2
+			Vector2D endPoint2,
+			RayPlay2DPanel rayPlay2DPanel
 		)
 	{
-		super(name, principalPoint, focalLength, endPoint1, endPoint2);
+		super(name, principalPoint, focalLength, endPoint1, endPoint2, rayPlay2DPanel);
 		
 		// create the points, ...
 		createPoints();
@@ -59,18 +61,33 @@ implements InteractiveOpticalComponent2D
 		initPopup();
 	}
 	
-	public Lens2DIOC(Lens2D lens)
+	public Lens2DIOC(Lens2D lens, RayPlay2DPanel rayPlay2DPanel)
 	{
-		this(lens.getName(), lens.getPrincipalPoint(), lens.getFocalLength(), lens.getA(), lens.getB());
+		this(lens.getName(), lens.getPrincipalPoint(), lens.getFocalLength(), lens.getA(), lens.getB(), rayPlay2DPanel);
 	}
 	
 	/**
 	 * @param field	{Lens, <name>, <name of parameter 1>=<value of parameter 1>, ...}
 	 */
-	public Lens2DIOC(String[] field)
+	public Lens2DIOC(String[] field, RayPlay2DPanel rayPlay2DPanel)
 	{
-		super(field[1]);
+		super(field[1], rayPlay2DPanel);
 	}
+	
+	
+	//
+	// getters & setters
+	//
+	
+//	public RayPlay2DPanel getRayPlay2DPanel() {
+//		return rayPlay2DPanel;
+//	}
+//
+//	public void setRayPlay2DPanel(RayPlay2DPanel rayPlay2DPanel) {
+//		this.rayPlay2DPanel = rayPlay2DPanel;
+//	}
+
+
 	
 	
 	// the meat
@@ -246,8 +263,8 @@ implements InteractiveOpticalComponent2D
 	{}
 	
 	@Override
-	public ArrayList<Ray2D> getRays() {
-		return Ray2D.NO_RAYS;
+	public ArrayList<LightRay2D> getRays() {
+		return LightRay2D.NO_RAYS;
 	}
 
 	@Override

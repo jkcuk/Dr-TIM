@@ -1,5 +1,7 @@
 package optics.rayplay.interactiveOpticalComponents;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,6 +11,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
@@ -17,10 +20,11 @@ import math.Vector2D;
 import optics.rayplay.core.GraphicElement2D;
 import optics.rayplay.core.InteractiveOpticalComponent2D;
 import optics.rayplay.core.OpticalComponent2D;
-import optics.rayplay.core.Ray2D;
+import optics.rayplay.core.LightRay2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
 import optics.rayplay.geometry2D.Line2D;
+import optics.rayplay.graphicElements.ImageOfRayInOmnidirectionalLensCellGE2D;
 import optics.rayplay.graphicElements.LineSegmentGE2D;
 import optics.rayplay.graphicElements.OmnidirectionalLensLineGE2D;
 import optics.rayplay.graphicElements.OmnidirectionalLensLineGE2D.OmnidirectionalLensLineType;
@@ -43,6 +47,8 @@ import optics.rayplay.util.Colour;
 public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 {
 	private String name;
+	
+	private RayPlay2DPanel rayPlay2DPanel;
 
 	// the parameters -- see [1] for nomenclature
 
@@ -88,6 +94,10 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	
 	private boolean showC1PointAndLine;
 
+	/**
+	 * point ray source the images of whose rays in different cells are shown
+	 */
+	private PointRaySource2D sourceOfObjectRays;
 
 
 	// internal variables
@@ -141,6 +151,28 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	// private Lens2D lens[];
 	private HashMap<OmnidirectionalLensLineType, LineSegmentGE2D> lines;
 
+	
+	public enum OmnidirectionalLens2DCellType
+	{
+		C0("Cell 0 (outside)", OmnidirectionalLensLensType.A1, OmnidirectionalLensLensType.A2, OmnidirectionalLensLensType.D),
+		C1("Cell 1", OmnidirectionalLensLensType.C1, OmnidirectionalLensLensType.C2, OmnidirectionalLensLensType.D),
+		C2A("Cell 2a", OmnidirectionalLensLensType.B1, OmnidirectionalLensLensType.C1, OmnidirectionalLensLensType.E),
+		C2B("Cell 2b", OmnidirectionalLensLensType.B2, OmnidirectionalLensLensType.C2, OmnidirectionalLensLensType.E),
+		C3A("Cell 3a", OmnidirectionalLensLensType.A1, OmnidirectionalLensLensType.B1, OmnidirectionalLensLensType.F),
+		C3B("Cell 3b", OmnidirectionalLensLensType.A2, OmnidirectionalLensLensType.B2, OmnidirectionalLensLensType.F);
+
+		public final String name;
+		public final ArrayList<OmnidirectionalLensLensType> lensTypes = new ArrayList<OmnidirectionalLensLensType>();
+
+		OmnidirectionalLens2DCellType(String name, OmnidirectionalLensLensType lensType1, OmnidirectionalLensLensType lensType2, OmnidirectionalLensLensType lensType3)
+		{
+			this.name = name;
+			lensTypes.add(lensType1);
+			lensTypes.add(lensType2);
+			lensTypes.add(lensType3);
+		}		
+	}
+
 
 
 	// constructor
@@ -155,8 +187,9 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 			Vector2D pD,
 			Vector2D dHat,
 			Vector2D cHat,
-			boolean showC1PointAndLine
-			)
+			boolean showC1PointAndLine,
+			RayPlay2DPanel rayPlay2DPanel
+		)
 	{
 		this.name = name;
 		this.fD = fD;
@@ -168,6 +201,7 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		this.dHat = dHat;
 		this.cHat = cHat;
 		this.showC1PointAndLine = showC1PointAndLine;
+		this.rayPlay2DPanel = rayPlay2DPanel;
 
 		// create the points, lines and the lenses, ...
 		createInternalArrays();
@@ -252,10 +286,16 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	public void setShowC1PointAndLine(boolean showC1PointAndLine) {
 		this.showC1PointAndLine = showC1PointAndLine;
 	}
+	
+	public RayPlay2DPanel getRayPlay2DPanel() {
+		return rayPlay2DPanel;
+	}
+
+	public void setRayPlay2DPanel(RayPlay2DPanel rayPlay2DPanel) {
+		this.rayPlay2DPanel = rayPlay2DPanel;
+	}
 
 
-	
-	
 	public PointGE2D getPoint(OmnidirectionalLensPointType type)
 	{
 		return points.get(type);
@@ -266,6 +306,14 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 				getPoint(OmnidirectionalLensPointType.C1).getPosition(),
 				getPoint(OmnidirectionalLensPointType.V1).getPosition()
 			);
+	}
+	
+	public PointRaySource2D getSourceOfObjectRays() {
+		return sourceOfObjectRays;
+	}
+
+	public void setSourceOfObjectRays(PointRaySource2D sourceOfObjectRays) {
+		this.sourceOfObjectRays = sourceOfObjectRays;
 	}
 
 
@@ -299,15 +347,25 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	@Override
 	public ArrayList<GraphicElement2D> getGraphicElements(boolean isSelected, boolean isMouseNear)
 	{
-		if(!isSelected)
-			return displayGraphicElements;
-		else
-		{
-			ArrayList<GraphicElement2D> ges = new ArrayList<GraphicElement2D>();
-			ges.addAll(controlGraphicElements);
-			ges.addAll(displayGraphicElements);
-			return ges;
-		}
+//		if(!isSelected)
+//			return displayGraphicElements;
+//		else
+//		{
+//			ArrayList<GraphicElement2D> ges = new ArrayList<GraphicElement2D>();
+//			ges.addAll(controlGraphicElements);
+//			ges.addAll(displayGraphicElements);
+//			return ges;
+//		}
+		
+		ArrayList<GraphicElement2D> ges = new ArrayList<GraphicElement2D>();
+		
+		ges.addAll(getRayImagesGraphicElements());
+		
+		if(isSelected) ges.addAll(controlGraphicElements);
+		
+		ges.addAll(displayGraphicElements);
+		
+		return ges;
 	}
 
 
@@ -378,7 +436,7 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		// and add them all to the list graphicElements
 		for(OmnidirectionalLensLineType olLineType : OmnidirectionalLensLineType.values())
 		{
-			OmnidirectionalLensLineGE2D line = new OmnidirectionalLensLineGE2D(olLineType.name, this, olLineType);
+			OmnidirectionalLensLineGE2D line = new OmnidirectionalLensLineGE2D(olLineType.name, this, olLineType, rayPlay2DPanel);
 			lines.put(olLineType, line);
 			displayGraphicElements.add(line);
 		}
@@ -391,7 +449,7 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		for(OmnidirectionalLensLensType olLensType : OmnidirectionalLensLensType.values())
 		{
 			// create the lens, ...
-			Lens2D l = new Lens2D("Lens \""+olLensType.toString()+"\" in \""+name+"\"");
+			Lens2D l = new Lens2D("Lens \""+olLensType.toString()+"\" in \""+name+"\"", rayPlay2DPanel);
 
 			// ... add it to the array of lenses, ...
 			lenses.put(olLensType, l);
@@ -480,12 +538,12 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		
 		// calculate the C1 point
 		Vector2D focalPointC1 = getLens(OmnidirectionalLensLensType.C1).getFocalPoint();
-		Vector2D directionC1 = getLens(OmnidirectionalLensLensType.C1).getDirection();
+		Vector2D directionC1 = getLens(OmnidirectionalLensLensType.C1).getNormalisedDirection();
 		double alpha1 = Geometry2D.getAlpha1ForLineLineIntersection2D(
 				focalPointC1,	// a1, i.e. point on line 1
 				directionC1,	// d1, i.e. direction of line 1
 				getLens(OmnidirectionalLensLensType.C1).getPrincipalPoint(),	// a2, i.e. point on line 2
-				getLens(OmnidirectionalLensLensType.D).getDirection()	// d2, i.e. direction of line 2
+				getLens(OmnidirectionalLensLensType.D).getNormalisedDirection()	// d2, i.e. direction of line 2
 			);
 		points.get(OmnidirectionalLensPointType.C1).setCoordinatesToThoseOf(
 				Vector2D.sum(focalPointC1, directionC1.getProductWith(alpha1))
@@ -502,6 +560,110 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		lines.get(OmnidirectionalLensLineType.C1).setB(Vector2D.sum(c1.getA(), c1.getA2B().getProductWith(alpha1)));
 	}
 
+	// imaging
+	
+	public Vector2D mapFromCell0(Vector2D p0, OmnidirectionalLens2DCellType cellType)
+	{
+		switch(cellType)
+		{
+		case C1:
+			return lenses.get(OmnidirectionalLensLensType.D).mapOutwards(p0);
+		case C2A:
+			return lenses.get(OmnidirectionalLensLensType.C1).mapOutwards(
+					lenses.get(OmnidirectionalLensLensType.D).mapOutwards(p0)
+				);	
+		case C2B:
+			return lenses.get(OmnidirectionalLensLensType.C2).mapInwards(
+					lenses.get(OmnidirectionalLensLensType.D).mapOutwards(p0)	
+				);	
+		case C3A:
+			return lenses.get(OmnidirectionalLensLensType.A1).mapInwards(p0);
+		case C3B:
+			return lenses.get(OmnidirectionalLensLensType.A2).mapOutwards(p0);
+		case C0:
+		default:
+			return p0;
+		}
+	}
+
+	public Vector2D mapToCell0(Vector2D p, OmnidirectionalLens2DCellType cellType)
+	{
+		switch(cellType)
+		{
+		case C1:
+			return lenses.get(OmnidirectionalLensLensType.D).mapInwards(p);
+		case C2A:
+			return lenses.get(OmnidirectionalLensLensType.D).mapInwards(
+					lenses.get(OmnidirectionalLensLensType.C1).mapInwards(p)
+				);	
+		case C2B:
+			return lenses.get(OmnidirectionalLensLensType.D).mapInwards(
+					lenses.get(OmnidirectionalLensLensType.C2).mapOutwards(p)	
+				);	
+		case C3A:
+			return lenses.get(OmnidirectionalLensLensType.A1).mapOutwards(p);
+		case C3B:
+			return lenses.get(OmnidirectionalLensLensType.A2).mapInwards(p);
+		case C0:
+		default:
+			return p;
+		}
+	}
+	
+	public ArrayList<GraphicElement2D> getRayImagesGraphicElements()
+	{
+		ArrayList<GraphicElement2D> ges = new ArrayList<GraphicElement2D>();
+		
+		if(sourceOfObjectRays != null)
+		{
+			for(OmnidirectionalLens2DCellType cellType:OmnidirectionalLens2DCellType.values())
+			{
+				ges.add(new PointGE2D(
+						"Image of ray start point of light source "+sourceOfObjectRays.getName()+" in cell "+cellType.name,	// name
+						mapFromCell0(
+								sourceOfObjectRays.getRayStartPoint(),	// p0
+								cellType
+								),	// position
+						3,	// radius,
+						new BasicStroke(1),	// stroke,
+						Color.GRAY,	// color
+						true	// interactive
+						));
+				
+				// sourceOfObjectRays.initialiseRays();
+				for(LightRay2D ray:sourceOfObjectRays.getRays())
+				{
+					// is the ray a reverse ray?  In which case, don't add it, as its image is the same as that of the forward ray
+					if(!ray.isReverse())
+					{
+						// ArrayList<Vector2D> trajectory = ray.getTrajectory();
+						
+						ges.add(
+							new ImageOfRayInOmnidirectionalLensCellGE2D(
+									"Image of "+ray.getName()+" in cell "+cellType.name,	// name
+									mapFromCell0(
+											ray.getInitialState().getStartPoint(),	// trajectory.get(0),	// .getStartPoint(),	// p0
+											cellType
+											),	// a
+									mapFromCell0(
+											ray.getInitialState().getSecondPointOnRay(),
+//											(trajectory.size() >= 2)
+//												?trajectory.get(1)
+//												:Vector2D.sum(ray.getStartPoint(), ray.getNormalisedDirection()),	// p0
+											cellType
+											),	// b
+									this,	// ol
+									cellType,
+									sourceOfObjectRays.getColour()
+								)
+							);
+					}
+				}
+			}
+		}
+
+		return ges;
+	}
 
 	@Override
 	public InteractiveOpticalComponent2D readFromCSV(String filename)
@@ -529,8 +691,8 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	{}
 	
 	@Override
-	public ArrayList<Ray2D> getRays() {
-		return Ray2D.NO_RAYS;
+	public ArrayList<LightRay2D> getRays() {
+		return LightRay2D.NO_RAYS;
 	}
 
 	@Override
@@ -542,6 +704,9 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		if(isSelected)
 		for(GraphicElement2D ge:controlGraphicElements)
 			ge.draw(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+		
+		for(GraphicElement2D ge:getRayImagesGraphicElements())
+			ge.draw(rpp, g2, true, mouseI, mouseJ);
 	}
 
 	@Override
@@ -553,6 +718,9 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		if(isSelected)
 		for(GraphicElement2D ge:controlGraphicElements)
 			ge.drawInFront(rpp, g2, ge == graphicElementNearMouse, mouseI, mouseJ);
+				
+		for(GraphicElement2D ge:getRayImagesGraphicElements())
+			ge.drawInFront(rpp, g2, true, mouseI, mouseJ);
 	}
 
 	@Override
@@ -572,9 +740,10 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	}
 
 	@Override
-	public void drawRays(RayPlay2DPanel p, Graphics2D g, GraphicElement2D graphicElementNearMouse, int mouseI,
+	public void drawRays(RayPlay2DPanel rpp, Graphics2D g2, GraphicElement2D graphicElementNearMouse, int mouseI,
 			int mouseJ)
-	{}
+	{
+	}
 
 	
 
@@ -604,6 +773,7 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	// 
 	
 	final JPopupMenu popup = new JPopupMenu();
+	final JMenu pointRaySourcesMenu = new JMenu("Calculate images of point ray source");
 	
 	// menu items
 //	JMenuItem
@@ -641,7 +811,7 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 				// and add all the lenses
 				for(OmnidirectionalLensLensType olLensType:OmnidirectionalLensLensType.values())
 				{
-					Lens2DIOC lens = new Lens2DIOC(getLens(olLensType));
+					Lens2DIOC lens = new Lens2DIOC(getLens(olLensType), rayPlay2DPanel);
 					panelWithPopup.iocs.add(lens);
 					// panelWithPopup.graphicElements.addAll(lens.getGraphicElements());
 				}
@@ -692,7 +862,8 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 						MyMath.deg2rad(30), // rayBundleAngle
 						64,	// rayBundleNoOfRays
 						Colour.GREEN,
-						255	// maxTraceLevel
+						255,	// maxTraceLevel
+						rayPlay2DPanel
 						);
 				// set the line constraining the source position
 				ls.setLineConstrainingStartPoint(
@@ -706,11 +877,54 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 			}
 		});
 		popup.add(addRaySourceMenuItem);
+		
+		// Separator
+	    popup.addSeparator();
+
+	    popup.add(pointRaySourcesMenu);
 	}
 	
 	private void updatePopup()
 	{
 		// enable/disable + text
+		//sub menu
+		pointRaySourcesMenu.removeAll();
+
+		ArrayList<PointRaySource2D> pointRaySources = OmnidirectionalLens2D.this.getRayPlay2DPanel().collectPointRaySources();
+		// System.out.println("Adding point ray sources");
+
+	    JMenuItem noObjectMenuItem = new JMenuItem("None");
+	    // addObjectMenuItem.setEnabled(!(objects.contains(pointRaySource)));
+	    noObjectMenuItem.getAccessibleContext().setAccessibleDescription("No source of object rays");
+	    noObjectMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// ArrayList<PointRaySource2D> pointRaySources = OmnidirectionalLens2D.this.getObjects();
+				sourceOfObjectRays = null;
+				
+				panelWithPopup.repaint();
+			}
+		});
+	    pointRaySourcesMenu.add(noObjectMenuItem);
+	    
+	    pointRaySourcesMenu.addSeparator();
+
+		for(PointRaySource2D pointRaySource:pointRaySources)
+		{
+		    JMenuItem addObjectMenuItem = new JMenuItem(pointRaySource.getName());
+		    // addObjectMenuItem.setEnabled(!(objects.contains(pointRaySource)));
+		    addObjectMenuItem.getAccessibleContext().setAccessibleDescription("Source of object rays");
+		    addObjectMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					// ArrayList<PointRaySource2D> pointRaySources = OmnidirectionalLens2D.this.getObjects();
+					sourceOfObjectRays = pointRaySource;
+					
+					panelWithPopup.repaint();
+				}
+			});
+		    pointRaySourcesMenu.add(addObjectMenuItem);
+			// System.out.println("Point ray source added: "+pointRaySource.getName());
+		}
+
 	}	
 
 }

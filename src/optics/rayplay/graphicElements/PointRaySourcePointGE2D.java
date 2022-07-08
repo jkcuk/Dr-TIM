@@ -31,10 +31,10 @@ public class PointRaySourcePointGE2D extends PointGE2D
 	 */
 	public enum PointRaySource2DPointType
 	{
-		S("Ray start point", 5),
-		N("Ray number control point", 2),
-		D("Direction control point", 3),
-		A("Cone angle control point", 3);
+		S("Ray start point", 6),
+		N("Ray number control point", 3),
+		D("Direction control point", 5),
+		A("Cone angle control point", 4);
 
 		public final String name;
 		public final int radius;

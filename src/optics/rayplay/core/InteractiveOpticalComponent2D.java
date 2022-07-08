@@ -20,9 +20,11 @@ public interface InteractiveOpticalComponent2D
 {
 	public String getName();
 	
+	public RayPlay2DPanel getRayPlay2DPanel();
+	
 	public void initialiseRays();
 
-	public ArrayList<Ray2D> getRays();
+	public ArrayList<LightRay2D> getRays();
 
 	public ArrayList<OpticalComponent2D> getOpticalComponents();
 

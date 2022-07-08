@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import optics.rayplay.core.InteractiveOpticalComponent2D;
+import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.interactiveOpticalComponents.Lens2DIOC;
 import optics.rayplay.raySources.PointRaySource2D;
 
@@ -91,7 +92,10 @@ public class CSVUtilities {
 	 * @param iocs
 	 * @throws Exception 
 	 */
-	public static void readComponentsFromCSV(String filename, ArrayList<InteractiveOpticalComponent2D> iocs, ArrayList<PointRaySource2D> rss) throws Exception
+	public static void readComponentsFromCSV(
+			String filename,
+			RayPlay2DPanel rayPlay2DPanel
+		) throws Exception
 	{
 		ArrayList<String[]> lines = readCSV(filename);
 
@@ -116,8 +120,8 @@ public class CSVUtilities {
 			switch(getComponentType(field[0]))
 			{
 			case LENS:
-				Lens2DIOC lens = new Lens2DIOC(field);
-				iocs.add(lens);
+				Lens2DIOC lens = new Lens2DIOC(field, rayPlay2DPanel);
+				rayPlay2DPanel.iocs.add(lens);
 				break;
 			case LENS_STAR:
 				// TODO LensStar2D ls = new LensStar2D(field);

@@ -4,58 +4,73 @@ import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 
-import math.MyMath;
 import math.Vector2D;
 import optics.rayplay.core.GraphicElement2D;
-import optics.rayplay.core.InteractiveElement2D;
 import optics.rayplay.core.RayPlay2DPanel;
+import optics.rayplay.geometry2D.Circle2D;
 import optics.rayplay.geometry2D.Geometry2D;
 import optics.rayplay.geometry2D.LineSegment2D;
-import optics.rayplay.raySources.PointRaySource2D;
+import optics.rayplay.geometry2D.Ray2D;
 import optics.rayplay.util.Colour;
 import optics.rayplay.util.SVGWriter;
 
-public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicElement2D, InteractiveElement2D
+/**
+ * A ray, i.e. a semi-infinite line
+ * @author johannes
+ *
+ */
+public class RayGE2D extends Ray2D implements GraphicElement2D
 {
+	private String name;
 	private Stroke stroke;
 	private Colour colour;
 	private String svgStyle;
 	private int svgLineThickness;
 	protected RayPlay2DPanel rayPlay2DPanel;
 	
-	public LineSegmentGE2D(Vector2D a, Vector2D b, Stroke stroke, Colour colour, int svgLineThickness, String svgStyle, RayPlay2DPanel rayPlay2DPanel)
+	/**
+	 * Create a ray graphics element with start point s and direction d
+	 * @param s
+	 * @param d
+	 * @param name
+	 * @param stroke
+	 * @param colour
+	 * @param svgLineThickness
+	 * @param svgStyle
+	 * @param rayPlay2DPanel
+	 */
+	public RayGE2D(Vector2D s, Vector2D d, String name, Stroke stroke, Colour colour, int svgLineThickness, String svgStyle, RayPlay2DPanel rayPlay2DPanel)
 	{
-		super(a, b);
+		super(s, d);
 		
+		this.name = name;
 		this.stroke = stroke;
 		this.colour = colour;
 		this.svgLineThickness = svgLineThickness;
 		this.svgStyle = svgStyle;
 		this.rayPlay2DPanel = rayPlay2DPanel;
-		
-		initPopup();
 	}
 
 	@Override
-	public abstract String getName();
-
-	@Override
-	public abstract boolean isInteractive();
+	public boolean isInteractive()
+	{
+		return false;
+	}
 
 	@Override
 	public boolean isMouseNear(RayPlay2DPanel p, int i, int j)
 	{
 		// define the line segment in (i,j) coordinates
+		Vector2D[] endPoint = getEndPoints();
+
+		if(endPoint == null) return false;
+		
 		LineSegment2D s = new LineSegment2D(
-				new Vector2D(p.x2i(a.x), p.y2j(a.y)),
-				new Vector2D(p.x2i(b.x), p.y2j(b.y))
+				new Vector2D(p.x2i(endPoint[0].x), p.y2j(endPoint[0].y)),
+				new Vector2D(p.x2i(endPoint[1].x), p.y2j(endPoint[1].y))
 				);
 
 		return (Geometry2D.lineSementPointDistance(s, new Vector2D(i, j)) < 3);
@@ -63,6 +78,15 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 	
 	
 	//getters and setters
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public Stroke getStroke() {
 		return stroke;
@@ -105,6 +129,43 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 	}
 	
 	
+	
+	//
+	// the meat
+	//
+	
+	/**
+	 * @return	the end points for drawing purposes; null if nothing is shown
+	 */
+	public Vector2D[] getEndPoints()
+	{
+		Circle2D enclosingCircle = rayPlay2DPanel.getEnclosingCircle();
+		double alpha[] = Geometry2D.getAlphaForLineCircleIntersections(
+				startPoint,	// pointOnLine
+				normalisedDirection,	// lineDirection
+				enclosingCircle.getCentre(),	// circleCentre
+				enclosingCircle.getRadius()	// circleRadius
+			);
+		if(alpha != null)
+		{
+			// there are intersections, but are they in the "forward" direction?
+			if(Math.max(alpha[0], alpha[1]) >= 0)
+			{
+				// at least one intersection is in the "forward" direction
+				Vector2D intersection[] = new Vector2D[2];
+
+				for(int i=0; i<=1; i++)
+				{
+					if(alpha[i] < 0) intersection[i] = startPoint;
+					else intersection[i] = Vector2D.sum(startPoint, normalisedDirection.getProductWith(alpha[i]));
+				}
+				
+				return intersection;
+			}
+		}
+		
+		return null;
+	}
 
 	@Override
 	public void draw(RayPlay2DPanel p, Graphics2D g, boolean mouseNear, int mouseI, int mouseJ)
@@ -113,7 +174,8 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 
 		g.setStroke(stroke);
 		g.setColor(colour.getColor());
-		p.drawLine(a, b, g);
+		Vector2D[] endPoint = getEndPoints();
+		if(endPoint != null) p.drawLine(endPoint[0], endPoint[1], g);
 	}
 	
 	@Override
@@ -128,13 +190,16 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 			float lineWidth = ((BasicStroke)stroke).getLineWidth();
 			g.setStroke(new BasicStroke(lineWidth+4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 			g.setColor(Color.LIGHT_GRAY);
-			p.drawLine(a, b, g);
+			Vector2D[] endPoint = getEndPoints();
+			if(endPoint != null) p.drawLine(endPoint[0], endPoint[1], g);
 		}
 	}
 	
 	public void writeSVGCode(RayPlay2DPanel rpp)
 	{
-		SVGWriter.writeSVGLine(a, b, rpp, colour.getSVGName(), svgLineThickness, svgStyle);
+		Vector2D[] endPoint = getEndPoints();
+
+		if(endPoint != null) SVGWriter.writeSVGLine(endPoint[0], endPoint[1], rpp, colour.getSVGName(), svgLineThickness, svgStyle);
 	}
 	
 	@Override
@@ -151,71 +216,15 @@ public abstract class LineSegmentGE2D extends LineSegment2D implements GraphicEl
 	}
 	
 	
-	private RayPlay2DPanel panelWithPopup;
-	
 	@Override
 	public boolean mousePressed(RayPlay2DPanel rpp, boolean mouseNear, MouseEvent e)
 	{
-		if(mouseNear && e.isPopupTrigger())
-		{
-			panelWithPopup = rpp;
-			popupMenuX = e.getX();
-			popupMenuY = e.getY();
-			
-			updatePopup();
-
-			popup.show(e.getComponent(), e.getX(), e.getY());
-			
-			// say that the event has been handled
-			return true;
-		}
 		return false;
 	}
 
-
-	// 
-	// popup menu
-	// 
-	
-	private int popupMenuX, popupMenuY;
-	final JPopupMenu popup = new JPopupMenu();
-	
-	private void initPopup()
-	{
-	    JMenuItem addRaySourceMenuItem = new JMenuItem("Add ray source constrained to this line");
-	    addRaySourceMenuItem.setEnabled(true);
-	    addRaySourceMenuItem.getAccessibleContext().setAccessibleDescription("Add ray source constrained to this line");
-	    addRaySourceMenuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				PointRaySource2D ls = new PointRaySource2D(
-						"Point ray source constrained to line \""+LineSegmentGE2D.this.getName()+"\"",	// name
-						Geometry2D.getPointOnLineClosestToPoint(LineSegmentGE2D.this, new Vector2D(panelWithPopup.i2x(popupMenuX), panelWithPopup.j2y(popupMenuY))),	// raysStartPoint
-						MyMath.deg2rad(0), // centralRayAngle
-						false,	// forwardRaysOnly
-						true, // rayBundle
-						true,	// rayBundleIsotropic
-						MyMath.deg2rad(30), // rayBundleAngle
-						64,	// rayBundleNoOfRays
-						Colour.GREEN,
-						255,	// maxTraceLevel
-						rayPlay2DPanel
-						);
-				// set the line constraining the source position
-				ls.setLineConstrainingStartPoint(
-						LineSegmentGE2D.this
-					);
-				panelWithPopup.iocs.add(ls);
-				// panelWithPopup.graphicElements.addAll(ls.getGraphicElements());
-
-				panelWithPopup.repaint();
-			}
-		});
-		popup.add(addRaySourceMenuItem);
-}
-	
-	private void updatePopup()
-	{
-		// enable/disable + text
-	}	
-
+	@Override
+	public void drawAdditionalInfoWhenMouseNear(RayPlay2DPanel p, Graphics2D g, int mouseI, int mouseJ) {
+		// TODO Auto-generated method stub
+		
+	}
 }

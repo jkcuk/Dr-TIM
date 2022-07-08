@@ -7,7 +7,7 @@ import java.awt.event.MouseEvent;
 
 import math.Vector2D;
 import optics.rayplay.core.OpticalComponent2D;
-import optics.rayplay.core.Ray2D;
+import optics.rayplay.core.LightRay2D;
 import optics.rayplay.core.RayComponentIntersection2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Bijection2D;
@@ -51,19 +51,20 @@ implements OpticalComponent2D, Bijection2D
 			Vector2D principalPoint,
 			double focalLength,
 			Vector2D endPoint1,
-			Vector2D endPoint2
+			Vector2D endPoint2,
+			RayPlay2DPanel rayPlay2DPanel
 		)
 	{
-		super(endPoint1, endPoint2, new BasicStroke(3), Colour.CYAN, 3, "opacity=\"0.7\"");
+		super(endPoint1, endPoint2, new BasicStroke(3), Colour.CYAN, 3, "opacity=\"0.7\"", rayPlay2DPanel);
 		
 		this.name = name;
 		this.principalPoint = principalPoint;
 		this.focalLength = focalLength;
 	}
 	
-	public Lens2D(String name)
+	public Lens2D(String name, RayPlay2DPanel rayPlay2DPanel)
 	{
-		this(name, null, 1, null, null);
+		this(name, null, 1, null, null, rayPlay2DPanel);
 	}
 
 	
@@ -134,7 +135,7 @@ implements OpticalComponent2D, Bijection2D
 	// useful methods
 	
 	@Override
-	public RayComponentIntersection2D calculateIntersection(Ray2D r, boolean forwardOnly, OpticalComponent2D lastIntersectionComponent)
+	public RayComponentIntersection2D calculateIntersection(LightRay2D r, boolean forwardOnly, OpticalComponent2D lastIntersectionComponent)
 	{
 		// s1 from a1 to b1, s2 from a2 to b2
 		// define line directions d1 = b1 - a1, d2 = b2 - a2
@@ -146,8 +147,8 @@ implements OpticalComponent2D, Bijection2D
 		// alpha2 = -((a1d2 d1d1 - a2d2 d1d1 - a1d1 d1d2 + a2d1 d1d2)/(d1d2^2 - d1d1 d2d2))
 		Vector2D a1 = a;
 		Vector2D d1 = getA2B();
-		Vector2D a2 = r.getStartingPoint();
-		Vector2D d2 = r.getDirection();
+		Vector2D a2 = r.getStartPoint();
+		Vector2D d2 = r.getNormalisedDirection();
 		double a1d1 = Vector2D.scalarProduct(a1, d1);
 		double a1d2 = Vector2D.scalarProduct(a1, d2);
 		double a2d1 = Vector2D.scalarProduct(a2, d1);
@@ -192,10 +193,10 @@ implements OpticalComponent2D, Bijection2D
 
 
 	@Override
-	public void stepThroughComponent(Ray2D r, RayComponentIntersection2D i)
+	public void stepThroughComponent(LightRay2D r, RayComponentIntersection2D i)
 	{
 		// old ray direction
-		Vector2D d = r.getDirection();
+		Vector2D d = r.getNormalisedDirection();
 		
 		// calculate the direction of the optical axis from object to image space
 		Vector2D n = getNormal(true);	// normal, but not necessarily pointing from object to image space
@@ -249,8 +250,6 @@ implements OpticalComponent2D, Bijection2D
 				pq.getProductWith(focalLength/(focalLength+Vector2D.scalarProduct(pq, aHat)))
 			);	
 	}
-
-
 
 	@Override
 	public Vector2D mapOutwards(Vector2D q)

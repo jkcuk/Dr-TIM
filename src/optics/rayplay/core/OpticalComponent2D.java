@@ -22,7 +22,7 @@ public interface OpticalComponent2D {
 	 * @param lastIntersectionComponent	the optical component that was previously intersected (and which might have to be avoided)
 	 * @return	the intersection between the ray r and this component (or a sub-component, in case this optical component is a collection)
 	 */
-	public RayComponentIntersection2D calculateIntersection(Ray2D r, boolean forwardOnly, OpticalComponent2D lastIntersectionComponent);
+	public RayComponentIntersection2D calculateIntersection(LightRay2D r, boolean forwardOnly, OpticalComponent2D lastIntersectionComponent);
 	
 	/**
 	 * Step the ray through one component.
@@ -32,5 +32,5 @@ public interface OpticalComponent2D {
 	 * @param r
 	 * @param intersectionPoint
 	 */
-	public void stepThroughComponent(Ray2D r, RayComponentIntersection2D i);
+	public void stepThroughComponent(LightRay2D r, RayComponentIntersection2D i);
 }

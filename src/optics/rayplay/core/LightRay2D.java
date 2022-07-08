@@ -3,20 +3,34 @@ package optics.rayplay.core;
 import java.util.ArrayList;
 
 import math.Vector2D;
+import optics.rayplay.geometry2D.Circle2D;
+import optics.rayplay.geometry2D.Geometry2D;
+import optics.rayplay.geometry2D.Ray2D;
 
-public class Ray2D {
+/**
+ * A light ray.
+ * 
+ * The underlying ray's start point and direction are those of the current (i.e., so far last) straight-line segment.
+ * @author johannes
+ *
+ */
+public class LightRay2D extends Ray2D {
 	
-	public static final ArrayList<Ray2D> NO_RAYS = new ArrayList<Ray2D>();
+	public static final ArrayList<LightRay2D> NO_RAYS = new ArrayList<LightRay2D>();
 
-	/**
-	 * starting point of the current (last, so far) straight-line segment
-	 */
-	private Vector2D startingPoint;
+	private String name;
 	
 	/**
-	 * direction of the current (last, so far) straight-line segment
+	 * the initial state of the ray
 	 */
-	private Vector2D direction;
+	private Ray2D initialState;
+	
+	/**
+	 * true if this is the same ray as another ray, but fired off in the opposite direction;
+	 * it is good to know this e.g. when calculating the image of a ray in the cells of an omnidirectional lens,
+	 * where both the forward and reverse rays correspond to the same image
+	 */
+	private boolean reverse;
 	
 	/**
 	 * path length accumulated so far
@@ -28,45 +42,52 @@ public class Ray2D {
 	 */
 	private ArrayList<Vector2D> trajectory;
 	
+	private RayPlay2DPanel rayPlay2DPanel;
+	
 	/**
 	 * the trace level, i.e. the number of additional intersections the ray can make before it is no longer traced
 	 */
 	private int traceLevel;
 
-	public Ray2D(
-			Vector2D startingPoint,
+	public LightRay2D(
+			String name,
+			Vector2D startPoint,
 			Vector2D direction,
-			int maxTraceLevel
+			boolean reverse,
+			int maxTraceLevel,
+			RayPlay2DPanel rayPlay2DPanel
 		)
 	{
-		super();
+		super(startPoint, direction);
 		
-		setStartingPoint(startingPoint);
-		setDirection(direction);
+		this.initialState = new Ray2D(startPoint, direction);
+		this.name = name;
 		this.pathLength = 0;
 		this.traceLevel = maxTraceLevel;
+		this.reverse = reverse;
+		this.rayPlay2DPanel = rayPlay2DPanel;
 		
 		trajectory = new ArrayList<Vector2D>();
-		trajectory.add(startingPoint);
+		trajectory.add(startPoint);
 	}
 
 	
 	// getters & setters
 	
-	public Vector2D getStartingPoint() {
-		return startingPoint;
+	public String getName() {
+		return name;
 	}
 
-	public void setStartingPoint(Vector2D startingPoint) {
-		this.startingPoint = startingPoint;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public Vector2D getDirection() {
-		return direction;
+	public Ray2D getInitialState() {
+		return initialState;
 	}
 
-	public void setDirection(Vector2D direction) {
-		this.direction = direction.getNormalised();
+	public void setInitialState(Ray2D initialState) {
+		this.initialState = initialState;
 	}
 
 	public double getPathLength() {
@@ -92,11 +113,28 @@ public class Ray2D {
 	public void setTraceLevel(int traceLevel) {
 		this.traceLevel = traceLevel;
 	}
+	
+	public boolean isReverse() {
+		return reverse;
+	}
+
+	public void setReverse(boolean reverse) {
+		this.reverse = reverse;
+	}
+
+	public RayPlay2DPanel getRayPlay2DPanel() {
+		return rayPlay2DPanel;
+	}
+
+	public void setRayPlay2DPanel(RayPlay2DPanel rayPlay2DPanel) {
+		this.rayPlay2DPanel = rayPlay2DPanel;
+	}
+
 
 
 	
 	// useful methods
-	
+
 	/**
 	 * Start a new segment in the ray's trajectory.
 	 * Decrease the ray's traceLevel by 1.
@@ -106,14 +144,14 @@ public class Ray2D {
 	public void startNextSegment(Vector2D newStartingPoint, Vector2D newDirection)
 	{
 		// calculate the path length from the previous starting point to the new starting point
-		pathLength += Vector2D.distance(startingPoint, newStartingPoint);
+		pathLength += Vector2D.distance(startPoint, newStartingPoint);
 		
 		// add the new starting point to the trajectory, i.e. the list of old starting points
 		trajectory.add(newStartingPoint);
 		
 		// set the new starting point and direction
-		this.startingPoint = newStartingPoint;
-		this.direction = newDirection;
+		this.startPoint = newStartingPoint;
+		setNormalisedDirection(newDirection);
 		
 		traceLevel--;
 	}
@@ -125,9 +163,27 @@ public class Ray2D {
 	 */
 	public void advance(double distance)
 	{
-		Vector2D newStartingPoint = Vector2D.sum(startingPoint, direction.getWithLength(distance));
-		startNextSegment(newStartingPoint, direction);
+		Vector2D newStartingPoint = Vector2D.sum(startPoint, normalisedDirection.getWithLength(distance));
+		startNextSegment(newStartingPoint, normalisedDirection);
 	}
+	
+	public void advanceToEnclosingCircle()
+	{
+		Circle2D enclosingCircle = rayPlay2DPanel.getEnclosingCircle();
+		double alpha[] = Geometry2D.getAlphaForLineCircleIntersections(
+				startPoint,	// pointOnLine
+				normalisedDirection,	// lineDirection
+				enclosingCircle.getCentre(),	// circleCentre
+				enclosingCircle.getRadius()	// circleRadius
+			);
+		if(alpha != null)
+		{
+			// there are intersections, but are they in the "forward" direction?
+			double max = Math.max(alpha[0], alpha[1]);
+			if(max >= 0) advance(max);
+		}
+	}
+
 	
 	/**
 	 * @param opticalComponents
@@ -153,7 +209,7 @@ public class Ray2D {
 				{
 					// there is an intersection; is it closer than the current closest intersection?
 
-					double d = Vector2D.distance(getStartingPoint(), i.p);
+					double d = Vector2D.distance(getStartPoint(), i.p);
 					if(d < closestIntersectionDistance)
 					{
 						// the intersection is closer than the current closest intersection
@@ -183,7 +239,8 @@ public class Ray2D {
 			if(i == null)
 			{
 				// there is no intersection with any of the components
-				advance(10);
+				// advance(100);
+				advanceToEnclosingCircle();
 				return;
 			}
 			else

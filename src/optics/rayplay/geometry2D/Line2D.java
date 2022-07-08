@@ -3,7 +3,7 @@ package optics.rayplay.geometry2D;
 import math.Vector2D;
 
 /**
- * A line through points a and b
+ * An infinite line through points a and b
  * 
  * @author johannes
  *
@@ -61,7 +61,7 @@ public class Line2D
 	/**
 	 * @return	normalised direction from A to B
 	 */
-	public Vector2D getDirection()
+	public Vector2D getNormalisedDirection()
 	{
 		return getA2B().getNormalised();
 	}
@@ -82,5 +82,5 @@ public class Line2D
 	public boolean passesThroughPoint(Vector2D p)
 	{
 		return Geometry2D.isPointOnLine(this, p);
-	}
+	}	
 }

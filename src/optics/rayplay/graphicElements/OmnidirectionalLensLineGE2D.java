@@ -33,9 +33,21 @@ public class OmnidirectionalLensLineGE2D extends LineSegmentGE2D
 	protected boolean interactive;
 	
 	
-	public OmnidirectionalLensLineGE2D(String name, Vector2D a, Vector2D b, Stroke stroke, Colour colour, int svgLineThickness, String svgStyle, boolean interactive, OmnidirectionalLens2D ol, OmnidirectionalLensLineType lt)
+	public OmnidirectionalLensLineGE2D(
+			String name,
+			Vector2D a,
+			Vector2D b,
+			Stroke stroke,
+			Colour colour,
+			int svgLineThickness,
+			String svgStyle,
+			boolean interactive,
+			OmnidirectionalLens2D ol,
+			OmnidirectionalLensLineType lt,
+			RayPlay2DPanel rayPlay2DPanel
+		)
 	{
-		super(a, b, stroke, colour, svgLineThickness, svgStyle);
+		super(a, b, stroke, colour, svgLineThickness, svgStyle, rayPlay2DPanel);
 		
 		this.name = name;
 		this.ol = ol;
@@ -43,17 +55,18 @@ public class OmnidirectionalLensLineGE2D extends LineSegmentGE2D
 		this.interactive = interactive;
 	}
 
-	public OmnidirectionalLensLineGE2D(String name, Vector2D a, Vector2D b, OmnidirectionalLens2D ol, OmnidirectionalLensLineType lt)
+	public OmnidirectionalLensLineGE2D(String name, Vector2D a, Vector2D b, OmnidirectionalLens2D ol, OmnidirectionalLensLineType lt, RayPlay2DPanel rayPlay2DPanel)
 	{
 		this(name, a, b,
 				new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0),	// dashed
-				Colour.GRAY, 1, "", true, ol, lt
+				Colour.GRAY, 1, "", true, ol, lt,
+				rayPlay2DPanel
 			);
 	}
 
-	public OmnidirectionalLensLineGE2D(String name, OmnidirectionalLens2D ol, OmnidirectionalLensLineType lt)
+	public OmnidirectionalLensLineGE2D(String name, OmnidirectionalLens2D ol, OmnidirectionalLensLineType lt, RayPlay2DPanel rayPlay2DPanel)
 	{
-		this(name, new Vector2D(0, 0), new Vector2D(0, 0), ol, lt);
+		this(name, new Vector2D(0, 0), new Vector2D(0, 0), ol, lt, rayPlay2DPanel);
 	}
 
 	

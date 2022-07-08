@@ -24,7 +24,7 @@ import optics.rayplay.util.SVGWriter;
 import optics.rayplay.core.GraphicElement2D;
 import optics.rayplay.core.InteractiveOpticalComponent2D;
 import optics.rayplay.core.OpticalComponent2D;
-import optics.rayplay.core.Ray2D;
+import optics.rayplay.core.LightRay2D;
 import optics.rayplay.core.RayPlay2DPanel;
 import optics.rayplay.geometry2D.Geometry2D;
 import optics.rayplay.geometry2D.Line2D;
@@ -36,6 +36,8 @@ import optics.rayplay.geometry2D.Line2D;
 public class PointRaySource2D implements InteractiveOpticalComponent2D
 {
 	private String name;
+	
+	private RayPlay2DPanel rayPlay2DPanel;
 	
 	// ray / ray bundle
 	private Vector2D raysStartPoint;
@@ -87,7 +89,7 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 //	private RaysCharacteristicsPoint2D raysCharacteristicsPoint;
 	// private NumberOfRaysPoint2D numberOfRaysPoint;
 
-	private ArrayList<Ray2D> rays;
+	private ArrayList<LightRay2D> rays;
 	
 	private ArrayList<GraphicElement2D> displayGraphicElements = new ArrayList<GraphicElement2D>();
 	private ArrayList<GraphicElement2D> controlGraphicElements = new ArrayList<GraphicElement2D>();
@@ -107,9 +109,10 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 			double rayBundleAngle,
 			int rayBundleNoOfRays,
 			Colour colour,
-			int maxTraceLevel
+			int maxTraceLevel,
 //			Stroke pointStroke,
 //			Color pointColor
+			RayPlay2DPanel rayPlay2DPanel
 		)
 	{
 		// super(name);
@@ -127,6 +130,7 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 //		this.pointColor = pointColor;
 		this.darkenExhaustedRays = true;
 		this.maxTraceLevel = maxTraceLevel;
+		this.rayPlay2DPanel = rayPlay2DPanel;
 
 		points = new HashMap<PointRaySource2DPointType, PointRaySourcePointGE2D>();
 
@@ -289,11 +293,11 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 		this.darkenExhaustedRays = darkenExhaustedRays;
 	}
 
-	public ArrayList<Ray2D> getRays() {
+	public ArrayList<LightRay2D> getRays() {
 		return rays;
 	}
 
-	public void setRays(ArrayList<Ray2D> rays) {
+	public void setRays(ArrayList<LightRay2D> rays) {
 		this.rays = rays;
 	}
 	
@@ -301,10 +305,21 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 	{
 		return points.get(type);
 	}
+	
+	public RayPlay2DPanel getRayPlay2DPanel() {
+		return rayPlay2DPanel;
+	}
+
+	public void setRayPlay2DPanel(RayPlay2DPanel rayPlay2DPanel) {
+		this.rayPlay2DPanel = rayPlay2DPanel;
+	}
+
+
 
 
 
 	//
+
 
 	public Vector2D getCentralRayDirection() {
 		return new Vector2D(Math.cos(centralRayAngle), Math.sin(centralRayAngle));
@@ -313,7 +328,7 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 	public void initialiseRays()
 	{
 		Vector2D dC = getCentralRayDirection();
-		rays = new ArrayList<Ray2D>();
+		rays = new ArrayList<LightRay2D>();
 		
 		if(lineConstrainingStartPoint != null)
 		{
@@ -337,7 +352,7 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 					Vector2D d = new Vector2D(Math.cos(alpha),Math.sin(alpha));
 
 					// initialise the forward ray
-					rays.add(new Ray2D(raysStartPoint, d, maxTraceLevel));
+					rays.add(new LightRay2D("Ray #"+r+" from "+name, raysStartPoint, d, false, maxTraceLevel, rayPlay2DPanel));
 				}
 			}
 			else
@@ -355,12 +370,12 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 					Vector2D d = new Vector2D(Math.cos(alpha),Math.sin(alpha));
 
 					// initialise the forward ray
-					rays.add(new Ray2D(raysStartPoint, d, maxTraceLevel));
+					rays.add(new LightRay2D("Ray #"+r+" from "+name, raysStartPoint, d, false, maxTraceLevel, rayPlay2DPanel));
 
 					if(!forwardRaysOnly)
 					{
 						// ... and the backwards ray
-						rays.add(new Ray2D(raysStartPoint, d.getProductWith(-1), maxTraceLevel));
+						rays.add(new LightRay2D("Backwards ray #"+r+" from "+name, raysStartPoint, d.getProductWith(-1), true, maxTraceLevel, rayPlay2DPanel));
 					}
 				}
 			}
@@ -368,12 +383,12 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 		else
 		{
 			// initialise the forward ray
-			rays.add(new Ray2D(raysStartPoint, dC, maxTraceLevel));
+			rays.add(new LightRay2D("Ray from "+name, raysStartPoint, dC, false, maxTraceLevel, rayPlay2DPanel));
 
 			if(!forwardRaysOnly)
 			{
 				// ... and the backwards ray
-				rays.add(new Ray2D(raysStartPoint, dC.getProductWith(-1), maxTraceLevel));
+				rays.add(new LightRay2D("Backwards ray from "+name, raysStartPoint, dC.getProductWith(-1), true, maxTraceLevel, rayPlay2DPanel));
 			}
 		}
 	}
@@ -405,7 +420,7 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 		AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
         g2.setComposite(alcom);
 
-        for(Ray2D ray:rays)
+        for(LightRay2D ray:rays)
 		{
 			ArrayList<Vector2D> t = ray.getTrajectory();
 			if(darkenExhaustedRays && (ray.getTraceLevel() == 0))
@@ -463,7 +478,7 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 
 	public void writeSVGCode(RayPlay2DPanel rpp)
 	{
-		for(Ray2D ray:rays)
+		for(LightRay2D ray:rays)
 		{
 			ArrayList<Vector2D> t = ray.getTrajectory();
 			if(darkenExhaustedRays && (ray.getTraceLevel() == 0))
