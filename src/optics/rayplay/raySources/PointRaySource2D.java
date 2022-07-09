@@ -19,6 +19,7 @@ import math.MyMath;
 import math.Vector2D;
 import optics.rayplay.graphicElements.PointRaySourcePointGE2D;
 import optics.rayplay.graphicElements.PointRaySourcePointGE2D.PointRaySource2DPointType;
+import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D;
 import optics.rayplay.util.Colour;
 import optics.rayplay.util.SVGWriter;
 import optics.rayplay.core.GraphicElement2D;
@@ -77,6 +78,12 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 	private boolean darkenExhaustedRays;
 	
 	private int maxTraceLevel;
+	
+	/**
+	 * images of the rays from this point ray source are shown in the associatedOmnidirectionalLenses's different cells;
+	 * this PointRaySource2D is each of these OmnidirectionalLens2D's sourceOfObjectRays
+	 */
+	private ArrayList<OmnidirectionalLens2D> associatedOmnidirectionalLenses = new ArrayList<OmnidirectionalLens2D>();
 	
 //	private Stroke pointStroke;
 //	private Color pointColor;
@@ -268,6 +275,14 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 //	public void setPointColor(Color pointColor) {
 //		this.pointColor = pointColor;
 //	}
+
+	public ArrayList<OmnidirectionalLens2D> getAssociatedOmnidirectionalLenses() {
+		return associatedOmnidirectionalLenses;
+	}
+
+	public void setAssociatedOmnidirectionalLenses(ArrayList<OmnidirectionalLens2D> associatedOmnidirectionalLenses) {
+		this.associatedOmnidirectionalLenses = associatedOmnidirectionalLenses;
+	}
 
 	public Colour getColour() {
 		return colour;
@@ -731,6 +746,10 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 		deleteRayBundleMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				panelAssociatedWithPopup.iocs.remove(PointRaySource2D.this);
+				for(OmnidirectionalLens2D ol:associatedOmnidirectionalLenses)
+				{
+					ol.setSourceOfObjectRays(null);
+				}
 				// panelAssociatedWithPopup.graphicElements.removeAll(rs.getGraphicElements());
 				panelAssociatedWithPopup.repaint();
 			}
@@ -742,7 +761,7 @@ public class PointRaySource2D implements InteractiveOpticalComponent2D
 	    
 	    releaseSourcePositionFromLineMenuItem = new JMenuItem("Release source position from line");
 	    releaseSourcePositionFromLineMenuItem.setEnabled(getLineConstrainingStartPoint() != null);
-	    releaseSourcePositionFromLineMenuItem.getAccessibleContext().setAccessibleDescription("Delete light source");
+	    releaseSourcePositionFromLineMenuItem.getAccessibleContext().setAccessibleDescription("Release source position from line");
 	    releaseSourcePositionFromLineMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setLineConstrainingStartPoint(null);

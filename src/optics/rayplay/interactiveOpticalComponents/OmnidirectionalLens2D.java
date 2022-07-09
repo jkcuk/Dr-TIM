@@ -966,7 +966,9 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 		    addObjectMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					// ArrayList<PointRaySource2D> pointRaySources = OmnidirectionalLens2D.this.getObjects();
+					if(sourceOfObjectRays != null) sourceOfObjectRays.getAssociatedOmnidirectionalLenses().remove(OmnidirectionalLens2D.this);
 					sourceOfObjectRays = pointRaySource;
+					sourceOfObjectRays.getAssociatedOmnidirectionalLenses().add(OmnidirectionalLens2D.this);
 					
 					panelWithPopup.repaint();
 				}
