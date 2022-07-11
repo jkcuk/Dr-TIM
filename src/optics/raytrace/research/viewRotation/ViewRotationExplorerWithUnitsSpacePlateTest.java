@@ -10,6 +10,7 @@ import javax.swing.JTabbedPane;
 
 import math.*;
 import net.miginfocom.swing.MigLayout;
+import optics.raytrace.sceneObjects.ParametrisedDisc;
 import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.AzimuthalPixelatedFresnelWedge;
@@ -402,7 +403,7 @@ public class ViewRotationExplorerWithUnitsSpacePlateTest extends NonInteractiveT
 		}
 		
 		//space plate
-		spacePlate = false;
+		spacePlate = true;
 		extraDistance = 1*CM;
 	}
 
@@ -868,18 +869,22 @@ public class ViewRotationExplorerWithUnitsSpacePlateTest extends NonInteractiveT
 		
 		//Add a space plate
 		if(spacePlate) {
-		scene.addSceneObject( new EditableScaledParametrisedDisc(
+		scene.addSceneObject( new ParametrisedDisc(
 				"Space Plate",	// description
 				objectCentre.getSumWith(Vector3D.Z.getProductWith(-cameraDistance/8)),	// centre
 				Vector3D.Z,	// normal
-				3*CM,	// radius
+				1*CM,	// radius
 				new IdealThinSpacePlateSurface(
 						objectCentre.getSumWith(Vector3D.Z.getProductWith(-cameraDistance/8)),	// centre
-						Vector3D.Z,// surfaceNormal,
-						extraDistance,// extraDistance,
+						Vector3D.Z.getProductWith(extraDistance),// surfaceNormal,
 						surfaceTransmissionCoefficient,
 						false// shadowThrowing
 						),	// surfaceProperty
+//				new Teleporting( new ParametrisedPlane("destination plane", 
+//						objectCentre.getSumWith(Vector3D.Z.getProductWith(+extraDistance-cameraDistance/8)),// 
+//						Vector3D.Z.getProductWith(1), 
+//						null, null, null
+//						)),
 				scene,	// parent
 				studio				
 				)
