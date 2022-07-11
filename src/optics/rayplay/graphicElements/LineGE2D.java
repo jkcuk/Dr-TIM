@@ -65,10 +65,10 @@ public class LineGE2D extends Line2D implements GraphicElement2D, InteractiveEle
 	@Override
 	public boolean isMouseNear(RayPlay2DPanel p, int i, int j)
 	{
-		// define the line segment in (i,j) coordinates
+		// define the line in (i,j) coordinates
 		Line2D l = new Line2D(
-				new Vector2D(p.x2i(a.x), p.y2j(a.y)),
-				new Vector2D(p.x2i(b.x), p.y2j(b.y))
+				new Vector2D(p.x2id(a.x), p.y2jd(a.y)),
+				new Vector2D(p.x2id(b.x), p.y2jd(b.y))
 				);
 		double d = Geometry2D.linePointDistance(l, new Vector2D(i, j));
 		return (d < 3);
@@ -146,13 +146,13 @@ public class LineGE2D extends Line2D implements GraphicElement2D, InteractiveEle
 		
 		if(endPoint != null)
 		{
-			System.out.println("endPoint[0]="+endPoint[0]+", endPoint[1]="+endPoint[1]);
+			// System.out.println("endPoint[0]="+endPoint[0]+", endPoint[1]="+endPoint[1]);
 			p.drawLine(endPoint[0], endPoint[1], g);
 		}
-		else
-		{
-			System.out.println("endPoint=null");
-		}
+//		else
+//		{
+//			System.out.println("endPoint=null");
+//		}
 	}
 	
 	@Override
