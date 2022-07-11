@@ -873,7 +873,7 @@ public class ViewRotationExplorerWithUnitsSpacePlateTest extends NonInteractiveT
 				"Space Plate",	// description
 				objectCentre.getSumWith(Vector3D.Z.getProductWith(-cameraDistance/8)),	// centre
 				Vector3D.Z,	// normal
-				1*CM,	// radius
+				1*CM,	// radiu
 				new IdealThinSpacePlateSurface(
 						objectCentre.getSumWith(Vector3D.Z.getProductWith(-cameraDistance/8)),	// centre
 						Vector3D.Z.getProductWith(extraDistance),// surfaceNormal,
