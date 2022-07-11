@@ -274,6 +274,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	 * Camera type to be used. anaglyph camera if true else standard. 
 	 */
 	private boolean anaglyphCamera;
+	
+	/**
+	 * Should the camera be moved along an 'eyeball' or be stationary in one position as the view direction changes
+	 */
+	private boolean useEyeballCamera;
 
 	/**
 	 * The eye separationg in the anaglyph case
@@ -383,6 +388,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		cameraHorizontalFOVDeg = 130;
 		cameraApertureSize = ApertureSizeType.EYE;
 		cameraFocussingDistance = 1*M;
+		useEyeballCamera = true;
 		
 		
 		eyePosition = new Vector3D(0,0,-1.5).getProductWith(CM);
@@ -902,13 +908,12 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 			Vector3D topDirection = Vector3D.Y.getPartPerpendicularTo(cameraViewDirection);
 			Vector3D cameraCentre;
-			if (cameraApertureSize == ApertureSizeType.EYE) {
-
+			if (useEyeballCamera) {
 				//The eye centre position
-				cameraCentre = Vector3D.O.getSumWith(Vector3D.Z.getWithLength(-allRadius));
+				cameraCentre = Vector3D.Z.getWithLength(-allRadius);
 				cameraViewCentre = cameraCentre.getSumWith(cameraViewDirection.getWithLength(allRadius));
 			}else {
-				cameraCentre = Vector3D.O.getSumWith(Vector3D.Z.getWithLength(-cameraDistance));
+				cameraCentre = Vector3D.Z.getWithLength(-cameraDistance);
 				cameraViewCentre = cameraCentre.getSumWith(cameraViewDirection.getWithLength(cameraDistance));
 			}
 			cameraTopDirection = Geometry.rotate(topDirection, cameraViewDirection, Math.toRadians(cameraRotation)).getSumWith(cameraCentre); 
@@ -1000,7 +1005,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private DoublePanel cameraHorizontalFOVDegPanel;
 	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
 	private DoublePanel cameraFocussingDistancePanel;
-	private JCheckBox anaglyphCameraCheckBox;
+	private JCheckBox anaglyphCameraCheckBox, useEyeballCameraCheckBox;
 
 
 
@@ -1356,7 +1361,11 @@ protected void createInteractiveControlPanel()
 
 		cameraApertureSizeComboBox = new JComboBox<ApertureSizeType>(ApertureSizeType.values());
 		cameraApertureSizeComboBox.setSelectedItem(cameraApertureSize);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera aperture", cameraApertureSizeComboBox), "span");		
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera aperture", cameraApertureSizeComboBox));
+		
+		useEyeballCameraCheckBox = new JCheckBox();
+		useEyeballCameraCheckBox.setSelected(useEyeballCamera);
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Set camera onto an eye ball",useEyeballCameraCheckBox),"span");
 
 		cameraFocussingDistancePanel = new DoublePanel();
 		cameraFocussingDistancePanel.setNumber(cameraFocussingDistance/M);
@@ -1473,6 +1482,7 @@ protected void createInteractiveControlPanel()
 		cameraViewDirection = cameraViewDirectionPanel.getVector3D();
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
 		cameraApertureSize = (ApertureSizeType)(cameraApertureSizeComboBox.getSelectedItem());
+		useEyeballCamera = useEyeballCameraCheckBox.isSelected();
 		cameraFocussingDistance = cameraFocussingDistancePanel.getNumber()*M;
 		upAngle = upAnglePanel.getNumber();
 		sideAngle = sideAnglePanel.getNumber();
