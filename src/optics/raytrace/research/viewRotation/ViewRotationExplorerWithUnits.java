@@ -909,7 +909,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			Vector3D topDirection = Vector3D.Y.getPartPerpendicularTo(cameraViewDirection);
 			Vector3D cameraCentre;
 			if (useEyeballCamera) {
-				//The eye centre position
+				//The cameraCentre is now actually the eye centre position
 				cameraCentre = Vector3D.Z.getWithLength(-allRadius);
 				cameraViewCentre = cameraCentre.getSumWith(cameraViewDirection.getWithLength(allRadius));
 			}else {

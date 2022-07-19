@@ -11,6 +11,9 @@ import javax.swing.JTabbedPane;
 import math.*;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.ParametrisedDisc;
+import optics.raytrace.sceneObjects.ParametrisedDisc.DiscParametrisationType;
+import optics.raytrace.sceneObjects.ParametrisedPlane;
+import optics.raytrace.sceneObjects.ParametrisedSphere;
 import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.AzimuthalPixelatedFresnelWedge;
@@ -21,6 +24,7 @@ import optics.raytrace.surfaces.PhaseHologramOfCylindricalLens;
 import optics.raytrace.surfaces.PhaseHologramOfRadialLenticularArray;
 import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArray;
 import optics.raytrace.surfaces.RotationallySymmetricPhaseHologram;
+import optics.raytrace.surfaces.Teleporting;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
@@ -34,6 +38,7 @@ import optics.raytrace.GUI.lowLevel.Vector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableCylinderLattice;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedDisc;
 import optics.raytrace.core.LightSource;
+import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.SceneObjectClass;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
@@ -874,15 +879,26 @@ public class ViewRotationExplorerWithUnitsSpacePlateTest extends NonInteractiveT
 				objectCentre.getSumWith(Vector3D.Z.getProductWith(-cameraDistance/8)),	// centre
 				Vector3D.Z,	// normal
 				1*CM,	// radiu
+				Vector3D.X,
+				DiscParametrisationType.CARTESIAN,
 				new IdealThinSpacePlateSurface(
 						objectCentre.getSumWith(Vector3D.Z.getProductWith(-cameraDistance/8)),	// centre
 						Vector3D.Z.getProductWith(extraDistance),// surfaceNormal,
+//						new ParametrisedSphere(
+//								"Intersecting object",// description,
+//								Vector3D.sum(objectCentre, Vector3D.Z.getProductWith(-cameraDistance/8), Vector3D.Z.getProductWith(2*extraDistance)),
+//								extraDistance,// r,
+//								null,// surfaceProperty,
+//								null,// parent, 
+//								null// studio
+//								),
 						surfaceTransmissionCoefficient,
 						false// shadowThrowing
 						),	// surfaceProperty
-//				new Teleporting( new ParametrisedPlane("destination plane", 
-//						objectCentre.getSumWith(Vector3D.Z.getProductWith(+extraDistance-cameraDistance/8)),// 
+//				new Teleporting( new ParametrisedDisc("destination plane", 
+//						objectCentre.getSumWith(Vector3D.Z.getProductWith(-extraDistance-cameraDistance/8)),// 
 //						Vector3D.Z.getProductWith(1), 
+//						1*CM,
 //						null, null, null
 //						)),
 				scene,	// parent
@@ -938,10 +954,11 @@ public class ViewRotationExplorerWithUnitsSpacePlateTest extends NonInteractiveT
 			if (cameraApertureSize == ApertureSizeType.EYE) {
 
 				//The eye centre position
-				cameraCentre = Vector3D.O.getSumWith(Vector3D.Z.getWithLength(-allRadius));
+				cameraCentre = Vector3D.Z.getWithLength(-allRadius);
 				cameraViewCentre = cameraCentre.getSumWith(cameraViewDirection.getWithLength(allRadius));
-			}else {
-				cameraCentre = Vector3D.O.getSumWith(Vector3D.Z.getWithLength(-cameraDistance));
+				System.out.println();			
+				}else {
+				cameraCentre = Vector3D.Z.getWithLength(-cameraDistance);
 				cameraViewCentre = cameraCentre.getSumWith(cameraViewDirection.getWithLength(cameraDistance));
 			}
 			cameraTopDirection = Geometry.rotate(topDirection, cameraViewDirection, Math.toRadians(cameraRotation)).getSumWith(cameraCentre); 
