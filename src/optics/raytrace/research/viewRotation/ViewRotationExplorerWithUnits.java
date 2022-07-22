@@ -19,6 +19,7 @@ import optics.raytrace.surfaces.PhaseHologramOfCylindricalLens;
 import optics.raytrace.surfaces.PhaseHologramOfRadialLenticularArray;
 import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArray;
 import optics.raytrace.surfaces.RotationallySymmetricPhaseHologram;
+import testImages.TestImage;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
@@ -72,6 +73,25 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	}
 
 	private ViewRotationComponentType viewRotationComponentType;
+	
+	
+	public enum ViewObjectType
+	{
+		LATTICE("Lattice"),
+		TEST_IMAGE("Test Image"),
+		NOTHING("Nothing");
+
+		private String description;
+		private ViewObjectType(String description) {this.description = description;}	
+		@Override
+		public String toString() {return description;}
+	}
+	
+
+	private ViewObjectType viewObjectType;
+	
+	private TestImage testImage;
+	
 
 	/**
 	 * A very general object centre, where the component will sit. this does not have to be the centre of rotation. 
@@ -372,6 +392,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 		// rest of scene
 		studioInitialisation = StudioInitialisationType.LATTICE;	// the backdrop
+		viewObjectType = ViewObjectType.NOTHING;
+		testImage = TestImage.EPSRC_LOGO;
 		customBackground = true;
 		objectRotationAngle = 0;
 		objectDistance = 2*M;
@@ -497,19 +519,41 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(SceneObjectClass.getLighterChequerboardFloor(scene, studio));
 
 			// a cylinder lattice...
-				Vector3D uHat, vHat, zHat;
-				zHat = new Vector3D(0,0,1);
-				uHat = new Vector3D(Math.cos(Math.toRadians(objectRotationAngle)), Math.sin(Math.toRadians(objectRotationAngle)),0);
-				vHat= new Vector3D(-Math.sin(Math.toRadians(objectRotationAngle)), Math.cos(Math.toRadians(objectRotationAngle)),0);
-				scene.addSceneObject(new EditableCylinderLattice(
-						"cylinder lattice",
-						-1, 1, 4, uHat,
-						-1+0.02, 1+0.02, 4, vHat,
-						objectDistance, 4*objectDistance, 4, zHat, // this puts the "transverse" cylinders into the planes z=10, 20, 30, 40
-						0.02,
-						scene,
-						studio
-						));	
+			switch(viewObjectType){
+			
+				case LATTICE:
+					Vector3D uHat, vHat, zHat;
+					zHat = new Vector3D(0,0,1);
+					uHat = new Vector3D(Math.cos(Math.toRadians(objectRotationAngle)), Math.sin(Math.toRadians(objectRotationAngle)),0);
+					vHat= new Vector3D(-Math.sin(Math.toRadians(objectRotationAngle)), Math.cos(Math.toRadians(objectRotationAngle)),0);
+					scene.addSceneObject(new EditableCylinderLattice(
+							"cylinder lattice",
+							-1, 1, 4, uHat,
+							-1+0.02, 1+0.02, 4, vHat,
+							objectDistance, 4*objectDistance, 4, zHat, // this puts the "transverse" cylinders into the planes z=10, 20, 30, 40
+							0.02,
+							scene,
+							studio
+							));	
+					break;
+				case TEST_IMAGE:
+					// ... and an object in a given z plane
+					double testImageWidth = objectDistance*(0.297/6.);
+					double testImageHeight = testImageWidth / testImage.getAspectRatio();
+					scene.addSceneObject(testImage.getEditableScaledParametrisedCentredParallelogram(
+							testImage.toString(), 	// description
+							new Vector3D(0, 0, objectDistance),	// centre
+							new Vector3D(testImageWidth, 0, 0),	// spanVector1
+							new Vector3D(0, -testImageHeight, 0),	// spanVector2
+							scene,	// parent
+							studio));
+					break;
+				case NOTHING:
+					break;
+					
+			}
+				
+				
 //			}
 
 		} else {
@@ -996,6 +1040,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
+	private JComboBox<ViewObjectType> viewObjectTypeComboBox;
+	private JComboBox<TestImage> testImageComboBox;
 	private DoublePanel objectRotationAnglePanel, objectDistancePanel;
 
 	// camera stuff
@@ -1310,9 +1356,18 @@ protected void createInteractiveControlPanel()
 		JPanel customBackgroundPanel = new JPanel();
 		customBackgroundPanel.setLayout(new MigLayout("insets 0"));
 		
+		
+		viewObjectTypeComboBox = new JComboBox<ViewObjectType>(ViewObjectType.values());
+		viewObjectTypeComboBox.setSelectedItem(viewObjectType);
+		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("View object", viewObjectTypeComboBox), "span");
+		
 		objectRotationAnglePanel = new DoublePanel();
 		objectRotationAnglePanel.setNumber(objectRotationAngle);
-
+		
+		testImageComboBox = new JComboBox<TestImage>(TestImage.values());
+		testImageComboBox.setSelectedItem(testImage);
+		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("Test image Type", testImageComboBox), "span");
+		
 		objectDistancePanel = new DoublePanel();
 		objectDistancePanel.setNumber(objectDistance/M);
 		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("Rotation angle", objectRotationAnglePanel,"<html>&deg;</html>"), "wrap");
@@ -1472,6 +1527,8 @@ protected void createInteractiveControlPanel()
 		cltCylindricalLensType = (CylindricalLensType)(cltCylindricalLensTypeComboBox.getSelectedItem());
 
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
+		viewObjectType = (ViewObjectType)(viewObjectTypeComboBox.getSelectedItem());
+		testImage = (TestImage)(testImageComboBox.getSelectedItem());
 		objectRotationAngle = objectRotationAnglePanel.getNumber();
 		objectDistance = objectDistancePanel.getNumber()*M;
 

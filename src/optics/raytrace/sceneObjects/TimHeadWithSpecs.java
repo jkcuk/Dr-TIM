@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.ArrayList;
 
 import math.*;
+import optics.raytrace.GUI.sceneObjects.EditableSceneObjectCollection;
+import optics.raytrace.GUI.sceneObjects.EditableSphericalCap;
 import optics.raytrace.core.*;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
@@ -20,16 +22,16 @@ import optics.raytrace.surfaces.SurfaceColour;
  * @author Maik
  */
 
-public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Serializable
+public class TimHeadWithSpecs extends SceneObjectContainer implements Serializable
 {
-	private static final long serialVersionUID = -2020879195818245854L;
-	
 	// units TODO add them maybe? or not necessary?
 	public static double NM = 1e-9;
 	public static double UM = 1e-6;
 	public static double MM = 1e-3;
 	public static double CM = 1e-2;
 	public static double M = 1;
+
+	private static final long serialVersionUID = -2020879195818245854L;
 
 	//Tim head settings
 	private TimHead timHead;
@@ -38,10 +40,16 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 	private Vector3D topDirection;
 	private Vector3D rightDirection;
 	private double radius;
-	
+
 	//surface properties of the specs
 	SurfaceProperty leftSpecsSurface;
 	SurfaceProperty rightSpecsSurface;
+
+	//Lens objects
+	SceneObjectPrimitive leftSpecsObject;
+	SceneObjectPrimitive rightSpecsObject;
+
+	Vector3D leftSpecCentre, rightSpecCentre;
 
 	//frame colour of the specs
 	private SurfaceColour frameColour;
@@ -59,6 +67,36 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 	}
 
 	private FrameType frameType;
+
+
+	public TimHeadWithSpecs(
+			String description, 
+			Vector3D centre, 
+			double radius, 
+			Vector3D frontDirection, 
+			Vector3D topDirection, 
+			Vector3D rightDirection, 
+			FrameType frameType,
+			SurfaceColour frameColour,
+			SceneObjectPrimitive leftSpecsObject,
+			SceneObjectPrimitive rightSpecsObject,
+			SceneObject parent, 
+			Studio studio)
+	{
+		super(description, parent, studio);
+		this.centre = centre;
+		this.radius = radius;
+		this.frontDirection = frontDirection;
+		this.topDirection = topDirection;
+		this.rightDirection = rightDirection;
+		this.frameType = frameType;
+		this.frameColour = frameColour;
+		this.leftSpecsObject = leftSpecsObject;
+		this.rightSpecsObject = rightSpecsObject;
+		addElements();
+	}
+
+	
 	
 	/**
 	 * Creates Tim but with the added option of giving him specs with a desired surface property
@@ -76,7 +114,7 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 	 * @param parent
 	 * @param studio
 	 */
-	public TimHeadWithSpecsAndUnits(
+	public TimHeadWithSpecs(
 			String description, 
 			Vector3D centre, 
 			double radius, 
@@ -98,16 +136,47 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 		this.rightDirection = rightDirection;
 		this.frameType = frameType;
 		this.frameColour = frameColour;
-		this.leftSpecsSurface =leftSpecsSurface;
-		this.rightSpecsSurface = rightSpecsSurface;
 
-
+		this.leftSpecsObject = new Plane (
+							"left thin plane",
+							getLeftSpecCentre(new TimHead(
+									"Tim head for calculation", 
+									centre, 
+									radius, 
+									frontDirection, 
+									topDirection, 
+									rightDirection, 
+									null, 
+									null
+									)),
+							frontDirection,
+							leftSpecsSurface,
+							this,
+							getStudio()
+							);
+				
+		this.rightSpecsObject =  new Plane (
+					"right thin plane",
+					getRightSpecCentre(new TimHead(
+							"Tim head for calculation", 
+							centre, 
+							radius, 
+							frontDirection, 
+							topDirection, 
+							rightDirection, 
+							null, 
+							null
+							)),
+					frontDirection,
+					leftSpecsSurface,
+					this,
+					getStudio()
+					);
+		
 		addElements();
 	}
-	
-	
 	/**
-	 * A constructor in case the eye radius wishes to be defined instead. This scales the whole Tim head down to the desired eye size.
+	 * A constructor in case the eye radius wishes to be defined instead. This scales the whole Tim head down to the desired eye size. While adding a SceneObjectPrimitive as the specs.
 	 * 
 	 * @param description
 	 * @param eyeRadius
@@ -122,7 +191,53 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 	 * @param parent
 	 * @param studio
 	 */
-	public TimHeadWithSpecsAndUnits(
+	public TimHeadWithSpecs(
+			String description, 
+			double eyeRadius,
+			Vector3D centre, 	
+			Vector3D frontDirection, 
+			Vector3D topDirection, 
+			Vector3D rightDirection, 
+			FrameType frameType,
+			SurfaceColour frameColour,
+			SceneObjectPrimitive leftSpecsObject,
+			SceneObjectPrimitive rightSpecsObject,
+			SceneObject parent, 
+			Studio studio)
+	{
+		this(
+				description,
+				centre, 
+				eyeRadius/0.15,	// radius
+				frontDirection,	// frontDirection
+				topDirection, 	// topDirection
+				rightDirection,	// rightDirection
+				frameType,
+				frameColour,
+				leftSpecsObject,
+				rightSpecsObject,
+				parent,
+				studio
+				);
+	}
+
+	/**
+	 * A constructor in case the eye radius wishes to be defined instead. This scales the whole Tim head down to the desired eye size while adding a surface property as the specs.
+	 * 
+	 * @param description
+	 * @param eyeRadius
+	 * @param centre
+	 * @param frontDirection
+	 * @param topDirection
+	 * @param rightDirection
+	 * @param frameType
+	 * @param frameColour
+	 * @param leftSpecsSurface
+	 * @param rightSpecsSurface
+	 * @param parent
+	 * @param studio
+	 */
+	public TimHeadWithSpecs(
 			String description, 
 			double eyeRadius,
 			Vector3D centre, 	
@@ -152,9 +267,8 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 				);
 	}
 
-
 	/**
-	 * A constructor which makes tim's actual head sized such that his eye radius is close to the humane value.
+	 * A constructor which makes tim's actual head sized such that his eye radius is close to the humane value and adding the specs as a SceneObjectPrimitive
 	 * 
 	 * @param description
 	 * @param centre
@@ -165,7 +279,45 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 	 * @param parent
 	 * @param studio
 	 */
-	public TimHeadWithSpecsAndUnits(
+	public TimHeadWithSpecs(
+			String description, 
+			Vector3D centre, 	
+			FrameType frameType,
+			SurfaceColour frameColour,
+			SceneObjectPrimitive leftSpecsObject,
+			SceneObjectPrimitive rightSpecsObject,
+			SceneObject parent, 
+			Studio studio)
+	{
+		this(
+				description,
+				centre, 
+				1.25*CM/0.15,	// radius
+				new Vector3D(0, 0, -1),	// frontDirection
+				new Vector3D(0, 1, 0), 	// topDirection
+				new Vector3D(1, 0, 0),	// rightDirection
+				frameType,
+				frameColour,
+				leftSpecsObject,
+				rightSpecsObject,
+				parent,
+				studio
+				);
+	}
+	
+	/**
+	 * A constructor which makes tim's actual head sized such that his eye radius is close to the humane value and adding the specs as a plane with given surface property
+	 * 
+	 * @param description
+	 * @param centre
+	 * @param frameType
+	 * @param frameColour
+	 * @param leftSpecsSurface
+	 * @param rightSpecsSurface
+	 * @param parent
+	 * @param studio
+	 */
+	public TimHeadWithSpecs(
 			String description, 
 			Vector3D centre, 	
 			FrameType frameType,
@@ -195,7 +347,7 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 	 * Create a clone of the original.
 	 * @param original
 	 */
-	public TimHeadWithSpecsAndUnits(TimHeadWithSpecsAndUnits original)
+	public TimHeadWithSpecs(TimHeadWithSpecs original)
 	{
 		this(
 				original.getDescription(),
@@ -206,19 +358,19 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 				original.getRightDirection(),
 				original.getFrameType(),
 				original.getFrameColour(),
-				original.getLeftSpecsSurface(),
-				original.getRightSpecsSurface(),
+				original.getLeftSpecsObject(),
+				original.getRightSpecsObject(),
 				original.getParent(),
 				original.getStudio()
 				);
 	}
 
 	//getters and setters
-	
+
 	@Override
-	public TimHeadWithSpecsAndUnits clone()
+	public TimHeadWithSpecs clone()
 	{
-		return new TimHeadWithSpecsAndUnits(this);
+		return new TimHeadWithSpecs(this);
 	}
 
 	public Vector3D getCentre() {
@@ -299,11 +451,68 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 
 	public void setTimHead(TimHead timHead) {
 		this.timHead = timHead;
+	}	
+
+	public SceneObjectPrimitive getLeftSpecsObject() {
+		return leftSpecsObject;
 	}
 
+
+	public void setLeftSpecsObject(SceneObjectPrimitive leftSpecsObject) {
+		this.leftSpecsObject = leftSpecsObject;
+	}
+
+
+	public SceneObjectPrimitive getRightSpecsObject() {
+		return rightSpecsObject;
+	}
+
+	public void setRightSpecsObject(SceneObjectPrimitive rightSpecsObject) {
+		this.rightSpecsObject = rightSpecsObject;
+	}
+
+	public static Vector3D getLeftSpecCentre(TimHead timHead) {
+		//calculate the left spectacle centre based on the Tim head
+		Vector3D leftEyeCentre = timHead.getLeftEye().getCentre();
+
+		//when the eye radius is that of a normal eye i.e about 1.25cm the specs should be 1.5cm from the eye.
+		//hence the specs scale with head radius as follows: r_head*0.18 = Specs_distance 
+		double specsEyeDistance = timHead.getRadius()*0.18;
+
+		//in vector format along the front direction:
+		Vector3D specsEyeVector = timHead.getFrontDirection().getWithLength(specsEyeDistance);
+
+		//applying this to every eye now gives a centre position for the specs and the plane within the specs
+		Vector3D.sum(leftEyeCentre, specsEyeVector);		
+		return Vector3D.sum(leftEyeCentre, specsEyeVector);
+	}
+	
+	public void setLeftSpecCentre(Vector3D leftSpecCentre) {
+		this.leftSpecCentre = leftSpecCentre;
+	}
+
+
+	public static Vector3D getRightSpecCentre(TimHead timHead) {
+		//calculate the right spectacle centre based on the Tim head
+		Vector3D rightEyeCentre  = timHead.getRightEye().getCentre();
+
+		//when the eye radius is that of a normal eye i.e about 1.25cm the specs should be 1.5cm from the eye.
+		//hence the specs scale with head radius as follows: r_head*0.18 = Specs_distance 
+		double specsEyeDistance = timHead.getRadius()*0.18;
+
+		//in vector format along the front direction:
+		Vector3D specsEyeVector = timHead.getFrontDirection().getWithLength(specsEyeDistance);
+
+		//applying this to every eye now gives a centre position for the specs and the plane within the specs
+		return Vector3D.sum(rightEyeCentre, specsEyeVector);
+	}
+
+	public void setRightSpecCentre(Vector3D rightSpecCentre) {
+		this.rightSpecCentre = rightSpecCentre;
+	}
+
+	
 	public void addElements()
-
-
 	{
 		clear();
 
@@ -322,41 +531,48 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 				rightDirection, 
 				this, 
 				getStudio()
-				);		
-
+				);	
 		addSceneObject(timHead);
 
-		
-		//time to add some stylish specs
 		//set the important params and scale factors for the specs based on the time head created above...
-
 		Vector3D leftEyeCentre = timHead.getLeftEye().getCentre();
 		Vector3D rightEyeCentre  = timHead.getRightEye().getCentre();
 
-		//head radius used to scale specs
-		double headRadius = timHead.getRadius();
-
 		//when the eye radius is that of a normal eye i.e about 1.25cm the specs should be 1.5cm from the eye.
 		//hence the specs scale with head radius as follows: r_head*0.18 = Specs_distance 
-		double specsEyeDistance = headRadius*0.18;
+		double specsEyeDistance = timHead.getRadius()*0.18;
 
 		//in vector format along the front direction:
 		Vector3D specsEyeVector = timHead.getFrontDirection().getWithLength(specsEyeDistance);
 
 		//applying this to every eye now gives a centre position for the specs and the plane within the specs
-		Vector3D leftSpecCentre = Vector3D.sum(leftEyeCentre, specsEyeVector);
-		Vector3D rightSpecCentre = Vector3D.sum(rightEyeCentre, specsEyeVector);
+		leftSpecCentre = Vector3D.sum(leftEyeCentre, specsEyeVector);
+		rightSpecCentre = Vector3D.sum(rightEyeCentre, specsEyeVector);
+
+
 
 		// specs dimensions human about 37 mm tall and 52 mm wide. 
 
 		//make specs 5mm thick when realistic eye size this leads to the following ratio between head radius and spec thickness
-		double frameThickness = headRadius*0.06;
+		double frameThickness = timHead.getRadius()*0.06;
 		Vector3D frameThicknessVector = timHead.getFrontDirection().getWithLength(frameThickness);
 
 		//frame radius should be about 3.3 cm when humanoid head size
-		double frameradius = 0.165*headRadius;
+		double frameradius = 0.165*timHead.getRadius();
 
-		
+		//the radius multiplier to keep the frames at about 2mm for a normal head size must be slightly changed to allow for playing with radii and position
+		//calculate some scale factors to be used for the cylinder radii for...
+		//...the top cylinders
+		double topCentreScaler = 1.4; //scales where the centre of this cylinder will lie (trial and error)
+		double topFrameRadius= topCentreScaler*timHead.getRadius();
+		double scaleFactorTop = 1-((0.0099*timHead.getRadius())/(timHead.getRadius()*topCentreScaler)); //resulting in a scale factor multiplying the inner cylinder radius to create the appropriately sized frames
+		//... the bottom cylinders
+		double centreScaler = 0.23; //scales where the centre of this cylinder will lie (trial and error)
+		double bottomFrameRadius= centreScaler*timHead.getRadius();
+		double scaleFactorBottom = 1-((0.0099*timHead.getRadius())/(timHead.getRadius()*centreScaler)); //resulting in a scale factor multiplying the inner cylinder radius to create the appropriately sized frames
+
+
+
 		//create scene object collections to which each component part can be added.
 		SceneObjectPrimitiveIntersection leftFrames = new SceneObjectPrimitiveIntersection("frames", null, null);
 		SceneObjectPrimitiveIntersection rightFrames = new SceneObjectPrimitiveIntersection("frames", null, null);
@@ -369,7 +585,7 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 		SceneObjectPrimitiveIntersection rightFramesTop = new SceneObjectPrimitiveIntersection("frames", null, null);
 
 
-		//creating the planes to define the specs and cut the frames...
+		//creating the planes to define the specs frame
 		Plane objectivePlane = new Plane(
 				"plane to cut the specs in objective direction",
 				Vector3D.sum(leftSpecCentre, frameThicknessVector.getProductWith(0.5)),
@@ -386,32 +602,12 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 				this,
 				getStudio()
 				);
-		
-		//...and planes that represent the actual spectacle surfaces
-		Plane leftSpecsPlane = new Plane(
-				"left eye specs plane",
-				leftSpecCentre,
-				timHead.getFrontDirection().getNormalised(),
-				leftSpecsSurface,
-				this,
-				getStudio()
-				);
-		
-		Plane rightSpecsPlane = new Plane(
-				"right eye specs plane",
-				rightSpecCentre,
-				timHead.getFrontDirection().getNormalised(),
-				rightSpecsSurface,
-				this,
-				getStudio()
-				);
 
-		
 		//defining the cylinders and planes to be used for creating the frame, depending on the type selected some all or none of these will be used.
 		CylinderMantle frameCylinder, frameNegativeCylinder, leftFrameCylinder, leftNegativeFrameCylinder, rightFrameCylinder, rightNegativeFrameCylinder,
-						leftFrameTopCylinder, leftNegativeFrameTopCylinder, rightFrameTopCylinder, rightNegativeFrameTopCylinder;
+		leftFrameTopCylinder, leftNegativeFrameTopCylinder, rightFrameTopCylinder, rightNegativeFrameTopCylinder;
 		Plane connectorFrameHorizontalCutOff, connectorFrameRightCutOff, connectorFrameLeftCutOff, leftHorizontalCutoffPlane, rightHorizontalCutoffPlane;
-		
+
 
 		//selecting and creating the frames
 		switch(frameType) {
@@ -420,7 +616,7 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 			frameCylinder = new CylinderMantle(
 					"the cylinder that will be the outer frame",
 					timHead.getNose().getCentre(),
-					timHead.getNose().getCentre().getSumWith(frameThicknessVector.getWithLength(headRadius)),
+					timHead.getNose().getCentre().getSumWith(frameThicknessVector.getWithLength(timHead.getRadius())),
 					timHead.getNose().getRadius()*1.45, //the diagonal radius of the box 
 					frameColour,//n
 					this,
@@ -430,7 +626,7 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 			frameNegativeCylinder = new CylinderMantle(
 					"the cylinder that will be cut out from the middle",
 					timHead.getNose().getCentre(),
-					timHead.getNose().getCentre().getSumWith(frameThicknessVector.getWithLength(headRadius)),
+					timHead.getNose().getCentre().getSumWith(frameThicknessVector.getWithLength(timHead.getRadius())),
 					timHead.getNose().getRadius()*1.363, //the diagonal radius of the box 
 					frameColour,//n
 					this,
@@ -463,8 +659,8 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 					this,
 					getStudio()
 					);
-			
-			
+
+
 			//creating the cylinders that will form the left specs frame
 			leftFrameCylinder = new CylinderMantle(
 					"the cylinder that will be the outer frame",
@@ -531,28 +727,16 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 			framesConnection.addNegativeSceneObjectPrimitive(frameNegativeCylinder);
 
 			//adding the specs part
-			leftSpecs.addPositiveSceneObjectPrimitive(leftSpecsPlane);
+			leftSpecs.addPositiveSceneObjectPrimitive(leftSpecsObject);
 			leftSpecs.addPositiveSceneObjectPrimitive(leftNegativeFrameCylinder);
-			rightSpecs.addPositiveSceneObjectPrimitive(rightSpecsPlane);
+			rightSpecs.addPositiveSceneObjectPrimitive(rightSpecsObject);
 			rightSpecs.addPositiveSceneObjectPrimitive(rightNegativeFrameCylinder);
-			
+
 
 			break;
-		case PILOT:			
-			//the radius multiplier to keep the frames at about 2mm for a normal head size must be slightly changed to allow for playing with radii and position
-			//calculate some scale factors to be used for the cylinder radii for...
-			//...the top cylinders
-			double topCentreScaler = 1.4; //scales where the centre of this cylinder will lie (trial and error)
-			double topFrameRadius= topCentreScaler*headRadius;
-			double scaleFactorTop = 1-((0.0099*headRadius)/(headRadius*topCentreScaler)); //resulting in a scale factor multiplying the inner cylinder radius to create the appropriately sized frames
-			//... the bottom cylinders
-			double centreScaler = 0.23; //scales where the centre of this cylinder will lie (trial and error)
-			double bottomFrameRadius= centreScaler*headRadius;
-			double scaleFactorBottom = 1-((0.0099*headRadius)/(headRadius*centreScaler)); //resulting in a scale factor multiplying the inner cylinder radius to create the appropriately sized frames
-			
-			
+		case PILOT:						
 			//creating the top object consisting of a large cylinder
-			
+
 			//Move the centre down a bit(trial and error)
 			Vector3D leftFrameTopCylinderCentre = Vector3D.sum(leftSpecCentre,timHead.getTopDirection().getWithLength(-(topFrameRadius-frameradius)));
 			leftFrameTopCylinder = new CylinderMantle(
@@ -574,7 +758,7 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 					this,
 					getStudio()
 					);	
-			
+
 			//creating the bottom part made of a smaller cylinder
 			//Move the centre up a bit(trial and error)
 			Vector3D leftFrameCylinderCentre = Vector3D.sum(leftSpecCentre,timHead.getTopDirection().getWithLength((bottomFrameRadius-frameradius)));
@@ -597,9 +781,9 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 					this,
 					getStudio()
 					);	
-			
+
 			//do the same on the right...
-			
+
 			//Move the centre down a bit and adjust radii(trial and error...)
 			Vector3D rightFrameTopCylinderCentre = Vector3D.sum(rightSpecCentre,timHead.getTopDirection().getWithLength(-(topFrameRadius-frameradius)));
 			rightFrameTopCylinder = new CylinderMantle(
@@ -621,7 +805,7 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 					this,
 					getStudio()
 					);	
-			
+
 			//creating the bottom part
 
 			//Move the centre up a bit and adjust radii(trial and error...)
@@ -645,8 +829,8 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 					this,
 					getStudio()
 					);
-			
-			
+
+
 			//lastly, add the planes to cut the top and bottom to fit them together at the intersections between the two differently sized cylinders.
 			Vector3D leftCircularIntersection = twoCircleIntersection(leftFrameCylinderCentre, leftFrameTopCylinderCentre, bottomFrameRadius*scaleFactorBottom,topFrameRadius*scaleFactorTop, timHead.getFrontDirection());
 			leftHorizontalCutoffPlane = new Plane(
@@ -657,7 +841,7 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 					this,
 					getStudio()
 					);
-			
+
 			Vector3D rightCircularIntersection = twoCircleIntersection(rightFrameCylinderCentre, rightFrameTopCylinderCentre, bottomFrameRadius*scaleFactorBottom,topFrameRadius*scaleFactorTop, timHead.getFrontDirection());
 			rightHorizontalCutoffPlane = new Plane(					
 					"Plane to cut the specs on the right",
@@ -667,8 +851,8 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 					this,
 					getStudio()
 					);
-			
-			
+
+
 			//finally create the intersections that will now make the frames
 			//left frames
 			leftFrames.addPositiveSceneObjectPrimitive(ocularPlane);
@@ -676,33 +860,34 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 			leftFrames.addPositiveSceneObjectPrimitive(leftFrameCylinder);
 			leftFrames.addNegativeSceneObjectPrimitive(leftNegativeFrameCylinder);
 			leftFrames.addPositiveSceneObjectPrimitive(leftHorizontalCutoffPlane);
-			
+
 			leftFramesTop.addPositiveSceneObjectPrimitive(ocularPlane);
 			leftFramesTop.addPositiveSceneObjectPrimitive(objectivePlane);
 			leftFramesTop.addPositiveSceneObjectPrimitive(leftFrameTopCylinder);
 			leftFramesTop.addNegativeSceneObjectPrimitive(leftNegativeFrameTopCylinder);
 			leftFramesTop.addNegativeSceneObjectPrimitive(leftHorizontalCutoffPlane);
-			
+
 			//right frames
 			rightFrames.addPositiveSceneObjectPrimitive(ocularPlane);
 			rightFrames.addPositiveSceneObjectPrimitive(objectivePlane);
 			rightFrames.addPositiveSceneObjectPrimitive(rightFrameCylinder);
 			rightFrames.addNegativeSceneObjectPrimitive(rightNegativeFrameCylinder);
 			rightFrames.addPositiveSceneObjectPrimitive(rightHorizontalCutoffPlane);
-			
+
 			rightFramesTop.addPositiveSceneObjectPrimitive(ocularPlane);
 			rightFramesTop.addPositiveSceneObjectPrimitive(objectivePlane);
 			rightFramesTop.addPositiveSceneObjectPrimitive(rightFrameTopCylinder);
 			rightFramesTop.addNegativeSceneObjectPrimitive(rightNegativeFrameTopCylinder);
 			rightFramesTop.addNegativeSceneObjectPrimitive(rightHorizontalCutoffPlane);
-			
+
 			leftSpecs.addPositiveSceneObjectPrimitive(leftNegativeFrameCylinder);
 			leftSpecs.addPositiveSceneObjectPrimitive(leftNegativeFrameTopCylinder);
-			leftSpecs.addPositiveSceneObjectPrimitive(leftSpecsPlane);
-			
+			leftSpecs.addPositiveSceneObjectPrimitive(leftSpecsObject);
+
 			rightSpecs.addPositiveSceneObjectPrimitive(rightNegativeFrameCylinder);
 			rightSpecs.addPositiveSceneObjectPrimitive(rightNegativeFrameTopCylinder);
-			rightSpecs.addPositiveSceneObjectPrimitive(rightSpecsPlane);
+			rightSpecs.addPositiveSceneObjectPrimitive(rightSpecsObject);
+
 
 			break;
 		case NOTHING:
@@ -717,8 +902,51 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 		addSceneObject(leftFrames);
 		addSceneObject(leftSpecs);
 		addSceneObject(rightSpecs);
+		
+		//as a final bonus, give Tim eye lids... 
+		
+		EditableSceneObjectCollection eyeLids = new EditableSceneObjectCollection(new SceneObjectContainer("cap", this, getStudio()), true);
+		eyeLids.addSceneObject(
+				new EditableSphericalCap(
+						"left eyelid",
+						Vector3D.sum(timHead.getLeftEye().getCentre(), Vector3D.sum(timHead.getFrontDirection().getProductWith(0), timHead.getTopDirection()).getNormalised().getProductWith(timHead.getRightEye().getRadius()+(3*MyMath.TINY))),
+						timHead.getLeftEye().getCentre(),	// sphereCentre
+						timHead.getLeftEye().getRadius(),//(1+MyMath.TINY), //radius
+						false,	// closed
+						SurfaceColour.SKIN_MATT,
+						eyeLids,	// parent
+						getStudio()
+					));
+		
+		eyeLids.addSceneObject(
+				new EditableSphericalCap(
+						"right eyelid",
+						Vector3D.sum(timHead.getRightEye().getCentre(), Vector3D.sum(timHead.getFrontDirection().getProductWith(0), timHead.getTopDirection()).getNormalised().getProductWith(timHead.getRightEye().getRadius()+(3*MyMath.TINY))),	// capCentre
+						timHead.getRightEye().getCentre(),	// sphereCentre
+						timHead.getRightEye().getRadius(),//*(1+4*MyMath.TINY), //radius
+						false,	// closed
+						SurfaceColour.SKIN_MATT,
+						eyeLids,	// parent
+						getStudio()
+					));
+		//TODO add eye lashes maybe?
+//		eyeLids.addSceneObject(
+//				new EditableScaledParametrisedDisc(
+//						"lashes",
+//						new Vector3D(0.1736, 0.6333, -0.5468).getProductWith(radius).fromBasis(basis).getSumWith(centre),	// centre
+//						new Vector3D(0.1677, 0.9513, 0.2588).fromBasis(basis),	// normal
+//						0.7*radius,	// radius
+//						SurfaceColour.BLUE_MATT,
+//						eyeLids,	// parent
+//						getStudio()
+//					)
+//				);
+		
+		addSceneObject(eyeLids);
 
 	}
+	
+	
 	/**
 	 * To find the additive intersection of two circles, representing the 2D intersection of two cylinders with differing radii and position but same normal.
 	 * 
@@ -772,9 +1000,9 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 
 	//TODO add transform to specs maybe? Don't know what this does exactly...
 	@Override
-	public TimHeadWithSpecsAndUnits transform(Transformation t)
+	public TimHeadWithSpecs transform(Transformation t)
 	{
-		TimHeadWithSpecsAndUnits h = new TimHeadWithSpecsAndUnits(
+		TimHeadWithSpecs h = new TimHeadWithSpecs(
 				getDescription(),
 				t.transformPosition(getCentre()),
 				getFrameType(),
@@ -787,7 +1015,6 @@ public class TimHeadWithSpecsAndUnits extends SceneObjectContainer implements Se
 
 		// get rid of all the scene objects in h
 		h.clear();
-
 		h.setTimHead(getTimHead().transform(t));
 		return h;
 	}

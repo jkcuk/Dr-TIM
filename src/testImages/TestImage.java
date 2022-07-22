@@ -28,7 +28,9 @@ public enum TestImage
 	USAF_TEST_CHART("US Air Force test chart, 7cm x 7cm", "USAF-1951_white_7cm_x_7cm.png"),	// image from https://en.wikipedia.org/wiki/1951_USAF_resolution_test_chart
 	USAF_TEST_CHART_BLACK("US Air Force test chart (black), 7cm x 7cm", "USAF-1951_7cm_x_7cm.png"),	// image from https://en.wikipedia.org/wiki/1951_USAF_resolution_test_chart
 	USAF_TEST_CHART_Thorlabs("Thorlabs US Air Force test chart, 8cm x 8cm", "USAF-1951-Thorlabs_8cmx8cm_groups_-2_to_3_white.png"),
-	USAF_TEST_CHART_BLACK_Thorlabs("Thorlabs US Air Force test chart (black), 8cm x 8cm", "USAF-1951-Thorlabs_8cmx8cm_groups_-2_to_3.png");
+	USAF_TEST_CHART_BLACK_Thorlabs("Thorlabs US Air Force test chart (black), 8cm x 8cm", "USAF-1951-Thorlabs_8cmx8cm_groups_-2_to_3.png"),
+	//Vision chart based on https://fpnotebook.com/eye/exam/VslActy.htm, where the Snellen chart is at 6m on A3(297 x 420 mm) sized (or 3m with A4 size)
+	SNELLEN_CHART("Snellen Chart, A3@6m A4@3m", "SnellenChart.png");
 	
 	/**
 	 * the image's name
