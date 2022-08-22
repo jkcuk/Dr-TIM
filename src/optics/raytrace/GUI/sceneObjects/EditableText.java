@@ -1,7 +1,11 @@
 package optics.raytrace.GUI.sceneObjects;
 
+import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -57,6 +61,7 @@ public class EditableText extends SceneObjectWithHoles implements IPanelComponen
 	private JComboBox<String> fontFamilyComboBox;
 	private LabelledDoublePanel heightPanel;
 	private SurfacePropertyPanel textSurfacePropertyPanel;
+	
 	
 	
 	/**
@@ -367,6 +372,13 @@ public class EditableText extends SceneObjectWithHoles implements IPanelComponen
 		fontSizePanel = new LabelledIntPanel("Font size");
 		editPanel.add(fontSizePanel, "wrap");
 		
+//		//TODO is there a better place for this?
+//		try {
+//			GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(Font.createFont(Font.TRUETYPE_FONT, new File("Optician-Sans.otf")));
+//		} catch (IOException|FontFormatException e) {
+//			e.printStackTrace();
+//		     //Handle exception
+//		}
 		String fontNames[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
 		fontFamilyComboBox = new JComboBox<String>(fontNames);
 		editPanel.add(new LabelledComponent("Font family", fontFamilyComboBox), "wrap");

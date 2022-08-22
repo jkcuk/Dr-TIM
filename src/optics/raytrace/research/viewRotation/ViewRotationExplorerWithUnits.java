@@ -11,6 +11,8 @@ import javax.swing.JTabbedPane;
 import math.*;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.Plane;
+import optics.raytrace.sceneObjects.SnellenChart;
+import optics.raytrace.sceneObjects.SnellenChart.ChartType;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.AzimuthalPixelatedFresnelWedge;
 import optics.raytrace.surfaces.IdealThinCylindricalLensSurfaceSimple;
@@ -79,6 +81,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	{
 		LATTICE("Lattice"),
 		TEST_IMAGE("Test Image"),
+		SNELLEN_CHART("Snellen Chart"),
 		NOTHING("Nothing");
 
 		private String description;
@@ -91,6 +94,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private ViewObjectType viewObjectType;
 	
 	private TestImage testImage;
+	
+	private ChartType chartType;
 	
 
 	/**
@@ -299,7 +304,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	 * Should the camera be moved along an 'eyeball' or be stationary in one position as the view direction changes
 	 */
 	private boolean useEyeballCamera;
-
+	
 	/**
 	 * The eye separationg in the anaglyph case
 	 */
@@ -318,6 +323,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private boolean customBackground;
 	private double objectRotationAngle;
 	private double objectDistance;
+	private double objectHeight;
 
 
 	/**
@@ -392,11 +398,12 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 		// rest of scene
 		studioInitialisation = StudioInitialisationType.LATTICE;	// the backdrop
-		viewObjectType = ViewObjectType.NOTHING;
+		viewObjectType = ViewObjectType.LATTICE;
 		testImage = TestImage.EPSRC_LOGO;
+		chartType = ChartType.RANDOM;
 		customBackground = true;
 		objectRotationAngle = 0;
-		objectDistance = 2*M;
+		objectDistance = 1*M;
 
 		// camera
 		anaglyphCamera = false;
@@ -416,6 +423,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		eyePosition = new Vector3D(0,0,-1.5).getProductWith(CM);
 		componentCentre = Vector3D.O;
 		objectCentre = Vector3D.O;
+		objectHeight = 2*M;
 
 
 		if(nonInteractiveTIMAction == NonInteractiveTIMActionEnum.INTERACTIVE)
@@ -481,8 +489,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			+ "bounding Box centre ="+boundingBoxCentre
 			+ "Bounidng Box span vetcors ="	+boundingBoxSpanVector1+","+boundingBoxSpanVector2+","+	boundingBoxSpanVector3
 			+ "wedge thickness =" +thickness
+			+ "transmission coefficient =" +surfaceTransmissionCoefficient
 			+ "eye positon ="+eyePosition
-			+ "refractive index="+refractiveIndex;
+			+ "camera distance ="+cameraDistance
+			+ "refractive index="+refractiveIndex
+			+ "trace level ="+cameraMaxTraceLevel;
 
 		case NOTHING:
 			componentParams = "";
@@ -490,13 +501,28 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		}
 
 		return "ViewRotationExplorer"	// the name
+				+"----component----"
 				+ componentParams
-				+ " backdrop="+studioInitialisation.toString()
+				+ " ----Camera----"
 				+ " cD="+cameraDistance
 				+ " cVD="+cameraViewDirection
+				+ " cVD vertical angle="+upAngle
+				+ " cVD horizontal angle="+sideAngle
 				+ " cFOV="+cameraHorizontalFOVDeg
 				+ " cAS="+cameraApertureSize
 				+ " cFD="+cameraFocussingDistance
+				+ " cRot="+cameraRotation
+				+ " cEye="+useEyeballCamera
+				+ " cAnaglypic=" +anaglyphCamera
+				+ " ----Object----"
+				+ " custom background"+customBackground
+				+ " view object"+viewObjectType
+				+ " Chart type "+chartType
+				+ " object height"+ objectHeight
+				+ " object distance"+objectDistance
+				+ " object rotation angle"+ objectRotationAngle
+				
+				+ " standard backdrop="+studioInitialisation.toString()
 				;
 	}
 
@@ -518,18 +544,18 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(SceneObjectClass.getSkySphere(scene, studio));
 			scene.addSceneObject(SceneObjectClass.getLighterChequerboardFloor(scene, studio));
 
-			// a cylinder lattice...
-			switch(viewObjectType){
+			// a cylinder lattice..
+			Vector3D uHat, vHat, zHat;
+			zHat = new Vector3D(0,0,1);
+			uHat = new Vector3D(Math.cos(Math.toRadians(objectRotationAngle)), Math.sin(Math.toRadians(objectRotationAngle)),0);
+			vHat= new Vector3D(-Math.sin(Math.toRadians(objectRotationAngle)), Math.cos(Math.toRadians(objectRotationAngle)),0);
 			
+			switch(viewObjectType){
 				case LATTICE:
-					Vector3D uHat, vHat, zHat;
-					zHat = new Vector3D(0,0,1);
-					uHat = new Vector3D(Math.cos(Math.toRadians(objectRotationAngle)), Math.sin(Math.toRadians(objectRotationAngle)),0);
-					vHat= new Vector3D(-Math.sin(Math.toRadians(objectRotationAngle)), Math.cos(Math.toRadians(objectRotationAngle)),0);
 					scene.addSceneObject(new EditableCylinderLattice(
 							"cylinder lattice",
-							-1, 1, 4, uHat,
-							-1+0.02, 1+0.02, 4, vHat,
+							-0.5*objectHeight, 0.5*objectHeight, 4, uHat,
+							-0.5*objectHeight+0.02, 0.5*objectHeight+0.02, 4, vHat,
 							objectDistance, 4*objectDistance, 4, zHat, // this puts the "transverse" cylinders into the planes z=10, 20, 30, 40
 							0.02,
 							scene,
@@ -538,16 +564,28 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					break;
 				case TEST_IMAGE:
 					// ... and an object in a given z plane
-					double testImageWidth = objectDistance*(0.297/6.);
-					double testImageHeight = testImageWidth / testImage.getAspectRatio();
+					double testImageWidth = objectHeight * testImage.getAspectRatio();
 					scene.addSceneObject(testImage.getEditableScaledParametrisedCentredParallelogram(
 							testImage.toString(), 	// description
 							new Vector3D(0, 0, objectDistance),	// centre
-							new Vector3D(testImageWidth, 0, 0),	// spanVector1
-							new Vector3D(0, -testImageHeight, 0),	// spanVector2
+							uHat.getWithLength(testImageWidth),	// spanVector1
+							vHat.getWithLength(objectHeight),	// spanVector2
 							scene,	// parent
 							studio));
 					break;
+				case SNELLEN_CHART:
+					
+					scene.addSceneObject(new SnellenChart(
+							"A snellen chart",// description,
+							cameraViewDirection.getProductWith(objectDistance),// centre,
+							vHat,//new Vector3D(0,1,0),// upDirection,
+							uHat,//new Vector3D(1,0,0),// rightDirection,
+							objectHeight,// height,
+							eyePosition,// cameraPosition, TODO this is the eye position, not necessarily equal to the camera position!
+							chartType,
+							scene,// parent,
+							studio //studio
+							));
 				case NOTHING:
 					break;
 					
@@ -902,13 +940,16 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					scene,
 					studio
 					));
+			
+			System.out.println("eye position at "+eyePosition);
 
 		case NOTHING:
 			// don't add anything
 			break;
 		}
 
-		// the cameras TODO double check quality factors...
+		// the cameras
+		
 		//eye radius given by: https://hypertextbook.com/facts/2002/AniciaNdabahaliye1.shtml
 		//to be about 1.225 cm in radius
 		double eyeRadius = 1.225*CM;
@@ -1042,7 +1083,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 	private JComboBox<ViewObjectType> viewObjectTypeComboBox;
 	private JComboBox<TestImage> testImageComboBox;
-	private DoublePanel objectRotationAnglePanel, objectDistancePanel;
+	private JComboBox<ChartType> chartTypeComboBox;
+	private DoublePanel objectRotationAnglePanel, objectDistancePanel, objectHeightPanel;
 
 	// camera stuff
 	// private LabelledVector3DPanel cameraViewDirectionPanel;
@@ -1361,12 +1403,20 @@ protected void createInteractiveControlPanel()
 		viewObjectTypeComboBox.setSelectedItem(viewObjectType);
 		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("View object", viewObjectTypeComboBox), "span");
 		
-		objectRotationAnglePanel = new DoublePanel();
-		objectRotationAnglePanel.setNumber(objectRotationAngle);
-		
 		testImageComboBox = new JComboBox<TestImage>(TestImage.values());
 		testImageComboBox.setSelectedItem(testImage);
 		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("Test image Type", testImageComboBox), "span");
+		
+		chartTypeComboBox = new JComboBox<ChartType>(ChartType.values());
+		chartTypeComboBox.setSelectedItem(chartType);
+		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("Snellen chart type", chartTypeComboBox), "span");
+		
+		objectHeightPanel = new DoublePanel();
+		objectHeightPanel.setNumber(objectHeight/M);
+		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("Object Height", objectHeightPanel, "m"), "wrap");
+		
+		objectRotationAnglePanel = new DoublePanel();
+		objectRotationAnglePanel.setNumber(objectRotationAngle);
 		
 		objectDistancePanel = new DoublePanel();
 		objectDistancePanel.setNumber(objectDistance/M);
@@ -1429,6 +1479,7 @@ protected void createInteractiveControlPanel()
 		anaglyphCameraCheckBox = new JCheckBox();
 		anaglyphCameraCheckBox.setSelected(anaglyphCamera);
 		cameraPanel.add(GUIBitsAndBobs.makeRow("Set to a cyclodeviated anaglyph camera",anaglyphCameraCheckBox,""));
+		
 	}
 
 	/**
@@ -1503,8 +1554,6 @@ protected void createInteractiveControlPanel()
 		maxTrace = maxTracePanel.getNumber();
 
 
-
-
 		mmF = mmFPanel.getNumber()*MM;
 		mmPitch = mmPitchPanel.getNumber()*MM;
 		mmDeltaPhiDeg = mmDeltaPhiDegPanel.getNumber();
@@ -1529,8 +1578,10 @@ protected void createInteractiveControlPanel()
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		viewObjectType = (ViewObjectType)(viewObjectTypeComboBox.getSelectedItem());
 		testImage = (TestImage)(testImageComboBox.getSelectedItem());
+		chartType = (ChartType)(chartTypeComboBox.getSelectedItem());
 		objectRotationAngle = objectRotationAnglePanel.getNumber();
 		objectDistance = objectDistancePanel.getNumber()*M;
+		objectHeight = objectHeightPanel.getNumber()*M;
 
 		// cameraViewDirection = cameraViewDirectionPanel.getVector3D();
 		anaglyphCamera = anaglyphCameraCheckBox.isSelected();
