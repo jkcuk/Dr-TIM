@@ -372,13 +372,6 @@ public class EditableText extends SceneObjectWithHoles implements IPanelComponen
 		fontSizePanel = new LabelledIntPanel("Font size");
 		editPanel.add(fontSizePanel, "wrap");
 		
-//		//TODO is there a better place for this?
-//		try {
-//			GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(Font.createFont(Font.TRUETYPE_FONT, new File("Optician-Sans.otf")));
-//		} catch (IOException|FontFormatException e) {
-//			e.printStackTrace();
-//		     //Handle exception
-//		}
 		String fontNames[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
 		fontFamilyComboBox = new JComboBox<String>(fontNames);
 		editPanel.add(new LabelledComponent("Font family", fontFamilyComboBox), "wrap");
