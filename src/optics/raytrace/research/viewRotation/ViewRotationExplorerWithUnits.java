@@ -925,7 +925,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					refractiveLatticeSpanVector1,
 					refractiveLatticeSpanVector2,
 					new Plane("focus plane", 
-							new Vector3D(0, 0, objectDistance), 
+							new Vector3D(0, 0, 1), 
 							Vector3D.Z, 
 							null,
 							null, 
