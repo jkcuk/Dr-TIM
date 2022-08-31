@@ -427,6 +427,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 						EditableParametrisedTriangle cLens = (EditableParametrisedTriangle)(cloak.getSceneObjectContainer().getFirstSceneObjectWithDescription(lensFace, true));
 						//SurfaceProperty s = cLens.getSurfaceProperty();
 						IdealThinLensSurface cLensFocal = (IdealThinLensSurface)(cLens.getSurfaceProperty());
+						insideIimages.clear();
 						for (int l = 0; l<outsidePositionsToImage.size(); l++) {
 							//addSphere(outsidePositionsToImage.get(l), frameRadius, scene);
 							Vector3D outsideImagePosition = cLensFocal.getImagePosition(outsidePositionsToImage.get(l), ImagingDirection.POS2NEG);
@@ -468,6 +469,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 						EditableParametrisedTriangle cLens = (EditableParametrisedTriangle)(cloak.getSceneObjectContainer().getFirstSceneObjectWithDescription(lensFace, true));
 						//SurfaceProperty s = cLens.getSurfaceProperty();
 						IdealThinLensSurface cLensFocal = (IdealThinLensSurface)(cLens.getSurfaceProperty());
+						insideIimages.clear();
 						for (int l = 0; l<insidePositionsToImage.size(); l++) {
 							//addSphere(positionsToImage.get(l), frameRadius, scene);
 							Vector3D imagePosition = cLensFocal.getImagePosition(insidePositionsToImage.get(l), ImagingDirection.POS2NEG);
@@ -504,6 +506,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 						EditableParametrisedTriangle cLens = (EditableParametrisedTriangle)(cloak.getSceneObjectContainer().getFirstSceneObjectWithDescription(lensFace, true));
 						//SurfaceProperty s = cLens.getSurfaceProperty();
 						IdealThinLensSurface cLensFocal = (IdealThinLensSurface)(cLens.getSurfaceProperty());
+						insideIimages.clear();
 						for (int l = 0; l<insidePositionsToImage.size(); l++) {
 							//addSphere(positionsToImage.get(l), frameRadius, scene);
 							Vector3D imagePosition = cLensFocal.getImagePosition(insidePositionsToImage.get(l), ImagingDirection.POS2NEG);
