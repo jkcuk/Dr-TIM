@@ -13,8 +13,8 @@ import optics.rayplay.interactiveOpticalComponents.IdeaLensWormhole2D;
 import optics.rayplay.util.DoubleFormatter;
 
 /**
- * A point in an omnidirectional lens.
- * @author johannes
+ * A point in an optical wormhole.
+ * @author maik
  */
 public class IdealLensWormholePointGE2D extends PointGE2D
 {
