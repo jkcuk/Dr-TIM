@@ -32,6 +32,7 @@ import optics.raytrace.core.*;
 import optics.raytrace.exceptions.InconsistencyException;
 import optics.raytrace.exceptions.SceneException;
 import optics.DoubleColour;
+import optics.DoubleColours;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
 import optics.raytrace.GUI.cameras.EditableRelativisticAnyFocusSurfaceCamera;
@@ -73,6 +74,8 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 	private boolean baseLensImageCell3;
 	private boolean plane01ImageCell2;
 	private boolean hide01Colour;
+	
+	private DoubleColours testColour;
 
 	public enum CellsNumber
 	{
@@ -248,6 +251,8 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		colourSecondCell01PlaneOtherSide=  DoubleColour.GREEN;
 		colourThirdCell01PlaneOtherSide=  DoubleColour.GREEN;
 
+		
+		testColour= DoubleColours.BLUE;
 
 		// camera params
 		cameraAngle = 0;
@@ -354,6 +359,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 				baseVertex	// baseVertex
 				);
 		scene.addSceneObject(cloak);
+		
 
 
 
@@ -568,7 +574,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 						addTriangle(outsideIimages.get(1), outsideIimages.get(3), outsideIimages.get(7), basePlaneColourOtherSide.get(i), scene);
 
 						//adding the black cylinders to indicated where the 'infinity' line is
-						addCylinder(outsideIimages.get(3), outsideIimages.get(7), 0.5*frameRadius, scene);
+						//addCylinder(outsideIimages.get(3), outsideIimages.get(7), 0.5*frameRadius, scene);
 					}
 
 
@@ -640,7 +646,6 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 				}
 			}
 
-
 			catch (InconsistencyException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -666,7 +671,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 			}else {
 				defaultXZAngle = Math.toDegrees(Math.atan((rayPos.x-cloakCentre.x)/(rayPos.z-cloakCentre.z)));
 			}
-			System.out.println("defaultYAngle "+defaultYAngle+", defaultXZAngle "+defaultXZAngle+", "+((rayPos.x-cloakCentre.x)/(rayPos.z-cloakCentre.z)));
+			//System.out.println("defaultYAngle "+defaultYAngle+", defaultXZAngle "+defaultXZAngle+", "+((rayPos.x-cloakCentre.x)/(rayPos.z-cloakCentre.z)));
 			//express the ray starting position in terms of these angles plus any angles given in the interactive version.
 			Vector3D sphericalRayPos = Vector3D.sum(cloakCentre, new Vector3D(radius*Math.sin(Math.toRadians(rayUpAngle+defaultYAngle))*Math.sin(Math.toRadians(rayAngle+defaultXZAngle)), radius*Math.cos(Math.toRadians(rayUpAngle+defaultYAngle)),radius*Math.cos(Math.toRadians(rayAngle+defaultXZAngle))*Math.sin(Math.toRadians(rayUpAngle+defaultYAngle))));//sets the 'automatic' position of the ray ;				
 
@@ -693,7 +698,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 							sphericalRayPos,	// startPoint
 							0,	// startTime
 							rayDirection,	// startDirection
-							0.005,	// rayRadius
+							0.00401,	// rayRadius
 							new SurfaceColourLightSourceIndependent(DoubleColour.RED, false),	// surfaceProperty
 							20,	// maxTraceLevel
 							true,	// reportToConsole
@@ -708,8 +713,22 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 			Vector3D imagingInsidePosition;
 			Vector3D imageRayDirection = Vector3D.X;//set to X direction for now will be changed.
 			boolean realImages = false;
+			//check if the imaging is from inside out or the other way around. 
+			double checkIfInside = 0;
 			for(int i=0; i<cloak.getLensSimplicialComplex().getSimplices().size(); i++) {
 				Simplex simplex = cloak.getLensSimplicialComplex().getSimplices().get(i);
+				if(simplex.pointIsInsideSimplex(sphericalRayPos)) checkIfInside = checkIfInside+1;
+			}
+			boolean insideOut = false;
+			if(checkIfInside>0) insideOut =true;
+			//System.out.println(insideOut);
+			for(int i=0; i<cloak.getLensSimplicialComplex().getSimplices().size(); i++) {
+				Simplex simplex = cloak.getLensSimplicialComplex().getSimplices().get(i);
+				if(insideOut) {
+					insidePosition = cloak.getLensSimplicialComplex().mapToOutside(i, sphericalRayPos);//.mapFromOutside();
+					imagingInsidePosition = cloak.getLensSimplicialComplex().mapToOutside(i, sphericalRayPos.getSumWith(rayDirection.getWithLength(MyMath.TINY)));//.mapFromOutside();
+					realImages = true;
+				}else {
 				insidePosition = cloak.getLensSimplicialComplex().mapFromOutside(i, sphericalRayPos);//.mapFromOutside();
 				imagingInsidePosition = cloak.getLensSimplicialComplex().mapFromOutside(i, sphericalRayPos.getSumWith(rayDirection.getWithLength(MyMath.TINY)));//.mapFromOutside();
 				imageRayDirection = Vector3D.difference(imagingInsidePosition, insidePosition);
@@ -718,6 +737,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 					break;
 				}else {
 					realImages = false;
+				}
 				}
 				
 			}
@@ -729,7 +749,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 								insidePosition,	// startPoint
 								0,	// startTime
 								imageRayDirection,	// startDirection
-								0.005,	// rayRadius
+								0.004,	// rayRadius
 								new Striped(
 										new SurfaceColour(DoubleColour.RED, DoubleColour.WHITE, false),	
 										new SurfaceColour(DoubleColour.WHITE, DoubleColour.WHITE, false),
@@ -846,6 +866,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 	//base lens
 	private JComboBox<Colours> colourFirstCellBaseLensComboBox, colourSecondCellBaseLensComboBox, colourThirdCellBaseLensComboBox;
 	private JComboBox<Colours> colourFirstCellBaseLensType2ComboBox, colourSecondCellBaseLensType2ComboBox, colourThirdCellBaseLensType2ComboBox;
+	private JComboBox<DoubleColours> testColourComboBox;
 	
 
 
@@ -1024,8 +1045,11 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		cellNumberComboBox = new JComboBox<CellsNumber>(CellsNumber.values());
 		cellNumberComboBox.setSelectedItem(cellNumber);
 		imagePanel.add(GUIBitsAndBobs.makeRow("Image", cellNumberComboBox, "cell"),"span");
-
-
+		
+		testColourComboBox = new JComboBox<DoubleColours>(DoubleColours.values()); //TODO
+		testColourComboBox.setSelectedItem(testColour);
+//		imagePanel.add(GUIBitsAndBobs.makeRow("test colour", testColourComboBox, "cell"),"span");
+//		System.out.println(testColour.toString());
 
 		//camera stuff
 		JPanel cameraPanel = new JPanel();
@@ -1223,7 +1247,10 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		colourSecondCellBaseLensType2 = (((Colours) colourSecondCellBaseLensType2ComboBox.getSelectedItem()).toColour());
 		colourThirdCellBaseLensType2 = (((Colours) colourThirdCellBaseLensType2ComboBox.getSelectedItem()).toColour());
 		
-		
+		//test colour
+//		testColour = ((((DoubleColours) testColourComboBox.getSelectedItem())));
+//		System.out.println("test colour is "+testColour.toString()+ "with a double colour of "+ testColour);
+//		
 		//movie stuff
 		movie = movieCheckBox.isSelected();
 		numberOfFrames = numberOfFramesPanel.getNumber();
