@@ -2,6 +2,7 @@ package optics.raytrace.test;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.PrintStream;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -32,7 +33,7 @@ import optics.raytrace.core.*;
 import optics.raytrace.exceptions.InconsistencyException;
 import optics.raytrace.exceptions.SceneException;
 import optics.DoubleColour;
-import optics.DoubleColours;
+//import optics.DoubleColours;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
 import optics.raytrace.GUI.cameras.EditableRelativisticAnyFocusSurfaceCamera;
@@ -74,11 +75,13 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 	private boolean baseLensImageCell3;
 	private boolean plane01ImageCell2;
 	private boolean hide01Colour;
-	
-	private DoubleColours testColour;
+	private boolean hideImageColour;
+
+	//private DoubleColours testColour;
 
 	public enum CellsNumber
 	{
+		ZERO("0"),
 		ONE("1"),
 		TWO("2"),
 		THREE("3");
@@ -90,8 +93,8 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 
 	}
 	private CellsNumber cellNumber;
-	
-	
+
+
 	//colours....
 	public enum Colours
 	{
@@ -131,7 +134,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		public String toString() {return description;}
 		private DoubleColour toColour() {return colour;}
 	}
-	
+
 	private DoubleColour colourFirstCellBaseLens ;
 	private DoubleColour colourSecondCellBaseLens;
 	private DoubleColour colourThirdCellBaseLens ;
@@ -222,6 +225,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		baseLensImageCell3 = false;
 		plane01ImageCell2 = false;
 		hide01Colour = false;
+		hideImageColour = false;
 		cellNumber = CellsNumber.ONE;
 
 		//ray trace stuff
@@ -251,8 +255,8 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		colourSecondCell01PlaneOtherSide=  DoubleColour.GREEN;
 		colourThirdCell01PlaneOtherSide=  DoubleColour.GREEN;
 
-		
-		testColour= DoubleColours.BLUE;
+
+		//testColour= DoubleColours.BLUE;
 
 		// camera params
 		cameraAngle = 0;
@@ -287,6 +291,90 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 			windowWidth = 1500;
 			windowHeight = 650;
 		}
+	}
+
+	public void writeParameters(PrintStream printStream)
+	{
+		// write any parameters not defined in NonInteractiveTIMEngine
+		printStream.println("Cloak Params");
+		printStream.println("base focal= "+baseFocal);
+		printStream.println("lens type= "+lensType);
+		printStream.println("transmission= "+lensTrans);
+		printStream.println("h= "+h);
+		printStream.println("h1P= "+h1P);
+		printStream.println("h2P= "+h2P);
+		printStream.println("cloak Rotation Angle= "+cloakRotationAngle);
+		printStream.println("Images");
+		printStream.println("baseLensImageInCell2= "+baseLensImageCell2);
+		printStream.println("baseLensImageInCell3= "+baseLensImageCell3);
+		printStream.println("plane01ImageInCell2= "+plane01ImageCell2);
+		printStream.println("showing for "+cellNumber+" cells");
+		printStream.println("Images Colours");
+		printStream.println("cell 3 base lens colour 1="+colourFirstCellBaseLens);
+		printStream.println("cell 3 base lens colour 2="+colourSecondCellBaseLens);
+		printStream.println("cell 3 base lens colour 3="+colourThirdCellBaseLens);
+		printStream.println("cell 2 base lens colour 1="+colourFirstCellBaseLensType2);
+		printStream.println("cell 2 base lens colour 2="+colourSecondCellBaseLensType2);
+		printStream.println("cell 2 base lens colour 3="+colourThirdCellBaseLensType2);
+		printStream.println("01Plane colour 1="+colourFirstCell01Plane);
+		printStream.println("01Plane colour 2="+colourSecondCell01Plane);
+		printStream.println("01Plane colour 3="+colourThirdCell01Plane);
+		printStream.println("Other 01Plane colour 1="+colourFirstCell01PlaneOtherSide);
+		printStream.println("Other 01Plane colour 2="+colourSecondCell01PlaneOtherSide);
+		printStream.println("Other 01Plane colour 3="+colourThirdCell01PlaneOtherSide);
+		if(showTrajectory) {
+			printStream.println("Ray Tracing");
+
+			switch(rayTabbedPane.getSelectedIndex())
+			{
+			case 0:
+				printStream.println("trajectory Direction="+trajectoryDefaultDirection);
+				break;
+			case 1:
+				printStream.println("ray aiming at"+rayAim);
+				break;
+			case 2:
+				printStream.println("ray aiming at"+rayAim);
+				break;
+			}
+			printStream.println("ray starting point="+rayPos);
+		}
+		printStream.println("Camera");
+		printStream.println("cameraAngle="+cameraAngle);
+		printStream.println("cameraUpAngle="+cameraUpAngle);
+		printStream.println("cameraFOV="+cameraFOV);
+		printStream.println("cameraDistance="+cameraDistance);
+
+		if(movie) {
+			printStream.println("Camera");
+			printStream.println("numberOfFrames="+numberOfFrames);
+			printStream.println("movieType="+movieType);
+
+			switch(movieType)
+			{
+			case ROTATING_CLOAK:
+				printStream.println("startAngle="+startAngleCloak);
+				printStream.println("stopAngle="+stopAngleCloak);
+				break;
+			case MOVING_RAY:
+				printStream.println("startAngle="+startAngleRay);
+				printStream.println("stopAngle="+stopAngleRay);
+				printStream.println("startUpAngle="+startUpAngleRay);
+				printStream.println("stoptUpAngle="+stopUpAngleRay);
+				break;
+			case CAMERA_MOVING:
+				printStream.println("startAngle="+startAngleCamera);
+				printStream.println("stopAngle="+stopAngleCamera);
+				printStream.println("startUpAngle="+startUpAngleCamera);
+				printStream.println("stopUpAngle="+stopUpAngleCamera);
+				break;
+			}
+		}
+		printStream.println();
+
+		// write all parameters defined in NonInteractiveTIMEngine
+		super.writeParameters(printStream);
+
 	}
 
 	public void populateStudio()
@@ -334,7 +422,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 
 		//adding the lens cloak
 
-		double frameRadius = 0.005; // radius of cloak frame
+		double frameRadius = 0.01; // radius of cloak frame
 		Vector3D baseCentre = new Vector3D(0, 2-h/2, 0);	// baseCentre
 
 		cloak = new EditableLensSimplicialComplex(
@@ -348,7 +436,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		cloak.setVertexRadiusP(frameRadius);
 		cloak.setShowStructureV(false);
 		cloak.setVertexRadiusV(frameRadius);
-		cloak.setSurfacePropertyP(new SurfaceColour(DoubleColour.BLUE, DoubleColour.WHITE, false));
+		cloak.setSurfacePropertyP(new SurfaceColour(DoubleColour.GREY60, DoubleColour.GREY60, false));
 
 		cloak.initialiseToOmnidirectionalLens(
 				h1P,	// physicalSpaceFractionalLowerInnerVertexHeight
@@ -359,7 +447,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 				baseVertex	// baseVertex
 				);
 		scene.addSceneObject(cloak);
-		
+
 
 
 
@@ -418,6 +506,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		studio.setScene(scene);
 
 		studio.setLights(LightSource.getStandardLightsFromBehind());
+	//	studio.setLights(LightSource.getStandardLightsFromTheFront());
 
 		/*
 		 * image stuff  
@@ -445,6 +534,8 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 
 				int upperI = 0;
 				switch(cellNumber) {
+				case ZERO:
+					break;
 				case ONE:
 					upperI = 1;
 					break;
@@ -456,30 +547,30 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 					break;
 
 				}
-				
+
 				basePlaneColour.clear();
 				basePlaneColourOtherSide.clear();
 				baseLensForCellType2.clear();
 				baseLensForCellType3.clear();
-				
+
 				basePlaneColour.add(colourFirstCell01Plane);
 				basePlaneColour.add(colourSecondCell01Plane);
 				basePlaneColour.add(colourThirdCell01Plane);
-				
+
 				basePlaneColourOtherSide.add(colourFirstCell01PlaneOtherSide);
 				basePlaneColourOtherSide.add(colourSecondCell01PlaneOtherSide);
 				basePlaneColourOtherSide.add(colourThirdCell01PlaneOtherSide);
-				
+
 				baseLensForCellType2.add(colourFirstCellBaseLensType2);
 				baseLensForCellType2.add(colourSecondCellBaseLensType2);
 				baseLensForCellType2.add(colourThirdCellBaseLensType2);
-				
+
 				baseLensForCellType3.add(colourFirstCellBaseLens);
 				baseLensForCellType3.add(colourSecondCellBaseLens);
 				baseLensForCellType3.add(colourThirdCellBaseLens);
 
 				for(int i = 0; i < upperI; i++) {//3
-					
+
 					Vector3D surfaceSpacer = Vector3D.Y.getProductWith(MyMath.TINY*i);
 
 					//the some positions in the base lens to see where it is imaged to.
@@ -553,7 +644,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 							outsideIimages.add(outsideImagePosition);
 						}
 						//and time to add some triangles
-						
+
 
 						if(!hide01Colour) {
 							//part of plane on opposite side of where the lens is
@@ -565,14 +656,15 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 							addTriangle(outsidePositionsToImage.get(1), outsidePositionsToImage.get(5), outsidePositionsToImage.get(7), basePlaneColourOtherSide.get(i), scene);
 							addTriangle(outsidePositionsToImage.get(1), outsidePositionsToImage.get(3), outsidePositionsToImage.get(7), basePlaneColourOtherSide.get(i), scene);
 						}
-
+						
+						if(!hideImageColour) {
 						//and now the images of all these...
 						addTriangle(outsideIimages.get(0), outsideIimages.get(4), outsideIimages.get(8), basePlaneColour.get(i), scene);
 						addTriangle(outsideIimages.get(0), outsideIimages.get(2), outsideIimages.get(8), basePlaneColour.get(i), scene);
 						addTriangle(outsideIimages.get(0), outsideIimages.get(4), outsideIimages.get(6), basePlaneColour.get(i), scene);
 						addTriangle(outsideIimages.get(1), outsideIimages.get(5), outsideIimages.get(7), basePlaneColourOtherSide.get(i), scene);
 						addTriangle(outsideIimages.get(1), outsideIimages.get(3), outsideIimages.get(7), basePlaneColourOtherSide.get(i), scene);
-
+						}
 						//adding the black cylinders to indicated where the 'infinity' line is
 						//addCylinder(outsideIimages.get(3), outsideIimages.get(7), 0.5*frameRadius, scene);
 					}
@@ -601,9 +693,10 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 							addTriangle(insidePositionsToImage.get(0), insidePositionsToImage.get(1), insidePositionsToImage.get(2), baseLensForCellType2.get(i), scene); 
 							addTriangle(insidePositionsToImage.get(0), insidePositionsToImage.get(1), insidePositionsToImage.get(6), baseLensForCellType2.get(i), scene); 	
 						}
+						if(!hideImageColour) {
 						addTriangle(insideIimages.get(0), insideIimages.get(1), insideIimages.get(2), baseLensForCellType2.get(i), scene); 
 						addTriangle(insideIimages.get(0), insideIimages.get(1), insideIimages.get(6), baseLensForCellType2.get(i), scene);
-
+						}
 						//Test to see where other parts of base lens are imaged to. This does not follow what we see for infinity below.
 						//						Vector3D middleTest = Vector3D.sum(innerCloakImage.getFace(0).getVertex(1),innerCloakImage.getFace(0).getVertex(2)).getProductWith(0.5);
 						//						addSphere(innerCloakImage.getFace(0).getVertex(1), 0.5*frameRadius, scene);
@@ -637,10 +730,10 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 						if(!hide01Colour) {
 							addTriangle(insidePositionsToImage.get(1), insidePositionsToImage.get(5), insidePositionsToImage.get(9), baseLensForCellType3.get(i), scene);  	
 						}
-
+						if(!hideImageColour) {
 						addTriangle(insideIimages.get(1), insideIimages.get(5), insideIimages.get(9), baseLensForCellType3.get(i), scene); 
+						}
 						insideIimages.clear();
-
 					}
 
 				}
@@ -729,17 +822,17 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 					imagingInsidePosition = cloak.getLensSimplicialComplex().mapToOutside(i, sphericalRayPos.getSumWith(rayDirection.getWithLength(MyMath.TINY)));//.mapFromOutside();
 					realImages = true;
 				}else {
-				insidePosition = cloak.getLensSimplicialComplex().mapFromOutside(i, sphericalRayPos);//.mapFromOutside();
-				imagingInsidePosition = cloak.getLensSimplicialComplex().mapFromOutside(i, sphericalRayPos.getSumWith(rayDirection.getWithLength(MyMath.TINY)));//.mapFromOutside();
-				imageRayDirection = Vector3D.difference(imagingInsidePosition, insidePosition);
-				if(simplex.pointIsInsideSimplex(insidePosition) && simplex.pointIsInsideSimplex(imagingInsidePosition)) {
-					realImages = true;
-					break;
-				}else {
-					realImages = false;
+					insidePosition = cloak.getLensSimplicialComplex().mapFromOutside(i, sphericalRayPos);//.mapFromOutside();
+					imagingInsidePosition = cloak.getLensSimplicialComplex().mapFromOutside(i, sphericalRayPos.getSumWith(rayDirection.getWithLength(MyMath.TINY)));//.mapFromOutside();
+					imageRayDirection = Vector3D.difference(imagingInsidePosition, insidePosition);
+					if(simplex.pointIsInsideSimplex(insidePosition) && simplex.pointIsInsideSimplex(imagingInsidePosition)) {
+						realImages = true;
+						break;
+					}else {
+						realImages = false;
+					}
 				}
-				}
-				
+
 			}
 			if (images && realImages) {
 				// do the tracing of rays with trajectory
@@ -786,7 +879,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 			cloakFrame.setVertexRadiusP(frameRadius);
 			cloakFrame.setShowStructureV(false);
 			cloakFrame.setVertexRadiusV(frameRadius);
-			cloakFrame.setSurfacePropertyP(new SurfaceColour(DoubleColour.DARK_BLUE, DoubleColour.GREY10, false));
+			cloakFrame.setSurfacePropertyP(new SurfaceColour(DoubleColour.GREY60, DoubleColour.GREY60, false));
 
 			cloakFrame.initialiseToOmnidirectionalLens(
 					h1P,	// physicalSpaceFractionalLowerInnerVertexHeight
@@ -795,8 +888,43 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 					new Vector3D(0, 2+h/2, 0),	// topVertex
 					new Vector3D(0, 2-h/2, 0),	// baseCentre
 					baseVertex	// baseVertex1
-					);
+					);	
+			
 			scene.addSceneObject(cloakFrame);
+			
+//			//lens star stuff
+//			//add a sphere at the focal point.	
+//			addSphere(cloakFrame.getVertices().get(3), 0.003, scene);
+//			//The lenses working to create the lens star...
+//			EditableParametrisedTriangle cell2Lens1 = (EditableParametrisedTriangle)cloakFrame.getSceneObjectContainer().getFirstSceneObjectWithDescription("Face #"+7, true);
+//			cell2Lens1.setSurfaceProperty(new SemiTransparent( new ColourFilter(DoubleColour.CYAN,false), 0.8));
+//			scene.addSceneObject(cell2Lens1);
+//			EditableParametrisedTriangle cell2Lens2 = (EditableParametrisedTriangle)cloakFrame.getSceneObjectContainer().getFirstSceneObjectWithDescription("Face #"+12, true);
+//			cell2Lens2.setSurfaceProperty(new SemiTransparent( new ColourFilter(DoubleColour.CYAN,false), 0.8));
+//			scene.addSceneObject(cell2Lens2);
+//			//new SemiTransparent(SurfaceColour.CYAN_MATT, 0.8));
+//			EditableParametrisedTriangle cell2Lens3 = (EditableParametrisedTriangle)cloakFrame.getSceneObjectContainer().getFirstSceneObjectWithDescription("Face #"+14, true);
+//			cell2Lens3.setSurfaceProperty(new SemiTransparent( new ColourFilter(DoubleColour.CYAN,false), 0.8));
+//			scene.addSceneObject(cell2Lens3);
+//			
+//			//add a plane/triangle to indicate the lens stars...
+//			//calc the params TODO make work with rotating cloak etc. 
+//			Vector3D starVertex1 = cloakFrame.getVertices().get(3).getSumWith(Vector3D.Z.getProductWith(-0.77));
+//			Vector3D vertex1ToVertex2 = new Vector3D(Math.cos(Math.toRadians(30)),0,1+Math.sin(Math.toRadians(30))).getNormalised().getProductWith(2*0.77*Math.cos(Math.toRadians(30)));
+//			Vector3D vertex1ToVertex3 = new Vector3D(-Math.cos(Math.toRadians(30)),0,1+Math.sin(Math.toRadians(30))).getNormalised().getProductWith(2*0.77*Math.cos(Math.toRadians(30)));
+//			
+//			ParametrisedTriangle lensStarPlane = new ParametrisedTriangle(
+//					"lens star plane",// description,
+//					starVertex1,// vertex1,
+//					vertex1ToVertex2,// vertex1ToVertex2,
+//					vertex1ToVertex3,// vertex1ToVertex3,
+//					false,// semiInfinite,
+//					//SurfaceColour.BLACK_SHINY,
+//					//new SemiTransparent(SurfaceColour.BLACK_SHINY, 0.2),
+//					new SemiTransparent(new ColourFilter(DoubleColour.BLACK,false), 0.3),// surfaceProperty, surfaceProperty,
+//					scene,
+//					studio);
+//			scene.addSceneObject(lensStarPlane);
 		}
 	}
 
@@ -857,7 +985,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 	private LabelledVector3DPanel trajectoryDefaultDirectionPanel, rayAimPanel, rayPosPanel;
 	private IntPanel numberOfFramesPanel, firstFramePanel, lastFramePanel;
 	JTabbedPane movieTabbedPane, rayTabbedPane;
-	private JCheckBox baseLensImageCell2CheckBox, baseLensImageCell3CheckBox, plane01ImageCell2CheckBox, hide01ColourCheckBox;
+	private JCheckBox baseLensImageCell2CheckBox, baseLensImageCell3CheckBox, plane01ImageCell2CheckBox, hide01ColourCheckBox, hideImageColourCheckBox;
 	private JComboBox<CellsNumber>  cellNumberComboBox;
 	//colours...
 	//base plane
@@ -866,8 +994,8 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 	//base lens
 	private JComboBox<Colours> colourFirstCellBaseLensComboBox, colourSecondCellBaseLensComboBox, colourThirdCellBaseLensComboBox;
 	private JComboBox<Colours> colourFirstCellBaseLensType2ComboBox, colourSecondCellBaseLensType2ComboBox, colourThirdCellBaseLensType2ComboBox;
-	private JComboBox<DoubleColours> testColourComboBox;
-	
+	//private JComboBox<DoubleColours> testColourComboBox;
+
 
 
 
@@ -979,77 +1107,81 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		baseLensImageCell2CheckBox = new JCheckBox("Base lens images in cell 2");
 		baseLensImageCell2CheckBox.setSelected(baseLensImageCell2);
 		imagePanel.add(baseLensImageCell2CheckBox);
-		
+
 		colourFirstCellBaseLensType2ComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourFirstCellBaseLensType2ComboBox.setSelectedItem(colourFirstCellBaseLensType2);
 		imagePanel.add(GUIBitsAndBobs.makeRow( colourFirstCellBaseLensType2ComboBox, "in the first sector"));
-		
+
 		colourSecondCellBaseLensType2ComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourSecondCellBaseLensType2ComboBox.setSelectedItem(colourSecondCellBaseLensType2);
 		imagePanel.add(GUIBitsAndBobs.makeRow(",", colourSecondCellBaseLensType2ComboBox, "in the second"));
-		
+
 		colourThirdCellBaseLensType2ComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourThirdCellBaseLensType2ComboBox.setSelectedItem(colourThirdCellBaseLensType2);
 		imagePanel.add(GUIBitsAndBobs.makeRow("and", colourThirdCellBaseLensType2ComboBox, "in the third"), "span");
-		
+
 
 		baseLensImageCell3CheckBox = new JCheckBox("Base lens images in cell 3");
 		baseLensImageCell3CheckBox.setSelected(baseLensImageCell3);
 		imagePanel.add(baseLensImageCell3CheckBox);
-		
+
 		colourFirstCellBaseLensComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourFirstCellBaseLensComboBox.setSelectedItem(colourFirstCellBaseLens);
 		imagePanel.add(GUIBitsAndBobs.makeRow(colourFirstCellBaseLensComboBox, "in the first sector"));
-		
+
 		colourSecondCellBaseLensComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourSecondCellBaseLensComboBox.setSelectedItem(colourSecondCellBaseLens);
 		imagePanel.add(GUIBitsAndBobs.makeRow(",", colourSecondCellBaseLensComboBox, "in the second"));
-		
+
 		colourThirdCellBaseLensComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourThirdCellBaseLensComboBox.setSelectedItem(colourThirdCellBaseLens);
 		imagePanel.add(GUIBitsAndBobs.makeRow("and", colourThirdCellBaseLensComboBox, "in the third"), "span");
-		
+
 
 		plane01ImageCell2CheckBox = new JCheckBox("Outer plane image in cell 2");
 		plane01ImageCell2CheckBox.setSelected(plane01ImageCell2);
 		imagePanel.add(plane01ImageCell2CheckBox);
-	
+
 		colourFirstCell01PlaneOtherSideComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourFirstCell01PlaneOtherSideComboBox.setSelectedItem(colourFirstCell01PlaneOtherSide);
 		imagePanel.add(GUIBitsAndBobs.makeRow( colourFirstCell01PlaneOtherSideComboBox, "in the first sector"));
-		
+
 		colourSecondCell01PlaneOtherSideComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourSecondCell01PlaneOtherSideComboBox.setSelectedItem(colourSecondCell01PlaneOtherSide);
 		imagePanel.add(GUIBitsAndBobs.makeRow(",", colourSecondCell01PlaneOtherSideComboBox, "in the second"));
-		
+
 		colourThirdCell01PlaneOtherSideComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourThirdCell01PlaneOtherSideComboBox.setSelectedItem(colourThirdCell01PlaneOtherSide);
 		imagePanel.add(GUIBitsAndBobs.makeRow("and", colourThirdCell01PlaneOtherSideComboBox, "in the third"), "span");
-		
+
 		colourFirstCell01PlaneComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourFirstCell01PlaneComboBox.setSelectedItem(colourFirstCell01Plane);
 		imagePanel.add(GUIBitsAndBobs.makeRow("Second base plane", colourFirstCell01PlaneComboBox));
-		
+
 		colourSecondCell01PlaneComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourSecondCell01PlaneComboBox.setSelectedItem(colourSecondCell01Plane);
 		imagePanel.add(GUIBitsAndBobs.makeRow("in the first sector,", colourSecondCell01PlaneComboBox));
-		
+
 		colourThirdCell01PlaneComboBox = new JComboBox<Colours>(Colours.values()); 
 		colourThirdCell01PlaneComboBox.setSelectedItem(colourThirdCell01Plane);
 		imagePanel.add(GUIBitsAndBobs.makeRow("in the second and", colourThirdCell01PlaneComboBox, "in the third"), "span");
-		
+
 		hide01ColourCheckBox = new JCheckBox("No base colours");
 		hide01ColourCheckBox.setSelected(hide01Colour);
 		imagePanel.add(hide01ColourCheckBox);
 		
+		hideImageColourCheckBox = new JCheckBox("No image colours");
+		hideImageColourCheckBox.setSelected(hideImageColour);
+		imagePanel.add(hideImageColourCheckBox);
+
 		cellNumberComboBox = new JComboBox<CellsNumber>(CellsNumber.values());
 		cellNumberComboBox.setSelectedItem(cellNumber);
 		imagePanel.add(GUIBitsAndBobs.makeRow("Image", cellNumberComboBox, "cell"),"span");
-		
-		testColourComboBox = new JComboBox<DoubleColours>(DoubleColours.values()); //TODO
-		testColourComboBox.setSelectedItem(testColour);
-//		imagePanel.add(GUIBitsAndBobs.makeRow("test colour", testColourComboBox, "cell"),"span");
-//		System.out.println(testColour.toString());
+
+//		testColourComboBox = new JComboBox<DoubleColours>(DoubleColours.values()); //TODO
+//		testColourComboBox.setSelectedItem(testColour);
+		//		imagePanel.add(GUIBitsAndBobs.makeRow("test colour", testColourComboBox, "cell"),"span");
+		//		System.out.println(testColour.toString());
 
 		//camera stuff
 		JPanel cameraPanel = new JPanel();
@@ -1230,27 +1362,28 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		plane01ImageCell2 = plane01ImageCell2CheckBox.isSelected();
 		cellNumber = (CellsNumber)(cellNumberComboBox.getSelectedItem());
 		hide01Colour = hide01ColourCheckBox.isSelected();
+		hideImageColour = hideImageColourCheckBox.isSelected();
 		//colours\
 		colourFirstCell01PlaneOtherSide = (((Colours) colourFirstCell01PlaneOtherSideComboBox.getSelectedItem()).toColour());
 		colourSecondCell01PlaneOtherSide = (((Colours) colourSecondCell01PlaneOtherSideComboBox.getSelectedItem()).toColour());
 		colourThirdCell01PlaneOtherSide = (((Colours) colourThirdCell01PlaneOtherSideComboBox.getSelectedItem()).toColour());
-		
+
 		colourFirstCell01Plane = (((Colours) colourFirstCell01PlaneComboBox.getSelectedItem()).toColour());
 		colourSecondCell01Plane = (((Colours) colourSecondCell01PlaneComboBox.getSelectedItem()).toColour());
 		colourThirdCell01Plane = (((Colours) colourThirdCell01PlaneComboBox.getSelectedItem()).toColour());
-		
+
 		colourFirstCellBaseLens = (((Colours) colourFirstCellBaseLensComboBox.getSelectedItem()).toColour());
 		colourSecondCellBaseLens = (((Colours) colourSecondCellBaseLensComboBox.getSelectedItem()).toColour());
 		colourThirdCellBaseLens = (((Colours) colourThirdCellBaseLensComboBox.getSelectedItem()).toColour());
-		
+
 		colourFirstCellBaseLensType2 = (((Colours) colourFirstCellBaseLensType2ComboBox.getSelectedItem()).toColour());
 		colourSecondCellBaseLensType2 = (((Colours) colourSecondCellBaseLensType2ComboBox.getSelectedItem()).toColour());
 		colourThirdCellBaseLensType2 = (((Colours) colourThirdCellBaseLensType2ComboBox.getSelectedItem()).toColour());
-		
+
 		//test colour
-//		testColour = ((((DoubleColours) testColourComboBox.getSelectedItem())));
-//		System.out.println("test colour is "+testColour.toString()+ "with a double colour of "+ testColour);
-//		
+		//		testColour = ((((DoubleColours) testColourComboBox.getSelectedItem())));
+		//		System.out.println("test colour is "+testColour.toString()+ "with a double colour of "+ testColour);
+		//		
 		//movie stuff
 		movie = movieCheckBox.isSelected();
 		numberOfFrames = numberOfFramesPanel.getNumber();
