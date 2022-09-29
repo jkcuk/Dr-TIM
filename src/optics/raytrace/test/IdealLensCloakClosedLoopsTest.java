@@ -76,6 +76,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 	private boolean plane01ImageCell2;
 	private boolean hide01Colour;
 	private boolean hideImageColour;
+	private boolean showLensstarStuff;
 
 	//private DoubleColours testColour;
 
@@ -227,7 +228,8 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		hide01Colour = false;
 		hideImageColour = false;
 		cellNumber = CellsNumber.ONE;
-
+		showLensstarStuff = false;
+		
 		//ray trace stuff
 		traceRaysWithTrajectory = false; 
 		showTrajectory = false;
@@ -506,6 +508,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		studio.setScene(scene);
 
 		studio.setLights(LightSource.getStandardLightsFromBehind());
+	//	studio.setLights(LightSource.getStandardLightsFromTheRight());
 	//	studio.setLights(LightSource.getStandardLightsFromTheFront());
 
 		/*
@@ -669,6 +672,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 						//addCylinder(outsideIimages.get(3), outsideIimages.get(7), 0.5*frameRadius, scene);
 					}
 
+					
 
 					if(baseLensImageCell2) {
 						int j = 4;
@@ -892,39 +896,45 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 			
 			scene.addSceneObject(cloakFrame);
 			
-//			//lens star stuff
+			//lens star stuff
+			if(showLensstarStuff) {
 //			//add a sphere at the focal point.	
 //			addSphere(cloakFrame.getVertices().get(3), 0.003, scene);
 //			//The lenses working to create the lens star...
 //			EditableParametrisedTriangle cell2Lens1 = (EditableParametrisedTriangle)cloakFrame.getSceneObjectContainer().getFirstSceneObjectWithDescription("Face #"+7, true);
-//			cell2Lens1.setSurfaceProperty(new SemiTransparent( new ColourFilter(DoubleColour.CYAN,false), 0.8));
+//			//cell2Lens1.setSurfaceProperty(new SemiTransparent( new ColourFilter(DoubleColour.CYAN,false), 0.8));
+//			cell2Lens1.setSurfaceProperty(new SemiTransparent( SurfaceColour.CYAN_SHINY, 0.8));
 //			scene.addSceneObject(cell2Lens1);
 //			EditableParametrisedTriangle cell2Lens2 = (EditableParametrisedTriangle)cloakFrame.getSceneObjectContainer().getFirstSceneObjectWithDescription("Face #"+12, true);
-//			cell2Lens2.setSurfaceProperty(new SemiTransparent( new ColourFilter(DoubleColour.CYAN,false), 0.8));
+//			//cell2Lens2.setSurfaceProperty(new SemiTransparent( new ColourFilter(DoubleColour.CYAN,false), 0.8));
+//			cell2Lens2.setSurfaceProperty(new SemiTransparent( SurfaceColour.CYAN_SHINY, 0.8));
 //			scene.addSceneObject(cell2Lens2);
 //			//new SemiTransparent(SurfaceColour.CYAN_MATT, 0.8));
 //			EditableParametrisedTriangle cell2Lens3 = (EditableParametrisedTriangle)cloakFrame.getSceneObjectContainer().getFirstSceneObjectWithDescription("Face #"+14, true);
-//			cell2Lens3.setSurfaceProperty(new SemiTransparent( new ColourFilter(DoubleColour.CYAN,false), 0.8));
+//			//cell2Lens3.setSurfaceProperty(new SemiTransparent( new ColourFilter(DoubleColour.CYAN,false), 0.8));
+//			cell2Lens3.setSurfaceProperty(new SemiTransparent( SurfaceColour.CYAN_SHINY, 0.8));
 //			scene.addSceneObject(cell2Lens3);
-//			
-//			//add a plane/triangle to indicate the lens stars...
-//			//calc the params TODO make work with rotating cloak etc. 
-//			Vector3D starVertex1 = cloakFrame.getVertices().get(3).getSumWith(Vector3D.Z.getProductWith(-0.77));
-//			Vector3D vertex1ToVertex2 = new Vector3D(Math.cos(Math.toRadians(30)),0,1+Math.sin(Math.toRadians(30))).getNormalised().getProductWith(2*0.77*Math.cos(Math.toRadians(30)));
-//			Vector3D vertex1ToVertex3 = new Vector3D(-Math.cos(Math.toRadians(30)),0,1+Math.sin(Math.toRadians(30))).getNormalised().getProductWith(2*0.77*Math.cos(Math.toRadians(30)));
-//			
-//			ParametrisedTriangle lensStarPlane = new ParametrisedTriangle(
-//					"lens star plane",// description,
-//					starVertex1,// vertex1,
-//					vertex1ToVertex2,// vertex1ToVertex2,
-//					vertex1ToVertex3,// vertex1ToVertex3,
-//					false,// semiInfinite,
-//					//SurfaceColour.BLACK_SHINY,
-//					//new SemiTransparent(SurfaceColour.BLACK_SHINY, 0.2),
-//					new SemiTransparent(new ColourFilter(DoubleColour.BLACK,false), 0.3),// surfaceProperty, surfaceProperty,
-//					scene,
-//					studio);
-//			scene.addSceneObject(lensStarPlane);
+			
+			//add a plane/triangle to indicate the lens stars...
+			//calc the params TODO make work with rotating cloak etc. 
+			Vector3D starVertex1 = cloakFrame.getVertices().get(3).getSumWith(Vector3D.Z.getProductWith(-0.77));
+			Vector3D vertex1ToVertex2 = new Vector3D(Math.cos(Math.toRadians(30)),0,1+Math.sin(Math.toRadians(30))).getNormalised().getProductWith(2*0.77*Math.cos(Math.toRadians(30)));
+			Vector3D vertex1ToVertex3 = new Vector3D(-Math.cos(Math.toRadians(30)),0,1+Math.sin(Math.toRadians(30))).getNormalised().getProductWith(2*0.77*Math.cos(Math.toRadians(30)));
+			
+			ParametrisedTriangle lensStarPlane = new ParametrisedTriangle(
+					"lens star plane",// description,
+					starVertex1,// vertex1,
+					vertex1ToVertex2,// vertex1ToVertex2,
+					vertex1ToVertex3,// vertex1ToVertex3,
+					false,// semiInfinite,
+					//SurfaceColour.BLACK_SHINY,
+					new SemiTransparent(SurfaceColour.GREY20_SHINY, 0.2),
+					//new ColourFilter(DoubleColour.GREY50,false),
+					//new SemiTransparent(new ColourFilter(DoubleColour.DARK_RED,false), 0.3),// surfaceProperty, surfaceProperty,
+					scene,
+					studio);
+			scene.addSceneObject(lensStarPlane);
+			}
 		}
 	}
 
@@ -939,7 +949,8 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 				v1Tov2,// vertex1ToVertex2,
 				v1Tov3,// vertex1ToVertex3,
 				false,// semiInfinite,
-				new SemiTransparent(new ColourFilter(colour,false), 0.2),// surfaceProperty,
+				//new SemiTransparent(new ColourFilter(colour,false), 0.2),// surfaceProperty,
+				new SemiTransparent( new SurfaceColour(colour, colour, false),0.2),//0.5),// surfaceProperty,
 				scene,// parent,
 				studio
 				);
@@ -951,7 +962,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 				"Vertex", // description
 				position, // centre
 				9*frameRadius,	// radius
-				new SurfaceColour(DoubleColour.BLACK, DoubleColour.BLACK, false),
+				new SurfaceColour(DoubleColour.RED, DoubleColour.RED, false),
 				scene, studio);
 		scene.addSceneObject(sphere);
 	}
@@ -985,7 +996,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 	private LabelledVector3DPanel trajectoryDefaultDirectionPanel, rayAimPanel, rayPosPanel;
 	private IntPanel numberOfFramesPanel, firstFramePanel, lastFramePanel;
 	JTabbedPane movieTabbedPane, rayTabbedPane;
-	private JCheckBox baseLensImageCell2CheckBox, baseLensImageCell3CheckBox, plane01ImageCell2CheckBox, hide01ColourCheckBox, hideImageColourCheckBox;
+	private JCheckBox baseLensImageCell2CheckBox, baseLensImageCell3CheckBox, plane01ImageCell2CheckBox, hide01ColourCheckBox, hideImageColourCheckBox, showLensstarStuffCheckBox;
 	private JComboBox<CellsNumber>  cellNumberComboBox;
 	//colours...
 	//base plane
@@ -1176,7 +1187,11 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 
 		cellNumberComboBox = new JComboBox<CellsNumber>(CellsNumber.values());
 		cellNumberComboBox.setSelectedItem(cellNumber);
-		imagePanel.add(GUIBitsAndBobs.makeRow("Image", cellNumberComboBox, "cell"),"span");
+		imagePanel.add(GUIBitsAndBobs.makeRow("Image", cellNumberComboBox, "cell"));
+		
+		showLensstarStuffCheckBox = new JCheckBox("Show lens star stuff");
+		showLensstarStuffCheckBox.setSelected(showLensstarStuff);
+		imagePanel.add(showLensstarStuffCheckBox,"span");
 
 //		testColourComboBox = new JComboBox<DoubleColours>(DoubleColours.values()); //TODO
 //		testColourComboBox.setSelectedItem(testColour);
@@ -1363,6 +1378,7 @@ public class IdealLensCloakClosedLoopsTest extends NonInteractiveTIMEngine imple
 		cellNumber = (CellsNumber)(cellNumberComboBox.getSelectedItem());
 		hide01Colour = hide01ColourCheckBox.isSelected();
 		hideImageColour = hideImageColourCheckBox.isSelected();
+		showLensstarStuff = showLensstarStuffCheckBox.isSelected();
 		//colours\
 		colourFirstCell01PlaneOtherSide = (((Colours) colourFirstCell01PlaneOtherSideComboBox.getSelectedItem()).toColour());
 		colourSecondCell01PlaneOtherSide = (((Colours) colourSecondCell01PlaneOtherSideComboBox.getSelectedItem()).toColour());
