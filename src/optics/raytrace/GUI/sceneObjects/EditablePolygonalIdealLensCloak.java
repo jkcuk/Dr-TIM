@@ -40,6 +40,7 @@ import optics.raytrace.surfaces.SurfaceColour;
  */
 public class EditablePolygonalIdealLensCloak extends EditableSceneObjectCollection implements ActionListener
 {
+	private static final long serialVersionUID = -8054210763663770314L;
 
 	// parameters
 	

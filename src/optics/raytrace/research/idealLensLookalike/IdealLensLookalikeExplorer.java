@@ -252,6 +252,7 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 			surfacePropertySides = SurfaceColour.YELLOW_SHINY;
 		}
 
+		// start somewhere in the middle
 		int i0 = (int)(0.5*iMax);
 		int j0 = (int)(0.5*jMax);
 

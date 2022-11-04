@@ -249,7 +249,7 @@ implements OpticalComponent2D, Bijection2D
 		double denominator = focalLength-Vector2D.scalarProduct(pq, aHat);
 		
 		// avoid mapping to infinity
-		if(denominator == 0.0)
+		if(Math.abs(denominator) == 0.0)
 			return mapOutwards(Vector2D.sum(q, Vector2D.getRandomVector(MyMath.TINY)));
 		
 		return Vector2D.sum(
@@ -266,7 +266,7 @@ implements OpticalComponent2D, Bijection2D
 		double denominator = focalLength+Vector2D.scalarProduct(pq, aHat);
 		
 		// avoid mapping to infinity
-		if(denominator == 0.0)
+		if(Math.abs(denominator) == 0.0)
 			return mapInwards(Vector2D.sum(q, Vector2D.getRandomVector(MyMath.TINY)));
 
 		return Vector2D.sum(

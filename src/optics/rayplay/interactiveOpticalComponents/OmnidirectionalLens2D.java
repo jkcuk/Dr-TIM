@@ -823,7 +823,7 @@ public class OmnidirectionalLens2D implements InteractiveOpticalComponent2D
 	// 
 	
 	final JPopupMenu popup = new JPopupMenu();
-	final JMenu pointRaySourcesMenu = new JMenu("Calculate images of point ray source");
+	final JMenu pointRaySourcesMenu = new JMenu("Calculate images of rays from point ray source");
 	
 	// menu items
 //	JMenuItem

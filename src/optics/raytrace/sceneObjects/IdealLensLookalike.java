@@ -12,16 +12,33 @@ import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
 import optics.raytrace.surfaces.RefractiveSimple;
 
+/**
+ * @author johannes
+ * A refractive element that changes any object-space ray that passes through the position p1 into the same 
+ * image-space ray through position p2 that an ideal lens that images p1 into p2 and which lies in a plane
+ * through pI, with span vectors uI and vI, would change the ray into.
+ * 
+ * When seen from either p1 or p2, this element should distort the scene seen through it identically to that ideal lens.
+ */
 public class IdealLensLookalike extends SceneObjectPrimitiveIntersection
 {
 	private static final long serialVersionUID = -5373366715051869579L;
 
+	/**
+	 * position which is imaged into p2 by the element
+	 */
 	private Vector3D p1;
+	
+	/**
+	 * position which is imaged into p1 by the element
+	 */
 	private Vector3D p2;
+	
 	private double d1;
 	private double d2;
 	private int i0;
 	private int j0;
+	
 	SurfaceProperty surfaceProperty1, surfaceProperty2, surfacePropertySides;
 	
 	/**
@@ -252,7 +269,8 @@ public class IdealLensLookalike extends SceneObjectPrimitiveIntersection
 		invisiblePositiveSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>();
 		invisibleNegativeSceneObjectPrimitives  = new ArrayList<SceneObjectPrimitive>();
 
-		// calculate array of vertices on both surface
+		// calculate array of vertices on both surfaces
+		
 		// create space for vertices on surface 1...
 		Vector3D[][] v1 = new Vector3D[pointsOnIdealLens.length][pointsOnIdealLens[0].length];
 		// ... and on surface 2
@@ -266,18 +284,25 @@ public class IdealLensLookalike extends SceneObjectPrimitiveIntersection
 				v2[i][j] = null;
 			}
 		
-		// initialise one pair of points
+		// initialise the first pair of points
+		// the initial point on surface 1 lies between the initial point on the ideal lens and P1,
+		// a distance d1 from the initial point on the ideal lens
 		v1[i0][j0] = Vector3D.sum(
 				pointsOnIdealLens[i0][j0],
 				Vector3D.difference(p1, pointsOnIdealLens[i0][j0]).getWithLength(d1)
 			);
+		// the initial point on surface 2 lies between the initial point on the ideal lens and P2,
+		// a distance d1 from the initial point on the ideal lens
 		v2[i0][j0] = Vector3D.sum(
 				pointsOnIdealLens[i0][j0],
 				Vector3D.difference(p2, pointsOnIdealLens[i0][j0]).getWithLength(d2)
 			);
 		
+		// now calculate the remaining points on the surfaces
 		if(initOrder != InitOrder.ITHENJ)
 		{
+			// initOrder is either JTHENI or AVERAGED
+
 			// calculate the points with i=i0, j>j0
 			for(int j=j0+1; j<pointsOnIdealLens[0].length; j++) calculateSurfacePoint(i0, j, i0, j-1, v1, v2);
 			// calculate the points with i=i0, j<j0
@@ -325,6 +350,8 @@ public class IdealLensLookalike extends SceneObjectPrimitiveIntersection
 		
 		if(initOrder != InitOrder.JTHENI)
 		{
+			// initOrder is either ITHENJ or AVERAGED
+			
 			// calculate the points with i>i0, j=j0
 			for(int i=i0+1; i<pointsOnIdealLens.length; i++) calculateSurfacePoint(i, j0, i-1, j0, v1, v2);
 			// calculate the points with i<i0, j=j0
@@ -457,14 +484,31 @@ public class IdealLensLookalike extends SceneObjectPrimitiveIntersection
 	}
 		
 	
+	/**
+	 * Calculate the surface points v1[i][j] (on surface 1) and v2[i][j] (on surface 2) from the points
+	 * v1[iNeighbour][jNeighbour] and v2[iNeighbour][jNeighbour], both of which must be set when this method is called
+	 * @param i
+	 * @param j
+	 * @param iNeighbour
+	 * @param jNeighbour
+	 * @param v1
+	 * @param v2
+	 */
 	private void calculateSurfacePoint(int i, int j, int iNeighbour, int jNeighbour, Vector3D[][] v1, Vector3D[][] v2)
 	{
 		// calculate the light-ray directions for the (initialised) neighbour
+		
+		// light ray direction between P1 and surface 1
 		Vector3D normalisedDirectionOutsideSide1 = Vector3D.difference(v1[iNeighbour][jNeighbour], p1).getNormalised();
+		// light ray direction between surface 1 and surface 2
 		Vector3D normalisedDirectionInsideLens = Vector3D.difference(v2[iNeighbour][jNeighbour], v1[iNeighbour][jNeighbour]).getNormalised();
+		// light ray direction between P1 and surface 2
 		Vector3D normalisedDirectionOutsideSide2 = Vector3D.difference(p2, v2[iNeighbour][jNeighbour]).getNormalised();
 
-		// calculate the surface normals for element (iInitialised, j0)
+		// calculate the surface normals for element (iNeighbour, jNeighbour) such that the light-ray directions
+		// get refracted into each other
+		
+		// normal to surface 1 at v1[iNeighbour][jNeighbour]
 		Vector3D n1 = RefractiveSimple.getNormal(
 				normalisedDirectionOutsideSide1,	// normalisedDirectionIn
 				normalisedDirectionInsideLens,	// normalisedDirectionOut
@@ -472,6 +516,7 @@ public class IdealLensLookalike extends SceneObjectPrimitiveIntersection
 				n	// nOut
 			);
 
+		// normal to surface 2 at v2[iNeighbour][jNeighbour]
 		Vector3D n2 = RefractiveSimple.getNormal(
 				normalisedDirectionInsideLens,	// normalisedDirectionIn
 				normalisedDirectionOutsideSide2,	// normalisedDirectionOut
@@ -480,7 +525,8 @@ public class IdealLensLookalike extends SceneObjectPrimitiveIntersection
 			);
 		
 		try {
-			// point v1(i, j) is then the intersection between the plane through v1(iInitialised, j) with normal n1 and the line from p1 to pointsOnIdealLens(i, j)
+			// point v1(i, j) is then the intersection between the plane through v1(iNeighbour, jNeighbour)
+			// with normal n1 and the line from p1 to pointsOnIdealLens(i, j)
 			v1[i][j] = Geometry.linePlaneIntersection(
 							p1,	// pointOnLine
 							Vector3D.difference(pointsOnIdealLens[i][j], p1),	// directionOfLine
@@ -488,7 +534,8 @@ public class IdealLensLookalike extends SceneObjectPrimitiveIntersection
 							n1	// normalToPlane
 							);
 
-			// point v2(i, j) is then the intersection between the plane through v2(iInitialised, j) with normal n2 and the line from p2 to pointsOnIdealLens(i, j)
+			// point v2(i, j) is then the intersection between the plane through v2(iNeighbour, jNeighbour)
+			// with normal n2 and the line from p2 to pointsOnIdealLens(i, j)
 			v2[i][j] = Geometry.linePlaneIntersection(
 							p2,	// pointOnLine
 							Vector3D.difference(pointsOnIdealLens[i][j], p2),	// directionOfLine
