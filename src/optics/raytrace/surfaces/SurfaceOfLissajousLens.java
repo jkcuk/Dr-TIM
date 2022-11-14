@@ -72,9 +72,14 @@ public class SurfaceOfLissajousLens extends SurfaceOfRadiallySymmetricRefractive
 	 */
 	@Override
 	public double calculateN(double r)
-	{
+	{		
 		double rOverBeta = r/beta;
-		return alpha*Math.sqrt(1-rOverBeta*rOverBeta);
+		if(2 < Math.pow(rOverBeta, 2)) {
+		//System.err.println("WARNING: Negative refractive index detected! at radius:"+r);
+		return -Math.sqrt(-2 + rOverBeta*rOverBeta);
+	}
+
+		return Math.sqrt(2-rOverBeta*rOverBeta);
 	}
 
 	
@@ -87,7 +92,7 @@ public class SurfaceOfLissajousLens extends SurfaceOfRadiallySymmetricRefractive
 	@Override
 	public double calculatedNdr(double r)
 	{
-		return -r*alpha/(calculateN(r)*beta*beta);
+		return -Math.sqrt(2)*r/(calculateN(r)*beta*beta);
 	}
 
 	

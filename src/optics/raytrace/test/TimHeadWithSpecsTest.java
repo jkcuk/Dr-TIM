@@ -344,7 +344,7 @@ public class TimHeadWithSpecsTest extends NonInteractiveTIMEngine
 				1*MM, //wedgeThickness
 				0.9,//surfaceTransmissionCoefficient,
 				true,//simulateDiffractionBlur,
-				300,	// maxStepsInArray
+				20,	// maxStepsInArray
 				// surfaceProperty -- for now; will be set in a second
 				scene,
 				scene,
@@ -444,13 +444,14 @@ public class TimHeadWithSpecsTest extends NonInteractiveTIMEngine
 				rightDirection, 
 				frameType,
 				frameColour,
-				//new Transparent(0.15, true),
-								Transparent.SLIGHTLY_ABSORBING, //left
-								Transparent.SLIGHTLY_ABSORBING, //left
+//				new Transparent(0.15, true),
+//								Transparent.SLIGHTLY_ABSORBING, //left
+//								Transparent.SLIGHTLY_ABSORBING, //left
 //								SurfaceColour.GREY20_SHINY, //left
 //								SurfaceColour.GREY20_SHINY, //right
 //				leftSpec,
-//				specPlane,
+				specPlane,
+				specPlane,
 				//new Transparent(0.15, true),
 				scene, 
 				studio);

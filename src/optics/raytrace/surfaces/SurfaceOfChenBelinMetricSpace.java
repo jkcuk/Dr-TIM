@@ -21,18 +21,18 @@ public class SurfaceOfChenBelinMetricSpace extends SurfaceOfMetricSpace
 	/**
 	 * position of the black hole's centre
 	 */
-	private Vector3D centre;
+	protected Vector3D centre;
 	
 	/**
 	 * the horizon radius of the black hole
 	 */
-	private double horizonRadius;
+	protected double horizonRadius;
 	
 	/**
 	 * j = 1 corresponds to Kenyon's refractive-index profile;
 	 * j = 3/5 corresponds to Jakub's refractive-index profile, in which the photon-sphere radius is 3R
 	 */
-	private double jParameter;
+	protected double jParameter;
 		
 	
 	// constructors etc.
