@@ -390,6 +390,22 @@ public class Vector3D implements Serializable, Cloneable
 			);
 	}
 
+	/**
+	 * Change to the orthonormal basis given by <b>v1</b>, <b>v2</b> and <b>v3</b>.
+	 * @param v1 first basis vector
+	 * @param v2 second basis vector
+	 * @param v3 third basis vector
+	 * @return The vector in the (v1, v2, v3) basis
+	 */
+	public Vector3D toOrthonormalBasis(Vector3D v1, Vector3D v2, Vector3D v3)
+	{
+		return new Vector3D(
+				getScalarProductWith(v1),
+				getScalarProductWith(v2),
+				getScalarProductWith(v3)
+			);
+	}
+
 
 	/**
 	 * Project back to <b>i</b>, <b>j</b>, <b>k</b> from <b>e</b><sub>x</sub>, <b>e</b><sub>y</sub>, <b>e</b><sub>z</sub>.  
