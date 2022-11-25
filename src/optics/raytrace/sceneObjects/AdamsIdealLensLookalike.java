@@ -40,6 +40,7 @@ implements Derivatives
 	private double dq;
 	//width and height along ideal thin lens.
 	private double width, height;
+	
 	//surface properties
 	SurfaceProperty surfaceProperty1, surfaceProperty2, surfacePropertySides;
 
@@ -68,7 +69,6 @@ implements Derivatives
 	// useful to have
 
 	TriangulatedSurface surface1, surface2, side1, side2, side3, side4;
-
 
 	/**
 	 * 
@@ -120,8 +120,8 @@ implements Derivatives
 		setDq(dq);
 		setpI(pI);
 		setIdealLensNormal(idealLensNormal);
-		//create and set the axis vectors
-		Vector3D b3 = idealLensNormal.getNormalised();
+		//create and set the axis vectors, making sure that the normal is always away from p.
+		Vector3D b3 = idealLensNormal.getProductWith(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal))).getNormalised();
 		Vector3D b1 = Vector3D.getANormal(b3);
 		setB1(b1);
 		setB3(b3);
@@ -183,8 +183,8 @@ implements Derivatives
 		setDq(dq);
 		setpI(pI);
 		setIdealLensNormal(idealLensNormal);
-		//create and set the basis vectors
-		Vector3D b3 = idealLensNormal.getNormalised();
+		//create and set the basis vectors, making sure that the normal is always away from p.
+		Vector3D b3 = idealLensNormal.getProductWith(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal))).getNormalised();
 		Vector3D b1 = Vector3D.getANormal(b3);
 		setB1(b1);
 		setB3(b3);
@@ -373,6 +373,8 @@ implements Derivatives
 
 	public void initialise()
 	{
+
+		
 		// initialise the lists of positive and negative scene-object primitives
 		positiveSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>(2);
 		negativeSceneObjectPrimitives  = new ArrayList<SceneObjectPrimitive>();
@@ -399,7 +401,9 @@ implements Derivatives
 		//principalPoint;
 		try {
 			principalPoint = Geometry.linePlaneIntersection(p, Vector3D.difference(p,q).getNormalised(), pI, idealLensNormal);
-			idealLensPosition = getUVWposition(principalPoint);
+			idealLensPosition = principalPoint;
+			System.out.println("from "+idealLensPosition+" to "+getUVWposition(idealLensPosition)+" back to "+ getXYZposition(getUVWposition(idealLensPosition)));
+			System.out.println(principalPoint);
 		} catch (MathException e) {
 			System.err.println("Ideal lens plane parallel to line from p1 to p2");
 			e.printStackTrace();
@@ -555,6 +559,7 @@ implements Derivatives
 		
 		//and now return it to the original XYZ basis
 		return Vector3D.sum(localXYZposition, principalPoint);
+		//return localXYZposition;
 		//return localXYZposition.fromBasis(b1, b2, b3);
 	}
 	
@@ -584,8 +589,12 @@ implements Derivatives
 		//first, change to an appropriate coordinate system. This will be reversed later on.
 		Vector3D pIUVW = getUVWposition(pI);
 		Vector3D qIUVW = getUVWposition(qI);
+//		Vector3D pIUVW = pI;
+//		Vector3D qIUVW = qI);
 		//System.out.println(pI+", "+qI+" to: "+pIUVW+", "+qIUVW+", and back to: "+pIUVW.fromBasis(b1,b2,b3)+", "+qIUVW.fromBasis(b1,b2,b3));
 
+//		p = getUVWposition(p);
+//		q = getUVWposition(p);
 		
 		
 		
@@ -598,7 +607,6 @@ implements Derivatives
 		//System.out.println("currentIdealLensSurfacePosition "+currentIdealLensSurfacePosition);
 		Vector3D idealLensSurfacePositionUVW = getUVWposition(currentIdealLensSurfacePosition);
 		idealLensPosition = idealLensSurfacePositionUVW;
-		
 
 
 		
@@ -646,12 +654,12 @@ implements Derivatives
 		//front surface normal
 		//System.out.println(frontSurfacePosition+", "+backSurfacePosition);
 		normal[0] = RefractiveSimple.getNormal(
-				Vector3D.difference(frontSurfacePosition, p).getNormalised(), 
+				Vector3D.difference(frontSurfacePosition, getUVWposition(p)).getNormalised(), 
 				Vector3D.difference(backSurfacePosition, frontSurfacePosition).getNormalised(), 
 				1, n
 				);
 		normal[1] = RefractiveSimple.getNormal(
-				Vector3D.difference(backSurfacePosition, q).getNormalised(),
+				Vector3D.difference(backSurfacePosition, getUVWposition(q)).getNormalised(),
 				Vector3D.difference(frontSurfacePosition, backSurfacePosition).getNormalised(), 
 				1, n
 				);
@@ -669,12 +677,12 @@ implements Derivatives
 	{
 		//the normals at p and q, the front and back surface coordinates respectively
 		Vector3D normal = getSurfaceNormal(pSurface,qSurface)[0]; //index 0 as it is the front surface
-		double scalar = getSurfaceScalar(pSurface, idealLensSurfacePosition, p);
+		double scalar = getSurfaceScalar(pSurface, idealLensSurfacePosition, getUVWposition(p));
 
 		double dsdt = -scalar * (Vector3D.scalarProduct(normal, idealLensSurfacePosition))/
-				Vector3D.scalarProduct(normal, Vector3D.difference(idealLensSurfacePosition,p));
+				Vector3D.scalarProduct(normal, Vector3D.difference(idealLensSurfacePosition,getUVWposition(p)));
 
-		return Vector3D.sum(Vector3D.difference(idealLensSurfacePosition, p).getProductWith(dsdt), idealLensSurfacePosition.getProductWith(scalar));
+		return Vector3D.sum(Vector3D.difference(idealLensSurfacePosition, getUVWposition(p)).getProductWith(dsdt), idealLensSurfacePosition.getProductWith(scalar));
 	}
 
 	
@@ -682,12 +690,12 @@ implements Derivatives
 	{
 		//the normals at p and q, the front and back surface coordinates respectively
 		Vector3D normal = getSurfaceNormal(pSurface,qSurface)[1]; //index 1 as it is the back surface
-		double scalar = getSurfaceScalar(qSurface, idealLensSurfacePosition, q);
+		double scalar = getSurfaceScalar(qSurface, idealLensSurfacePosition, getUVWposition(q));
 
 		double dsdt = -scalar * (Vector3D.scalarProduct(normal, idealLensSurfacePosition))/
-				Vector3D.scalarProduct(normal, Vector3D.difference(idealLensSurfacePosition, q));
+				Vector3D.scalarProduct(normal, Vector3D.difference(idealLensSurfacePosition, getUVWposition(q)));
 
-		return Vector3D.sum(Vector3D.difference(idealLensSurfacePosition, q).getProductWith(dsdt), idealLensSurfacePosition.getProductWith(scalar));
+		return Vector3D.sum(Vector3D.difference(idealLensSurfacePosition, getUVWposition(q)).getProductWith(dsdt), idealLensSurfacePosition.getProductWith(scalar));
 	}
 
 	/* (non-Javadoc)

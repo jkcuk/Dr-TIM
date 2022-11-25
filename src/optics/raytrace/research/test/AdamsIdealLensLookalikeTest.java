@@ -1,4 +1,4 @@
-package optics.raytrace.research.idealLensLookalike;
+package optics.raytrace.research.test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,6 +30,8 @@ import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.core.SurfacePropertyPrimitive;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.sceneObjects.AdamsIdealLensLookalike;
+import optics.raytrace.sceneObjects.ScaledParametrisedCentredParallelogram;
+import optics.raytrace.sceneObjects.Sphere;
 import optics.raytrace.sceneObjects.TriangulatedSurface;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.IdealThinLensSurfaceSimple;
@@ -41,7 +43,7 @@ import optics.raytrace.surfaces.SurfaceOfTintedSolid;
 /**
  * Based on NonInteractiveTIM.
  */
-public class AdamsIdealLensLookalikeExplorer extends NonInteractiveTIMEngine
+public class AdamsIdealLensLookalikeTest extends NonInteractiveTIMEngine
 {
 
 	private boolean showIdealLensLookalike;
@@ -101,7 +103,7 @@ public class AdamsIdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 	 * Constructor.
 	 * Sets all parameters.
 	 */
-	public AdamsIdealLensLookalikeExplorer()
+	public AdamsIdealLensLookalikeTest()
 	{
 		super();
 
@@ -208,13 +210,11 @@ public class AdamsIdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 				);
 
 		if(showImageAtIntendedPosition) {
-			scene.addSceneObject(new EditableTimHead(
-					"Tim's head",
-					new Vector3D(0, 0, 3),
-					0.3,	// radius
-					new Vector3D(0, 0, -1),	// front direction
-					new Vector3D(0, 1, 0),	// top direction
-					new Vector3D(1, 0, 0),	// right direction
+			scene.addSceneObject(new Sphere(
+					"TestSphere",
+					q,
+					0.01,	// radius
+					SurfaceColour.GREEN_MATT,
 					scene,
 					studio
 					));
@@ -271,7 +271,7 @@ public class AdamsIdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 				steps,// iSteps,
 				steps,// jSteps,
 				stepSize,//stepSize
-				1.5,// n,
+				n,// n,
 //				surfaceProperty1,// surfaceProperty1,
 //				surfaceProperty2,// surfaceProperty2,
 //				surfacePropertySides,// surfacePropertySides,
@@ -290,23 +290,31 @@ public class AdamsIdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 		if(!showIdealLensLookalike){
 
 			
-			EditableScaledParametrisedDisc il;
-			il = new EditableScaledParametrisedDisc(
-					"Ideal lens",	// description
-					lookalikeLens.getPrincipalPoint(),	// centre
-					idealLensNormal,	// normal
-					radius,	// radius
-					new IdealThinLensSurfaceSimple(
-							lookalikeLens.getPrincipalPoint(),	// lensCentre
-							idealLensNormal,	// opticalAxisDirection
-							getFocalLength(p, q, idealLensNormal, lookalikeLens.getPrincipalPoint()),	// focalLength; 1/f = -1/o + 1/i
-							SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// transmissionCoefficient
-							true	// shadowThrowing
-							),	// surfaceProperty
-					scene,	// parent
-					studio
-					);
-			scene.addSceneObject(il);
+			ScaledParametrisedCentredParallelogram il;						
+			try {
+				Vector3D pp = Geometry.linePlaneIntersection(p, Vector3D.difference(p,q).getNormalised(), pointOnIdealLens, idealLensNormal);	// centre
+						//System.out.println(pp);
+				il = new ScaledParametrisedCentredParallelogram(
+						"Ideal lens",	// description
+						pp,
+						new Vector3D(2*radius, 0, 0),	// spanVector1
+						new Vector3D(0, 2*radius, 0),	// spanVector2
+						// size
+						new IdealThinLensSurfaceSimple(
+								pp,
+								idealLensNormal,	// opticalAxisDirection
+								1./(-1./(-Vector3D.getDistance(pp, p)) + 1./(Vector3D.getDistance(pp, q))),	// focalLength; 1/f = -1/o + 1/i
+								SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// transmissionCoefficient
+								true	// shadowThrowing
+						),	// surfaceProperty
+						scene,	// parent
+						studio
+				);
+				scene.addSceneObject(il);
+			} catch (MathException e) {
+				// couldn't create ideal lens
+				e.printStackTrace();
+			}
 			
 		}else { scene.addSceneObject(lookalikeLens);
 
@@ -649,6 +657,6 @@ public class AdamsIdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 		//        Runnable r = new NonInteractiveTIM();
 		//
 		//        EventQueue.invokeLater(r);
-		(new AdamsIdealLensLookalikeExplorer()).run();
+		(new AdamsIdealLensLookalikeTest()).run();
 	}
 }
