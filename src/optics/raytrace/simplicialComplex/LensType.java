@@ -20,6 +20,10 @@ public enum LensType
 	 */
 	IDEAL_THIN_LENS("Ideal thin lens"),
 	/**
+	 * Phase hologram with a quadratic phase dependence
+	 */
+	QUADRATIC_LENS_PHASE_HOLOGRAM("Simple phase hologram"),
+	/**
 	 * Point-to-point-imaging hologram, a planar surface with a Point2PointImagingPhaseHologram surface.
 	 * The two points being imaged into each other are given separately.
 	 * @see optics.raytrace.surfaces.Point2PointImagingPhaseHologram

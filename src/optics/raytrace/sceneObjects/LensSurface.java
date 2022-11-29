@@ -12,7 +12,7 @@ import optics.raytrace.surfaces.RefractiveSimple;
  * @author johannes
  * 
  * A surface of a material with refractive index <i>n</i> that refracts light rays that travel inside the lens in the <i>w</i> direction
- * such that, outside of the lens, they travel through the origin of the (u, v, w) coordinate system.
+ * such that, outside of the lens, they travel through the "focal point", which is the origin of the (u, v, w) coordinate system.
  * (We can then construct a lens from two such surfaces, or a Fresnel lens from a number of them.)
  */
 public class LensSurface extends SceneObjectPrimitive

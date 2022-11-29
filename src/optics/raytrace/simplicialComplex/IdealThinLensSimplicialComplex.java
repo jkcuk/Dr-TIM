@@ -16,6 +16,7 @@ import optics.raytrace.exceptions.InconsistencyException;
 import optics.raytrace.imagingElements.ImagingElement;
 import optics.raytrace.sceneObjects.FresnelLensShaped;
 import optics.raytrace.surfaces.IdealThinLensSurface;
+import optics.raytrace.surfaces.PhaseHologramOfLens;
 import optics.raytrace.surfaces.Point2PointImagingPhaseHologram;
 import optics.raytrace.surfaces.SemiTransparent;
 import optics.raytrace.surfaces.SurfaceColour;
@@ -286,6 +287,33 @@ extends ImagingSimplicialComplex
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			break;
+		case QUADRATIC_LENS_PHASE_HOLOGRAM:
+			// first create a triangle with an ideal thin lens surface...
+			EditableParametrisedTriangle triangle = ((EditableParametrisedTriangle)super.getSceneObjectRepresentingFace(
+					faceIndex,
+					transmissionCoefficient,
+					shadowThrowing,
+					parent,
+					studio
+				));
+
+			// ... extract the ideal-thin-lens surface, ...
+			IdealThinLensSurface itl = (IdealThinLensSurface)(triangle.getSurfaceProperty());
+
+			// ... create a phase hologram of an equivalent lens, ...
+			PhaseHologramOfLens phl = new PhaseHologramOfLens(
+					itl.getFocalLength(),	// focalLength
+					itl.getPrincipalPoint(),	// principalPoint
+					itl.getTransmissionCoefficient(),	// throughputCoefficient
+					false,	// reflective
+					itl.isShadowThrowing()	// shadowThrowing
+				);
+
+			// ... and replace the ideal thin lens surface with a phase hologram of a lens
+			triangle.setSurfaceProperty(phl);
+			
+			sceneObject = triangle;
 			break;
 		case IDEAL_THIN_LENS:
 		default:

@@ -83,19 +83,20 @@ public class SurfaceOfRadiallySymmetricRefractiveIndexDistribution extends Surfa
 	}
 	
 
-	@Override
-	public Matrix calculateEpsilonMuTensor(Vector3D x)
-	{
-		double n = calculateN(Vector3D.getDistance(x, centre));
-		
-		// the elements of the metric tensor
-		double[][] vals = {{n, 0, 0},{0, n, 0},{0, 0, n}};
-		
-		return new Matrix(vals);
-	}
+//	@Override
+//	public Matrix calculateEpsilonMuTensor(Vector3D x)
+//	{
+//		double n = calculateN(Vector3D.getDistance(x, centre));
+//		
+//		// the elements of the metric tensor
+//		double[][] vals = {{n, 0, 0},{0, n, 0},{0, 0, n}};
+//		
+//		return new Matrix(vals);
+//	}
 
 	@Override
-	public Vector3D dXdTau(Vector3D x, Vector3D k) {
+	public Vector3D dXdTau(Vector3D x, Vector3D k)
+	{
 		double n = calculateN(Vector3D.getDistance(x, centre));
 		
 		return k.getProductWith(2*n);
@@ -106,8 +107,10 @@ public class SurfaceOfRadiallySymmetricRefractiveIndexDistribution extends Surfa
 		double r = Vector3D.getDistance(x, centre);
 		double n = calculateN(r);
 		double dndr = calculatedNdr(r);
+		double k2 = k.getModSquared();
 		
-		return x.getProductWith(2*n*n*dndr/r - n*(1-n*n)*dndr/(r*n));
+		// return x.getProductWith(2*n*n*dndr/r - n*(1-n*n)*dndr/(r*n));
+		return x.getProductWith((-k2+3*n*n)*dndr/r);
 	}
 
 	@Override
@@ -124,6 +127,12 @@ public class SurfaceOfRadiallySymmetricRefractiveIndexDistribution extends Surfa
 		double n = calculateN(Vector3D.getDistance(x, centre));
 		
 		return d.getWithLength(n);
+	}
+
+	@Override
+	public Matrix calculateEpsilonMuTensor(Vector3D x) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

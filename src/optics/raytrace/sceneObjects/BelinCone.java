@@ -12,8 +12,8 @@ import optics.raytrace.core.*;
  * A cone-like surface that forms part of a generalised Fresnel lens.
  * The main parts of the Fresnel lens's surface are formed by a <i>LensSurface</i>, which refracts the light rays to do the required imaging.
  * This cone-like surface forms the steps in the Fresnel lens.
- * Note that the Belin cone that corresponds to a lens surface with a negative focal length is "inside out", which means we can use the same "recipe"
- * to construct a Fresnel-lens surface irrespective of the sign of the focal length
+ * Note that the Belin cone that corresponds to a lens surface with a negative focal length is "inside out", which means we can use the same
+ * "recipe" to construct a Fresnel-lens surface irrespective of the sign of the focal length
  * 
  * @see optics.raytrace.sceneObjects.LensSurface
  */
