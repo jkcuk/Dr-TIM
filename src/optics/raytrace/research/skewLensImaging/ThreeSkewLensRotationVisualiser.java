@@ -3,6 +3,7 @@ package optics.raytrace.research.skewLensImaging;
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -13,6 +14,8 @@ import javax.swing.JTextField;
 
 import math.*;
 import net.miginfocom.swing.MigLayout;
+import optics.raytrace.sceneObjects.AdamsIdealLensLookalike;
+import optics.raytrace.sceneObjects.CylinderMantle;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectDifference;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
@@ -24,6 +27,7 @@ import optics.raytrace.surfaces.IdealThinLensSurfaceSimple;
 import optics.raytrace.surfaces.ImagingDirection;
 import optics.raytrace.surfaces.LensHologram;
 import optics.raytrace.surfaces.Point2PointImagingPhaseHologram;
+import optics.raytrace.surfaces.RefractiveSimple;
 import optics.raytrace.core.*;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.research.skewLensImaging.TwoLensCombo.OpticalAxisSense;
@@ -910,6 +914,51 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 						true	// shadowThrowing
 						);
 				break;
+			case ITL_LOOKALIKE:
+				surface = new Transparent(); //TODO
+				//add the negative cylinder to shape the lenses
+				ArrayList<SceneObjectPrimitive> positiveSceneObjects = new ArrayList<SceneObjectPrimitive>();
+				CylinderMantle apertureShape = new CylinderMantle(
+						" shape",	// description
+						Vector3D.sum(principalPoint, normal.getWithLength( 1)),	// startPoint
+						Vector3D.sum(principalPoint, normal.getWithLength(-1)),	// endPoint
+						radius/5,	// radius
+						null,
+						null, null);
+				positiveSceneObjects.add(apertureShape);
+				
+				//surface property
+				double n=15;//refractive index TODO change as needed...
+				SurfaceProperty surfaceProperty1, surfaceProperty2, surfacePropertySides;
+				surfaceProperty1 = surfaceProperty2 = new RefractiveSimple(
+						1/n,	// insideOutsideRefractiveIndexRatio
+						SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// transmissionCoefficient
+						true	// shadowThrowing
+					);
+				
+				scene.addSceneObject(new AdamsIdealLensLookalike(
+						"Ideal Lens Lookalike",// description,
+						insideSpacePoint,// p,
+						outsideSpacePoint,// q,
+						0.5,// dp,
+						-0.2,// dq,
+						principalPoint,// pI,
+						normal,// idealLensNormal,
+						radius,// height,
+						radius,// width,
+						20,// iSteps,
+						20,// jSteps,
+						0.05,// integrationStepSize,
+						positiveSceneObjects,//positiveSceneObjects
+						n,// n, 
+						surfaceProperty1,//SurfaceProperty
+						surfaceProperty2, //SurfaceProperty
+						null, //SurfaceProperty
+						scene,// parent,
+						studio// studio
+						));
+				
+				break;
 			case IDEAL_THIN_LENS:
 			default:
 				surface = new IdealThinLensSurfaceSimple(
@@ -929,6 +978,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 					scene, studio
 					);
 			scene.addSceneObject(lens);
+			System.out.println("insideSpacePoint "+insideSpacePoint+", principalPoint "+principalPoint+", outsideSpacePoint"+outsideSpacePoint);
 		}
 		
 		EditableParametrisedCylinder frameOutside = new EditableParametrisedCylinder(
@@ -953,6 +1003,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 				scene, studio
 			);
 		scene.addSceneObject(frame);
+		
 	}
 	
 	

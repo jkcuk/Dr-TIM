@@ -51,6 +51,9 @@ implements Derivatives
 	//the new principal point
 	Vector3D principalPoint;
 	
+	//sign to determine if the image is real or virtual
+	double sign;
+	
 	//Define  global ideal lens position which gets changed for every i and j step. Initially it will be the principal point.
 	Vector3D idealLensPosition;
 	
@@ -62,14 +65,157 @@ implements Derivatives
 	private double n;
 
 	/**
-	 * array of positions on the ideal lens
+	 * a scene object container with all the negative scene objects to be added. TODO extend to positive and invisible objects
 	 */
-	//private Vector3D[][] pointsOnIdealLens;
+	
+	private ArrayList<SceneObjectPrimitive> negativeSceneObjects, positiveSceneObjects;
 
 	// useful to have
 
 	TriangulatedSurface surface1, surface2, side1, side2, side3, side4;
-
+	/**
+	 * 
+	 * @param description
+	 * @param p point to be imaged
+	 * @param q image of p
+	 * @param dp width of the 'lens' towards p
+	 * @param dq width of the 'lens' towards q
+	 * @param pI point on ideal lens plane
+	 * @param idealLensNormal normal to the ideal lens plane
+	 * @param height height of the ideal lens
+	 * @param width width of the ideal lens
+	 * @param iSteps step count in the i direction. If it is odd, it will be rounded down to the nearest even number
+	 * @param jSteps step count in the j direction. If it is odd, it will be rounded down to the nearest even number
+	 * @param integrationStepSize step size of each integration step
+	 * @param n refractive index
+	 * @param negativeSceneObjects list of scene objects which will be removed negatively to create an aperture shape
+	 * @param surfaceProperty1 front surface property
+	 * @param surfaceProperty2 back surface property
+	 * @param surfacePropertySides side surface property
+	 * @param parent 
+	 * @param studio
+	 */
+	public AdamsIdealLensLookalike(
+			String description,
+			Vector3D p,
+			Vector3D q,
+			double dp,
+			double dq,
+			Vector3D pI,
+			Vector3D idealLensNormal,
+			double height,
+			double width,
+			int iSteps,
+			int jSteps,
+			double integrationStepSize,
+			ArrayList<SceneObjectPrimitive> positiveSceneObjects,
+			double n,
+			SurfaceProperty surfaceProperty1,
+			SurfaceProperty surfaceProperty2,
+			SurfaceProperty surfacePropertySides,
+			SceneObject parent,
+			Studio studio
+			)
+	{
+		super(description, parent, studio);
+		setP(p);
+		setQ(q);
+		setDp(dp);
+		setDq(dq);
+		setpI(pI);
+		setIdealLensNormal(idealLensNormal);
+		//create and set the axis vectors, making sure that the normal is always away from p.
+		Vector3D b3 = idealLensNormal.getProductWith(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal))).getNormalised();
+		Vector3D b1 = Vector3D.getANormal(b3);
+		setB1(b1);
+		setB3(b3);
+		setB2(Vector3D.crossProduct(b3,b1));
+		
+		setWidth(width);
+		setHeight(height);
+		setISteps(iSteps/2); //TODO this should round down 
+		setJSteps(jSteps/2);
+		setIntegrationStepSize(integrationStepSize);
+		setN(n);
+		setPositiveSceneObjects(positiveSceneObjects);
+		setSurfaceProperty1(surfaceProperty1);
+		setSurfaceProperty2(surfaceProperty2);
+		setSurfacePropertySides(surfacePropertySides);
+		initialise();
+	}
+	
+	/**
+	 * 
+	 * @param description
+	 * @param p point to be imaged
+	 * @param q image of p
+	 * @param dp width of the 'lens' towards p
+	 * @param dq width of the 'lens' towards q
+	 * @param pI point on ideal lens plane
+	 * @param idealLensNormal normal to the ideal lens plane
+	 * @param height height of the ideal lens
+	 * @param width width of the ideal lens
+	 * @param iSteps step count in the i direction. If it is odd, it will be rounded down to the nearest even number
+	 * @param jSteps step count in the j direction. If it is odd, it will be rounded down to the nearest even number
+	 * @param integrationStepSize step size of each integration step
+	 * @param n refractive index
+	 * @param negativeSceneObjects list of scene objects which will be removed negatively to create an aperture shape
+	 * @param surfaceProperty1 front surface property
+	 * @param surfaceProperty2 back surface property
+	 * @param surfacePropertySides side surface property
+	 * @param parent 
+	 * @param studio
+	 */
+	public AdamsIdealLensLookalike(
+			String description,
+			Vector3D p,
+			Vector3D q,
+			double dp,
+			double dq,
+			Vector3D pI,
+			Vector3D idealLensNormal,
+			double height,
+			double width,
+			int iSteps,
+			int jSteps,
+			double integrationStepSize,
+			double n,
+			ArrayList<SceneObjectPrimitive> negativeSceneObjects,
+			SurfaceProperty surfaceProperty1,
+			SurfaceProperty surfaceProperty2,
+			SurfaceProperty surfacePropertySides,
+			SceneObject parent,
+			Studio studio
+			)
+	{
+		super(description, parent, studio);
+		setP(p);
+		setQ(q);
+		setDp(dp);
+		setDq(dq);
+		setpI(pI);
+		setIdealLensNormal(idealLensNormal);
+		//create and set the axis vectors, making sure that the normal is always away from p.
+		Vector3D b3 = idealLensNormal.getProductWith(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal))).getNormalised();
+		Vector3D b1 = Vector3D.getANormal(b3);
+		setB1(b1);
+		setB3(b3);
+		setB2(Vector3D.crossProduct(b3,b1));
+		
+		setWidth(width);
+		setHeight(height);
+		setISteps(iSteps/2); //TODO this should round down 
+		setJSteps(jSteps/2);
+		setIntegrationStepSize(integrationStepSize);
+		setN(n);
+		setNegativeSceneObjects(negativeSceneObjects);
+		setSurfaceProperty1(surfaceProperty1);
+		setSurfaceProperty2(surfaceProperty2);
+		setSurfacePropertySides(surfacePropertySides);
+		initialise();
+	}
+	
+	
 	/**
 	 * 
 	 * @param description
@@ -323,6 +469,22 @@ implements Derivatives
 		this.integrationStepSize = integrationStepSize;
 	}
 
+	public ArrayList<SceneObjectPrimitive> getNegativeSceneObjects() {
+		return negativeSceneObjects;
+	}
+
+	public void setNegativeSceneObjects(ArrayList<SceneObjectPrimitive> negativeSceneObjects) {
+		this.negativeSceneObjects = negativeSceneObjects;
+	}
+
+	public ArrayList<SceneObjectPrimitive> getPositiveSceneObjects() {
+		return positiveSceneObjects;
+	}
+
+	public void setPositiveSceneObjects(ArrayList<SceneObjectPrimitive> positiveSceneObjects) {
+		this.positiveSceneObjects = positiveSceneObjects;
+	}
+
 	public SurfaceProperty getSurfaceProperty1() {
 		return surfaceProperty1;
 	}
@@ -378,10 +540,12 @@ implements Derivatives
 		// initialise the lists of positive and negative scene-object primitives
 		positiveSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>(2);
 		negativeSceneObjectPrimitives  = new ArrayList<SceneObjectPrimitive>();
-
+		
 		// TODO add aperture shape here?
 		invisiblePositiveSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>();
 		invisibleNegativeSceneObjectPrimitives  = new ArrayList<SceneObjectPrimitive>();
+		invisibleNegativeSceneObjectPrimitives = negativeSceneObjects;
+		invisiblePositiveSceneObjectPrimitives = positiveSceneObjects;
 
 		// calculate array of vertices on both surface
 		// create space for vertices on surface 1...
@@ -402,12 +566,18 @@ implements Derivatives
 		try {
 			principalPoint = Geometry.linePlaneIntersection(p, Vector3D.difference(p,q).getNormalised(), pI, idealLensNormal);
 			idealLensPosition = principalPoint;
-			System.out.println("from "+idealLensPosition+" to "+getUVWposition(idealLensPosition)+" back to "+ getXYZposition(getUVWposition(idealLensPosition)));
-			System.out.println(principalPoint);
+//			System.out.println("from "+idealLensPosition+" to "+getUVWposition(idealLensPosition)+" back to "+ getXYZposition(getUVWposition(idealLensPosition)));
+//			System.out.println(principalPoint);
+			
 		} catch (MathException e) {
 			System.err.println("Ideal lens plane parallel to line from p1 to p2");
 			e.printStackTrace();
 		}
+		
+		sign = 1;
+		double frontSign = Vector3D.scalarProduct(Vector3D.difference(principalPoint, p), idealLensNormal);
+		double backSign = Vector3D.scalarProduct(Vector3D.difference(principalPoint, q), idealLensNormal);
+		 if(Math.signum(frontSign) == Math.signum(backSign)) sign = -1;
 
 		// initialise one pair of points, the central ones at v[iSteps][jSteps]
 		v1[iSteps][jSteps] = Vector3D.sum(
@@ -416,7 +586,7 @@ implements Derivatives
 				);
 		v2[iSteps][jSteps] = Vector3D.sum(
 				principalPoint,
-				Vector3D.difference(q, principalPoint).getWithLength(dq)
+				Vector3D.difference(q, principalPoint).getWithLength(sign*dq)
 				);
 
 		//after this it should start to differ from Johannes's ideal thin lens lookalike.
@@ -432,13 +602,13 @@ implements Derivatives
 			}
 		}
 		
-		System.out.println("front corner "+v1[0][0]);
-		System.out.println("front centre "+v1[iSteps][jSteps]);
-		System.out.println("front corner "+v1[2*iSteps-1][2*jSteps-1]);
-		
-		System.out.println("back corner "+v2[0][0]);
-		System.out.println("back centre "+v2[iSteps][jSteps]);
-		System.out.println("back corner "+v2[2*iSteps-1][2*jSteps-1]);
+//		System.out.println("front corner "+v1[0][0]);
+//		System.out.println("front centre "+v1[iSteps][jSteps]);
+//		System.out.println("front corner "+v1[2*iSteps-1][2*jSteps-1]);
+//		
+//		System.out.println("back corner "+v2[0][0]);
+//		System.out.println("back centre "+v2[iSteps][jSteps]);
+//		System.out.println("back corner "+v2[2*iSteps-1][2*jSteps-1]);
 
 		surface1 = new TriangulatedSurface(
 				"Surface 1",	// description
@@ -449,9 +619,9 @@ implements Derivatives
 				getStudio()
 				);
 		positiveSceneObjectPrimitives.add(surface1);
-		int trangleType = 0;
-		if(surface1.isInvertSurface())trangleType = 1;
-		System.out.println("at "+v1[1][1]+", with normal"+surface1.getOutwardsSurfaceNormal(trangleType, 1, 1));
+//		int trangleType = 0;
+//		if(surface1.isInvertSurface())trangleType = 1;
+//		System.out.println("at "+v1[1][1]+", with normal"+surface1.getOutwardsSurfaceNormal(trangleType, 1, 1));
 
 		surface2 = new TriangulatedSurface(
 				"Surface 2",	// description
@@ -462,9 +632,9 @@ implements Derivatives
 				getStudio()
 				);
 		positiveSceneObjectPrimitives.add(surface2);
-		int trangleType2 = 0;
-		if(surface2.isInvertSurface())trangleType2 = 1;
-		System.out.println("at "+v2[1][1]+", with normal"+ surface2.getOutwardsSurfaceNormal(trangleType2, 1, 1));
+//		int trangleType2 = 0;
+//		if(surface2.isInvertSurface())trangleType2 = 1;
+//		System.out.println("at "+v2[1][1]+", with normal"+ surface2.getOutwardsSurfaceNormal(trangleType2, 1, 1));
 
 
 		//adding sides.
@@ -658,10 +828,12 @@ implements Derivatives
 				Vector3D.difference(backSurfacePosition, frontSurfacePosition).getNormalised(), 
 				1, n
 				);
+		
+		if(Vector3D.getDistance(p, q)<Vector3D.getDistance(p, principalPoint)) sign = -1;
 		normal[1] = RefractiveSimple.getNormal(
 				Vector3D.difference(backSurfacePosition, getUVWposition(q)).getNormalised(),
 				Vector3D.difference(frontSurfacePosition, backSurfacePosition).getNormalised(), 
-				1, n
+				sign*1, n
 				);
 		//System.out.println(normal[0]+", "+normal[1]);
 		return normal;

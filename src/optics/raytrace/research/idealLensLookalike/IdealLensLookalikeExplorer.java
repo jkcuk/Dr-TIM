@@ -2,6 +2,7 @@ package optics.raytrace.research.idealLensLookalike;
 
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -20,21 +21,25 @@ import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
+import optics.raytrace.core.SceneObjectPrimitive;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.core.SurfacePropertyPrimitive;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.sceneObjects.AdamsIdealLensLookalike;
+import optics.raytrace.sceneObjects.Cylinder;
 import optics.raytrace.sceneObjects.IdealLensLookalike;
 import optics.raytrace.sceneObjects.ScaledParametrisedCentredParallelogram;
 import optics.raytrace.sceneObjects.Sphere;
 import optics.raytrace.sceneObjects.IdealLensLookalike.InitOrder;
 import optics.raytrace.sceneObjects.LensSurface;
+import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.IdealThinLensSurfaceSimple;
 import optics.raytrace.surfaces.RefractiveSimple;
 import optics.raytrace.surfaces.SurfaceColour;
+import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
 import optics.raytrace.surfaces.SurfaceOfTintedSolid;
 
 
@@ -50,6 +55,7 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 	private double lookalikeLensSize;
 	
 	private boolean showSides;
+	private boolean show2DView;
 	
 	private boolean setFocalLength;
 	private double idealLensFocalLength;
@@ -156,6 +162,7 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 		showJsIdealLensLookalike = false;
 		setFocalLength = false;
 		setFocalPointsManually = false;
+		show2DView = false;
 		
 		frontFocalPoint = new Vector3D(0, 0, -5);
 		backFocalPoint = new Vector3D(0, 0, 5); 
@@ -229,6 +236,7 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 		printStream.println("p2 = "+p2);
 		printStream.println("n = "+n);
 		printStream.println("opticalElement = "+opticalElement.description);
+		printStream.println("show2DView = "+show2DView);
 		switch(opticalElement) {
 		case IDEALLENS:
 			printStream.println("setFocalLength = "+setFocalLength);
@@ -308,6 +316,66 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 					studio
 					));
 		}
+		
+
+		ArrayList<SceneObjectPrimitive> negativeObjects = new ArrayList<SceneObjectPrimitive>();
+		if(show2DView) {
+			Vector3D principalPoint = Vector3D.O;
+			
+			try {
+				principalPoint = Geometry.linePlaneIntersection(p1, Vector3D.difference(p1,p2).getNormalised(), Vector3D.O, Vector3D.Z);
+			} catch (MathException e) {
+				System.err.println("Ideal lens plane parallel to line from p1 to p2");
+				e.printStackTrace();
+			}
+			
+			//add two planes which will cut the itl lookalike and itl plane
+			Plane plane1, plane2, plane3, plane4;
+			double Thickenss = 0.1;
+			plane1 = new Plane("cut off plane 1", Vector3D.X.getProductWith(Thickenss/2), Vector3D.X.getProductWith(-1), null, null, null);
+			plane2 = new Plane("cut off plane 2", Vector3D.X.getProductWith(-Thickenss/2), Vector3D.X.getProductWith(1), null, null, null);
+			plane3 = new Plane("cut off plane 3", Vector3D.Y.getProductWith(lookalikeLensSize/2), Vector3D.Y.getProductWith(-1), null, null, null);
+			plane4 = new Plane("cut off plane 4", Vector3D.Y.getProductWith(-lookalikeLensSize/2), Vector3D.Y.getProductWith(1), null, null, null);
+			
+			negativeObjects.add(plane1);
+			negativeObjects.add(plane2);
+			negativeObjects.add(plane3);
+			negativeObjects.add(plane4);
+			
+			Cylinder idealThinLens = new Cylinder			
+					("idealThinLens", //description,
+					Vector3D.Y.getProductWith(lookalikeLensSize/2).getSumWith(principalPoint),// start,
+					Vector3D.Y.getProductWith(-lookalikeLensSize/2).getSumWith(principalPoint),// end,
+					Thickenss/14,//radius,
+					SurfaceColour.GREY50_MATT,// surfaceProperty,
+					null,// parent,
+					null// studio
+				);
+
+			
+			scene.addSceneObject(idealThinLens);
+			
+			//add a point to p1 and p2 to show.
+			scene.addSceneObject(new Sphere(
+					"p2 object",
+					p2,//centre
+					Thickenss/8,//radius should be small
+					SurfaceColour.BLACK_MATT,
+					scene,
+					studio
+					));
+			
+			scene.addSceneObject(new Sphere(
+					"p1 object",
+					p1,//centre
+					Thickenss/8,//radius should be small
+					SurfaceColour.BLACK_MATT,
+					scene,
+					studio
+					));
+			
+			
+		}
 
 		
 		Vector3D[][] pointsOnIdealLens = new Vector3D[iMax][jMax];
@@ -339,8 +407,8 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 			break;
 		case COLOURED:
 		default:
-			surfaceProperty1 = SurfaceColour.CYAN_SHINY;
-			surfaceProperty2 = SurfaceColour.GREEN_SHINY;
+			surfaceProperty1 = SurfaceColourLightSourceIndependent.CYAN;//SurfaceColour.BLACK_MATT;
+			surfaceProperty2 = SurfaceColourLightSourceIndependent.CYAN;
 			surfacePropertySides = SurfaceColour.YELLOW_SHINY;
 		}
 
@@ -418,6 +486,7 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 					jMax,// jSteps,
 					integrationStepSize,// integrationStepSize
 					n,// n,
+					negativeObjects,
 					surfaceProperty1,// surfaceProperty1,
 					surfaceProperty2,// surfaceProperty2,
 					showSides?surfacePropertySides:null,// surfacePropertySides,
@@ -480,7 +549,7 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 	
 
 	// ideal-lens-lookalike panel
-	private JCheckBox showJsIdealLensLookalikeCheckbox, showAsIdealLensLookalikeCheckbox, showSidesCheckbox;
+	private JCheckBox showJsIdealLensLookalikeCheckbox, showAsIdealLensLookalikeCheckbox, showSidesCheckbox, show2DViewCheckBox;
 	private JComboBox<Material> materialComboBox;
 	private LabelledDoublePanel nPanel, d1Panel, d2Panel, lookalikeLensSizePanel, integrationStepSizePanel;
 	private LabelledVector3DPanel p1Panel, p2Panel;
@@ -584,6 +653,10 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 		showSidesCheckbox = new JCheckBox("Show sides of ideal-lens lookalike");
 		showSidesCheckbox.setSelected(showSides);
 		idealLensLookalikePanel.add(showSidesCheckbox, "span");
+		
+		show2DViewCheckBox = new JCheckBox("Cut into a '2D' Slice");
+		show2DViewCheckBox.setSelected(show2DView);
+		idealLensLookalikePanel.add(show2DViewCheckBox, "span");
 		
 		lookalikeLensSizePanel = new LabelledDoublePanel("Height & Width");
 		lookalikeLensSizePanel.setNumber(lookalikeLensSize);
@@ -731,6 +804,7 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 		jMax = jMaxPanel.getNumber();
 		integrationStepSize = integrationStepSizePanel.getNumber();
 		initOrder = (InitOrder)(initOrderComboBox.getSelectedItem());
+		show2DView = show2DViewCheckBox.isSelected();
 		
 		//lens surface
 		setFocalPointsManually = setFocalPointsManuallyCheckBox.isSelected();
