@@ -277,10 +277,10 @@ public class JakubPrismaticCloakExplorer extends NonInteractiveTIMEngine
 				
 				scene.addSceneObject(new EditableCylinderLattice(
 						"cylinder lattice",	// description
-						-20, 20, 20, Vector3D.X,	// xMin, xMax, nX, xVector
-						-2, 20, 20, Vector3D.Y,	// yMin, yMax, nY, yVector
+						-20, 20, 41, Vector3D.X,	// xMin, xMax, nX, xVector
+						-2, 20, 23, Vector3D.Y,	// yMin, yMax, nY, yVector
 						-2, 2, 2, Vector3D.Z,	// zMin, zMax, nZ, zVector
-						0.15,	// radius
+						0.08,	// radius
 						new Vector3D (0,0,18), //centre
 						scene,	// parent
 						studio)
@@ -466,7 +466,7 @@ public class JakubPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			
 			wPanel = new DoublePanel();
 			wPanel.setNumber(MyMath.rad2deg(w));
-			cloakPanel.add(GUIBitsAndBobs.makeRow("\u03C9, prism angle", wPanel,"°"),"span");
+			cloakPanel.add(GUIBitsAndBobs.makeRow("\u03C9, prism angle", wPanel,"ï¿½"),"span");
 			
 			hPanel = new DoublePanel();
 			hPanel.setNumber(h);
@@ -508,7 +508,7 @@ public class JakubPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			
 			cameraHorizontalFOVDegPanel = new DoublePanel();
 			cameraHorizontalFOVDegPanel.setNumber(cameraHorizontalFOVDeg);
-			cameraPanel.add(GUIBitsAndBobs.makeRow("Horizontal FOV", cameraHorizontalFOVDegPanel, "°"), "span");
+			cameraPanel.add(GUIBitsAndBobs.makeRow("Horizontal FOV", cameraHorizontalFOVDegPanel, "ï¿½"), "span");
 			
 			cameraDistancePanel = new DoublePanel();
 			cameraDistancePanel.setNumber(cameraDistance);
