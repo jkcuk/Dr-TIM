@@ -10,12 +10,12 @@ import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersecti
 import optics.raytrace.surfaces.RefractiveSimple;
 
 /**
- * A prism to be used in jakub's cloak
+ * A prism to be used in jakub's cloak. This is symmetric about the y axis. i.e it creates a ring of a prism.
  * @author Maik based on Jakub's design
  */
 public class JakubsPrism extends SceneObjectPrimitiveIntersection
 {
-	private static final long serialVersionUID = -2686597787702233306L;
+	private static final long serialVersionUID = -7254719194789423594L;
 
 	/**
 	 * The centre
@@ -23,9 +23,9 @@ public class JakubsPrism extends SceneObjectPrimitiveIntersection
 	private Vector3D centre;
 
 	/**
-	 * Normalised vector in the direction of the optical axis.
+	 * The symmetry axis, can be thought of as the "up" direction for jakubs cloak.
 	 */
-	private Vector3D normalisedOpticalAxisDirection;
+	private Vector3D symmetryAxis;
 
 	/**
 	 * w, the interior angle of the prisms
@@ -36,49 +36,56 @@ public class JakubsPrism extends SceneObjectPrimitiveIntersection
 	 * h, the cross sectional height of the prisms
 	 */
 	private double h;	
-	
+
 	/**
 	 * the refractive index of the material
 	 */
 	private double n;
-	
+
 	/**
-	 * should the inverse be created?
+	 * d, the diameter of the prism ring
 	 */
-	
+	private double d;
+
+	/**
+	 * True if alpha and beta should be inverted.
+	 */
 	private boolean invertPrism;
-	
+
 	/**
 	 * Transmission coefficient of each prism
 	 */
 	private double surfaceTransmissionCoefficient;
-	
+
 	/**
 	 * True if the system should  throw shadows
 	 */
 	private boolean shadowThrowing;
 
 
-	/**
-	 * Create a rotationally symmetric prism
-	 * @param description
-	 * @param centre
-	 * @param normalisedOpticalAxisDirection
-	 * @param w interior angle
-	 * @param h
-	 * @param n the refrative index
-	 * @param surfaceTransmissionCoefficient
-	 * @param shadowThrowing
-	 * @param parent
-	 * @param studio
-	 */
+/**
+ * 
+ * @param description
+ * @param centre
+ * @param symmetryAxis
+ * @param w
+ * @param h
+ * @param n
+ * @param d
+ * @param invertPrism
+ * @param surfaceTransmissionCoefficient
+ * @param shadowThrowing
+ * @param parent
+ * @param studio
+ */
 	public JakubsPrism(
 			String description,
 			Vector3D centre,
-			Vector3D normalisedOpticalAxisDirection,
+			Vector3D symmetryAxis,
 			double w,
 			double h,
 			double n,
+			double d,
 			boolean invertPrism,
 			double surfaceTransmissionCoefficient,
 			boolean shadowThrowing,
@@ -87,10 +94,11 @@ public class JakubsPrism extends SceneObjectPrimitiveIntersection
 	{
 		super(description, parent, studio);
 		this.centre = centre;
-		this.normalisedOpticalAxisDirection = normalisedOpticalAxisDirection.getNormalised();
+		this.symmetryAxis = symmetryAxis.getNormalised();
 		this.w = w;
 		this.h = h;
 		this.n = n;
+		this.d = d;
 		this.invertPrism = invertPrism;
 		this.surfaceTransmissionCoefficient = surfaceTransmissionCoefficient;
 		this.shadowThrowing = shadowThrowing;
@@ -103,10 +111,11 @@ public class JakubsPrism extends SceneObjectPrimitiveIntersection
 		this(
 				original.getDescription(),
 				original.getCentre(),
-				original.getNormalisedOpticalAxisDirection(),
+				original.getSymmetryAxis(),
 				original.getW(),
 				original.getH(),
 				original.getN(),
+				original.getD(),
 				original.isInvertPrism(),
 				original.getSurfaceTransmissionCoefficient(),
 				original.isShadowThrowing(),
@@ -121,9 +130,6 @@ public class JakubsPrism extends SceneObjectPrimitiveIntersection
 		return new JakubsPrism(this);
 	}
 
-
-
-
 	/**
 	 * setters and getters
 	 */
@@ -136,16 +142,16 @@ public class JakubsPrism extends SceneObjectPrimitiveIntersection
 		this.centre = centre;
 	}
 
-	public Vector3D getNormalisedOpticalAxisDirection() {
-		return normalisedOpticalAxisDirection;
+	public Vector3D getSymmetryAxis() {
+		return symmetryAxis;
 	}
 
 	/**
 	 * set optical-axis direction, ensuring it is normalised
 	 * @param opticalAxisDirection
 	 */
-	public void setNormalisedOpticalAxisDirection(Vector3D opticalAxisDirection) {
-		this.normalisedOpticalAxisDirection = opticalAxisDirection.getNormalised();
+	public void setSymmetryAxis(Vector3D opticalAxisDirection) {
+		this.symmetryAxis = opticalAxisDirection.getNormalised();
 	}
 
 	public double getW() {
@@ -170,6 +176,14 @@ public class JakubsPrism extends SceneObjectPrimitiveIntersection
 
 	public void setN(double n) {
 		this.n = n;
+	}
+
+	public double getD() {
+		return d;
+	}
+
+	public void setD(double d) {
+		this.d = d;
 	}
 
 	public boolean isInvertPrism() {
@@ -198,112 +212,73 @@ public class JakubsPrism extends SceneObjectPrimitiveIntersection
 
 
 	// interesting method
-	
+
 	private void addElements()
 	{
 		RefractiveSimple surfaceN = new RefractiveSimple(n, surfaceTransmissionCoefficient, shadowThrowing);
 		RefractiveSimple surface1OverN = new RefractiveSimple(1./n, surfaceTransmissionCoefficient, shadowThrowing);
-		
-		double a = Math.asin(n* Math.sin(w/2));
-		double b = w - a;
 
-		
-		
+		double alpha, beta;
+		Vector3D axis;
+
+		//set the type of prism to be created.
 		if(invertPrism) {
-			double frontConeHeight = (2)*h*Math.tan(b);
-			double backConeHeight = (2)*h*Math.tan(a);
-
-			
-			// prism 1
-		 ConeTop frontHalf = new ConeTop(
-					"frontHalf",	// description
-					centre.getSumWith(normalisedOpticalAxisDirection.getProductWith(-frontConeHeight)),	// Apex	
-					normalisedOpticalAxisDirection.getProductWith(1),	// Axis TODO, may need to be inverted
-					(Math.PI-2*b)/2, // theta
-					frontConeHeight+backConeHeight,
-					surfaceN,
-					//SurfaceColour.YELLOW_SHINY,
-					this,
-					getStudio()
-				);
-
-			// surface 2
-		 ConeTop backHalf = new ConeTop(
-					"backHalf",	// description
-					centre.getSumWith(normalisedOpticalAxisDirection.getProductWith(backConeHeight)),	// Apex	
-					normalisedOpticalAxisDirection.getProductWith(-1),	// Axis TODO, may need to be inverted
-					(Math.PI-2*a)/2, // theta
-					backConeHeight+frontConeHeight,
-					surfaceN,
-					//SurfaceColour.GREEN_SHINY,
-					this,
-					getStudio()
-				);
-		 
-		 CylinderMantle centralHole = new CylinderMantle(
-					"Negative interrior",	// description
-					Vector3D.sum(normalisedOpticalAxisDirection.getProductWith(frontConeHeight+backConeHeight), centre),	// front
-					Vector3D.sum(normalisedOpticalAxisDirection.getProductWith(-frontConeHeight-backConeHeight), centre),	// back
-					h,	// radius
-					surface1OverN,
-					//SurfaceColour.GREEN_SHINY,
-					this,
-					getStudio()
-				);
-
-			
-
-			addPositiveSceneObjectPrimitive(frontHalf);
-			addPositiveSceneObjectPrimitive(backHalf);
-			addNegativeSceneObjectPrimitive(centralHole);
+			axis = symmetryAxis.getProductWith(-1);
+			beta = Math.asin(n* Math.sin(w/2));
+			alpha = w - beta;
 		}else {
-			
-			double backConeHeight = h*Math.tan(b);
-			double frontConeHeight = h*Math.tan(a);
-
-			
-			 ConeTop frontHalf = new ConeTop(
-						"Negative frontHalf",	// description
-						centre,	// Apex	
-						normalisedOpticalAxisDirection.getProductWith(-1),	// Axis TODO, may need to be inverted
-						(Math.PI - 2*a)/2, // theta
-						frontConeHeight,
-						surface1OverN,
-						//SurfaceColour.YELLOW_SHINY,
-						this,
-						getStudio()
-					);
-
-				// surface 2
-			 ConeTop backHalf = new ConeTop(
-						"Negative backHalf",	// description
-						centre,	// Apex	
-						normalisedOpticalAxisDirection.getProductWith(1),	// Axis TODO, may need to be inverted
-						(Math.PI - 2*b)/2, // theta
-						backConeHeight,
-						surface1OverN,
-						//SurfaceColour.GREEN_SHINY,
-						this,
-						getStudio()
-					);
-			 
-			 CylinderMantle prismCylinder = new CylinderMantle(
-						"Positive interrior",	// description
-						Vector3D.sum(normalisedOpticalAxisDirection.getProductWith(-frontConeHeight), centre),	// front
-						Vector3D.sum(normalisedOpticalAxisDirection.getProductWith(backConeHeight), centre),	// back
-						h,	// radius
-						surfaceN,
-						this,
-						getStudio()
-					);
-	
-				addPositiveSceneObjectPrimitive(prismCylinder);
-				addNegativeSceneObjectPrimitive(frontHalf);
-				addNegativeSceneObjectPrimitive(backHalf);
+			axis = symmetryAxis;
+			alpha = Math.asin(n* Math.sin(w/2));
+			beta = w - alpha;
 		}
 
+		Vector3D positiveApex= Vector3D.sum(centre, axis.getProductWith(0.5*h+0.5*d*Math.tan(Math.PI/2 - alpha)));
+		Vector3D negativeApex= Vector3D.sum(centre, axis.getProductWith(0.5*h-0.5*d*Math.tan(Math.PI/2 - beta))); //TODO this is wrongggg
+		double heightPositive = 0.5*d*Math.tan(Math.PI/2 - alpha)+h;
+		double heightNegative = 0.5*d*Math.tan(Math.PI/2 - beta)+0.5*d*Math.tan(Math.PI/2 - alpha);
+
+		ConeTop positiveCone = new ConeTop(
+				"positive top",	// description
+				positiveApex,	// Apex	
+				axis.getProductWith(-1),	// Axis
+				alpha, // theta
+				heightPositive,
+				surfaceN,
+				//SurfaceColour.YELLOW_SHINY,
+				this,
+				getStudio()
+				);
+
+		// surface 2
+		ConeTop negativeCone = new ConeTop(
+				"Negative bottom",	// description
+				negativeApex,	// Apex	
+				axis.getProductWith(1),	// Axis
+				beta, // theta
+				heightNegative,
+				surface1OverN,
+				//SurfaceColour.GREEN_SHINY,
+				this,
+				getStudio()
+				);
+		System.out.println(negativeApex+", height "+heightNegative);
+
+		//bottom plane to close off the prism
+
+		Plane positivePlane = new Plane(
+				"prism bottom",
+				Vector3D.sum(centre, axis.getProductWith(-0.5*h)), //point on plane
+				axis.getProductWith(-1), // plane normal
+				surfaceN,
+				this,
+				getStudio()
+				);
+
+		addPositiveSceneObjectPrimitive(positiveCone);
+		addNegativeSceneObjectPrimitive(negativeCone);
+		addPositiveSceneObjectPrimitive(positivePlane);
 	}
-	
+
 
 	@Override
 	public String getType()

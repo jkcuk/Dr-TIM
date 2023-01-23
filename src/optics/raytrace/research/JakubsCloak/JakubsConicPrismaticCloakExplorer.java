@@ -33,7 +33,7 @@ import optics.raytrace.core.RaySceneObjectIntersection;
 import optics.raytrace.core.SceneObjectClass;
 import optics.raytrace.core.Studio;
 import optics.raytrace.exceptions.SceneException;
-import optics.raytrace.sceneObjects.JakubsPrism;
+import optics.raytrace.sceneObjects.ConicPrism;
 import optics.raytrace.sceneObjects.TimHead;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.SurfaceColour;
@@ -43,7 +43,7 @@ import optics.raytrace.surfaces.SurfaceTiling;
  * A cloak which utilises prisms to steer light around a cloaked area.
  * @author Maik based on Jakub's design
  */
-public class JakubPrismaticCloakExplorer extends NonInteractiveTIMEngine
+public class JakubsConicPrismaticCloakExplorer extends NonInteractiveTIMEngine
 {
 
 	/**
@@ -134,7 +134,7 @@ public class JakubPrismaticCloakExplorer extends NonInteractiveTIMEngine
 	private Vector3D rayTraceStartingPosition, rayTracePosition;
 	
 	
-	public JakubPrismaticCloakExplorer()
+	public JakubsConicPrismaticCloakExplorer()
 	{
 		super();
 		centre = Vector3D.O;
@@ -296,7 +296,7 @@ public class JakubPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			Vector3D p3centre =Vector3D.sum(centre, normalisedOpticalAxisDirection.getProductWith(d/2));
 			Vector3D p4centre =Vector3D.sum(centre, normalisedOpticalAxisDirection.getProductWith(D/2));
 			
-			JakubsPrism prism1 = new JakubsPrism(
+			ConicPrism	prism1 = new ConicPrism(
 					"prism 1", //description,
 					p1centre,// centre,
 					normalisedOpticalAxisDirection,// normalisedOpticalAxisDirection,
@@ -310,7 +310,7 @@ public class JakubPrismaticCloakExplorer extends NonInteractiveTIMEngine
 					studio// studio
 					);
 			
-			JakubsPrism prism2 = new JakubsPrism(
+			ConicPrism prism2 = new ConicPrism(
 					"prism 2", //description,
 					p2centre,// centre,
 					normalisedOpticalAxisDirection,// normalisedOpticalAxisDirection,
@@ -324,7 +324,7 @@ public class JakubPrismaticCloakExplorer extends NonInteractiveTIMEngine
 					studio// studio
 					);
 			
-			JakubsPrism prism3 = new JakubsPrism(
+			ConicPrism prism3 = new ConicPrism(
 					"prism 3", //description,
 					p3centre,// centre,
 					normalisedOpticalAxisDirection.getProductWith(-1),// normalisedOpticalAxisDirection,
@@ -339,7 +339,7 @@ public class JakubPrismaticCloakExplorer extends NonInteractiveTIMEngine
 					);
 			
 			
-			JakubsPrism prism4 = new JakubsPrism(
+			ConicPrism prism4 = new ConicPrism(
 					"prism 4", //description,
 					p4centre,// centre,
 					normalisedOpticalAxisDirection.getProductWith(-1),// normalisedOpticalAxisDirection,
@@ -672,6 +672,6 @@ public class JakubPrismaticCloakExplorer extends NonInteractiveTIMEngine
 
 	public static void main(final String[] args)
 	{
-		(new JakubPrismaticCloakExplorer()).run();
+		(new JakubsConicPrismaticCloakExplorer()).run();
 	}
 }
