@@ -32,9 +32,12 @@ import optics.raytrace.core.RaySceneObjectIntersection;
 import optics.raytrace.core.SceneObjectClass;
 import optics.raytrace.core.Studio;
 import optics.raytrace.exceptions.SceneException;
+import optics.raytrace.sceneObjects.ConicPrism;
+import optics.raytrace.sceneObjects.CylinderMantle;
 import optics.raytrace.sceneObjects.JakubsPrism;
 import optics.raytrace.sceneObjects.TimHead;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.surfaces.PhaseHologramOfSimplePrism;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.SurfaceTiling;
 
@@ -86,15 +89,26 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 	 */
 	private boolean shadowThrowing;
 	
-	/**
-	 * if true, the prisms will appear
-	 */
-	private boolean showPrisms;
+	public enum CloakingStrat
+	{
+		CONNIC("Connic prism"),
+		JAKUB("Jakubs prism"),
+		PHASE_HOLOGRAM("Phase hologram"),
+		NONE("No cloak");
+
+		private String description;
+		private CloakingStrat(String description) {this.description = description;}	
+		@Override
+		public String toString() {return description;}
+	}
+	
+	private CloakingStrat cloakingStrat;
 	
 	
 	//
 	// The scene and object parameters 
 	//
+	
 	
 	/**
 	 * add a ball or tim to the centre of the scene
@@ -121,6 +135,11 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 	private double radius; 
 	
 	/**
+	 * magnitude of the of phase holograms
+	 */
+	private double magnitudeInner, magnitudeOuter;
+	
+	/**
 	 * show a background lattice
 	 */
 	private boolean toggleBackgroundLattice;
@@ -144,7 +163,9 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 		n = 1.515;
 		surfaceTransmissionCoefficient = 0.9;
 		shadowThrowing = false;
-		showPrisms = true;
+		cloakingStrat = CloakingStrat.JAKUB;
+		magnitudeInner = 1;
+		magnitudeOuter = -1;
 
 
 		//object stuff
@@ -193,8 +214,9 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 		// write any parameters not defined in NonInteractiveTIMEngine
 		printStream.println("Scene initialisation");
 		printStream.println();
+		printStream.println("Prism type = "+cloakingStrat);
 		printStream.println("centre = "+centre);
-		printStream.println("normalisedOpticalAxisDirection = "+symmetryAxis);
+		printStream.println("symmetry Axis = "+symmetryAxis);
 		printStream.println("d = "+d);
 		printStream.println("omega = "+w);
 		printStream.println("h = "+h);
@@ -286,46 +308,152 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 						);
 			}
 			
-			//Adding the actual cloak 
-			
-			//some math to get the correct centres
+			//Adding the actual cloak(s)
 			double D = calculateD(d, h, w ,n);
-			Vector3D innerCentre =Vector3D.sum(centre, symmetryAxis.getProductWith(-h));
-			
-			JakubsPrism prism1 = new JakubsPrism(
-					"inner prism",// description,
-					innerCentre,// centre,
-					symmetryAxis,// symmetryAxis,
-					w,// w,
-					h,// h,
-					n,// n,
-					d,
-					true,// invertPrism,
-					surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
-					shadowThrowing,// shadowThrowing,
-					scene,// parent,
-					studio// studio
-					);
-			
-			JakubsPrism prism2 = new JakubsPrism(
-					"outer prism",// description,
-					centre,// centre,
-					symmetryAxis,// symmetryAxis,
-					w,// w,
-					h,// h,
-					n,// n,
-					D,
-					false,// invertPrism,
-					surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
-					shadowThrowing,// shadowThrowing,
-					scene,// parent,
-					studio// studio
-					);
-		
-			
-			if(showPrisms) {
-			scene.addSceneObject(prism1);
-			scene.addSceneObject(prism2);
+			switch(cloakingStrat){
+			case CONNIC:
+				//some math to get the correct centres
+				Vector3D p1centre =Vector3D.sum(centre, symmetryAxis.getProductWith(-D/2));
+				Vector3D p2centre =Vector3D.sum(centre, symmetryAxis.getProductWith(-d/2));
+				Vector3D p3centre =Vector3D.sum(centre, symmetryAxis.getProductWith(d/2));
+				Vector3D p4centre =Vector3D.sum(centre, symmetryAxis.getProductWith(D/2));
+				
+				ConicPrism	connicPrism1 = new ConicPrism(
+						"prism2", //description,
+						p1centre,// centre,
+						symmetryAxis,// normalisedOpticalAxisDirection,
+						w,// w,
+						h,// h,
+						n,// n,
+						false,// invertPrism,
+						surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
+						shadowThrowing,// shadowThrowing,
+						scene,// parent,
+						studio// studio
+						);
+				
+				ConicPrism connicPrism2 = new ConicPrism(
+						"prism1", //description,
+						p2centre,// centre,
+						symmetryAxis,// normalisedOpticalAxisDirection,
+						w,// w,
+						h,// h,
+						n,// n,
+						true,// invertPrism,
+						surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
+						shadowThrowing,// shadowThrowing,
+						scene,// parent,
+						studio// studio
+						);
+				
+				ConicPrism connicPrism3 = new ConicPrism(
+						"prism1", //description,
+						p3centre,// centre,
+						symmetryAxis.getProductWith(-1),// normalisedOpticalAxisDirection,
+						w,// w,
+						h,// h,
+						n,// n,
+						true,// invertPrism,
+						surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
+						shadowThrowing,// shadowThrowing,
+						scene,// parent,
+						studio// studio
+						);
+				
+				
+				ConicPrism connicPrism4 = new ConicPrism(
+						"prism2", //description,
+						p4centre,// centre,
+						symmetryAxis.getProductWith(-1),// normalisedOpticalAxisDirection,
+						w,// w,
+						h,// h,
+						n,// n,
+						false,// invertPrism,
+						surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
+						shadowThrowing,// shadowThrowing,
+						scene,// parent,
+						studio// studio
+						);
+				scene.addSceneObject(connicPrism1);
+				scene.addSceneObject(connicPrism2);
+				scene.addSceneObject(connicPrism3);
+				scene.addSceneObject(connicPrism4);
+				break;
+			case JAKUB:
+				//some math to get the correct centres
+				Vector3D innerCentre =Vector3D.sum(centre, symmetryAxis.getProductWith(-h));
+				
+				JakubsPrism jakubPrism1 = new JakubsPrism(
+						"prism1",// description,
+						innerCentre,// centre,
+						symmetryAxis,// symmetryAxis,
+						w,// w,
+						h,// h,
+						n,// n,
+						d,
+						true,// invertPrism,
+						surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
+						shadowThrowing,// shadowThrowing,
+						scene,// parent,
+						studio// studio
+						);
+				
+				JakubsPrism jakubPrism2 = new JakubsPrism(
+						"prism2",// description,
+						centre,// centre,
+						symmetryAxis,// symmetryAxis,
+						w,// w,
+						h,// h,
+						n,// n,
+						D,
+						false,// invertPrism,
+						surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
+						shadowThrowing,// shadowThrowing,
+						scene,// parent,
+						studio// studio
+						);
+				
+				scene.addSceneObject(jakubPrism1);
+				scene.addSceneObject(jakubPrism2);
+				break;
+			case PHASE_HOLOGRAM:
+				//add a hologram prism
+				CylinderMantle holographicPrism1 = new CylinderMantle(
+						"prism1",// description,
+						Vector3D.sum(symmetryAxis.getProductWith(-10), centre),// startPoint,
+						Vector3D.sum(symmetryAxis.getProductWith(10), centre),// endPoint,
+						D,// radius,
+				new PhaseHologramOfSimplePrism(
+						symmetryAxis,// uDirection,
+						magnitudeInner,// magnitude,
+						surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
+						false,
+						shadowThrowing),// shadowThrowing,
+						scene,// parent,
+						studio// studio
+						);
+				
+				CylinderMantle holographicPrism2 = new CylinderMantle(
+						"prism2",// description,
+						Vector3D.sum(symmetryAxis.getProductWith(-10), centre),// startPoint,
+						Vector3D.sum(symmetryAxis.getProductWith(10), centre),// endPoint,
+						d,// radius,
+				new PhaseHologramOfSimplePrism(
+						symmetryAxis,/// uDirection,
+						magnitudeOuter,// magnitude,
+						surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
+						false,
+						shadowThrowing),// shadowThrowing,
+						scene,// parent,
+						studio// studio
+						);
+				
+				scene.addSceneObject(holographicPrism1);
+				scene.addSceneObject(holographicPrism2);
+				
+				break;
+			case NONE:
+				break;
 			}
 			
 			//adding some ray tracing functionality.
@@ -350,10 +478,11 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			// trace the rays with trajectory through the scene
 			studio.traceRaysWithTrajectory();
 			
-			if(showPrisms) {
-			scene.removeSceneObject(prism1);
-			scene.removeSceneObject(prism2);
-			}
+//			scene.removeAllSceneObjectsWithDescription("inner prism", false);
+//			scene.removeAllSceneObjectsWithDescription("outer prism", false);
+			scene.removeAllSceneObjectsWithDescription("prism1", true);
+			scene.removeAllSceneObjectsWithDescription("prism2", true);
+			
 			
 			}
 			
@@ -366,8 +495,9 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 
 	private LabelledVector3DPanel centrePanel, normalisedOpticalAxisDirectionPanel;
 	private JComboBox<ViewObject> viewObjectComboBox;
-	private DoublePanel dPanel, wPanel, hPanel, nPanel, surfaceTransmissionCoefficientPanel, radiusPanel;
-	private JCheckBox shadowThrowingCheckBox, toggleBackgroundLatticeCheckBox, showPrismsCheckBox;
+	private DoublePanel dPanel, wPanel, hPanel, nPanel, surfaceTransmissionCoefficientPanel, radiusPanel, magnitudeInnerPanel, magnitudeOuterPanel;
+	private JCheckBox shadowThrowingCheckBox, toggleBackgroundLatticeCheckBox;
+	private JComboBox<CloakingStrat> cloakingStratComboBox;
 
 	//camera stuff
 	private LabelledVector3DPanel cameraViewDirectionPanel, cameraViewCentrePanel;
@@ -410,9 +540,18 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			objectsPanel.setLayout(new MigLayout("insets 0"));
 			scenePanel.add(objectsPanel, "grow, wrap");
 			
-			showPrismsCheckBox = new JCheckBox("Show the prisms");
-			showPrismsCheckBox.setSelected(showPrisms);
-			cloakPanel.add(showPrismsCheckBox, "span");
+			cloakingStratComboBox = new JComboBox<CloakingStrat>(CloakingStrat.values());
+			cloakingStratComboBox.setSelectedItem(cloakingStrat);
+			cloakPanel.add(cloakingStratComboBox,"wrap");
+			
+			magnitudeInnerPanel =new DoublePanel();
+			magnitudeInnerPanel.setNumber(magnitudeInner);
+			cloakPanel.add(GUIBitsAndBobs.makeRow("inner", magnitudeInnerPanel," and ")); 
+			
+			magnitudeOuterPanel =new DoublePanel();
+			magnitudeOuterPanel.setNumber(magnitudeOuter);
+			cloakPanel.add(GUIBitsAndBobs.makeRow("outer", magnitudeOuterPanel, "magnitude"),"span"); 
+
 			
 			centrePanel = new LabelledVector3DPanel("Centre");
 			centrePanel.setVector3D(centre);
@@ -527,7 +666,7 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			super.acceptValuesInInteractiveControlPanel();
 			
 			//Scene stuff
-			showPrisms = showPrismsCheckBox.isSelected();
+			cloakingStrat = (CloakingStrat)(cloakingStratComboBox.getSelectedItem());
 			centre = centrePanel.getVector3D();
 			symmetryAxis = normalisedOpticalAxisDirectionPanel.getVector3D();
 			viewObject = (ViewObject)(viewObjectComboBox.getSelectedItem());
@@ -539,7 +678,8 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			radius = radiusPanel.getNumber();
 			shadowThrowing = shadowThrowingCheckBox.isSelected();
 			toggleBackgroundLattice = toggleBackgroundLatticeCheckBox.isSelected();
-			
+			magnitudeInner = magnitudeInnerPanel.getNumber();
+			magnitudeOuter = magnitudeOuterPanel.getNumber();			
 			
 			
 			//camera stuff
