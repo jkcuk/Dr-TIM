@@ -461,7 +461,7 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 	private JTextArea rayLastClickTextArea;
 	private JButton rayLastClickInfo;
 	private JCheckBox traceRayCheckBox;
-	JTabbedPane rayAimOptionPanel;
+	private JTabbedPane rayAimOptionPanel;
 	
 	//others
 	private JCheckBox showPatternedSphereCheckBox;

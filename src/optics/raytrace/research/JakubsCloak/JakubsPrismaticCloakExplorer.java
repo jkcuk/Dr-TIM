@@ -2,6 +2,7 @@ package optics.raytrace.research.JakubsCloak;
 
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -30,13 +31,16 @@ import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedSphere;
 import optics.raytrace.core.LightSource;
 import optics.raytrace.core.RaySceneObjectIntersection;
 import optics.raytrace.core.SceneObjectClass;
+import optics.raytrace.core.SceneObjectPrimitive;
 import optics.raytrace.core.Studio;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.sceneObjects.ConicPrism;
 import optics.raytrace.sceneObjects.CylinderMantle;
 import optics.raytrace.sceneObjects.JakubsPrism;
+import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.TimHead;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
 import optics.raytrace.surfaces.PhaseHologramOfSimplePrism;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.SurfaceTiling;
@@ -140,6 +144,11 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 	private double magnitudeInner, magnitudeOuter;
 	
 	/**
+	 * Should the phase hologram be cropped?
+	 */
+	private boolean cropHologram;
+	
+	/**
 	 * show a background lattice
 	 */
 	private boolean toggleBackgroundLattice;
@@ -164,8 +173,9 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 		surfaceTransmissionCoefficient = 0.9;
 		shadowThrowing = false;
 		cloakingStrat = CloakingStrat.JAKUB;
-		magnitudeInner = 1;
-		magnitudeOuter = -1;
+		magnitudeInner = -0.5;
+		magnitudeOuter = 0.5;
+		cropHologram = false;
 
 
 		//object stuff
@@ -221,6 +231,11 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 		printStream.println("omega = "+w);
 		printStream.println("h = "+h);
 		printStream.println("n = "+n);
+		if(cloakingStrat == CloakingStrat.PHASE_HOLOGRAM) {
+		printStream.println("inner hologram magnitude = "+magnitudeInner);
+		printStream.println("outer hologram magnitude = "+magnitudeOuter);
+		printStream.println("cropHologram = " + cropHologram);
+		}
 		printStream.println("surfaceTransmissionCoefficient = "+surfaceTransmissionCoefficient);
 		printStream.println("shadowThrowing = "+shadowThrowing);
 		
@@ -425,7 +440,7 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 						D,// radius,
 				new PhaseHologramOfSimplePrism(
 						symmetryAxis,// uDirection,
-						magnitudeInner,// magnitude,
+						magnitudeOuter,// magnitude,
 						surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
 						false,
 						shadowThrowing),// shadowThrowing,
@@ -440,7 +455,7 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 						d,// radius,
 				new PhaseHologramOfSimplePrism(
 						symmetryAxis,/// uDirection,
-						magnitudeOuter,// magnitude,
+						magnitudeInner,// magnitude,
 						surfaceTransmissionCoefficient,// surfaceTransmissionCoefficient,
 						false,
 						shadowThrowing),// shadowThrowing,
@@ -448,8 +463,61 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 						studio// studio
 						);
 				
+				if(cropHologram) {
+					ArrayList<SceneObjectPrimitive> prism1	= new ArrayList<SceneObjectPrimitive>();
+					ArrayList<SceneObjectPrimitive> planes1	= new ArrayList<SceneObjectPrimitive>();
+					ArrayList<SceneObjectPrimitive> prism2	= new ArrayList<SceneObjectPrimitive>();
+					ArrayList<SceneObjectPrimitive> planes2	= new ArrayList<SceneObjectPrimitive>();
+					ArrayList<SceneObjectPrimitive> empty	= new ArrayList<SceneObjectPrimitive>();
+					
+					//add the outer hologram first
+					prism1.add(holographicPrism1);
+					//now add the components which will cut the hologram.
+					planes1.add(new Plane("crop plane 1", Vector3D.sum(centre, symmetryAxis.getProductWith(0.5*h)), symmetryAxis.getProductWith(1),null, scene, studio));
+					planes1.add(new Plane("crop plane 2", Vector3D.sum(centre, symmetryAxis.getProductWith(-0.5*h)), symmetryAxis.getProductWith(-1),null, scene, studio));
+					//System.out.println("pos"+symmetryAxis.getProductWith(0.5*h));
+					SceneObjectPrimitiveIntersection holographicPrism1cropped = new SceneObjectPrimitiveIntersection(
+							"prism1",// description,
+							prism1,
+							empty,// negativeSceneObjectPrimitives,
+							planes1,// invisiblePositiveSceneObjectPrimitives,
+							empty,// invisibleNegativeSceneObjectPrimitives,
+							empty,// clippedSceneObjectPrimitives,
+							scene,// parent,
+							studio// studio
+						);
+					
+					scene.addSceneObject(holographicPrism1cropped);
+					
+//					//now clear and repeat for the inner hologram...
+//					prism.clear();
+//					planes.clear();
+					
+					prism2.add(holographicPrism2);
+					//now add the components which will cut the hologram, taking into account the light ray direction change of the outer hologram
+					Vector3D i = Vector3D.getANormal(symmetryAxis);
+					double shift = magnitudeOuter*(D-d)/( Vector3D.scalarProduct(Vector3D.sum(i, symmetryAxis.getProductWith(magnitudeOuter)).getNormalised(), i));
+					planes2.add(new Plane("crop plane 1", Vector3D.sum(centre, symmetryAxis.getProductWith(shift+0.5*h)), symmetryAxis.getProductWith(1),null, scene, studio));
+					planes2.add(new Plane("crop plane 2", Vector3D.sum(centre, symmetryAxis.getProductWith(shift-0.5*h)), symmetryAxis.getProductWith(-1),null, scene, studio));
+					//System.out.println("shifted pos"+symmetryAxis.getProductWith(shift+0.5*h));
+					SceneObjectPrimitiveIntersection holographicPrism2cropped = new SceneObjectPrimitiveIntersection(
+							"prism2",// description,
+							prism2,
+							empty,// negativeSceneObjectPrimitives,
+							planes2,// invisiblePositiveSceneObjectPrimitives,
+							empty,// invisibleNegativeSceneObjectPrimitives,
+							empty,// clippedSceneObjectPrimitives,
+							scene,// parent,
+							studio// studio
+						);
+					
+					scene.addSceneObject(holographicPrism2cropped);
+					
+					
+				}else {
 				scene.addSceneObject(holographicPrism1);
 				scene.addSceneObject(holographicPrism2);
+				}
 				
 				break;
 			case NONE:
@@ -496,7 +564,7 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 	private LabelledVector3DPanel centrePanel, normalisedOpticalAxisDirectionPanel;
 	private JComboBox<ViewObject> viewObjectComboBox;
 	private DoublePanel dPanel, wPanel, hPanel, nPanel, surfaceTransmissionCoefficientPanel, radiusPanel, magnitudeInnerPanel, magnitudeOuterPanel;
-	private JCheckBox shadowThrowingCheckBox, toggleBackgroundLatticeCheckBox;
+	private JCheckBox shadowThrowingCheckBox, toggleBackgroundLatticeCheckBox, cropHologramCheckBox;
 	private JComboBox<CloakingStrat> cloakingStratComboBox;
 
 	//camera stuff
@@ -542,11 +610,15 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			
 			cloakingStratComboBox = new JComboBox<CloakingStrat>(CloakingStrat.values());
 			cloakingStratComboBox.setSelectedItem(cloakingStrat);
-			cloakPanel.add(cloakingStratComboBox,"wrap");
+			cloakPanel.add(cloakingStratComboBox,"span");
+			
+			cropHologramCheckBox = new JCheckBox("crop holograms");
+			cropHologramCheckBox.setSelected(cropHologram);
+			cloakPanel.add(cropHologramCheckBox, "span");
 			
 			magnitudeInnerPanel =new DoublePanel();
 			magnitudeInnerPanel.setNumber(magnitudeInner);
-			cloakPanel.add(GUIBitsAndBobs.makeRow("inner", magnitudeInnerPanel," and ")); 
+			cloakPanel.add(GUIBitsAndBobs.makeRow("Hologram inner", magnitudeInnerPanel," and ")); 
 			
 			magnitudeOuterPanel =new DoublePanel();
 			magnitudeOuterPanel.setNumber(magnitudeOuter);
@@ -679,7 +751,8 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			shadowThrowing = shadowThrowingCheckBox.isSelected();
 			toggleBackgroundLattice = toggleBackgroundLatticeCheckBox.isSelected();
 			magnitudeInner = magnitudeInnerPanel.getNumber();
-			magnitudeOuter = magnitudeOuterPanel.getNumber();			
+			magnitudeOuter = magnitudeOuterPanel.getNumber();
+			cropHologram = cropHologramCheckBox.isSelected();
 			
 			
 			//camera stuff

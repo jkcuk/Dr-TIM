@@ -67,7 +67,7 @@ public class TimHeadInitialisation extends StudioInitialisation
 				studio
 			));
 		
-		// ... standing in front of an invisible wall
+		// ... standing in front of an invisible wall for the autostereogram.
 		EditableParametrisedPlane wall = new EditableParametrisedPlane(
 				"invisible wall",
 				new Vector3D(0, 0, 12),	// point on plane
