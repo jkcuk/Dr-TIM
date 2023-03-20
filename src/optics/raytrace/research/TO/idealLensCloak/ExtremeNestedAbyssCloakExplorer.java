@@ -24,6 +24,7 @@ import optics.raytrace.GUI.lowLevel.ApertureSizeComboBox;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
+import optics.raytrace.GUI.lowLevel.IntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledComponent;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
@@ -67,8 +68,10 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 	private double baseRadiusO;
 	private double baseRadiusFraction;
 	private double baseLensFI,baseLensFO;
-	private double lowerInnerVertexI, lowerInnerVertexO;
-
+	private double lowerInnerVertexI, lowerInnerVertexO, upperInnerVertexO;
+	
+	private Vector3D topDirection, rightDirection;
+	
 	public enum ShowInnerCloaks
 	{
 		ONE("inner cloak in 1 cell"),
@@ -100,6 +103,11 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 	 * Radius of the patterned sphere
 	 */
 	private double patternedSphereRadius;
+	
+	/**
+	 * Rotation vector symmetry
+	 */
+	private Vector3D cameraRotationAxisDirection;
 
 	/**
 	 * setting up an editable tim head
@@ -137,7 +145,10 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 		baseLensFO = 0.03;
 		lowerInnerVertexI = 0.8;
 		lowerInnerVertexO = 0.25;
+		upperInnerVertexO = 0.95;
 		showInnerCloaks = ShowInnerCloaks.NONE;
+		topDirection = Vector3D.Y;
+		rightDirection = Vector3D.Z;
 		
 		//other scene objects
 		showPatternedSphere = false;
@@ -164,6 +175,14 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 		cameraApertureSize = ApertureSizeType.PINHOLE;
 		cameraHorizontalFOVDeg = 40;
 		cameraDistance = 10;
+		
+		//TODO add frames and then add to everything elseeee
+		movie = false;
+		// if movie = true, then the following are relevant:
+		numberOfFrames = 10;
+		firstFrame = 0;
+		lastFrame = numberOfFrames-1;
+		cameraRotationAxisDirection = Vector3D.Y;
 
 		//Tim engine setup
 		renderQuality = RenderQualityEnum.DRAFT;//Set the default render quality		
@@ -183,17 +202,75 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 	@Override
 	public String getClassName()
 	{
-		return
+		return			
 				"ExtremeNestedAbyssCloakExplorer"
 				;
 	}
 
 	@Override
 	public void writeParameters(PrintStream printStream)
-	{
+	{	
+		// write any parameters not defined in NonInteractiveTIMEngine
+		printStream.println("Scene initialisation");
+		printStream.println();
+		printStream.println("Cloaks");
+		printStream.println("Outer cloak: ");
+
+		// the shifty cloaks
+
+		printStream.println("showOuter = "+showO);
+		printStream.println("showCylindersOuter = "+showCylindersO);
+		printStream.println("baseCentreOuter = "+baseCentreO);
+		printStream.println("lensTypeOuter = "+lensTypeO);
+		printStream.println("heightOuter = "+heightO);
+		printStream.println("baseRadiusOuter = "+baseRadiusO);
+		printStream.println("baseLensFocalOuter = "+baseLensFO);
+		printStream.println("lowerInnerVertexOuter = "+lowerInnerVertexO);
+		printStream.println("upperInnerVertexOuter = "+upperInnerVertexO);
+		printStream.println("topDirection = "+topDirection);
+		printStream.println("rightDirection = "+rightDirection);
+		
+		printStream.println();
+		printStream.println("Inner cloak: ");
+		
+		printStream.println("showInner = "+showInnerCloaks);
+		printStream.println("showCylindersInner = "+showCylindersI);
+		printStream.println("lensTypeInner = "+lensTypeI);
+		printStream.println("baseRadiusFractionInner = "+baseRadiusFraction);
+		printStream.println("baseLensFocalInner = "+baseLensFI);
+		printStream.println("lowerInnerVertexInner = "+lowerInnerVertexI);
+		printStream.println();
+		
+		printStream.println("Other scene objects: ");		
+		printStream.println("showPatternedSphere = "+showPatternedSphere);
+		printStream.println("patternedSphereRadius = "+patternedSphereRadius);
+		printStream.println("timCentre = "+timCentre);
+		printStream.println("timRadius = "+timRadius);
+		printStream.println("timFront = "+timFront);
+		printStream.println("timTop = "+timTop);
+		printStream.println("timRight = "+timRight);
+		printStream.println();
+		
+		printStream.println("Ray trace: ");
+		printStream.println("traceRay = "+traceRay);
+		printStream.println("rayTraceStartingPosition = "+rayTraceStartingPosition);
+		printStream.println("rayTracePosition = "+rayTracePosition);
+		printStream.println("traceRaysWithTrajectory = "+traceRaysWithTrajectory);
+		
+		printStream.println();
+		printStream.println("camera");
+		printStream.println("movie= "+movie);
+		if(movie) {
+			printStream.println("numberOfFrames"+ numberOfFrames);
+			printStream.println("firstFrame"+ firstFrame);
+			printStream.println("lastFrame"+ lastFrame);
+			printStream.println("cameraRotationAxisDirection"+ cameraRotationAxisDirection);	
+		}
+		// write all parameters defined in NonInteractiveTIMEngine
+		super.writeParameters(printStream);		
 	}
 
-
+	private Vector3D frame0CameraViewDirection;
 	/* (non-Javadoc)
 	 * @see optics.raytrace.NonInteractiveTIMEngine#populateStudio()
 	 */
@@ -229,14 +306,19 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 				cloakO.setShowStructureV(false);
 				cloakO.setVertexRadiusV(frameRadius);
 				cloakO.setSurfacePropertyP(new SurfaceColour(DoubleColour.BLUE, DoubleColour.BLUE, false));
-
+				
+				if(topDirection.getNormalised() == rightDirection.getNormalised()) {
+					System.err.println("right direction is equal to the top direction. Right direction will now be set to a random perpendicular vector");
+					rightDirection = Vector3D.getANormal(topDirection);
+				}
+				
 				cloakO.initialiseToOmnidirectionalLens(
 						lowerInnerVertexO,	// physicalSpaceFractionalLowerInnerVertexHeight
-						0.95,	// physicalSpaceFractionalUpperInnerVertexHeight
+						upperInnerVertexO,	// physicalSpaceFractionalUpperInnerVertexHeight
 						1./(-heightO/baseLensFO + 1/lowerInnerVertexO),	// virtualSpaceFractionalLowerInnerVertexHeightI,	// virtualSpaceFractionalLowerInnerVertexHeight
-						new Vector3D(0, 2+heightO/2, 0),	// topVertex
+						Vector3D.sum(topDirection.getNormalised().getProductWith(heightO), baseCentreO),	// topVertex
 						baseCentreO,	// baseCentre
-						new Vector3D(0,0,baseRadiusO)	// baseVertex
+						Vector3D.sum(rightDirection.getNormalised().getProductWith(baseRadiusO), baseCentreO)// baseVertex
 						);
 				
 				scene.addSceneObject(cloakO, showO);
@@ -259,12 +341,13 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 
 				idealCloakO.initialiseToOmnidirectionalLens(
 						lowerInnerVertexO,	// physicalSpaceFractionalLowerInnerVertexHeight
-						0.95,	// physicalSpaceFractionalUpperInnerVertexHeight
+						upperInnerVertexO,	// physicalSpaceFractionalUpperInnerVertexHeight
 						1./(-heightO/baseLensFO + 1/lowerInnerVertexO),	// virtualSpaceFractionalLowerInnerVertexHeightI,	// virtualSpaceFractionalLowerInnerVertexHeight
-						new Vector3D(0, 2+heightO/2, 0),	// topVertex
+						Vector3D.sum(topDirection.getNormalised().getProductWith(heightO), baseCentreO),	// topVertex
 						baseCentreO,	// baseCentre
-						new Vector3D(0,0,baseRadiusO)	// baseVertex
+						Vector3D.sum(rightDirection.getNormalised().getProductWith(baseRadiusO), baseCentreO)// baseVertex
 						);
+				
 
 				int innerCloaks = 0;
 				switch(showInnerCloaks) {
@@ -365,7 +448,7 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 					
 					scene.addSceneObject(cloakI); 
 					
-					patternedSphereCentre = Vector3D.sum(normalIBaseCentreFacing.getProductWith(heightI/2), baseCentreI);
+					patternedSphereCentre = Vector3D.sum(normalIBaseCentreFacing.getProductWith(lowerInnerVertexI*heightI/2), baseCentreI);
 //					patternedSphereRadius = heightI/2.5;
 					
 					EditableScaledParametrisedSphere patternedSphereI = new EditableScaledParametrisedSphere(
@@ -388,7 +471,6 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 				}
 				
 				}catch (InconsistencyException e) {
-					// TODO this should always return a value unless no image can be found or the outer cloak is not initalised
 					//using an ideal thin lens surface
 					System.err.println("if this is seen then the code broke :(");
 					e.printStackTrace();
@@ -432,6 +514,32 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 				
 				
 				studio.setScene(scene);
+				if(movie)
+				{
+					// calculate view position that corresponds to the current frame
+					// initial camera position
+					Vector3D initialCameraPosition = Vector3D.sum(cameraViewCentre, frame0CameraViewDirection.getWithLength(-cameraDistance));
+					// the camera will move in a circle; calculate its centre
+					Vector3D centreOfCircle = Geometry.getPointOnLineClosestToPoint(
+							cameraViewCentre,	// pointOnLine
+							cameraRotationAxisDirection,	// directionOfLine
+							initialCameraPosition	// point
+							);
+					// construct two unit vectors that span the plane of the circle in which the camera will move
+					Vector3D uHat = Vector3D.difference(initialCameraPosition, centreOfCircle).getNormalised();
+					Vector3D vHat = Vector3D.crossProduct(cameraRotationAxisDirection, uHat).getNormalised();
+
+					// define the azimuthal angle phi that parametrises the circle
+					double phi = 2.*Math.PI*frame/numberOfFrames;
+					System.out.println("LensCloakVisualiser::populateStudio: phi="+phi+"(="+MyMath.rad2deg(phi)+"deg)");
+
+					// finally, calculate the view direction
+					cameraViewDirection = Vector3D.difference(
+							cameraViewCentre, 
+							Vector3D.sum(centreOfCircle, uHat.getProductWith(Math.cos(phi)*cameraDistance), vHat.getProductWith(Math.sin(phi)*cameraDistance))
+							);
+				}
+				
 				studio.setCamera(getStandardCamera());
 				studio.setLights(LightSource.getStandardLightsFromBehind());
 				
@@ -444,17 +552,20 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 	// for interactive version
 	//
 	//cloak stuff
-	private LabelledVector3DPanel baseCentreOPanel;
+	private LabelledVector3DPanel baseCentreOPanel, topDirectionPanel, rightDirectionPanel;
 	private JCheckBox showCylindersICheckBox, showCylindersOCheckBox, showOCkeckBox;
 	private JComboBox<LensType>  lensTypeOComboBox, lensTypeIComboBox;
-	private LabelledDoublePanel lowerInnerVertexOPanel, lowerInnerVertexIPanel, baseLensFIPanel, baseLensFOPanel, baseRadiusFractionPanel,
+	private LabelledDoublePanel lowerInnerVertexOPanel,upperInnerVertexOPanel, lowerInnerVertexIPanel, baseLensFIPanel, baseLensFOPanel, baseRadiusFractionPanel,
 	baseRadiusOPanel, heightOPanel; 
 	private JComboBox<ShowInnerCloaks>  showInnerCloaksComboBox;
 
 	//camera stuff
-	private LabelledVector3DPanel cameraViewDirectionPanel, cameraViewCentrePanel;
+	private LabelledVector3DPanel cameraViewDirectionPanel, cameraViewCentrePanel, cameraRotationAxisDirectionPanel;
 	private DoublePanel cameraFocussingDistancePanel, cameraHorizontalFOVDegPanel, cameraDistancePanel;
 	private ApertureSizeComboBox cameraApertureSizeComboBox;
+	private JCheckBox movieCheckBox;
+	private IntPanel numberOfFramesPanel, firstFramePanel, lastFramePanel;
+
 
 	//ray trace stuff
 	private LabelledVector3DPanel rayTraceStartingPositionPanel, rayAimPanel;
@@ -500,6 +611,14 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 			baseCentreOPanel.setVector3D(baseCentreO);
 			cloakOuterPanel.add(baseCentreOPanel, "span");
 			
+			topDirectionPanel = new LabelledVector3DPanel("Top Direction");
+			topDirectionPanel.setVector3D(topDirection);
+			cloakOuterPanel.add(topDirectionPanel, "span");
+			
+			rightDirectionPanel = new LabelledVector3DPanel("Right Direction");
+			rightDirectionPanel.setVector3D(rightDirection);
+			cloakOuterPanel.add(rightDirectionPanel, "span");
+			
 			baseLensFOPanel = new LabelledDoublePanel("base focal length");
 			baseLensFOPanel.setNumber(baseLensFO);
 			cloakOuterPanel.add(baseLensFOPanel, "span");
@@ -512,9 +631,13 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 			heightOPanel.setNumber(heightO);
 			cloakOuterPanel.add(heightOPanel, "span");
 			
-			lowerInnerVertexOPanel= new LabelledDoublePanel("lower vertex (0-0.95)");
+			lowerInnerVertexOPanel= new LabelledDoublePanel("lower vertex");
 			lowerInnerVertexOPanel.setNumber(lowerInnerVertexO);
-			cloakOuterPanel.add(lowerInnerVertexOPanel, "span");
+			cloakOuterPanel.add(lowerInnerVertexOPanel);
+			
+			upperInnerVertexOPanel = new LabelledDoublePanel("and upper vertex");
+			upperInnerVertexOPanel.setNumber(upperInnerVertexO);
+			cloakOuterPanel.add(upperInnerVertexOPanel,"span");
 			
 			showCylindersOCheckBox= new JCheckBox("Show frame");
 			showCylindersOCheckBox.setSelected(showCylindersO);
@@ -584,6 +707,25 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 			cameraFocussingDistancePanel = new DoublePanel();
 			cameraFocussingDistancePanel.setNumber(cameraFocussingDistance);
 			cameraPanel.add(GUIBitsAndBobs.makeRow("Camera focusing distance", cameraFocussingDistancePanel), "span");
+			
+			movieCheckBox = new JCheckBox();
+			movieCheckBox.setSelected(movie);
+			cameraPanel.add(GUIBitsAndBobs.makeRow("Start a movie", movieCheckBox,"with: "), "span");
+			
+			numberOfFramesPanel = new IntPanel();
+			numberOfFramesPanel.setNumber(numberOfFrames);
+			
+			firstFramePanel = new IntPanel();
+			firstFramePanel.setNumber(firstFrame);
+
+			lastFramePanel = new IntPanel();
+			lastFramePanel.setNumber(lastFrame);
+			cameraPanel.add(GUIBitsAndBobs.makeRow("total frames: ",numberOfFramesPanel,", start frame: ",firstFramePanel,", end frame: ",lastFramePanel), "span");
+			
+			cameraRotationAxisDirectionPanel = new LabelledVector3DPanel("Movie rotation axis");
+			cameraRotationAxisDirectionPanel.setVector3D(cameraRotationAxisDirection);
+			cameraPanel.add(cameraRotationAxisDirectionPanel, "span");
+			
 
 			//scene stuff
 			JPanel scenePanel = new JPanel();
@@ -667,6 +809,7 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 			lensTypeO = (LensType)(lensTypeOComboBox.getSelectedItem());
 			lensTypeI = (LensType)(lensTypeIComboBox.getSelectedItem());
 			lowerInnerVertexO = lowerInnerVertexOPanel.getNumber();
+			upperInnerVertexO = upperInnerVertexOPanel.getNumber();
 			lowerInnerVertexI = lowerInnerVertexIPanel.getNumber();
 			baseLensFI = baseLensFIPanel.getNumber();
 			baseLensFO = baseLensFOPanel.getNumber();
@@ -674,6 +817,8 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 			baseRadiusO = baseRadiusOPanel.getNumber();
 			heightO = heightOPanel.getNumber();
 			showInnerCloaks = (ShowInnerCloaks)(showInnerCloaksComboBox.getSelectedItem());
+			rightDirection = rightDirectionPanel.getVector3D();
+			topDirection = topDirectionPanel.getVector3D();
 			
 			//camera stuff
 			cameraViewDirection = cameraViewDirectionPanel.getVector3D();
@@ -711,6 +856,14 @@ public class ExtremeNestedAbyssCloakExplorer extends NonInteractiveTIMEngine
 			timFront = timFrontPanel.getVector3D();
 			timTop = timTopPanel.getVector3D();
 			timRight = timRightPanel.getVector3D();
+			
+			
+			frame0CameraViewDirection = cameraViewDirection;
+			movie = movieCheckBox.isSelected();
+			numberOfFrames = numberOfFramesPanel.getNumber();
+			firstFrame = firstFramePanel.getNumber();
+			lastFrame = lastFramePanel.getNumber();
+			cameraRotationAxisDirection = cameraRotationAxisDirectionPanel.getVector3D();
 
 	}
 

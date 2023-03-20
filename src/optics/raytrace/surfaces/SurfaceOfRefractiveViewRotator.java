@@ -350,7 +350,8 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 		
 		// also calculate the position where we want that ray from the objective pixel surface centre to go
 		Vector3D dRotated = Geometry.rotate(dOcular, rotationAxisDirection, MyMath.deg2rad(rotationAngle));
-		RaySceneObjectIntersection intersection = viewObject.getClosestRayIntersection(new Ray(eyePosition, dRotated, 0, false));
+		Vector3D dRotatedMag = Vector3D.sum(dRotated.getPartParallelTo(rotationAxisDirection), dRotated.getPartPerpendicularTo(rotationAxisDirection).getProductWith(1/magnificationFactor));
+		RaySceneObjectIntersection intersection = viewObject.getClosestRayIntersection(new Ray(eyePosition, dRotatedMag, 0, false));
 		if(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
 		{   //System.out.println(intersection);
 			// there is an intersection -- good!
