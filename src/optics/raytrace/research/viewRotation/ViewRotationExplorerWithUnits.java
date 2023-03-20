@@ -181,6 +181,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private Vector3D designDistancePlane;
 	
 	/**
+	 * Focus camera to "image" position automatically.
+	 */
+	private boolean autoFocus;
+	
+	/**
 	 * The magnification factor
 	 */
 	private double magnificationFactor;
@@ -441,6 +446,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		cameraAperture = 1*MM;
 		cameraFocussingDistance = 1*M;
 		useEyeballCamera = true;
+		autoFocus = false;
 		
 		//Move mode to change pixel span vector frame by frame
 		movie = false;
@@ -567,6 +573,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 				printStream.println(" custom aperture size"+setcameraAperture);
 				if(setcameraAperture)printStream.println(" aperture radius"+ cameraAperture/MM+"mm");
 				printStream.println(" cFD="+cameraFocussingDistance);
+				printStream.println("autoFocus="+autoFocus);
 				printStream.println(" cRot="+cameraRotation);
 				printStream.println(" cEye="+useEyeballCamera);
 				printStream.println(" cAnaglypic=" +anaglyphCamera);
@@ -1008,6 +1015,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		double eyeRadius = 1.225*CM;
 		double allRadius = (eyeRadius+cameraDistance);
 
+		if(autoFocus) cameraFocussingDistance = cameraDistance*(cameraDistance+objectDistance)/(cameraDistance+objectDistance-magnificationFactor*objectDistance);
 		double cameraApertureRadius = 0;
 		if(setcameraAperture) {
 			cameraApertureRadius = cameraAperture;
@@ -1063,7 +1071,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 				cameraViewCentre = cameraCentre.getSumWith(cameraViewDirection.getWithLength(cameraDistance));
 			}
 			cameraTopDirection = Geometry.rotate(topDirection, cameraViewDirection, Math.toRadians(cameraRotation)).getSumWith(cameraCentre); 
-			
 
 			RelativisticAnyFocusSurfaceCamera defualtCamera = new RelativisticAnyFocusSurfaceCamera(
 					"Camera",
@@ -1205,7 +1212,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
 	private DoublePanel cameraFocussingDistancePanel, cameraAperturePanel;
 	private JCheckBox anaglyphCameraCheckBox, useEyeballCameraCheckBox, setcameraApertureCheckBox;
-	private JCheckBox movieCheckBox;
+	private JCheckBox movieCheckBox, autoFocusCheckBox;
 	private IntPanel numberOfFramesPanel, firstFramePanel, lastFramePanel;  
 
 
@@ -1628,7 +1635,11 @@ protected void createInteractiveControlPanel()
 
 		cameraFocussingDistancePanel = new DoublePanel();
 		cameraFocussingDistancePanel.setNumber(cameraFocussingDistance/M);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Focussing distance",cameraFocussingDistancePanel,"m"),"span");
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Focussing distance",cameraFocussingDistancePanel,"m"));
+		
+		autoFocusCheckBox = new JCheckBox();
+		autoFocusCheckBox.setSelected(autoFocus);
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Or auto focus",autoFocusCheckBox),"span");
 
 		anaglyphCameraCheckBox = new JCheckBox();
 		anaglyphCameraCheckBox.setSelected(anaglyphCamera);
@@ -1756,6 +1767,7 @@ protected void createInteractiveControlPanel()
 		cameraAperture = cameraAperturePanel.getNumber()*MM;
 		useEyeballCamera = useEyeballCameraCheckBox.isSelected();
 		cameraFocussingDistance = cameraFocussingDistancePanel.getNumber()*M;
+		autoFocus = autoFocusCheckBox.isSelected();
 		upAngle = upAnglePanel.getNumber();
 		sideAngle = sideAnglePanel.getNumber();
 
