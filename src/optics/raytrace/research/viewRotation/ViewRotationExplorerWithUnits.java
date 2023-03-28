@@ -37,7 +37,7 @@ import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.GUI.lowLevel.Vector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableCylinderLattice;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedDisc;
-import optics.raytrace.cameras.RelativisticAnyFocusSurfaceCamera;
+import optics.raytrace.cameras.AnyFocusSurfaceCamera;
 import optics.raytrace.core.LightSource;
 import optics.raytrace.core.SceneObjectClass;
 import optics.raytrace.core.Studio;
@@ -1031,27 +1031,27 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			cameraApertureRadius = cameraApertureSize.getApertureRadius();
 		}
 		
-		if(cameraApertureDiffraction) {
-			Vector3D spanVector1 = Vector3D.getANormal(cameraViewDirection);
-		scene.addSceneObject(
-				new EditableScaledParametrisedDisc(
-				"diffraction disk",	// description
-				getStandardCamera().getApertureCentre(),	// centre
-				cameraViewDirection.getNormalised(),	// normal
-				cameraApertureRadius,	// radius
-				new RectangularPixelDiffraction(
-						550e-9,// lambda,
-						2*cameraApertureRadius,// pixelSideLengthU,
-						2*cameraApertureRadius,// pixelSideLengthV,
-						spanVector1,// uHat,
-						Vector3D.crossProduct(spanVector1, cameraViewDirection.getNormalised())// vHat
-						),	// surfaceProperty
-				scene,	// parent
-				studio
-				)
-				
-				);
-		}
+//		if(cameraApertureDiffraction) {
+//			Vector3D spanVector1 = Vector3D.getANormal(cameraViewDirection);
+//		scene.addSceneObject(
+//				new EditableScaledParametrisedDisc(
+//				"diffraction disk",	// description
+//				getStandardCamera().getApertureCentre(),	// centre
+//				cameraViewDirection.getNormalised(),	// normal
+//				cameraApertureRadius,	// radius
+//				new RectangularPixelDiffraction(
+//						550e-9,// lambda,
+//						2*cameraApertureRadius,// pixelSideLengthU,
+//						2*cameraApertureRadius,// pixelSideLengthV,
+//						spanVector1,// uHat,
+//						Vector3D.crossProduct(spanVector1, cameraViewDirection.getNormalised())// vHat
+//						),	// surfaceProperty
+//				scene,	// parent
+//				studio
+//				)
+//				
+//				);
+//		}
 		
 		if(anaglyphCamera) {
 //			By default:
@@ -1102,14 +1102,12 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			}
 			cameraTopDirection = Geometry.rotate(topDirection, cameraViewDirection, Math.toRadians(cameraRotation)).getSumWith(cameraCentre); 
 
-			RelativisticAnyFocusSurfaceCamera defualtCamera = new RelativisticAnyFocusSurfaceCamera(
+			AnyFocusSurfaceCamera defualtCamera = new AnyFocusSurfaceCamera(
 					"Camera",
 					Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)),	// centre of aperture
 					cameraViewDirection,	// viewDirection
 					calculateHorizontalSpanVector(cameraViewDirection, cameraTopDirection, cameraHorizontalFOVDeg),// horizontalSpanVector, 
 					calculateVerticalSpanVector(cameraViewDirection, cameraTopDirection, cameraHorizontalFOVDeg, cameraPixelsX, cameraPixelsY) ,//verticalSpanVector,
-					cameraSpaceTimeTransformationType,// spaceTimeTransformationType,
-					cameraBeta,// beta,
 					cameraPixelsX, cameraPixelsY,	// logical number of pixels
 					cameraExposureCompensation,	// ExposureCompensationType.EC0,	// exposure compensation +0
 					cameraMaxTraceLevel,	// maxTraceLevel
@@ -1121,35 +1119,35 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 							null,	// parent
 							null	// studio
 						),	// focus scene
-					null,	// cameraFrameScene,
-					getStandardCamera().getShutterModel(),//getShutterModel(),// shutterModel,
 		            // double detectorDistance,	// in the detector-plane shutter model, the detector is this distance behind the entrance pupil
 		            cameraApertureRadius,// apertureRadius,
+		            cameraApertureDiffraction,
+					550e-9,// lambda,
 		            renderQuality.getBlurQuality().getRaysPerPixel()// raysPerPixel
 		    	);
 			
-			if(cameraApertureDiffraction) {
-				Vector3D spanVector1 = Vector3D.getANormal(cameraViewDirection);
-			scene.addSceneObject(
-					new EditableScaledParametrisedDisc(
-					"diffraction disk",	// description
-					Vector3D.sum(Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)),cameraViewDirection.getWithLength(0.01*MyMath.TINY)) ,	// centre
-					cameraViewDirection.getNormalised(),	// normal
-					//1,	// radius
-					cameraApertureRadius,
-					new RectangularPixelDiffraction(
-							550e-9,// lambda,
-							2*cameraApertureRadius,// pixelSideLengthU,
-							2*cameraApertureRadius,// pixelSideLengthV,
-							spanVector1,// uHat,
-							Vector3D.crossProduct(spanVector1, cameraViewDirection.getNormalised())// vHat
-							),	// surfaceProperty
-					//SurfaceColour.BLACK_MATT,
-					scene,	// parent
-					studio
-					)
-					);
-			}
+//			if(cameraApertureDiffraction) {
+//				Vector3D spanVector1 = Vector3D.getANormal(cameraViewDirection);
+//			scene.addSceneObject(
+//					new EditableScaledParametrisedDisc(
+//					"diffraction disk",	// description
+//					Vector3D.sum(Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)),cameraViewDirection.getWithLength(0.01*MyMath.TINY)) ,	// centre
+//					cameraViewDirection.getNormalised(),	// normal
+//					//1,	// radius
+//					cameraApertureRadius,
+//					new RectangularPixelDiffraction(
+//							550e-9,// lambda,
+//							2*cameraApertureRadius,// pixelSideLengthU,
+//							2*cameraApertureRadius,// pixelSideLengthV,
+//							spanVector1,// uHat,
+//							Vector3D.crossProduct(spanVector1, cameraViewDirection.getNormalised())// vHat
+//							),	// surfaceProperty
+//					//SurfaceColour.BLACK_MATT,
+//					scene,	// parent
+//					studio
+//					)
+//					);
+//			}
 			
 			studio.setCamera(defualtCamera);
 		}

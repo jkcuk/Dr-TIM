@@ -6,6 +6,7 @@ import math.*;
 import optics.DoubleColour;
 import optics.raytrace.core.*;
 import optics.raytrace.exceptions.RayTraceException;
+import optics.raytrace.utility.CircularApertureDiffraction;
 
 /**
  * A camera that can focus on arbitrary surfaces (and not just planes, like normal cameras).
@@ -32,15 +33,77 @@ public class AnyFocusSurfaceCamera extends PinholeCamera implements Serializable
     protected double apertureRadius;
     
     /**
+     * Set the circular aperture such that a light ray will get diffracted accordingly.
+     */
+    protected boolean diffractiveAperture;
+    
+    /**
+     * The wavelength required for diffraction, if diffractiveAperture is true.
+     */
+    protected double lambda;
+    
+    /**
+     * The centre of view and aperture centre, only required for the diffractive effects here. 
+     */
+    private Vector3D centreOfView, apertureCentre;
+    
+    /**
      * The number of rays that should be averaged over to evaluate the 
      * colour of each pixel in the rendered image.
      */
     protected int raysPerPixel;
 
+    /**
+     * A constructor which allows for diffraction.
+     * @param description
+     * @param apertureCentre
+     * @param centreOfView
+     * @param horizontalSpanVector
+     * @param verticalSpanVector
+     * @param detectorPixelsHorizontal
+     * @param detectorPixelsVertical
+     * @param exposureCompensation
+     * @param maxTraceLevel
+     * @param focusScene
+     * @param apertureRadius
+     * @param raysPerPixel
+     */
+    public AnyFocusSurfaceCamera(
+    		String description,
+            Vector3D apertureCentre,
+            Vector3D centreOfView,
+            Vector3D horizontalSpanVector, Vector3D verticalSpanVector,
+            int detectorPixelsHorizontal, int detectorPixelsVertical, 
+            ExposureCompensationType exposureCompensation,
+            int maxTraceLevel,
+            SceneObject focusScene,
+            double apertureRadius,
+            boolean diffractiveAperture,
+            double lambda,
+            int raysPerPixel
+    	)
+    {
+        super(	description,
+        		apertureCentre,	// pinhole position is aperture Centre
+                centreOfView,
+                horizontalSpanVector, verticalSpanVector,
+                detectorPixelsHorizontal, detectorPixelsVertical,
+                exposureCompensation,
+                maxTraceLevel);
 
+        setFocusScene(focusScene);
+        setApertureRadius(apertureRadius);
+        setRaysPerPixel(raysPerPixel);
+        setDiffractiveAperture(diffractiveAperture);
+        setLambda(lambda);
+        this.centreOfView = centreOfView;
+        this.apertureCentre = apertureCentre;
+    }
+    
     
     /**
-     * @param description
+     * A constructor which does not take into account aperture diffractive effects.
+     * @param description 
      * @param apertureCentre
      * @param centreOfView
      * @param horizontalSpanVector
@@ -77,6 +140,8 @@ public class AnyFocusSurfaceCamera extends PinholeCamera implements Serializable
         setFocusScene(focusScene);
         setApertureRadius(apertureRadius);
         setRaysPerPixel(raysPerPixel);
+        setDiffractiveAperture(false);
+        setLambda(1);
     }
 
     /**
@@ -88,6 +153,8 @@ public class AnyFocusSurfaceCamera extends PinholeCamera implements Serializable
     	super(original);
     	focusScene = original.getFocusScene().clone();
     	apertureRadius = original.getApertureRadius();
+    	diffractiveAperture = original.isDiffractiveAperture();
+    	lambda = original.getLambda();
     	raysPerPixel = original.getRaysPerPixel();
     }
     
@@ -128,6 +195,26 @@ public class AnyFocusSurfaceCamera extends PinholeCamera implements Serializable
 		this.apertureRadius = apertureRadius;
 	}
 	
+	public boolean isDiffractiveAperture() {
+		return diffractiveAperture;
+	}
+
+
+	public void setDiffractiveAperture(boolean diffractiveAperture) {
+		this.diffractiveAperture = diffractiveAperture;
+	}
+
+
+	public double getLambda() {
+		return lambda;
+	}
+
+
+	public void setLambda(double lambda) {
+		this.lambda = lambda;
+	}
+
+
 	public int getRaysPerPixel()
 	{
 		return raysPerPixel;
@@ -299,16 +386,66 @@ public class AnyFocusSurfaceCamera extends PinholeCamera implements Serializable
 	 * @param pixelImagePositionInFront	does pixelImagePosition lie in front of the camera?
 	 * @return
 	 */
-	protected Ray getRay(Vector3D pointOnEntrancePupil, Vector3D pixelImagePosition, boolean pixelImagePositionInFront)
+	protected Ray getRay(Vector3D pointOnEntrancePupil, Vector3D pixelImagePosition, boolean pixelImagePositionInFront) //TODO can also add an EvanescentException here...
 	{
-		return new Ray(
-			pointOnEntrancePupil, 
-			pixelImagePositionInFront
-			?(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil))
-			:(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil).getReverse()),
-			0,	// time of this "event"; modify this to change shutter model
-			false	// reportToConsole
-		);
+		if(diffractiveAperture) {
+			//set the normal direction of the light ray before it gets diffracted.
+			Vector3D incidentNormalisedRayDirection = pixelImagePositionInFront
+					?(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil))
+							:(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil).getReverse()).getNormalised();
+				return new Ray(
+						pointOnEntrancePupil, 
+						CircularApertureDiffraction.getDiffractedLightRayDirection(
+								incidentNormalisedRayDirection,// lightRayDirectionBeforeDiffraction,
+								lambda, //lambda,
+								apertureRadius,// apertureRadius,
+								apertureCentre,
+								pointOnEntrancePupil,
+								Vector3D.difference(centreOfView, apertureCentre).getNormalised()// normalisedApertureNormal
+								),
+								0,	// time of this "event"; modify this to change shutter model
+								false	// reportToConsole
+								
+						); 
+		}else {
+			return new Ray(
+					pointOnEntrancePupil, 
+					pixelImagePositionInFront
+					?(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil))
+							:(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil).getReverse()),
+							0,	// time of this "event"; modify this to change shutter model
+							false	// reportToConsole
+					);
+		}
+//		if(diffractiveAperture) {
+//			//set the normal direction of the light ray before it gets diffracted.
+//			Vector3D incidentNormalisedRayDirection = pixelImagePositionInFront
+//					?(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil))
+//							:(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil).getReverse()).getNormalised();
+//				return new Ray(
+//						pointOnEntrancePupil, 
+//						Vector3D.sum(incidentNormalisedRayDirection, 
+//								CircularApertureDiffraction.getTangentialDirectionComponentChange(
+//										lambda, //lambda,
+//										apertureRadius,// apertureRadius,
+//										apertureCentre,
+//										pointOnEntrancePupil
+//										)
+//								),
+//								0,	// time of this "event"; modify this to change shutter model
+//								false	// reportToConsole
+//								
+//						); 
+//		}else {
+//			return new Ray(
+//					pointOnEntrancePupil, 
+//					pixelImagePositionInFront
+//					?(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil))
+//							:(pixelImagePosition.getDifferenceWith(pointOnEntrancePupil).getReverse()),
+//							0,	// time of this "event"; modify this to change shutter model
+//							false	// reportToConsole
+//					);
+//		}
 	}
  
     /**
