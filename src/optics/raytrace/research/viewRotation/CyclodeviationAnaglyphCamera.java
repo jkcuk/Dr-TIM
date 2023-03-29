@@ -46,6 +46,8 @@ public class CyclodeviationAnaglyphCamera extends RelativisticAnaglyphCamera {
             SceneObject cameraFrameScene,
             ShutterModel shutterModel,
             double apertureRadius,
+			boolean diffractiveAperture,
+			double lambda,
             int raysPerPixel,
             boolean colour
 		)
@@ -67,6 +69,8 @@ public class CyclodeviationAnaglyphCamera extends RelativisticAnaglyphCamera {
 				cameraFrameScene,
 				shutterModel,
 				apertureRadius,
+				diffractiveAperture,
+				lambda,
 				raysPerPixel,
 				colour
 			);
@@ -115,11 +119,68 @@ public class CyclodeviationAnaglyphCamera extends RelativisticAnaglyphCamera {
 				(SceneObject)null,	// cameraFrameScene,
 				new FocusSurfaceShutterModel(0),	// shutterModel,
 				apertureRadius,
+				false,
+				1,
 				raysPerPixel,
 				colour
 			);
 	}
 
+	public CyclodeviationAnaglyphCamera(
+			String name,
+			Vector3D betweenTheEyes,	// middle between two eyes
+			Vector3D centreOfView,	// the point in the centre of both eyes' field of fiew
+			Vector3D horizontalSpanVector,	// a vector along the width of the field of view, pointing to the right
+			Vector3D verticalSpanVector,	// a vector along the height of the field of view, pointing upwards
+			Vector3D eyeSeparation,	// separation between the eyes
+			double leftEyeRotationAngle,
+			double rightEyeRotationAngle,
+			int detectorPixelsHorizontal, int detectorPixelsVertical,
+			ExposureCompensationType exposureCompensation,
+			int maxTraceLevel,
+            double focussingDistance,
+            double apertureRadius,
+			boolean diffractiveAperture,
+			double lambda,
+            int raysPerPixel,
+            boolean colour
+		)
+	{
+		this(
+				name,
+				betweenTheEyes,	// pinholePosition,
+				centreOfView,	// the point in the centre of the field of view
+				horizontalSpanVector,
+				verticalSpanVector,
+				eyeSeparation,
+				leftEyeRotationAngle,
+				rightEyeRotationAngle,
+				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
+				Vector3D.O,	// beta,
+				detectorPixelsHorizontal, detectorPixelsVertical,
+				exposureCompensation,
+				maxTraceLevel,
+				(SceneObject)null,	// focus scene
+				(SceneObject)null,	// cameraFrameScene,
+				new FocusSurfaceShutterModel(0),	// shutterModel,
+				apertureRadius,
+				diffractiveAperture,
+				lambda,
+				raysPerPixel,
+				colour
+			);
+		
+		// TODO focus scene is a plane through the centreOfView -- improve, make perpendicular to view direction of each eye
+		setFocusScene(new Plane(
+				"focussing plane",
+				centreOfView,	// point on plane
+				Vector3D.crossProduct(horizontalSpanVector, verticalSpanVector),	// normal to plane
+				(SurfaceProperty)null,
+				null,	// parent
+				Studio.NULL_STUDIO
+			));
+	}
+	
 	public CyclodeviationAnaglyphCamera(
 			String name,
 			Vector3D betweenTheEyes,	// middle between two eyes
@@ -156,6 +217,8 @@ public class CyclodeviationAnaglyphCamera extends RelativisticAnaglyphCamera {
 				(SceneObject)null,	// cameraFrameScene,
 				new FocusSurfaceShutterModel(0),	// shutterModel,
 				apertureRadius,
+				false,
+				1,
 				raysPerPixel,
 				colour
 			);
@@ -199,6 +262,8 @@ public class CyclodeviationAnaglyphCamera extends RelativisticAnaglyphCamera {
 				getCameraFrameScene(),
 				getShutterModel().clone(),
 				getApertureRadius(),
+				isDiffractiveAperture(),
+				getLambda(),
 				getRaysPerPixel()
 			);
 		if(getShutterModel().getShutterModelType() == ShutterModelType.DETECTOR_PLANE_SHUTTER)
@@ -230,6 +295,8 @@ public class CyclodeviationAnaglyphCamera extends RelativisticAnaglyphCamera {
 				getCameraFrameScene(),
 				getShutterModel(),
 				getApertureRadius(),
+				isDiffractiveAperture(),
+				getLambda(),
 				getRaysPerPixel()
 			);
 		if(getShutterModel().getShutterModelType() == ShutterModelType.DETECTOR_PLANE_SHUTTER)

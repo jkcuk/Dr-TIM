@@ -42,6 +42,77 @@ public class RelativisticAnaglyphCamera extends RelativisticAnyFocusSurfaceCamer
 	// private variables
 	protected RelativisticAnyFocusSurfaceCamera leftCamera, rightCamera;
 	          
+	/**
+	 * 
+	 * @param name
+	 * @param betweenTheEyes
+	 * @param centreOfView
+	 * @param horizontalSpanVector
+	 * @param verticalSpanVector
+	 * @param eyeSeparation
+	 * @param spaceTimeTransformationType
+	 * @param beta
+	 * @param detectorPixelsHorizontal
+	 * @param detectorPixelsVertical
+	 * @param exposureCompensation
+	 * @param maxTraceLevel
+	 * @param focusScene
+	 * @param cameraFrameScene
+	 * @param shutterModel
+	 * @param apertureRadius
+	 * @param diffractiveAperture
+	 * @param lambda
+	 * @param raysPerPixel
+	 * @param colour
+	 */
+	public RelativisticAnaglyphCamera(
+			String name,
+			Vector3D betweenTheEyes,	// middle between two eyes
+			Vector3D centreOfView,	// the point in the centre of both eyes' field of fiew
+			Vector3D horizontalSpanVector,	// a vector along the width of the field of view, pointing to the right
+			Vector3D verticalSpanVector,	// a vector along the height of the field of view, pointing upwards
+			Vector3D eyeSeparation,	// separation between the eyes
+			SpaceTimeTransformationType spaceTimeTransformationType,
+			Vector3D beta,	// scene speed
+			int detectorPixelsHorizontal, int detectorPixelsVertical,
+			ExposureCompensationType exposureCompensation,
+			int maxTraceLevel,
+            SceneObject focusScene,
+            SceneObject cameraFrameScene,
+            ShutterModel shutterModel,
+            double apertureRadius,
+			boolean diffractiveAperture,
+			double lambda,
+            int raysPerPixel,
+            boolean colour
+		)
+	{
+		// run the AnyFocusSurfaceCamera constructor
+		super(	name,
+				betweenTheEyes,	// pinholePosition,
+				centreOfView,	// the point in the centre of the field of view
+				horizontalSpanVector, verticalSpanVector,
+				spaceTimeTransformationType,
+				beta,
+				detectorPixelsHorizontal, detectorPixelsVertical,
+				exposureCompensation,
+				maxTraceLevel,
+				focusScene,
+				cameraFrameScene,
+				shutterModel,
+				apertureRadius,
+				diffractiveAperture,
+				lambda,
+				raysPerPixel
+			);
+
+		// memorise any other parameters
+		this.eyeSeparation = eyeSeparation;
+		this.colour = colour;
+
+		// setup the cameras
+		setupCameras();
+	}
 	
 	/**
 	 * @param name

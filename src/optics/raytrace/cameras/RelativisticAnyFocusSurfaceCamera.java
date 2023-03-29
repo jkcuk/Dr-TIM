@@ -13,6 +13,7 @@ import optics.raytrace.core.Ray;
 import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.exceptions.RayTraceException;
+import optics.raytrace.utility.CircularApertureDiffraction;
 
 /**
  * @author johannes
@@ -55,6 +56,38 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 	 */
 	protected ShutterModel shutterModel;
 	
+	  public RelativisticAnyFocusSurfaceCamera(
+	    		String description,
+	            Vector3D apertureCentre,
+	            Vector3D centreOfView,
+	            Vector3D horizontalSpanVector, Vector3D verticalSpanVector,
+				SpaceTimeTransformationType spaceTimeTransformationType,
+	            Vector3D beta,
+	            int detectorPixelsHorizontal, int detectorPixelsVertical, 
+	            ExposureCompensationType exposureCompensation,
+	            int maxTraceLevel,
+	            SceneObject focusScene,
+	            SceneObject cameraFrameScene,
+	            ShutterModel shutterModel,
+	            // double detectorDistance,	// in the detector-plane shutter model, the detector is this distance behind the entrance pupil
+	            double apertureRadius,
+				boolean diffractiveAperture,
+				double lambda,
+	            int raysPerPixel
+	    	)
+	    {
+	    	super(
+	    			description, apertureCentre, centreOfView, horizontalSpanVector, verticalSpanVector,
+	    			detectorPixelsHorizontal, detectorPixelsVertical, exposureCompensation, maxTraceLevel,
+	    			focusScene, apertureRadius, diffractiveAperture, lambda, raysPerPixel
+	    		);
+	    	setSpaceTimeTransformation(spaceTimeTransformationType, beta);
+	    	setRaytraceExceptionHandler(this);
+	    	setCameraFrameScene(cameraFrameScene);
+	    	setSceneFrameRaytraceExceptionHandler(new DefaultRaytraceExceptionHandler());
+	    	setShutterModel(shutterModel);
+	    }
+	
     public RelativisticAnyFocusSurfaceCamera(
     		String description,
             Vector3D apertureCentre,
@@ -83,6 +116,7 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
     	setCameraFrameScene(cameraFrameScene);
     	setSceneFrameRaytraceExceptionHandler(new DefaultRaytraceExceptionHandler());
     	setShutterModel(shutterModel);
+    	
     }
     
 
@@ -105,6 +139,8 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 				original.getShutterModel(),
 				// original.getDetectorDistance(),
 				original.getApertureRadius(),
+				original.isDiffractiveAperture(),
+				original.getLambda(),
 				original.getRaysPerPixel()
 			);
 	}
@@ -311,12 +347,34 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 	{
 		// a vector from the point on the entrance pupil to the pixel-image position
 		Vector3D pointOnPupil2Image = pixelImagePosition.getDifferenceWith(pointOnEntrancePupil);
+		
+		//TODO report this to Johannes to see if I broke anything... I sure hope not :)
+		Vector3D incidentDirection = 			
+				pixelImagePositionInFront
+				?(pointOnPupil2Image)
+						:(pointOnPupil2Image.getReverse());	// initial direction
+		if(isDiffractiveAperture()) {
+			return new Ray(
+					pointOnEntrancePupil,	// start position
+					CircularApertureDiffraction.getDiffractedLightRayDirection(
+							incidentDirection.getNormalised(),// lightRayDirectionBeforeDiffraction,
+							lambda, //lambda,
+							apertureRadius,// apertureRadius,
+							getApertureCentre(),
+							pointOnEntrancePupil,
+							Vector3D.difference(getCentreOfView(), getApertureCentre()).getNormalised()// normalisedApertureNormal
+							// here we use the view centre and the aperture centre to calculate the azimuthal direction of the diffracted light ray. 
+							// We could also use the ccd span vectors to calculate this.
+							// However, we think this would be more computationally intensive.
+							),
+					shutterModel.getAperturePlaneTransmissionTime(pointOnEntrancePupil, pixelImagePosition, pixelImagePositionInFront),	// time
+					false	// reportToConsole
+				);
+		}
 				
 		return new Ray(
 			pointOnEntrancePupil,	// start position
-			pixelImagePositionInFront
-				?(pointOnPupil2Image)
-				:(pointOnPupil2Image.getReverse()),	// initial direction
+			incidentDirection,
 			shutterModel.getAperturePlaneTransmissionTime(pointOnEntrancePupil, pixelImagePosition, pixelImagePositionInFront),	// time
 			false	// reportToConsole
 		);
