@@ -8,6 +8,9 @@ import optics.raytrace.core.Orientation;
  * whose focussing power varies linearly with the value of the <i>u</i> coordinate, whose origin lies on the cylinder axis of the 0th cylindrical lens.
  * As the focussing power varies with <i>u</i>, the focal length of the cylindrical lenses varies with 1/<i>u</i>.
  * 
+ * The array does automatic "pixel focussing", i.e. the focussing power of each individual pixel is that of the
+ * overall (integral/Fresnel) lens.
+ * 
  * This class does not require the associated scene object to be parametrised.
  * 
  * @author johannes
@@ -180,10 +183,14 @@ public class PhaseHologramOfCrossedLinearPowerLenticularArrays extends PhaseHolo
 		double nV = calculateCylindricalLensN(v);
 		double uN = calculateCylindricalLensCentreU(nU);
 		double vN = calculateCylindricalLensCentreU(nV);
+		double uuN = u-uN;
+		double vvN = v-vN;
 		
+		// the second term, proportional to -0.5*dPdu*uuN^2 (or vvN^2) is for one part of a Lohmann cylindrical lens --
+		// see PhaseHologramOfLohmannCylindricalLensPart::getTangentialDirectionComponentChangeTransmissive
 		return Vector3D.sum(
-				localUHat.getProductWith(-(u-uN)*calculateFocalPower(uN)),
-				localVHat.getProductWith(-(v-vN)*calculateFocalPower(vN))
+				localUHat.getProductWith(-uuN*calculateFocalPower(uN)-0.5*dPdu*uuN*uuN),
+				localVHat.getProductWith(-vvN*calculateFocalPower(vN)-0.5*dPdu*vvN*vvN)
 			);
 	}
 
