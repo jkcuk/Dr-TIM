@@ -55,6 +55,12 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	private double b;
 	
 	/**
+	 * the winding focusing achieved by changing the "surface" of the cylinder spiral to that of an Alvarez lens. 
+	 * More precisely, the surface of two Alvarez lenses with zero separation between them and approximated for small relative rotation angles. 
+	 */
+	private boolean alvarezWindingFocusing;
+	
+	/**
 	 * the scene object this surface property is associated with
 	 */
 	private One2OneParametrisedObject sceneObject;
@@ -72,6 +78,36 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	//
 	// constructors etc.
 	//
+	/**
+	 * @param cylindricalLensSpiralType
+	 * @param focalLength
+	 * @param a
+	 * @param b
+	 * @param throughputCoefficient
+	 * @param AlvarezWindingFocusing
+	 * @param reflective
+	 * @param shadowThrowing
+	 */
+	public PhaseHologramOfCylindricalLensSpiral(
+			CylindricalLensSpiralType cylindricalLensSpiralType,
+			double focalLength,
+			double a,
+			double b,
+			One2OneParametrisedObject sceneObject,
+			double throughputCoefficient,
+			boolean alvarezWindingFocusing,
+			boolean reflective,
+			boolean shadowThrowing
+		)
+	{
+		super(throughputCoefficient, reflective, shadowThrowing);
+		setCylindricalLensSpiralType(cylindricalLensSpiralType);
+		setFocalLength(focalLength);
+		setA(a);
+		setB(b);
+		setAlvarezWindingFocusing(alvarezWindingFocusing);
+		setSceneObject(sceneObject);
+	}
 
 	/**
 	 * @param cylindricalLensSpiralType
@@ -98,6 +134,7 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		setFocalLength(focalLength);
 		setA(a);
 		setB(b);
+		setAlvarezWindingFocusing(false);
 		setSceneObject(sceneObject);
 	}
 
@@ -107,6 +144,7 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		setFocalLength(original.getFocalLength());
 		setA(original.getA());
 		setB(original.getB());
+		setAlvarezWindingFocusing(original.isAlvarezWindingFocusing());
 		setSceneObject(original.getSceneObject());
 	}
 	
@@ -156,6 +194,14 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		nHalf = Math.log(0.5*(1. + Math.exp(b2pi)))/b2pi;
 	}
 	
+	public boolean isAlvarezWindingFocusing() {
+		return alvarezWindingFocusing;
+	}
+
+	public void setAlvarezWindingFocusing(boolean alvarezWindingFocusing) {
+		this.alvarezWindingFocusing = alvarezWindingFocusing;
+	}
+
 	public One2OneParametrisedObject getSceneObject() {
 		return sceneObject;
 	}
@@ -210,28 +256,63 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 //	}
 	
 	private double calculateXDerivative(double x, double y, double r, double r2, double phi, double n)
-	{
+	{	
+		double r_n = calculateSpiralDistanceFromCentre(phi, n);
+	
 		// calculated in Mathematica
 		switch(cylindricalLensSpiralType)
 		{
 		case ARCHIMEDEAN:
-			return 2*((x/r)+b*y/r2)*(r-a-b*(n*2*Math.PI + phi));
+			if(alvarezWindingFocusing){
+				return (r-r_n)*(-b*r*(3+r)*y+r_n*(3*r*(2+r)*x+b*(9+5*r)*y-(3*r*x+4*b*y)*r_n))/(3*r*r*r_n);
+			}else {
+				return 2*((x/r)+b*y/r2)*(r-a-b*(n*2*Math.PI + phi));
+			}
 		case LOGARITHMIC:
 		default:
-			return 2*((a*b*Math.exp(b*(phi+n*2*Math.PI))*y)/r2 + x/r) * (-a*Math.exp(b*(phi+n*2*Math.PI)) + r);
+
+			if(alvarezWindingFocusing){
+				return (r*(x+b*y/3)/r_n) + ((-x+b*y)*r_n/r) - (4*b*y*r_n*r_n/(3*r*r));
+			}else {
+				return 2*((a*b*Math.exp(b*(phi+n*2*Math.PI))*y)/r2 + x/r) * (-a*Math.exp(b*(phi+n*2*Math.PI)) + r);
+			}
+
+			
+			//The equation below is if the cylindrical focusing were to be added instead of subtracted in lensPhaseOverKWF from spiral lens caluclations.nb
+			//This looks wrong but in case anyone is interested:
+			//double r_n = calculateSpiralDistanceFromCentre(phi, n);
+			//return (4*x - r*(3*x+b*y)/(3*r_n) - r_n*(9*r*(x-b*y)+8*b*y*r_n)/(3*r*r));
+			
 		}
 	}
 
 	private double calculateYDerivative(double x, double y, double r, double r2, double phi, double n)
 	{
+		double r_n = calculateSpiralDistanceFromCentre(phi, n);
 		// calculated in Mathematica
 		switch(cylindricalLensSpiralType)
 		{
 		case ARCHIMEDEAN:
-			return 2*((y/r)-b*x/r2)*(r-a-b*(n*2*Math.PI + phi));
+			
+			if(alvarezWindingFocusing){
+				return (r-r_n)*(b*r*(3+r)*x+r_n*(-b*(9+5*r)*x+3*r*(2+r)*y+(4*b*x-3*r*y)*r_n))/(3*r*r*r_n);
+			}else {
+				return 2*((y/r)-b*x/r2)*(r-a-b*(n*2*Math.PI + phi));
+			}
 		case LOGARITHMIC:
 		default:
-			return 2*((-a*b*Math.exp(b*(phi+n*2*Math.PI))*x)/r2 + y/r) * (-a*Math.exp(b*(phi+n*2*Math.PI)) + r);
+			
+			if(alvarezWindingFocusing){
+				return -(r*r*r*(b*x-3*y) + 3*r*(b*x+y)*r_n*r_n - 4*b*x*r_n*r_n*r_n)/(3*r*r*r_n);
+			}else {
+				return 2*((-a*b*Math.exp(b*(phi+n*2*Math.PI))*x)/r2 + y/r) * (-a*Math.exp(b*(phi+n*2*Math.PI)) + r);
+			}
+			
+			
+			//The equation below is if the cylindrical focusing were to be added instead of subtracted in lensPhaseOverKWF from spiral lens caluclations.nb
+			//This looks wrong but in case anyone is interested:
+			//double r_n = calculateSpiralDistanceFromCentre(phi, n);
+			//return -((r_n-r)*(r*r*(-b*x+3*y)+r_n*(b*r*x+9*r*y+8*b*x*r_n)))/(3*r*r*r_n);
 		}
 	}
 

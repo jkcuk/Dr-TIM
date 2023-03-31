@@ -12,6 +12,7 @@ import optics.raytrace.core.LightSource;
 import optics.raytrace.core.Ray;
 import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
+import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.utility.CircularApertureDiffraction;
 
@@ -343,12 +344,11 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 	 * @see optics.raytrace.cameras.AnyFocusSurfaceCamera#getRay(math.Vector3D, math.Vector3D, boolean)
 	 */
 	@Override
-	protected Ray getRay(Vector3D pointOnEntrancePupil, Vector3D pixelImagePosition, boolean pixelImagePositionInFront)
+	protected Ray getRay(Vector3D pointOnEntrancePupil, Vector3D pixelImagePosition, boolean pixelImagePositionInFront) throws EvanescentException
 	{
 		// a vector from the point on the entrance pupil to the pixel-image position
 		Vector3D pointOnPupil2Image = pixelImagePosition.getDifferenceWith(pointOnEntrancePupil);
 		
-		//TODO report this to Johannes to see if I broke anything... I sure hope not :)
 		Vector3D incidentDirection = 			
 				pixelImagePositionInFront
 				?(pointOnPupil2Image)
@@ -379,6 +379,28 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 			false	// reportToConsole
 		);
 	}
+	
+	/**
+	 * This is used exclusively by the getRayForImagePixel method. 
+	 * @param pointOnEntrancePupil
+	 * @param pixelImagePosition
+	 * @param pixelImagePositionInFront
+	 * @return
+	 */
+	protected Ray getRayNoDiffraction(Vector3D pointOnEntrancePupil, Vector3D pixelImagePosition, boolean pixelImagePositionInFront)
+	{
+		// a vector from the point on the entrance pupil to the pixel-image position
+		Vector3D pointOnPupil2Image = pixelImagePosition.getDifferenceWith(pointOnEntrancePupil);
+		
+		return new Ray(
+				pointOnEntrancePupil,	// start position
+				pixelImagePositionInFront
+				?(pointOnPupil2Image)
+						:(pointOnPupil2Image.getReverse()),
+				shutterModel.getAperturePlaneTransmissionTime(pointOnEntrancePupil, pixelImagePosition, pixelImagePositionInFront),	// time
+				false	// reportToConsole
+			);
+		}
 
 	/**
 	 * In case the rendered image is shown at a different size (imagePixelsHorizontal x imagePixelsVertical),
@@ -425,7 +447,7 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 			return null;	// catch no-focussing-scene-object-in-this-direction error
 		}
 		
-		return getRay(getPinholePosition(), pixelImagePosition, pixelImagePositionInFront);
+		return getRayNoDiffraction(getPinholePosition(), pixelImagePosition, pixelImagePositionInFront);
 //		
 //		// the relevant positions...
 //		Vector3D pinholePositionCameraFrame = getPinholePosition();

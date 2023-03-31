@@ -273,13 +273,13 @@ public class CircularApertureDiffraction
 		Vector3D aHat = Vector3D.getANormal(normalisedApertureNormal);
 		//now get the cross product to complete the vector space. The coordinate space is now (aHat, bHat, normalisedApertureNormal)
 		Vector3D bHat = Vector3D.crossProduct(normalisedApertureNormal,aHat);
-		
+
 		//Fully randomise the radial direction vector the light ray gets diffracted for...
 		//...start by getting a random angle between 0 and 2pi...
 		double randomAngle = 2*Math.PI*Math.random();
 		//... and produce the corresponding direction vector.
 		Vector3D rHat = Vector3D.sum(aHat.getProductWith(Math.sin(randomAngle)), bHat.getProductWith(Math.cos(randomAngle)));
-		
+
 		//finally, return the direction vector scaled with the diffraction order calculated before.
 		return rHat.getWithLength(getRandomSinTheta(lambda, apertureRadius));
 
@@ -309,6 +309,7 @@ public class CircularApertureDiffraction
 	 * @param pointOnAperture this is the point at which the light ray hits the aperture
 	 * @param normalisedApertureNormalnormalised vector to the disc representing the circular aperture
 	 * @return the diffracted light-ray direction, i.e. the light-ray direction before diffraction with a randomised tangential component dictated by the airy dic function
+	 * @throws EvanescentException 
 	 */
 	public static Vector3D getDiffractedLightRayDirection(
 			Vector3D lightRayDirectionBeforeDiffraction,
@@ -317,14 +318,14 @@ public class CircularApertureDiffraction
 			Vector3D apertureCentre,
 			Vector3D pointOnAperture,
 			Vector3D normalisedApertureNormal
-			)
+			) throws EvanescentException
 
 	{
 		// simulate diffractive blur
 		//int i = 0; //counter
-		do {
-			try {
-				Vector3D newLightRayDirection = PhaseHologram.getOutgoingNormalisedRayDirection(
+//		do {
+//			try {
+		return PhaseHologram.getOutgoingNormalisedRayDirection(
 						lightRayDirectionBeforeDiffraction.getNormalised(),	// incidentNormalisedRayDirection
 						getTangentialDirectionComponentChange(
 								lambda,
@@ -337,12 +338,13 @@ public class CircularApertureDiffraction
 						false	// isReflective
 						);
 				//if(i>0)	System.err.println("the light ray was evanescent. "+i+" retries were required!");
-				return newLightRayDirection;
-			} catch (EvanescentException e) {
-				//i = i+1;
-				//System.err.println("the light ray becomes evanescent after addition of the tangential component. Trying again!"); TODO do this smarter somehow...
-			}
-		}while(true);
+				//return newLightRayDirection;
+				//return Vector3D.sum(newLightRayDirection, Vector3D.difference(apertureCentre, pointOnAperture)).getNormalised();
+//			} catch (EvanescentException e) {
+//				//i = i+1;
+//				//System.err.println("the light ray becomes evanescent after addition of the tangential component. Trying again!"); TODO do this smarter somehow...
+//			}
+//		}while(true);
 	}
 
 	/**

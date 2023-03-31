@@ -21,9 +21,7 @@ import optics.raytrace.surfaces.IdealisedDovePrismArray;
 import optics.raytrace.surfaces.PhaseHologramOfCylindricalLens;
 import optics.raytrace.surfaces.PhaseHologramOfRadialLenticularArray;
 import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArray;
-import optics.raytrace.surfaces.RectangularPixelDiffraction;
 import optics.raytrace.surfaces.RotationallySymmetricPhaseHologram;
-import optics.raytrace.surfaces.SurfaceColour;
 import testImages.TestImage;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
@@ -312,7 +310,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private double cameraRotation;
 	
 	/**
-	 * Camera diffraction TODO for now this is a pattern for a SQUARE aperture...
+	 * Camera diffraction 
 	 */
 	private boolean cameraApertureDiffraction;
 	
@@ -581,6 +579,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 				printStream.println(" custom aperture size"+setcameraAperture);
 				if(setcameraAperture)printStream.println(" aperture radius"+ cameraAperture/MM+"mm");
 				printStream.println(" cFD="+cameraFocussingDistance);
+				printStream.println(" diffractive aperture= "+cameraApertureDiffraction);
 				printStream.println("autoFocus="+autoFocus);
 				printStream.println(" cRot="+cameraRotation);
 				printStream.println(" cEye="+useEyeballCamera);
@@ -1031,28 +1030,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			cameraApertureRadius = cameraApertureSize.getApertureRadius();
 		}
 		
-//		if(cameraApertureDiffraction) {
-//			Vector3D spanVector1 = Vector3D.getANormal(cameraViewDirection);
-//		scene.addSceneObject(
-//				new EditableScaledParametrisedDisc(
-//				"diffraction disk",	// description
-//				getStandardCamera().getApertureCentre(),	// centre
-//				cameraViewDirection.getNormalised(),	// normal
-//				cameraApertureRadius,	// radius
-//				new RectangularPixelDiffraction(
-//						550e-9,// lambda,
-//						2*cameraApertureRadius,// pixelSideLengthU,
-//						2*cameraApertureRadius,// pixelSideLengthV,
-//						spanVector1,// uHat,
-//						Vector3D.crossProduct(spanVector1, cameraViewDirection.getNormalised())// vHat
-//						),	// surfaceProperty
-//				scene,	// parent
-//				studio
-//				)
-//				
-//				);
-//		}
-		
 		if(anaglyphCamera) {
 //			By default:
 //			cameraPixelsX = 640
@@ -1078,6 +1055,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					maxTrace,// maxTraceLevel,
 					cameraFocussingDistance,// focussingDistance,
 					cameraApertureRadius,
+		            cameraApertureDiffraction,
+					550e-9,// lambda,
 					raysPerPixel,// raysPerPixel,
 					true// colour
 					);
@@ -1125,30 +1104,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					550e-9,// lambda,
 		            renderQuality.getBlurQuality().getRaysPerPixel()// raysPerPixel
 		    	);
-			
-//			if(cameraApertureDiffraction) {
-//				Vector3D spanVector1 = Vector3D.getANormal(cameraViewDirection);
-//			scene.addSceneObject(
-//					new EditableScaledParametrisedDisc(
-//					"diffraction disk",	// description
-//					Vector3D.sum(Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)),cameraViewDirection.getWithLength(0.01*MyMath.TINY)) ,	// centre
-//					cameraViewDirection.getNormalised(),	// normal
-//					//1,	// radius
-//					cameraApertureRadius,
-//					new RectangularPixelDiffraction(
-//							550e-9,// lambda,
-//							2*cameraApertureRadius,// pixelSideLengthU,
-//							2*cameraApertureRadius,// pixelSideLengthV,
-//							spanVector1,// uHat,
-//							Vector3D.crossProduct(spanVector1, cameraViewDirection.getNormalised())// vHat
-//							),	// surfaceProperty
-//					//SurfaceColour.BLACK_MATT,
-//					scene,	// parent
-//					studio
-//					)
-//					);
-//			}
-			
 			studio.setCamera(defualtCamera);
 		}
 	}

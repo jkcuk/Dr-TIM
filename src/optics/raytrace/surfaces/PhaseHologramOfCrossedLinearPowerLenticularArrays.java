@@ -8,7 +8,7 @@ import optics.raytrace.core.Orientation;
  * whose focussing power varies linearly with the value of the <i>u</i> coordinate, whose origin lies on the cylinder axis of the 0th cylindrical lens.
  * As the focussing power varies with <i>u</i>, the focal length of the cylindrical lenses varies with 1/<i>u</i>.
  * 
- * The array does automatic "pixel focussing", i.e. the focussing power of each individual pixel is that of the
+ * The array does automatic "pixel focusing", i.e. the focusing power of each individual pixel is that of the
  * overall (integral/Fresnel) lens.
  * 
  * This class does not require the associated scene object to be parametrised.
@@ -48,9 +48,35 @@ public class PhaseHologramOfCrossedLinearPowerLenticularArrays extends PhaseHolo
 	 */
 	private double period;
 	
+	/**
+	 * A switch to activate pixel focusing by changing the surface properties to a 3rd order polynomial. i.e an Alvarez lens.
+	 */
+	private boolean alvarezFocusing;
+	
 	//
 	// constructors etc.
 	//
+	
+	public PhaseHologramOfCrossedLinearPowerLenticularArrays(
+			Vector3D p0,
+			Vector3D uHat,
+			Vector3D vHat,
+			double dPdu,
+			double period,
+			double throughputCoefficient,
+			boolean alvarezFocusing,
+			boolean reflective,
+			boolean shadowThrowing
+		)
+	{
+		super(throughputCoefficient, reflective, shadowThrowing);
+		this.p0 = p0;
+		this.uHat = uHat.getNormalised();
+		this.vHat = vHat.getNormalised();
+		this.dPdu = dPdu;
+		this.period = period;
+		this.alvarezFocusing = alvarezFocusing;
+	}
 
 	public PhaseHologramOfCrossedLinearPowerLenticularArrays(
 			Vector3D p0,
@@ -69,6 +95,7 @@ public class PhaseHologramOfCrossedLinearPowerLenticularArrays extends PhaseHolo
 		this.vHat = vHat.getNormalised();
 		this.dPdu = dPdu;
 		this.period = period;
+		this.alvarezFocusing = false;
 	}
 
 	public PhaseHologramOfCrossedLinearPowerLenticularArrays(PhaseHologramOfCrossedLinearPowerLenticularArrays original)
@@ -80,6 +107,7 @@ public class PhaseHologramOfCrossedLinearPowerLenticularArrays extends PhaseHolo
 				original.getdPdu(),
 				original.getPeriod(),
 				original.getTransmissionCoefficient(),
+				original.isAlvarezFocusing(),
 				original.isReflective(),
 				original.isShadowThrowing()
 			);
@@ -135,6 +163,14 @@ public class PhaseHologramOfCrossedLinearPowerLenticularArrays extends PhaseHolo
 	public void setPeriod(double period) {
 		this.period = period;
 	}
+	
+	public boolean isAlvarezFocusing() {
+		return alvarezFocusing;
+	}
+
+	public void setAlvarezFocusing(boolean alvarezFocusing) {
+		this.alvarezFocusing = alvarezFocusing;
+	}
 
 
 	
@@ -142,6 +178,7 @@ public class PhaseHologramOfCrossedLinearPowerLenticularArrays extends PhaseHolo
 	// methods that do stuff
 	//
 	
+
 	/**
 	 * @param u
 	 * @return	the index <i>n</i> of the cylindrical lens at the given value of the <i>u</i> coordinate
@@ -186,12 +223,24 @@ public class PhaseHologramOfCrossedLinearPowerLenticularArrays extends PhaseHolo
 		double uuN = u-uN;
 		double vvN = v-vN;
 		
+
+		//Adding the alvarez surface to it should focus the pixels. This is where...
+		if(alvarezFocusing) {
+			return Vector3D.sum(
+					localUHat.getProductWith(-uuN*calculateFocalPower(uN)-0.5*dPdu*uuN*uuN),
+					localVHat.getProductWith(-vvN*calculateFocalPower(vN)-0.5*dPdu*vvN*vvN)
+					);
 		// the second term, proportional to -0.5*dPdu*uuN^2 (or vvN^2) is for one part of a Lohmann cylindrical lens --
 		// see PhaseHologramOfLohmannCylindricalLensPart::getTangentialDirectionComponentChangeTransmissive
-		return Vector3D.sum(
-				localUHat.getProductWith(-uuN*calculateFocalPower(uN)-0.5*dPdu*uuN*uuN),
-				localVHat.getProductWith(-vvN*calculateFocalPower(vN)-0.5*dPdu*vvN*vvN)
-			);
+		}else {
+			//... Otherwise we remove the second term to disable pixel focusing
+			return Vector3D.sum(
+					localUHat.getProductWith(-uuN*calculateFocalPower(uN)),
+					localVHat.getProductWith(-vvN*calculateFocalPower(vN))
+					);
+		}
+		
+
 	}
 
 	@Override

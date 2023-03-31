@@ -91,6 +91,11 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	private boolean showLens1;
 	private boolean showLens2;
 	private boolean showComparisonLens;
+	
+	/**
+	 * turn on the alvarez winding focusing
+	 */
+	private boolean alvarezWindingFocusing;
 
 	//
 	// the rest of the scene
@@ -149,6 +154,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		showLens2 = true;
 		showComparisonLens = false;
 		comparisonLensF = 28.59792;
+		alvarezWindingFocusing = false;
 		
 		studioInitialisation = StudioInitialisationType.TIM_HEAD;	// the backdrop
 		
@@ -213,6 +219,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		printStream.println("fMin = "+fMin);
 		printStream.println("rotationAngleDeg = "+rotationAngleDeg);
 		printStream.println("distanceOfLens2BehindLens1 = "+distanceOfLens2BehindLens1);
+		printStream.println("alvarezWindingFocusing= "+alvarezWindingFocusing);
 		printStream.println("showLens1 = "+showLens1);
 		printStream.println("showLens2 = "+showLens2);
 		printStream.println("showComparisonLens = "+showComparisonLens);
@@ -296,6 +303,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 				b,
 				spiralLens1,	// sceneObject
 				0.96,	// throughputCoefficient
+				alvarezWindingFocusing,
 				false,	// reflective
 				false	// shadowThrowing
 			);
@@ -333,6 +341,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 				b,
 				spiralLens2,	// sceneObject
 				0.96,	// throughputCoefficient
+				alvarezWindingFocusing,
 				false,	// reflective
 				false	// shadowThrowing
 			);
@@ -395,7 +404,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	private LabelledDoublePanel bPanel, fPanel, fMinPanel, distanceOfLens2BehindLens1Panel;
 	private DoublePanel comparisonLensFPanel;
 	private DoublePanel rotationAngleDegPanel;
-	private JCheckBox showLens1CheckBox, showLens2CheckBox, showComparisonLensCheckBox;
+	private JCheckBox showLens1CheckBox, showLens2CheckBox, showComparisonLensCheckBox, alvarezWindingFocusingCheckBox;
 	private JButton calculateCombinedFocalLengthButton, calculateDistanceOfLens2BehindLens1Button, focusOnTIMEyesButton;
 	
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
@@ -468,6 +477,10 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		calculateDistanceOfLens2BehindLens1Button.setToolTipText("Perform pixel focussing; works only if the focal length of the combination of the integral lens is greater than the smallest focal length for which winding can be focussed");
 		calculateDistanceOfLens2BehindLens1Button.addActionListener(this);
 		windingFocussingPanel.add(calculateDistanceOfLens2BehindLens1Button,"span");
+		
+		alvarezWindingFocusingCheckBox = new JCheckBox("Use alvarez winding focusing");
+		alvarezWindingFocusingCheckBox.setSelected(alvarezWindingFocusing);
+		windingFocussingPanel.add(alvarezWindingFocusingCheckBox, "span");
 		
 		lensPanel.add(windingFocussingPanel, "span");
 		
@@ -596,6 +609,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		showLens2 = showLens2CheckBox.isSelected();
 		showComparisonLens = showComparisonLensCheckBox.isSelected();
 		comparisonLensF = comparisonLensFPanel.getNumber();
+		alvarezWindingFocusing = alvarezWindingFocusingCheckBox.isSelected();
 		
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		for(int i=0; i<3; i++)

@@ -75,6 +75,11 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 	private double dPdu;
 	
 	/**
+	 * pixel focusing using the alvarez type surfaces added to the cylindrical lenses. 
+	 */
+	private boolean alvarezFocusing;
+	
+	/**
 	 * offset between the arrays that form the integral cylindrical lens 1
 	 */
 	private double xOffset;
@@ -155,6 +160,7 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 		showComponent1 = true;
 		showComponent2 = true;
 		showComparisonLens = false;
+		alvarezFocusing = false;
 
 		// crossed-lenticular-arrays parameters
 		dPdu = 100;
@@ -225,6 +231,7 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 		printStream.println("dPdu = "+dPdu);
 		printStream.println("xOffset = "+xOffset);
 		printStream.println("yOffset = "+yOffset);
+		printStream.println("alvarezFocusing= "+alvarezFocusing);
 		
 		// stretchy-lenslet-arrays parameters
 				printStream.println("stretchFactorU = "+stretchFactorU);
@@ -338,6 +345,7 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 					dPdu,
 					period,
 					SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
+					alvarezFocusing,
 					false,	// reflective
 					false	// shadowThrowing
 				);
@@ -352,6 +360,7 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 					-dPdu,
 					period,
 					SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
+					alvarezFocusing,
 					false,	// reflective
 					false	// shadowThrowing
 				);
@@ -458,7 +467,7 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 	private LabelledDoublePanel dPduPanel, periodPanel, distanceBetweenComponentsPanel, stretchyLAsFPanel;
 	private DoublePanel phiUDegPanel, rotationAngleDegPanel, comparisonLensFPanel;
 	private LabelledVector2DPanel offsetPanel, stretchFactorPanel;
-	private JCheckBox showComponent1CheckBox, showComponent2CheckBox, showComparisonLensCheckBox;
+	private JCheckBox showComponent1CheckBox, showComponent2CheckBox, showComparisonLensCheckBox, alvarezFocusingCheckBox;
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 // 	private JButton calculateCombinedFocalLengthButton, calculateDistanceOfLens2BehindLens1Button, focusOnTIMEyesButton;
 
@@ -517,6 +526,10 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 		offsetPanel = new LabelledVector2DPanel("<html>Offset between elements (&Delta;<i>x</i>,&Delta;<i>y</i>)=</html>");
 		offsetPanel.setVector2D(xOffset, yOffset);
 		crossedLenticularArraysPanel.add(offsetPanel, "span");
+		
+		alvarezFocusingCheckBox = new JCheckBox("Use Alvarez focusing");
+		alvarezFocusingCheckBox.setSelected(alvarezFocusing);
+		crossedLenticularArraysPanel.add(alvarezFocusingCheckBox, "wrap");
 		
 		stretchyLensletArraysPanel = new JPanel();
 		stretchyLensletArraysPanel.setLayout(new MigLayout("insets 0"));
@@ -634,6 +647,7 @@ public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine impleme
 		showComparisonLens = showComparisonLensCheckBox.isSelected();
 		comparisonLensF = comparisonLensFPanel.getNumber();
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
+		alvarezFocusing = alvarezFocusingCheckBox.isSelected();
 		
 		// cameraViewDirection = cameraViewDirectionPanel.getVector3D();
 		cameraDistance = cameraDistancePanel.getNumber();

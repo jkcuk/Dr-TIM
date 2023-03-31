@@ -5,6 +5,7 @@ import java.io.*;
 import math.*;
 import optics.DoubleColour;
 import optics.raytrace.core.*;
+import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.utility.CircularApertureDiffraction;
 
@@ -350,6 +351,7 @@ public class AnyFocusSurfaceCamera extends PinholeCamera implements Serializable
 			}
 
 			Vector3D currentPointOnEntrancePupil = randomPointOnEntrancePupil();
+			try {
 			Ray ray = getRay(currentPointOnEntrancePupil, pixelImagePosition, pixelImagePositionInFront);
 
 			sumColour = sumColour.add(
@@ -368,6 +370,11 @@ public class AnyFocusSurfaceCamera extends PinholeCamera implements Serializable
 												getRaytraceExceptionHandler()
 												)
 					);
+			}
+			catch(EvanescentException e) {
+				//Don't do anything here which is equivalent to adding a black ray.
+				//This makes sense as the ray would be evanescent.
+			}
 		}
 
 		return sumColour.multiply(exposureCompensation.toIntensityFactor()/raysPerPixel);
@@ -381,8 +388,9 @@ public class AnyFocusSurfaceCamera extends PinholeCamera implements Serializable
 	 * @param pixelImagePosition	the position of the image of the pixel
 	 * @param pixelImagePositionInFront	does pixelImagePosition lie in front of the camera?
 	 * @return
+	 * @throws EvanescentException 
 	 */
-	protected Ray getRay(Vector3D pointOnEntrancePupil, Vector3D pixelImagePosition, boolean pixelImagePositionInFront)
+	protected Ray getRay(Vector3D pointOnEntrancePupil, Vector3D pixelImagePosition, boolean pixelImagePositionInFront) throws EvanescentException
 	{
 		if(diffractiveAperture) {
 			//set the normal direction of the light ray before it gets diffracted.
