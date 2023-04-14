@@ -213,7 +213,7 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	
 	
 	/**
-	 * Calculate the distance r from the centre of the logarithmic spiral r = a Exp(b (phi + n*2*pi)).
+	 * Calculate the distance r from the centre of the logarithmic or archimedean spiral with r = a Exp(b (phi + n*2*pi)) or r = a + b (phi + n*2*pi) respectively.
 	 * Note that the values of phi are restricted to the range [0, 2 pi].
 	 * @param phi
 	 * @param n
@@ -258,23 +258,26 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	private double calculateXDerivative(double x, double y, double r, double r2, double phi, double n)
 	{	
 		double r_n = calculateSpiralDistanceFromCentre(phi, n);
-	
 		// calculated in Mathematica
 		switch(cylindricalLensSpiralType)
 		{
 		case ARCHIMEDEAN:
+			//In the Archimedean case the focal length fArch is given by the ratio of the focal length at radius 1 and the radius
+			// hence fArch is given by the focalLength divided by the radius at any given point. 
+			double fArch = focalLength/r_n;
 			if(alvarezWindingFocusing){
-				return (r-r_n)*(-b*r*(3+r)*y+r_n*(3*r*(2+r)*x+b*(9+5*r)*y-(3*r*x+4*b*y)*r_n))/(3*r*r*r_n);
+				return (r_n-r)*(2*b*y*r_n+r*x*(r+r_n))/(2*focalLength*r*r);
 			}else {
-				return 2*((x/r)+b*y/r2)*(r-a-b*(n*2*Math.PI + phi));
+				return -(((x/r)+b*y/r2)*(r-r_n))/fArch;
 			}
 		case LOGARITHMIC:
 		default:
-
+			//In the logarithmic case the focal length, fLog, is constant and hence simply the focalLength.
+			double fLog = focalLength;
 			if(alvarezWindingFocusing){
-				return (r*(x+b*y/3)/r_n) + ((-x+b*y)*r_n/r) - (4*b*y*r_n*r_n/(3*r*r));
+				return (-r*r*r*(3*x+b*y)+3*r*r_n*r_n*(x-b*y)+4*b*y*r_n*r_n*r_n)/(6*r_n*fLog*r*r);
 			}else {
-				return 2*((a*b*Math.exp(b*(phi+n*2*Math.PI))*y)/r2 + x/r) * (-a*Math.exp(b*(phi+n*2*Math.PI)) + r);
+				return -(((a*b*Math.exp(b*(phi+n*2*Math.PI))*y)/r2 + x/r) * (-a*Math.exp(b*(phi+n*2*Math.PI)) + r))/fLog;
 			}
 
 			
@@ -285,7 +288,7 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 			
 		}
 	}
-
+	
 	private double calculateYDerivative(double x, double y, double r, double r2, double phi, double n)
 	{
 		double r_n = calculateSpiralDistanceFromCentre(phi, n);
@@ -293,19 +296,22 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		switch(cylindricalLensSpiralType)
 		{
 		case ARCHIMEDEAN:
-			
+			//In the Archimedean case the focal length fArch is given by the ratio of the focal length at radius 1 and the radius
+			// hence fArch is given by the focalLength divided by the radius at any given point. 
+			double fArch = focalLength/r_n;
 			if(alvarezWindingFocusing){
-				return (r-r_n)*(b*r*(3+r)*x+r_n*(-b*(9+5*r)*x+3*r*(2+r)*y+(4*b*x-3*r*y)*r_n))/(3*r*r*r_n);
+				return -(r_n-r)*(2*b*x*r_n-r*y*(r+r_n))/(2*focalLength*r*r);
 			}else {
-				return 2*((y/r)-b*x/r2)*(r-a-b*(n*2*Math.PI + phi));
+				return -(((y/r)-b*x/r2)*(r-r_n))/fArch;
 			}
 		case LOGARITHMIC:
 		default:
-			
+			//In the logarithmic case the focal length, fLog, is constant and hence simply the focalLength.
+			double fLog = focalLength;
 			if(alvarezWindingFocusing){
-				return -(r*r*r*(b*x-3*y) + 3*r*(b*x+y)*r_n*r_n - 4*b*x*r_n*r_n*r_n)/(3*r*r*r_n);
+				return (r*r*r*(b*x-3*y)+3*r*r_n*r_n*(b*x+y)-4*b*x*r_n*r_n*r_n)/(6*fLog*r*r*r_n);
 			}else {
-				return 2*((-a*b*Math.exp(b*(phi+n*2*Math.PI))*x)/r2 + y/r) * (-a*Math.exp(b*(phi+n*2*Math.PI)) + r);
+				return -(((-a*b*Math.exp(b*(phi+n*2*Math.PI))*x)/r2 + y/r) * (-a*Math.exp(b*(phi+n*2*Math.PI)) + r))/fLog;
 			}
 			
 			
@@ -335,19 +341,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		double xDerivative = calculateXDerivative(x, y, r, r2, phi, n);
 		double yDerivative = calculateYDerivative(x, y, r, r2, phi, n);
 		
-		double f;
-		switch(cylindricalLensSpiralType)
-		{
-		case ARCHIMEDEAN:
-			f = focalLength / calculateSpiralDistanceFromCentre(phi, n);
-			break;
-		case LOGARITHMIC:
-		default:
-			f = focalLength;
-		}
-		
 		ArrayList<Vector3D> xHatYHat = sceneObject.getSurfaceCoordinateAxes(surfacePosition);
-		return Vector3D.sum(xHatYHat.get(0).getProductWith(xDerivative), xHatYHat.get(1).getProductWith(yDerivative)).getProductWith(-0.5/f);
+		return Vector3D.sum(xHatYHat.get(0).getProductWith(xDerivative), xHatYHat.get(1).getProductWith(yDerivative));
 	}
 
 	@Override
