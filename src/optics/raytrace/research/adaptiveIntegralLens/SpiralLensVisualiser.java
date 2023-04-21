@@ -242,9 +242,9 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		
 		printStream.println("cameraViewDirection = "+cameraViewDirection);
 		printStream.println("cameraHorizontalFOVDeg = "+cameraHorizontalFOVDeg);
-		
+		printStream.println("camerFocusingDistance = "+cameraFocussingDistance);
 		// write all parameters defined in NonInteractiveTIMEngine
-		// super.writeParameters(printStream);		
+		 super.writeParameters(printStream);		
 	}
 	
 	private double getFOfFocussedCylindricalLens(double fCylindrical)
