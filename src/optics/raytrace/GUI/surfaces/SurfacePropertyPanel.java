@@ -48,6 +48,7 @@ import optics.raytrace.surfaces.Rainbow;
 import optics.raytrace.surfaces.RayFlipping;
 import optics.raytrace.surfaces.RayRotating;
 import optics.raytrace.surfaces.RayRotatingAboutArbitraryAxisDirection;
+import optics.raytrace.surfaces.RayRotatingInPlaneOfIncidence;
 import optics.raytrace.surfaces.RectangularIdealThinLensletArray;
 import optics.raytrace.surfaces.Reflective;
 import optics.raytrace.surfaces.Refractive;
@@ -119,6 +120,7 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		ROTATIONALLY_SYMMETRIC_PHASE_HOLOGRAM("Rotationally symmetric phase hologram"),
 		ROTATING("Rotating"),
 		ROTATING_AROUND_ARBITRARY_AXIS_DIRECTION("Rotating around arbitrary axis direction"),
+		ROTATING_IN_PLANE_OF_INCIDENCE("Rotating in plane of incidence"),
 		TELEPORTING("Teleporting"),
 		TILED("Tiled"),
 		TRANSPARENT("Transparent"),
@@ -1244,6 +1246,12 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 			rayRotationAxisDirectionBasisComboBox.setSelectedItem(((RayRotatingAboutArbitraryAxisDirection)surfaceProperty).getBasis());
 			setOptionalParameterPanelComponent(rayRotationAroundArbitraryAxisDirectionPanel);			
 		}
+		else if(surfaceProperty instanceof RayRotatingInPlaneOfIncidence)
+		{
+			surfacePropertyComboBox.setSurfacePropertyType(SurfacePropertyType.ROTATING_IN_PLANE_OF_INCIDENCE);
+			rayRotationAnglePanel.setNumber(((RayRotatingInPlaneOfIncidence)surfaceProperty).getRotationAngle()*180/Math.PI);
+			setOptionalParameterPanelComponent(rayRotationAnglePanel);
+		}
 		else if(surfaceProperty instanceof RotationallySymmetricPhaseHologram)
 		{
 			surfacePropertyComboBox.setSurfacePropertyType(SurfacePropertyType.ROTATIONALLY_SYMMETRIC_PHASE_HOLOGRAM);
@@ -1553,10 +1561,17 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 			break;
 		case ROTATING_AROUND_ARBITRARY_AXIS_DIRECTION:
 			surfaceProperty = new RayRotatingAboutArbitraryAxisDirection(
-					rayRotationAngleArbitraryAxisDirectionPanel.getNumber()*Math.PI/180,	// rotationa angle
+					rayRotationAngleArbitraryAxisDirectionPanel.getNumber()*Math.PI/180,	// rotation angle
 					rayRotationAxisPanel.getVector3D(),	// rotation axis unit vector
 					(GlobalOrLocalCoordinateSystemType)(rayRotationAxisDirectionBasisComboBox.getSelectedItem()),
 					SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT, shadowThrowingCheckBox.isSelected()
+				);
+			break;
+		case ROTATING_IN_PLANE_OF_INCIDENCE:
+			surfaceProperty = new RayRotatingInPlaneOfIncidence(
+					rayRotationAnglePanel.getNumber()*Math.PI/180.,	// rotationAngle
+					SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// transmissionCoefficient
+					true	// shadowThrowing
 				);
 			break;
 		case ROTATIONALLY_SYMMETRIC_PHASE_HOLOGRAM:
@@ -1734,6 +1749,7 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 				setOptionalParameterPanelComponent(rotationallySymmetricPhaseHologramPanel);
 				break;
 			case ROTATING:
+			case ROTATING_IN_PLANE_OF_INCIDENCE:
 				setOptionalParameterPanelComponent(rayRotationAnglePanel);
 				break;
 			case ROTATING_AROUND_ARBITRARY_AXIS_DIRECTION:

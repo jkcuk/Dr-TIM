@@ -39,10 +39,10 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	private CylindricalLensSpiralType cylindricalLensSpiralType;
 
 	/**
-	 * the cylindrical lens's focal length (at distance t=1);
-	 * the cross-section of the cylindrical lens is Phi(t) = (pi d^2)(lambda f), where t is the transverse direction
+	 * the cylindrical lens's focal length (at distance r=1);
+	 * the cross-section of the cylindrical lens is Phi(r) = (pi d^2)(lambda f), where r is the radial distance
 	 */
-	private double focalLength;
+	private double focalLength1;
 	
 	/**
 	 * the centre of the cylindrical lens follows either the logarithmic spiral r = a exp(b phi), or the Archimedean spiral r = a + b phi
@@ -169,11 +169,11 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	}
 
 	public double getFocalLength() {
-		return focalLength;
+		return focalLength1;
 	}
 
 	public void setFocalLength(double focalLength) {
-		this.focalLength = focalLength;
+		this.focalLength1 = focalLength;
 	}
 
 	public double getA() {
@@ -264,16 +264,18 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		case ARCHIMEDEAN:
 			//In the Archimedean case the focal length fArch is given by the ratio of the focal length at radius 1 and the radius
 			// hence fArch is given by the focalLength divided by the radius at any given point. 
-			double fArch = focalLength/r_n;
+			double fArch = focalLength1/r_n;
 			if(alvarezWindingFocusing){
-				return (r_n-r)*(2*b*y*r_n+r*x*(r+r_n))/(2*focalLength*r*r);
+				return 
+						(r_n-r)*(2*r*r*x+b*(r_n+r)*y)/(2*focalLength1*r*r);
+						// (r_n-r)*(2*b*y*r_n+r*x*(r+r_n))/(2*focalLength1*r*r);
 			}else {
 				return -(((x/r)+b*y/r2)*(r-r_n))/fArch;
 			}
 		case LOGARITHMIC:
 		default:
 			//In the logarithmic case the focal length, fLog, is constant and hence simply the focalLength.
-			double fLog = focalLength;
+			double fLog = focalLength1;
 			if(alvarezWindingFocusing){
 				return (-r*r*r*(3*x+b*y)+3*r*r_n*r_n*(x-b*y)+4*b*y*r_n*r_n*r_n)/(6*r_n*fLog*r*r);
 			}else {
@@ -298,16 +300,18 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		case ARCHIMEDEAN:
 			//In the Archimedean case the focal length fArch is given by the ratio of the focal length at radius 1 and the radius
 			// hence fArch is given by the focalLength divided by the radius at any given point. 
-			double fArch = focalLength/r_n;
+			double fArch = focalLength1/r_n;
 			if(alvarezWindingFocusing){
-				return -(r_n-r)*(2*b*x*r_n-r*y*(r+r_n))/(2*focalLength*r*r);
+				return 
+						(r_n-r)*(2*r*r*y-b*(r_n+r)*x)/(2*focalLength1*r*r);
+						// -(r_n-r)*(2*b*x*r_n-r*y*(r+r_n))/(2*focalLength1*r*r);
 			}else {
 				return -(((y/r)-b*x/r2)*(r-r_n))/fArch;
 			}
 		case LOGARITHMIC:
 		default:
 			//In the logarithmic case the focal length, fLog, is constant and hence simply the focalLength.
-			double fLog = focalLength;
+			double fLog = focalLength1;
 			if(alvarezWindingFocusing){
 				return (r*r*r*(b*x-3*y)+3*r*r_n*r_n*(b*x+y)-4*b*x*r_n*r_n*r_n)/(6*fLog*r*r*r_n);
 			}else {

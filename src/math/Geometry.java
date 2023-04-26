@@ -58,6 +58,35 @@ public class Geometry
 	}
 	
 	/**
+	 * "Projection" of point into plane.
+	 * The plane is given by the point pp and the two orthonormal vectors uHat and vHat.
+	 * @param p1	point 1 on line
+	 * @param p2	point 2 on line
+	 * @param pp	point in plane	
+	 * @param uHat	span vector 1 of plane; must be perpendicular to vHat
+	 * @param vHat	span vector 2 of plane; must be perpendicular to uHat
+	 * @return	(u, v) such that pointInPlane + u uHat + v vHat points to the intersection between the line through p1 and p2 and the plane
+	 */
+	public static Vector2D pointProjectionIntoPlane(Vector3D p1, Vector3D p2, 
+			Vector3D pp, Vector3D uHat, Vector3D vHat)
+	{
+		// efficient to pre-calculate this
+		Vector3D nHat = Vector3D.crossProduct(uHat, vHat);
+		Vector3D pp2p1 = Vector3D.difference(p1, pp);
+		
+		// vector from p1 to p2
+		Vector3D d = Vector3D.difference(p2,  p1);
+		
+		// the line is then given by p1 + delta d;
+		// calculate delta such that p1 + delta d lies in the plane
+		double delta = - Vector3D.scalarProduct(pp2p1, nHat) / Vector3D.scalarProduct(d, nHat);
+		
+		Vector3D w = Vector3D.sum(pp2p1, d.getProductWith(delta));
+		
+		return new Vector2D(Vector3D.scalarProduct(w, uHat), Vector3D.scalarProduct(w, vHat));
+	}
+	
+	/**
 	 * @param points
 	 * @return	true if the points are in the same plane, false otherwise
 	 */
@@ -183,7 +212,7 @@ public class Geometry
 
 		if (denominator == 0.0)
 		{
-			// line is perpendicular to plane
+			// line is parallel to plane
 			return Double.POSITIVE_INFINITY;
 		}
 

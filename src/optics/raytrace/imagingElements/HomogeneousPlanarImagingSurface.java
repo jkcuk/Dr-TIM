@@ -13,9 +13,9 @@ import math.Vector3D;
  * A collection of useful methods related to imaging with homogeneous planar surfaces, as described in Ref. [1].
  * Such surfaces can be approximately realised in the form of planar gCLAs [2,3].
  * 
- * [1] S. Oxburgh and J. Courtial, "Perfect imaging with planar interfaces", J. Opt. Soc. Am. A�<b>30</b>, 2334-2338 (2013)
- * [2] A. C. Hamilton and J. Courtial, "Generalized refraction using lenslet arrays", J. Opt. A: Pure Appl. Opt.�<b>11</b>, 065502 (2009)
- * [3] S. Oxburgh, C. D. White, G. Antoniou, and J. Courtial, "Law of refraction for generalised confocal lenslet arrays", Opt. Commun.�<b>313</b>, 119-122 (2014)
+ * [1] S. Oxburgh and J. Courtial, "Perfect imaging with planar interfaces", J. Opt. Soc. Am. A <b>30</b>, 2334-2338 (2013)
+ * [2] A. C. Hamilton and J. Courtial, "Generalized refraction using lenslet arrays", J. Opt. A: Pure Appl. Opt. <b>11</b>, 065502 (2009)
+ * [3] S. Oxburgh, C. D. White, G. Antoniou, and J. Courtial, "Law of refraction for generalised confocal lenslet arrays", Opt. Commun. <b>313</b>, 119-122 (2014)
  * 
  * @author johannes
  */

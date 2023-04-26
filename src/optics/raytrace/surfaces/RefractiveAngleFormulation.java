@@ -9,7 +9,7 @@ import optics.raytrace.exceptions.RayTraceException;
 
 /**
  * 
- * Realises a law of refraction that is formulated in terms of the angles of incidence and refraction
+ * Realises any law of refraction that is formulated in terms of the angles of incidence and refraction
  * 
  * @author Johannes
  *

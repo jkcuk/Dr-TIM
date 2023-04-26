@@ -30,7 +30,18 @@ public class EatonLens extends Sphere implements Serializable
 			Studio studio
 		)
 	{
-		super(description, centre, radius, new EatonLensSurface(ratioNSurfaceNSurrounding, transparentTunnelRadius, transmissionCoefficient, shadowThrowing), parent, studio);
+		super(
+				description,
+				centre,
+				radius,
+				new EatonLensSurface(ratioNSurfaceNSurrounding,
+						transparentTunnelRadius,
+						transmissionCoefficient,
+						shadowThrowing
+					),
+				parent,
+				studio
+			);
 	}
 	
 	/**
