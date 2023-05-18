@@ -25,7 +25,8 @@ implements Derivatives
 	//image position
 	private Vector3D q;
 	
-	//point on ideal lens. This will not be the principal point unless it is chosen to lie on a line between p1 and p2
+	//point on ideal lens. This will not be the principal point unless it is chosen to lie on a line between p1 and p2,
+	//but it will be the central point around which our surfaces are constructed.
 	private Vector3D pI;
 	private Vector3D idealLensNormal;
 	
@@ -564,16 +565,17 @@ implements Derivatives
 
 		//adding the 0th points i.e the principal point
 		//principalPoint;
-		try {
-			principalPoint = Geometry.linePlaneIntersection(p, Vector3D.difference(p,q).getNormalised(), pI, idealLensNormal);
+//		try {
+			//principalPoint = Geometry.linePlaneIntersection(p, Vector3D.difference(p,q).getNormalised(), pI, idealLensNormal);
+			principalPoint = pI;
 			idealLensPosition = principalPoint;
 //			System.out.println("from "+idealLensPosition+" to "+getUVWposition(idealLensPosition)+" back to "+ getXYZposition(getUVWposition(idealLensPosition)));
 			System.out.println(principalPoint);
 			
-		} catch (MathException e) {
-			System.err.println("Ideal lens plane parallel to line from p1 to p2");
-			e.printStackTrace();
-		}
+//		} catch (MathException e) {
+//			System.err.println("Ideal lens plane parallel to line from p1 to p2");
+//			e.printStackTrace();
+//		}
 		
 		sign = 1;
 		double frontSign = Vector3D.scalarProduct(Vector3D.difference(principalPoint, p), idealLensNormal);
