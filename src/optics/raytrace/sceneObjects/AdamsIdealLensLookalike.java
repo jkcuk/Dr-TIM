@@ -538,14 +538,15 @@ implements Derivatives
 
 		
 		// initialise the lists of positive and negative scene-object primitives
-		positiveSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>(2);
+		positiveSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>();
 		negativeSceneObjectPrimitives  = new ArrayList<SceneObjectPrimitive>();
 		
 		// TODO add aperture shape here?
 		invisiblePositiveSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>();
 		invisibleNegativeSceneObjectPrimitives  = new ArrayList<SceneObjectPrimitive>();
-		invisibleNegativeSceneObjectPrimitives = negativeSceneObjects;
-		invisiblePositiveSceneObjectPrimitives = positiveSceneObjects;
+		
+		if(negativeSceneObjects!=null) invisibleNegativeSceneObjectPrimitives = negativeSceneObjects;
+		if(positiveSceneObjects!=null) invisiblePositiveSceneObjectPrimitives = positiveSceneObjects;
 
 		// calculate array of vertices on both surface
 		// create space for vertices on surface 1...
@@ -567,7 +568,7 @@ implements Derivatives
 			principalPoint = Geometry.linePlaneIntersection(p, Vector3D.difference(p,q).getNormalised(), pI, idealLensNormal);
 			idealLensPosition = principalPoint;
 //			System.out.println("from "+idealLensPosition+" to "+getUVWposition(idealLensPosition)+" back to "+ getXYZposition(getUVWposition(idealLensPosition)));
-//			System.out.println(principalPoint);
+			System.out.println(principalPoint);
 			
 		} catch (MathException e) {
 			System.err.println("Ideal lens plane parallel to line from p1 to p2");
@@ -577,7 +578,9 @@ implements Derivatives
 		sign = 1;
 		double frontSign = Vector3D.scalarProduct(Vector3D.difference(principalPoint, p), idealLensNormal);
 		double backSign = Vector3D.scalarProduct(Vector3D.difference(principalPoint, q), idealLensNormal);
-		 if(Math.signum(frontSign) == Math.signum(backSign)) sign = -1;
+		if(Math.signum(frontSign) == Math.signum(backSign)) sign = -1;
+		
+		System.out.println(sign);
 
 		// initialise one pair of points, the central ones at v[iSteps][jSteps]
 		v1[iSteps][jSteps] = Vector3D.sum(
