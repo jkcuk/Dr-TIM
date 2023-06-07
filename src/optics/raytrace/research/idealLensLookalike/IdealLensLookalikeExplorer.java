@@ -318,7 +318,7 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 			scene.addSceneObject(new Sphere(
 					"p2 object",
 					p2,//centre
-					0.01,//radius should be small
+					0.005,//radius should be small
 					SurfaceColour.GREEN_MATT,
 					scene,
 					studio
@@ -412,7 +412,12 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 		switch(material)
 		{
 		case REFRACTIVE:
-			surfaceProperty1 = surfaceProperty2 = surfacePropertySides = new RefractiveSimple(
+			surfaceProperty1 = new RefractiveSimple(
+					1/n,	// insideOutsideRefractiveIndexRatio
+					SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// transmissionCoefficient
+					true	// shadowThrowing
+					);
+			surfaceProperty2 = surfacePropertySides = new RefractiveSimple(
 					1/n,	// insideOutsideRefractiveIndexRatio
 					SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// transmissionCoefficient
 					true	// shadowThrowing
