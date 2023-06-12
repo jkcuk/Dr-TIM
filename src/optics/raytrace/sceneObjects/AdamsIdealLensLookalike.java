@@ -46,9 +46,6 @@ implements Derivatives
 	//steps for triangulating 
 	private int iSteps;
 	private int jSteps;
-
-	//the new principal point
-	Vector3D principalPoint;
 	
 	//sign to determine if the image is real or virtual
 	double sign;
@@ -124,7 +121,7 @@ implements Derivatives
 		setpI(pI);
 		setIdealLensNormal(idealLensNormal);
 		//create and set the axis vectors, making sure that the normal is always away from p.
-		Vector3D b3 = idealLensNormal.getProductWith(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal))).getNormalised();
+		Vector3D b3 = idealLensNormal.getWithLength(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal)));
 		Vector3D b1 = Vector3D.getANormal(b3);
 		setB1(b1);
 		setB3(b3);
@@ -132,7 +129,7 @@ implements Derivatives
 		
 		setWidth(width);
 		setHeight(height);
-		setISteps(iSteps/2); //TODO this should round down 
+		setISteps(iSteps/2); 
 		setJSteps(jSteps/2);
 		setIntegrationStepSize(integrationStepSize);
 		setN(n);
@@ -195,7 +192,7 @@ implements Derivatives
 		setpI(pI);
 		setIdealLensNormal(idealLensNormal);
 		//create and set the axis vectors, making sure that the normal is always away from p.
-		Vector3D b3 = idealLensNormal.getProductWith(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal))).getNormalised();
+		Vector3D b3 = idealLensNormal.getWithLength(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal)));
 		Vector3D b1 = Vector3D.getANormal(b3);
 		setB1(b1);
 		setB3(b3);
@@ -203,7 +200,7 @@ implements Derivatives
 		
 		setWidth(width);
 		setHeight(height);
-		setISteps(iSteps/2); //TODO this should round down 
+		setISteps(iSteps/2);  
 		setJSteps(jSteps/2);
 		setIntegrationStepSize(integrationStepSize);
 		setN(n);
@@ -266,7 +263,7 @@ implements Derivatives
 		setpI(pI);
 		setIdealLensNormal(idealLensNormal);
 		//create and set the axis vectors, making sure that the normal is always away from p.
-		Vector3D b3 = idealLensNormal.getProductWith(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal))).getNormalised();
+		Vector3D b3 = idealLensNormal.getWithLength(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal)));
 		Vector3D b1 = Vector3D.getANormal(b3);
 		setB1(b1);
 		setB3(b3);
@@ -274,7 +271,7 @@ implements Derivatives
 		
 		setWidth(width);
 		setHeight(height);
-		setISteps(iSteps/2); //TODO this should round down 
+		setISteps(iSteps/2);  
 		setJSteps(jSteps/2);
 		setIntegrationStepSize(integrationStepSize);
 		setN(n);
@@ -329,7 +326,7 @@ implements Derivatives
 		setpI(pI);
 		setIdealLensNormal(idealLensNormal);
 		//create and set the basis vectors, making sure that the normal is always away from p.
-		Vector3D b3 = idealLensNormal.getProductWith(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal))).getNormalised();
+		Vector3D b3 = idealLensNormal.getWithLength(Math.signum(Vector3D.difference(pI, p).getScalarProductWith(idealLensNormal)));
 		Vector3D b1 = Vector3D.getANormal(b3);
 		setB1(b1);
 		setB3(b3);
@@ -524,14 +521,6 @@ implements Derivatives
 		return surface2;
 	}
 
-	public Vector3D getPrincipalPoint() {
-		return principalPoint;
-	}
-
-	public void setPrincipalPoint(Vector3D principalPoint) {
-		this.principalPoint = principalPoint;
-	}
-
 	public void initialise()
 	{
 
@@ -540,7 +529,7 @@ implements Derivatives
 		positiveSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>();
 		negativeSceneObjectPrimitives  = new ArrayList<SceneObjectPrimitive>();
 		
-		// TODO add aperture shape here?
+		// TODO add aperture shape here...
 		invisiblePositiveSceneObjectPrimitives = new ArrayList<SceneObjectPrimitive>();
 		invisibleNegativeSceneObjectPrimitives  = new ArrayList<SceneObjectPrimitive>();
 		
@@ -561,35 +550,23 @@ implements Derivatives
 				v2[i][j] = null;
 			}
 
-		//adding the 0th points i.e the principal point
-		//principalPoint;
-//		try {
-			//principalPoint = Geometry.linePlaneIntersection(p, Vector3D.difference(p,q).getNormalised(), pI, idealLensNormal);
-			principalPoint = pI;
-			idealLensPosition = principalPoint;
-//			System.out.println("from "+idealLensPosition+" to "+getUVWposition(idealLensPosition)+" back to "+ getXYZposition(getUVWposition(idealLensPosition)));
-//			System.out.println(principalPoint);
-			
-//		} catch (MathException e) {
-//			System.err.println("Ideal lens plane parallel to line from p1 to p2");
-//			e.printStackTrace();
-//		}
-		
+		//adding the 0th points i.e the central
+		idealLensPosition = pI;
 		sign = 1;
-		double frontSign = Vector3D.scalarProduct(Vector3D.difference(principalPoint, p), idealLensNormal);
-		double backSign = Vector3D.scalarProduct(Vector3D.difference(principalPoint, q), idealLensNormal);
+		double frontSign = Vector3D.scalarProduct(Vector3D.difference(pI, p), idealLensNormal);
+		double backSign = Vector3D.scalarProduct(Vector3D.difference(pI, q), idealLensNormal);
 		if(Math.signum(frontSign) == Math.signum(backSign)) sign = -1;
 		
-		System.out.println(sign);
+		//System.out.println(sign);
 
 		// initialise one pair of points, the central ones at v[iSteps][jSteps]
 		v1[iSteps][jSteps] = Vector3D.sum(
-				principalPoint,
-				Vector3D.difference(p, principalPoint).getWithLength(dp)
+				pI,
+				Vector3D.difference(p, pI).getWithLength(dp)
 				);
 		v2[iSteps][jSteps] = Vector3D.sum(
-				principalPoint,
-				Vector3D.difference(q, principalPoint).getWithLength(sign*dq)
+				pI,
+				Vector3D.difference(q, pI).getWithLength(sign*dq)
 				);
 
 		//after this it should start to differ from Johannes's ideal thin lens lookalike.
@@ -598,10 +575,11 @@ implements Derivatives
 		//This can then be sampled as desired and added as a triangulated surface
 		for(int i =0; i<=2*iSteps; i++) {
 			for(int j =0; j<=2*jSteps; j++) {
-				//if(i == iSteps && j == jSteps) continue; //skip for 0th term as this will be the principal point equivalent.
+				if((i != iSteps) || (j != jSteps)) { //skip for 0th term as this will be the initial point equivalent.
 				Vector3D[] v = calculateSurfacePoints(v1[iSteps][jSteps], v2[iSteps][jSteps], i-iSteps, j-jSteps ,integrationStepSize);
 				v1[i][j] = v[0];
 				v2[i][j] = v[1];
+				}
 			}
 		}
 		
@@ -715,23 +693,22 @@ implements Derivatives
 	 */
 	private Vector3D getUVWposition(Vector3D pXYZ) {
 		//Use the orthogonal system set up above
-		Vector3D localUVWposition = Vector3D.difference(pXYZ, principalPoint);
+		Vector3D localUVWposition = Vector3D.difference(pXYZ, pI);
 		//pXYZ.toBasis(b1, b2, b3);
 		
-		//and finally, translate the point to the corresponding UVW coordinate. This should make calculations easier. TODO check that all this is the right way around.
+		//and finally, translate the point to the corresponding UVW coordinate. This should make calculations easier.
 		//return 	Vector3D.difference(localUVWposition, principalPoint);
 		return 	localUVWposition.toOrthonormalBasis(b1, b2, b3);
 	}
 
 	//Now do the opposite
 	private Vector3D getXYZposition(Vector3D pUVW) {
-		//first the translation TODO check this is correct.... it is not... help!
 		//Vector3D localXYZposition = Vector3D.sum(pUVW, principalPoint);
 		Vector3D localXYZposition = pUVW.fromBasis(b1, b2, b3);
 		//Vector3D localXYZposition = pUVW.toOrthonormalBasis(Vector3D.X, Vector3D.Y, Vector3D.Z);
 		
 		//and now return it to the original XYZ basis
-		return Vector3D.sum(localXYZposition, principalPoint);
+		return Vector3D.sum(localXYZposition, pI);
 		//return localXYZposition;
 		//return localXYZposition.fromBasis(b1, b2, b3);
 	}
@@ -743,7 +720,7 @@ implements Derivatives
 	 * Method to create the surface with a refractive material.
 	 */
 	private SurfaceProperty getRefractiveSurfaceProperty() {
-		double refractiveIndexRatio = 1/n; //TODO this should be correct but may need checking all surface normals face into surface hence it is 1/n.
+		double refractiveIndexRatio = 1/n;
 		return new RefractiveSimple(
 				refractiveIndexRatio,	// insideOutsideRefractiveIndexRatio
 				SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// transmissionCoefficient
@@ -779,7 +756,8 @@ implements Derivatives
 		Vector3D currentIdealLensSurfacePosition = getXYZposition(new Vector3D(0.5*width*iStep/(iSteps), 0.5*height*jStep/(jSteps), 0));				
 		//System.out.println("currentIdealLensSurfacePosition "+currentIdealLensSurfacePosition);
 		Vector3D idealLensSurfacePositionUVW = getUVWposition(currentIdealLensSurfacePosition);
-		idealLensPosition = idealLensSurfacePositionUVW;
+		//System.out.println("currentIdealLensSurfacePositionUVW "+idealLensSurfacePositionUVW);
+		idealLensPosition = idealLensSurfacePositionUVW; //TODO does this work with multi-threading... It seems to so far... 
 
 
 		//System.out.println(idealLensPosition+ " at istep "+ iStep+ " and jstep "+jStep);
@@ -802,7 +780,7 @@ implements Derivatives
 		
 		for(double t=0; t<=1; t+=deltaT) {
 		RungeKutta.calculateStep(
-				0,	//t
+				t,	//t
 				deltaT,	//dt the path... or more so distance along a path.
 				f,
 				this	//model
@@ -815,7 +793,7 @@ implements Derivatives
 		//Store the result and change it back to the XYZ basis for tim to understand
 //		surfaceCoordinates[0]= new Vector3D(f[0], f[1], f[2]); //front surface
 //		surfaceCoordinates[1]= new Vector3D(f[3], f[4], f[5]); // back surface	
-
+//
 		surfaceCoordinates[0]= getXYZposition(new Vector3D(f[0], f[1], f[2])); //front surface
 		surfaceCoordinates[1]= getXYZposition(new Vector3D(f[3], f[4], f[5])); // back surface	
 		return surfaceCoordinates;
@@ -832,7 +810,7 @@ implements Derivatives
 				1, n
 				).getNormalised();
 		
-		if(Vector3D.getDistance(p, q)<Vector3D.getDistance(p, principalPoint)) sign = -1;
+		if(Vector3D.getDistance(p, q)<Vector3D.getDistance(p, pI)) sign = -1;
 		normal[1] = RefractiveSimple.getNormal(
 				Vector3D.difference(backSurfacePosition, getUVWposition(q)).getNormalised(),
 				Vector3D.difference(frontSurfacePosition, backSurfacePosition).getNormalised(), 
@@ -881,7 +859,7 @@ implements Derivatives
 		//the normals at p and q, the front and back surface coordinates respectively
 		Vector3D normal = getSurfaceNormal(pSurface,qSurface)[0]; //index 0 as it is the front surface
 		//Vector3D normal = getSurfaceNormal(pSurface,qSurface, idealLensSurfacePosition, t)[0]; //index 0 as it is the front surface
-		double scalar = getSurfaceScalar(pSurface, idealLensSurfacePosition, getUVWposition(p), t); //TODO I think this is actually the correct method... so why is it worse?
+		double scalar = getSurfaceScalar(pSurface, idealLensSurfacePosition, getUVWposition(p), t);
 		//double scalar = getSurfaceScalar(pSurface, idealLensSurfacePosition, getUVWposition(p), 1);
 
 		double dsdt = -scalar * (Vector3D.scalarProduct(normal, idealLensSurfacePosition))/
