@@ -4,7 +4,7 @@ import java.io.*;
 
 import math.*;
 import optics.raytrace.core.*;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.SurfaceColour;
 
 /**
@@ -13,7 +13,7 @@ import optics.raytrace.surfaces.SurfaceColour;
  */
 public class Cuboid
 // extends SceneObjectContainer
-extends SceneObjectIntersection
+extends SceneObjectIntersectionSimple
 implements Serializable
 {
 	private static final long serialVersionUID = -2810197482613591343L;

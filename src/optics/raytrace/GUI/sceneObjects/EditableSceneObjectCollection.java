@@ -230,7 +230,7 @@ implements SceneObject, IPanelComponent, ActionListener, Cloneable, Serializable
 		{
 			combinationModeComboBox.setSelectedItem(CombinationMode.UNION);
 		}
-		else if(sceneObjectContainer instanceof SceneObjectIntersection)
+		else if(sceneObjectContainer instanceof SceneObjectIntersectionSimple)
 		{
 			combinationModeComboBox.setSelectedItem(CombinationMode.INTERSECTION);
 		}
@@ -255,7 +255,7 @@ implements SceneObject, IPanelComponent, ActionListener, Cloneable, Serializable
 		{
 		case INTERSECTION:
 			// System.out.println("EditableSceneObjectCollection::acceptValuesInEditPanel: combinationMode = INTERSECTION");
-			sceneObjectContainer = new SceneObjectIntersection(sceneObjectContainer, CopyModeType.SHARE_DATA);
+			sceneObjectContainer = new SceneObjectIntersectionSimple(sceneObjectContainer, CopyModeType.SHARE_DATA);
 			break;
 		case UNION:
 			// System.out.println("EditableSceneObjectCollection::acceptValuesInEditPanel: combinationMode = UNION");
@@ -285,7 +285,7 @@ implements SceneObject, IPanelComponent, ActionListener, Cloneable, Serializable
 		case UNION:
 			return new SceneObjectUnion(description, parent, studio);
 		case INTERSECTION:
-			return new SceneObjectIntersection(description, parent, studio);
+			return new SceneObjectIntersectionSimple(description, parent, studio);
 		case GROUP:
 		default:
 			return new SceneObjectContainer(description, parent, studio);

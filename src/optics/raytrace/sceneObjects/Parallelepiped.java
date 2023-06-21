@@ -6,7 +6,7 @@ import math.*;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 
 /**
  * A parallelepiped defined as the intersection of the "inside" of 6 planes
@@ -14,7 +14,7 @@ import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
  * @author Johannes Courtial
  *
  */
-public class Parallelepiped extends SceneObjectIntersection implements Serializable
+public class Parallelepiped extends SceneObjectIntersectionSimple implements Serializable
 {
 	private static final long serialVersionUID = 437637501928513867L;
 

@@ -12,6 +12,7 @@ public class SurfaceColour extends SurfacePropertyPrimitive
 		diffuseColour,
 		specularColour;
 	private String name;
+	private boolean lightSourceIndependent;
 
 	public static final SurfaceColour
 		WHITE_MATT = new SurfaceColour("white matt", DoubleColour.WHITE, DoubleColour.BLACK, true),
@@ -79,26 +80,55 @@ public class SurfaceColour extends SurfacePropertyPrimitive
 		return new SurfaceColour("Random colour",new DoubleColour(Math.random(), Math.random(), Math.random()), DoubleColour.WHITE, true);
 	}
 	
-	public SurfaceColour(String name ,DoubleColour diffuseColour, DoubleColour specularColour, boolean shadowThrowing)
+	public SurfaceColour(String name ,DoubleColour diffuseColour, DoubleColour specularColour, boolean lightSourceIndependent, boolean shadowThrowing)
 	{
 		super(0, shadowThrowing);
 		this.name = name;
 		this.diffuseColour = diffuseColour;
 		this.specularColour = specularColour;
+		this.lightSourceIndependent = lightSourceIndependent;
 	}
 	
-	public SurfaceColour(DoubleColour diffuseColour, DoubleColour specularColour, boolean shadowThrowing)
+	public SurfaceColour(String name, DoubleColour diffuseColour, DoubleColour specularColour, boolean shadowThrowing)
 	{
-		super(0, shadowThrowing);
-		this.name = "diffuseColour: "+diffuseColour.getName()+", specularColour: "+specularColour.getName();
-		this.diffuseColour = diffuseColour;
-		this.specularColour = specularColour;
+		this(name, diffuseColour, specularColour, false, shadowThrowing);
+	}
+	
+	public SurfaceColour(DoubleColour diffuseColour, DoubleColour specularColour, boolean lightSourceIndependent, boolean shadowThrowing)
+	{
+		this(
+				"diffuseColour: "+diffuseColour.getName()+", specularColour: "+specularColour.getName(),	// name
+				diffuseColour,
+				specularColour,
+				lightSourceIndependent,
+				shadowThrowing
+			);
+//		super(0, shadowThrowing);
+//		this.name = "diffuseColour: "+diffuseColour.getName()+", specularColour: "+specularColour.getName();
+//		this.diffuseColour = diffuseColour;
+//		this.specularColour = specularColour;
 	}
 
-	public SurfaceColour() {
-		super(0, true);
-		this.diffuseColour = new  DoubleColour(Math.random(), Math.random(), Math.random());
-		this.specularColour = DoubleColour.WHITE;
+	public SurfaceColour(DoubleColour diffuseColour, DoubleColour specularColour, boolean shadowThrowing)
+	{
+		this(
+				diffuseColour,
+				specularColour,
+				false,	// lightSourceIndependent
+				shadowThrowing
+			);
+	}
+
+	public SurfaceColour() 
+	{
+		this(
+				new  DoubleColour(Math.random(), Math.random(), Math.random()),	// diffuseColour
+				DoubleColour.WHITE,	// specularColour
+				true	// shadowThrowing
+			);
+//		super(0, true);
+//		this.diffuseColour = ;
+//		this.specularColour = ;
 	}
 	
 	/* (non-Javadoc)
@@ -135,9 +165,19 @@ public class SurfaceColour extends SurfacePropertyPrimitive
 		this.name = name;
 	}
 	
+	public boolean isLightSourceIndependent() {
+		return lightSourceIndependent;
+	}
+
+	public void setLightSourceIndependent(boolean lightSourceIndependent) {
+		this.lightSourceIndependent = lightSourceIndependent;
+	}
+
 	@Override
 	public DoubleColour getColour(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	{
+		if(lightSourceIndependent) return diffuseColour;
+		
 		if(l == null) return DoubleColour.BLACK;
 		
 		return l.getColour(this, scene, i, r, traceLevel);

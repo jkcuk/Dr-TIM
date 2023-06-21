@@ -138,53 +138,16 @@ implements OpticalComponent2D, Bijection2D
 	@Override
 	public RayComponentIntersection2D calculateIntersection(LightRay2D r, boolean forwardOnly, OpticalComponent2D lastIntersectionComponent)
 	{
-		// s1 from a1 to b1, s2 from a2 to b2
-		// define line directions d1 = b1 - a1, d2 = b2 - a2
-		// a1 + alpha1 d1 = a2 + alpha2 d2
-		// scalar product with d1: a1.d1 + alpha1 d1.d1 = a2.d1 + alpha2 d2.d1  (1)
-		// scalar product with d2: a1.d2 + alpha1 d1.d2 = a2.d2 + alpha2 d2.d2  (2)
-		// solution:
-		// alpha1 = -((a1d2 d1d2 - a2d2 d1d2 - a1d1 d2d2 + a2d1 d2d2)/(d1d2^2 - d1d1 d2d2))
-		// alpha2 = -((a1d2 d1d1 - a2d2 d1d1 - a1d1 d1d2 + a2d1 d1d2)/(d1d2^2 - d1d1 d2d2))
-		Vector2D a1 = a;
-		Vector2D d1 = getA2B();
-		Vector2D a2 = r.getStartPoint();
-		Vector2D d2 = r.getNormalisedDirection();
-		double a1d1 = Vector2D.scalarProduct(a1, d1);
-		double a1d2 = Vector2D.scalarProduct(a1, d2);
-		double a2d1 = Vector2D.scalarProduct(a2, d1);
-		double a2d2 = Vector2D.scalarProduct(a2, d2);
-		double d1d1 = Vector2D.scalarProduct(d1, d1);
-		double d1d2 = Vector2D.scalarProduct(d1, d2);
-		double d2d2 = Vector2D.scalarProduct(d2, d2);
+		// calculate the intersection with the line segment
+		Vector2D i = calculateIntersection(r, forwardOnly);
 		
-		// denominator = 
-		double denominator = d1d2*d1d2 - d1d1*d2d2;
-		
-		if(denominator != 0.0)
+		if(i != null)
 		{
-			// the ray is not parallel to the lens
-		
-			double alpha1 = (a1d1*d2d2 - a1d2*d1d2 - a2d1*d2d2 + a2d2*d1d2)/denominator;
-			if((0 <= alpha1) && (alpha1 <= 1.0))
-			{
-				// the intersection is within the lens
-				
-				double alpha2 = (a2d2*d1d1 - a2d1*d1d2 - a1d2*d1d1 + a1d1*d1d2)/denominator;
-				if((0 <= alpha2) || !forwardOnly)
-				{
-					// the intersection is with the actual ray, not its backwards continuation
-
-					// return the intersection point, i.e. either a1 + alpha1 d1 or a2 + alpha2 d2
-					return new RayComponentIntersection2D(
-							this,	// component
-							Vector2D.sum(
-									a1, 
-									d1.getProductWith(alpha1)	// position
-									)
-							);
-				}
-			}
+			// there is an intersection; return it
+			return new RayComponentIntersection2D(
+					this,	// component
+					i	// intersection point
+				);
 		}
 		
 		// no intersection

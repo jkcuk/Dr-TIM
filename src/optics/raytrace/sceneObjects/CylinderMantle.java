@@ -21,10 +21,41 @@ public class CylinderMantle extends SceneObjectPrimitive
 
 	private Vector3D startPoint, endPoint;
 	private double radius;
+	private boolean infinite;
 	
 	// variables to speed things up -- pre-calculate in validate
 	private double length;	// |endPoint - startPoint|
 	private Vector3D axis;	// normalised axis direction
+
+	/**
+	 * creates a cylinder mantle, that is, a cylinder without end caps
+	 * 
+	 * @param description
+	 * @param startPoint	one end of the cylinder axis
+	 * @param endPoint	the other end of the cylinder axis
+	 * @param r	radius
+	 * @param surfaceProperty	any surface properties
+	 */
+	public CylinderMantle(
+			String description,
+			Vector3D startPoint,
+			Vector3D endPoint,
+			double radius,
+			boolean infinite,
+			SurfaceProperty surfaceProperty,
+			SceneObject parent,
+			Studio studio
+		)
+	{
+		super(description, surfaceProperty, parent, studio);
+
+		setStartPoint(startPoint);
+		setEndPoint(endPoint);
+		setRadius(radius);
+		setInfinite(infinite);
+		
+		validate();
+	}
 
 	/**
 	 * creates a cylinder mantle, that is, a cylinder without end caps
@@ -45,15 +76,18 @@ public class CylinderMantle extends SceneObjectPrimitive
 			Studio studio
 		)
 	{
-		super(description, surfaceProperty, parent, studio);
-
-		setStartPoint(startPoint);
-		setEndPoint(endPoint);
-		setRadius(radius);
-		
-		validate();
+		this(
+				description,
+				startPoint,
+				endPoint,
+				radius,
+				false,	// infinite
+				surfaceProperty,
+				parent,
+				studio
+			);
 	}
-	
+
 	public CylinderMantle(CylinderMantle original)
 	{
 		super(original);
@@ -61,6 +95,7 @@ public class CylinderMantle extends SceneObjectPrimitive
 		setStartPoint(original.getStartPoint().clone());
 		setEndPoint(original.getEndPoint().clone());
 		setRadius(original.getRadius());
+		setInfinite(original.isInfinite());
 		
 		validate();
 	}
@@ -105,6 +140,15 @@ public class CylinderMantle extends SceneObjectPrimitive
 	public void setRadius(double radius)
 	{
 		this.radius = radius;
+	}
+
+	
+	public boolean isInfinite() {
+		return infinite;
+	}
+
+	public void setInfinite(boolean infinite) {
+		this.infinite = infinite;
 	}
 
 	/**
@@ -183,8 +227,12 @@ public class CylinderMantle extends SceneObjectPrimitive
 			rayAtIntersectionPoint = ray.getAdvancedRay(tSmaller);
 			
 			// does this intersection point (with the infinitely long cylinder) lie on the bit of the cylinder we want?
-			w=Vector3D.scalarProduct(axis, Vector3D.difference(rayAtIntersectionPoint.getP(), startPoint));			
-			if(w>=0 && w<=length) return new RaySceneObjectIntersection(rayAtIntersectionPoint.getP(), this, rayAtIntersectionPoint.getT());
+			if(infinite) 
+				return new RaySceneObjectIntersection(rayAtIntersectionPoint.getP(), this, rayAtIntersectionPoint.getT());
+			// finite
+			w=Vector3D.scalarProduct(axis, Vector3D.difference(rayAtIntersectionPoint.getP(), startPoint));
+			if(w>=0 && w<=length)
+				return new RaySceneObjectIntersection(rayAtIntersectionPoint.getP(), this, rayAtIntersectionPoint.getT());
 		}
 		
 		// If the program reaches this point, the intersection with the lesser t factor was not the right intersection.
@@ -193,9 +241,13 @@ public class CylinderMantle extends SceneObjectPrimitive
 		// calculate the ray advanced to the intersection point
 		rayAtIntersectionPoint = ray.getAdvancedRay(tBigger);
 
-		// ... and check if it lies on the right part of the (infinitely long) cylinder
+		// if the cylinder is infinitely long (in both directions), then we have found an intersection
+		if(infinite) return new RaySceneObjectIntersection(rayAtIntersectionPoint.getP(), this, rayAtIntersectionPoint.getT());
+		
+		// if it is not infinitely long, we need to check if the intersection lies on the right part of the (infinitely long) cylinder
 		w=Vector3D.scalarProduct(axis, Vector3D.difference(rayAtIntersectionPoint.getP(), startPoint));
-		if(w>=0 && w<=length)	return new RaySceneObjectIntersection(rayAtIntersectionPoint.getP(), this, rayAtIntersectionPoint.getT());
+		if(w>=0 && w<=length)
+			return new RaySceneObjectIntersection(rayAtIntersectionPoint.getP(), this, rayAtIntersectionPoint.getT());
 		
 		// neither of the intersection points was right, so return NO_INTERSECTION
 		return RaySceneObjectIntersection.NO_INTERSECTION;
@@ -229,7 +281,8 @@ public class CylinderMantle extends SceneObjectPrimitive
 		
 		// check if p is within the right part of the (infinitely long) cylinder
 		double w=Vector3D.scalarProduct(axis, v);
-		if(w<0 || w>length) return false;	// no, it isn't
+		if(!infinite) 
+			if(w<0 || w>length) return false;	// no, it isn't
 
 		Vector3D u = v.getDifferenceWith(axis.getProductWith(w));	// v, projected into a plane perpendicular to h
 		return (radius*radius - u.getModSquared())*Math.signum(radius) > 0;

@@ -58,6 +58,14 @@ public class LabelledDoublePanel extends JPanel
 		return doublePanel.getText();
 	}
 	
+	public JLabel getLabel() {
+		return label;
+	}
+
+	public void setLabel(JLabel label) {
+		this.label = label;
+	}
+
 	@Override
 	public void setEnabled(boolean enabled)
 	{

@@ -15,6 +15,7 @@ import optics.raytrace.surfaces.SurfaceColour;
 
 /**
  * A very basic example of NonInteractiveTIM.
+ * Modify to play.
  * 
  * @author Johannes Courtial
  */

@@ -640,26 +640,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	public EditableRelativisticAnyFocusSurfaceCamera getStandardCamera()
 	{
 		Vector3D cameraPosition = getStandardCameraPosition();
-		
-		// System.out.println("NonInteractiveTIMEngine::getStandardCamera: Camera position = "+cameraPosition);
-		
-//		QualityType blurQuality, aaQuality;
-//		switch(renderQuality)
-//		{
-//		case STANDARD:
-//			aaQuality = standardCameraAntiAliasingQuality;
-//			blurQuality = cameraApertureSize==ApertureSizeType.PINHOLE?QualityType.RUBBISH:standardCameraBlurQuality;
-//			break;
-//		case GREAT:
-//			aaQuality = standardCameraAntiAliasingQuality;
-//			blurQuality = cameraApertureSize==ApertureSizeType.PINHOLE?QualityType.RUBBISH:standardCameraBlurQuality;
-//			break;
-//		case DRAFT:
-//		default:
-//			blurQuality = QualityType.RUBBISH;
-//			aaQuality = QualityType.NORMAL;
-//		}
-		
+								
 		Vector3D topDirection = cameraTopDirection;
 		if(cameraViewDirection.getPartPerpendicularTo(cameraTopDirection).getLength() == 0) topDirection = new Vector3D(1, 0, 0);
 		return new EditableRelativisticAnyFocusSurfaceCamera(
@@ -689,7 +670,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 
 	}
 	
-	
+
 	
 	// GUI variables
 	

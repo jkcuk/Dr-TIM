@@ -7,7 +7,7 @@ import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedSphere;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.Refractive;
 import optics.raytrace.surfaces.RefractiveComplex;
 
@@ -15,7 +15,7 @@ import optics.raytrace.surfaces.RefractiveComplex;
  * A lens.
  * @author Johannes Courtial
  */
-public class SphericalLens extends SceneObjectIntersection
+public class SphericalLens extends SceneObjectIntersectionSimple
 {
 	private static final long serialVersionUID = 3814025657030660127L;
 

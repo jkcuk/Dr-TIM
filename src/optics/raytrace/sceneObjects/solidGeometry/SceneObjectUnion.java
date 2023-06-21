@@ -117,39 +117,42 @@ public class SceneObjectUnion extends SceneObjectContainer implements Serializab
 		distanceClosest2 = Double.POSITIVE_INFINITY;
 		
 		// go through all the intersecting scene objects
-		for(int i=0; (i<sceneObjects.size()) && visibilities.get(i); i++)
+		for(int i=0; i<sceneObjects.size(); i++)
 		{
-			// calculate the intersection point
-			intersection = sceneObjects.get(i).getClosestRayIntersectionAvoidingOrigin(ray, excludeObject);
-
-			// is there an intersection point?
-			while(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
+			if(visibilities.get(i))
 			{
-				// yes
+				// calculate the intersection point
+				intersection = sceneObjects.get(i).getClosestRayIntersectionAvoidingOrigin(ray, excludeObject);
 
-				// check that the intersection point is not inside any other scene object in this intersection (as we are interested only in intersections
-				// with the outside surface of the union)
-				if(insideAnyObject(intersection.p, i) == -1)
+				// is there an intersection point?
+				while(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
 				{
-					// the intersection point is not inside any other scene object
+					// yes
 
-					// calculate the distance (squared) to the intersection point
-					distance2 = intersection.p.getDifferenceWith(ray.getP()).getModSquared();
-					
-					// is the distance to this intersection point smaller than the smallest one so far?
-					if(distance2 < distanceClosest2)
+					// check that the intersection point is not inside any other scene object in this intersection (as we are interested only in intersections
+					// with the outside surface of the union)
+					if(insideAnyObject(intersection.p, i) == -1)
 					{
-						// yes, so make the new intersection point the closest one so far
-						distanceClosest2 = distance2;
-						intersectionClosest = intersection;
+						// the intersection point is not inside any other scene object
+
+						// calculate the distance (squared) to the intersection point
+						distance2 = intersection.p.getDifferenceWith(ray.getP()).getModSquared();
+
+						// is the distance to this intersection point smaller than the smallest one so far?
+						if(distance2 < distanceClosest2)
+						{
+							// yes, so make the new intersection point the closest one so far
+							distanceClosest2 = distance2;
+							intersectionClosest = intersection;
+						}
+
+						intersection = RaySceneObjectIntersection.NO_INTERSECTION;	// stop looking for intersections with this object
 					}
-					
-					intersection = RaySceneObjectIntersection.NO_INTERSECTION;	// stop looking for intersections with this object
-				}
-				else
-				{
-					// try the next intersection with the same object
-					intersection = sceneObjects.get(i).getNextClosestRayIntersectionAvoidingOrigin(ray, excludeObject, intersection);
+					else
+					{
+						// try the next intersection with the same object
+						intersection = sceneObjects.get(i).getNextClosestRayIntersectionAvoidingOrigin(ray, excludeObject, intersection);
+					}
 				}
 			}
 		}
@@ -168,39 +171,42 @@ public class SceneObjectUnion extends SceneObjectContainer implements Serializab
 		distanceClosest2 = Double.POSITIVE_INFINITY;
 		
 		// go through all the intersecting scene objects
-		for(int i=0; (i<sceneObjects.size()) && visibilities.get(i); i++)
+		for(int i=0; i<sceneObjects.size(); i++)
 		{
-			// calculate the intersection point
-			intersection = sceneObjects.get(i).getClosestRayIntersectionWithShadowThrowingSceneObjectAvoidingOrigin(ray, excludeObject);
-
-			// is there an intersection point?
-			while(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
+			if(visibilities.get(i))
 			{
-				// yes
+				// calculate the intersection point
+				intersection = sceneObjects.get(i).getClosestRayIntersectionWithShadowThrowingSceneObjectAvoidingOrigin(ray, excludeObject);
 
-				// check that the intersection point is not inside any other scene object in this intersection (as we are interested only in intersections
-				// with the outside surface of the union)
-				if(insideAnyObject(intersection.p, i) == -1)
+				// is there an intersection point?
+				while(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
 				{
-					// the intersection point is not inside any other scene object
+					// yes
 
-					// calculate the distance (squared) to the intersection point
-					distance2 = intersection.p.getDifferenceWith(ray.getP()).getModSquared();
-					
-					// is the distance to this intersection point smaller than the smallest one so far?
-					if(distance2 < distanceClosest2)
+					// check that the intersection point is not inside any other scene object in this intersection (as we are interested only in intersections
+					// with the outside surface of the union)
+					if(insideAnyObject(intersection.p, i) == -1)
 					{
-						// yes, so make the new intersection point the closest one so far
-						distanceClosest2 = distance2;
-						intersectionClosest = intersection;
+						// the intersection point is not inside any other scene object
+
+						// calculate the distance (squared) to the intersection point
+						distance2 = intersection.p.getDifferenceWith(ray.getP()).getModSquared();
+
+						// is the distance to this intersection point smaller than the smallest one so far?
+						if(distance2 < distanceClosest2)
+						{
+							// yes, so make the new intersection point the closest one so far
+							distanceClosest2 = distance2;
+							intersectionClosest = intersection;
+						}
+
+						intersection = RaySceneObjectIntersection.NO_INTERSECTION;	// stop looking for intersections with this object
 					}
-					
-					intersection = RaySceneObjectIntersection.NO_INTERSECTION;	// stop looking for intersections with this object
-				}
-				else
-				{
-					// try the next intersection with the same object
-					intersection = sceneObjects.get(i).getNextClosestRayIntersectionWithShadowThrowingSceneObjectAvoidingOrigin(ray, excludeObject, intersection);
+					else
+					{
+						// try the next intersection with the same object
+						intersection = sceneObjects.get(i).getNextClosestRayIntersectionWithShadowThrowingSceneObjectAvoidingOrigin(ray, excludeObject, intersection);
+					}
 				}
 			}
 		}

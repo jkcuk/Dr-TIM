@@ -7,8 +7,8 @@ import optics.raytrace.sceneObjects.ParametrisedCylinderMantle;
 import optics.raytrace.sceneObjects.ParametrisedPlane;
 import optics.raytrace.sceneObjects.ParametrisedSphere;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection2;
 import optics.raytrace.surfaces.Refractive;
 import optics.raytrace.surfaces.Striped;
 import optics.raytrace.surfaces.SurfaceColour;
@@ -83,7 +83,7 @@ public class FOVSteeringOffCentrePartOfLens
 		double squareCentreOffsetY = -0.5*apertureRadius;	// +0.5*apertureRadius for top part, -0.5*aperture radius for bottom part
 		double squareWidth = 0.7*apertureRadius;
 		
-		SceneObjectIntersection partOfLens = new SceneObjectIntersection(
+		SceneObjectIntersectionSimple partOfLens = new SceneObjectIntersectionSimple(
 				"Part of lens with square aperture",	// description
 				scene,	// parent
 				studio
@@ -178,7 +178,7 @@ public class FOVSteeringOffCentrePartOfLens
 
 		
 		// make a "complete" lens
-		SceneObjectIntersection2 completeLens = new SceneObjectIntersection2(
+		SceneObjectIntersection completeLens = new SceneObjectIntersection(
 				"Complete lens",	// description
 				scene,	// parent
 				studio

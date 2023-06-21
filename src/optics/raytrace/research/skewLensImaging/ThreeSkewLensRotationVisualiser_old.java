@@ -13,7 +13,7 @@ import math.*;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectDifference;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
 import optics.raytrace.surfaces.Transparent;
@@ -791,7 +791,7 @@ public class ThreeSkewLensRotationVisualiser_old extends NonInteractiveTIMEngine
 	{
 		if(lensType == LensType.FRESNEL_LENS)
 		{
-			SceneObjectIntersection lens = new SceneObjectIntersection(
+			SceneObjectIntersectionSimple lens = new SceneObjectIntersectionSimple(
 					description,
 					scene,
 					studio

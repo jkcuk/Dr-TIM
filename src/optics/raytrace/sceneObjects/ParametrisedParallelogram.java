@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import math.*;
 import math.geometry.ShapeWithRandomPointAndBoundary;
 import optics.raytrace.core.*;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.SurfaceColour;
 
 
@@ -176,7 +176,7 @@ implements One2OneParametrisedObject, ShapeWithRandomPointAndBoundary
 		normal2 = normal2.getWithLength(-Math.signum(Vector3D.scalarProduct(normal2, getSpanVector1())));
 
 		// the boundary is then the intersection of the "insides" of 6 planes
-		SceneObjectIntersection boundary = new SceneObjectIntersection(
+		SceneObjectIntersectionSimple boundary = new SceneObjectIntersectionSimple(
 				"Boundary", // description,
 				getParent(), // parent,
 				getStudio()

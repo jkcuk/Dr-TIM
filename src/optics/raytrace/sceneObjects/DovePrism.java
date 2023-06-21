@@ -15,7 +15,7 @@ import optics.raytrace.sceneObjects.solidGeometry.*;
  * Based on Cuboid.java
  * TODO there seems to be some problem with tracing light rays through this
  */
-public class DovePrism extends SceneObjectIntersection implements Serializable
+public class DovePrism extends SceneObjectIntersectionSimple implements Serializable
 {
 	private static final long serialVersionUID = 6922560367142786046L;
 

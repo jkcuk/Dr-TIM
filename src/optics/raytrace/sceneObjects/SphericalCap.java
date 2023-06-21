@@ -8,14 +8,14 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.core.Transformation;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.Transparent;
 
 /**
  * A spherical cap (see http://en.wikipedia.org/wiki/Spherical_cap).
  * @author Johannes Courtial, Blair
  */
-public class SphericalCap extends SceneObjectIntersection
+public class SphericalCap extends SceneObjectIntersectionSimple
 {
 	private static final long serialVersionUID = -5189699837637801956L;
 

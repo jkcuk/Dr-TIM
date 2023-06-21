@@ -18,7 +18,7 @@ import optics.raytrace.sceneObjects.AdamsIdealLensLookalike;
 import optics.raytrace.sceneObjects.CylinderMantle;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectDifference;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
 import optics.raytrace.surfaces.Transparent;
@@ -65,6 +65,9 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		NO_LENSES("Without lenses, camera in standard position"),
 		LENSES("With lenses, camera in standard position"),
 		LENSES_CAMERA_SHIFTED("With lenses, camera view direction rotated by 2 degrees"),
+		LENSES_CAMERA_Z("With lenses, camera looking in z direction, lattice aligned is opt. axis of lens 3"),
+		LENSES_CAMERA_AND_LATTICE_A3("With lenses, camera and lattice aligned with opt. axis of lens 3"),
+		LENSES_CAMERA_AND_LATTICE_Z("With lenses, camera looking in z direction, lattice aligned with z axis"),
 		CAMERA_ROTATION("Without lenses, camera position and direction rotated");
 
 		private String description;
@@ -107,6 +110,11 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 	protected double rotationAngle;
 	
 	/**
+	 * if true, shift the 3rd lens in its principal plane so that the combination becomes a Lorentz transformer (rotation + shear)
+	 */
+	protected boolean lorentzTransformer;
+	
+	/**
 	 * focal length of 2nd lens
 	 */
 	// protected double f2;
@@ -120,6 +128,11 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 	 * If true, shows lens 3, otherwise doesn't
 	 */
 	protected boolean showLens3;
+	
+	/**
+	 * if true, lenses are circular, otherwise rectangular
+	 */
+	protected boolean circularLenses;
 
 	public enum ViewType
 	{
@@ -180,6 +193,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		alpha2 = -5;	// -1.*MyMath.rad2deg(Math.atan2(1.2, 0.75)); //-20.;	// degrees
 		distance = 1; //separation of the first two lenses
 		rotationAngle = -30;
+		lorentzTransformer = false;
 // 		f1 = 0.2;	// -0.2808987532707136;//0.2; //focal length of first lens
 		// f2 = 0.2;	// 0.33919932160203536;//0.2; //focal length of second lens
 //		telescopeMagnification = 1.;
@@ -189,6 +203,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		showTrajectories = true;
 		showEyeAndEyeTrajectories = false;
 		lensType = LensType.IDEAL_THIN_LENS;
+		circularLenses = true;
 		
 		xMin = -4;
 		xMax = 1;
@@ -240,10 +255,12 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		printStream.println("alpha2 = "+alpha2);
 		printStream.println("distance = "+distance);
 		printStream.println("rotationAngle = "+rotationAngle);
+		printStream.println("lorentzTransformer = "+lorentzTransformer);
 		printStream.println("lensType = "+lensType);
 		printStream.println("showTrajectories = "+showTrajectories);
 		printStream.println("showEyeAndEyeTrajectories = "+showEyeAndEyeTrajectories);
 		printStream.println("showLens3 = "+showLens3);
+		printStream.println("circularLenses = "+circularLenses);
 		
 		//  lattice
 		printStream.println("xMin = "+xMin);
@@ -439,7 +456,14 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		// System.out.println("ThreeSkewLensRotation::populateStudio: n3 = "+n3);
 		
 		yVector = Vector3D.Y;
-		zVector = n3; //n3.getReverse();
+		switch(simulationType)
+		{
+		case LENSES_CAMERA_AND_LATTICE_Z:
+			zVector = Vector3D.Z; //n3.getReverse();
+			break;
+		default:
+			zVector = n3; //n3.getReverse();
+		}
 		xVector = Vector3D.crossProduct(yVector, zVector);
 				
 		// then calculate the remaining parameters, which depends on what exactly we want to do;
@@ -449,10 +473,21 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 //		boolean lens3InPrincipalPlane = false;
 		double f3 = -1.*twoLensEffectiveF*Math.cos(0.5*rotationAngleRad);
 				// -1.*twoLensEffectiveF*k_i/(Math.sqrt(1 + k_i*k_i));
-		double px = -twoLensEffectiveF*(1/(k_o + 1/k_o) - 1/(k_i + 1/k_i)); ///////!!!!!minus
-		double pz =
+		double px, pz;
+		if(lorentzTransformer)
+		{
+			// rotation + shearing
+			px = twoLensEffectiveF*Math.tan(rotationAngleRad);
+			pz = -px*Math.tan(0.5*rotationAngleRad) + distance*(1-twoLensEffectiveF/g1);
+		}
+		else
+		{
+			// rotation only
+			px = -twoLensEffectiveF*(1/(k_o + 1/k_o) - 1/(k_i + 1/k_i)); ///////!!!!!minus
+			pz =
 				// px/k_o + distance*twoLensEffectiveF/g2;
 				px/k_i + distance*(1-twoLensEffectiveF/g1);
+		}
 		Vector3D p3 = new Vector3D(px, 0,  pz);
 		System.out.println("ThreeSkewLensRotation::populateStudio: p1 = "+p1);
 		System.out.println("ThreeSkewLensRotation::populateStudio: p2 = "+p2);
@@ -510,7 +545,10 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		{
 		case LENSES:
 		case LENSES_CAMERA_SHIFTED:
-			boolean circularLenses = true;
+		case LENSES_CAMERA_AND_LATTICE_Z:
+		case LENSES_CAMERA_AND_LATTICE_A3:
+		case LENSES_CAMERA_Z:
+			// boolean circularLenses = true;
 			if(circularLenses)
 			{
 				// we want the phase hologram of lens 1 to work like an ideal thin lens for rays through the eye position;
@@ -589,13 +627,15 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 			}
 			else
 			{
+				// rectangular lenses
+				System.out.println("Rectangular lenses");
 				// the first lens
 				EditableFramedRectangle lens1 = new EditableFramedRectangle(
 						"lens 1",	// description
 						commonCorner,	// corner
 						lensPlaneIntersectionDirection.getWithLength(lensDiameter),	// widthVector
 						Vector3D.crossProduct(n1, lensPlaneIntersectionDirection).getWithLength(lensDiameter),	// heightVector
-						0.01*lensDiameter,	// frameRadius
+						0.5*frameWidth,	// 0.01*lensDiameter,	// frameRadius
 						new IdealThinLensSurfaceSimple(
 								p1,	// lensCentre
 								n1,	// opticalAxisDirection
@@ -616,7 +656,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 						commonCorner,	// corner
 						lensPlaneIntersectionDirection.getWithLength(lensDiameter),	// widthVector
 						Vector3D.crossProduct(n2, lensPlaneIntersectionDirection).getWithLength(lensDiameter),	// heightVector
-						0.009*lensDiameter,	// frameRadius
+						0.49*frameWidth,	// 0.009*lensDiameter,	// frameRadius
 						new IdealThinLensSurfaceSimple(
 								p2,	// lensCentre
 								n2,	// opticalAxisDirection
@@ -641,7 +681,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 								),	// corner
 						lensPlaneIntersectionDirection.getWithLength(lensDiameter),	// widthVector
 						Vector3D.crossProduct(n3, lensPlaneIntersectionDirection).getWithLength(-lensDiameter),	// heightVector
-						0.008*lensDiameter,	// frameRadius
+						0.48*frameWidth,	// 0.008*lensDiameter,	// frameRadius
 						new IdealThinLensSurfaceSimple(
 								p3,	// lensCentre
 								n3,	// opticalAxisDirection
@@ -812,6 +852,14 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 				cameraViewDirection = Geometry.rotate(standardCameraViewDirection, lensPlaneIntersectionDirection, MyMath.deg2rad(2));
 				studio.setCamera(getStandardCamera());
 				break;
+			case LENSES_CAMERA_AND_LATTICE_Z:
+				cameraViewDirection = Vector3D.Z;
+				studio.setCamera(getStandardCamera());
+				break;
+			case LENSES_CAMERA_AND_LATTICE_A3:
+				cameraViewDirection = n3;
+				studio.setCamera(getStandardCamera());
+				break;
 			default:
 				cameraViewDirection = standardCameraViewDirection;
 				studio.setCamera(getStandardCamera());
@@ -855,7 +903,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 	{
 		if(lensType == LensType.FRESNEL_LENS)
 		{
-			SceneObjectIntersection lens = new SceneObjectIntersection(
+			SceneObjectIntersectionSimple lens = new SceneObjectIntersectionSimple(
 					description,
 					scene,
 					studio
@@ -929,7 +977,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 				
 				//surface property
 				double n=15;//refractive index TODO change as needed...
-				SurfaceProperty surfaceProperty1, surfaceProperty2, surfacePropertySides;
+				SurfaceProperty surfaceProperty1, surfaceProperty2;	// , surfacePropertySides;
 				surfaceProperty1 = surfaceProperty2 = new RefractiveSimple(
 						1/n,	// insideOutsideRefractiveIndexRatio
 						SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// transmissionCoefficient
@@ -1017,7 +1065,7 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 	private LabelledIntPanel nXPanel, nYPanel, nZPanel;
 	// private LabelledVector3DPanel xVectorPanel, yVectorPanel, zVectorPanel;
 	private LabelledVector3DPanel latticeCentrePanel, cameraViewCentrePanel;
-	private JCheckBox showTrajectoriesCheckBox, showEyeAndEyeTrajectoriesCheckBox;	//, rotateLatticeCheckBox;//showLens3CheckBox, 
+	private JCheckBox showTrajectoriesCheckBox, showEyeAndEyeTrajectoriesCheckBox, lorentzTransformerCheckBox, circularLensesCheckBox;	//, rotateLatticeCheckBox;//showLens3CheckBox, 
 	private ApertureSizeComboBox cameraApertureSizeComboBox;
 	private JComboBox<LensType> lensTypeComboBox;
 	private JTextField infoTextField;
@@ -1116,6 +1164,15 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		lensTypeComboBox = new JComboBox<LensType>(LensType.values());
 		lensTypeComboBox.setSelectedItem(lensType);
 		lensPanel.add(new LabelledComponent("Lens type", lensTypeComboBox), "span");
+		
+		circularLensesCheckBox = new JCheckBox("Circular lenses");
+		circularLensesCheckBox.setSelected(circularLenses);
+		circularLensesCheckBox.setEnabled(false);	// unticking this doesn't show any lenses, so disable for the moment
+		lensPanel.add(circularLensesCheckBox, "span");
+		
+		lorentzTransformerCheckBox = new JCheckBox("Lorentz transformer (lens 3 shifted to add shearing)");
+		lorentzTransformerCheckBox.setSelected(lorentzTransformer);
+		lensPanel.add(lorentzTransformerCheckBox, "span");
 
 		//latticePanel stuff
 		
@@ -1277,6 +1334,8 @@ public class ThreeSkewLensRotationVisualiser extends NonInteractiveTIMEngine
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
 //		showLens3 = showLens3CheckBox.isSelected();
 		lensType = (LensType)(lensTypeComboBox.getSelectedItem());	// doesn't work  at  the moment -- comment  out
+		circularLenses = circularLensesCheckBox.isSelected();
+		lorentzTransformer = lorentzTransformerCheckBox.isSelected();
 //		viewType = (ViewType)(viewTypeComboBox.getSelectedItem());
 		// set the viewType to correspond to the selected tab
 		for(ViewType v:ViewType.values())

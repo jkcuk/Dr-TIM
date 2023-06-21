@@ -589,6 +589,23 @@ public class Geometry
 			);
 	}
 	
+	public static Vector3D rotatePositionVector(
+			Vector3D position,
+			Vector3D pointOnRotationAxis,
+			Vector3D normalisedRotationAxisDirection,
+			double rotationAngle
+		)
+	{
+		return Vector3D.sum(
+				pointOnRotationAxis, 
+				rotate(
+						Vector3D.difference(position, pointOnRotationAxis),	// v
+						normalisedRotationAxisDirection,	// rotationAxisNormalised,
+						rotationAngle
+					)
+			);
+	}
+	
 	/**
 	 * @param point
 	 * @param pointOnPlane

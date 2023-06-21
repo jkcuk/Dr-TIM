@@ -13,6 +13,8 @@ import optics.raytrace.core.Transformation;
 import math.Vector3D;
 
 /**
+ * This is now a special case of SceneObjectIntersection -- use that instead!
+ * 
  * An intersection of scene-object primitives that acts as a combined scene object.
  * 
  * The combined scene object is the intersection of all scene-object primitives in the lists

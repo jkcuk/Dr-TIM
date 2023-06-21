@@ -19,7 +19,7 @@ public class Transparent extends SurfacePropertyPrimitive
 	 */
 	public static final Transparent PERFECT = new Transparent(1.0, false);
 	
-	public static final Transparent SLIGHTLY_ABSORBING = new Transparent(0.95, false);
+	public static final Transparent SLIGHTLY_ABSORBING = new Transparent(SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT, false);
 	
 	/**
 	 * Creates a new surface property for a (partially) transparent surface

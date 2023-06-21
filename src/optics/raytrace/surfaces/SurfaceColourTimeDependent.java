@@ -17,6 +17,8 @@ public class SurfaceColourTimeDependent extends SurfacePropertyPrimitive
 
 	private double period;
 	
+	private boolean isLightSourceIndependent;
+	
 	/**
 	 * Override this!
 	 * @param time
@@ -36,12 +38,17 @@ public class SurfaceColourTimeDependent extends SurfacePropertyPrimitive
 			);
 	}
 	
-	public SurfaceColourTimeDependent(double period, boolean shadowThrowing)
+	public SurfaceColourTimeDependent(double period, boolean isLightSourceIndependent, boolean shadowThrowing)
 	{
 		super(0, shadowThrowing);
 		setPeriod(period);
+		setLightSourceIndependent(isLightSourceIndependent);
 	}
 
+	public SurfaceColourTimeDependent(double period, boolean shadowThrowing)
+	{
+		this(period, true, shadowThrowing);
+	}
 	
 	public double getPeriod() {
 		return period;
@@ -51,10 +58,26 @@ public class SurfaceColourTimeDependent extends SurfacePropertyPrimitive
 		this.period = period;
 	}
 
+	public boolean isLightSourceIndependent() {
+		return isLightSourceIndependent;
+	}
+
+	public void setLightSourceIndependent(boolean isLightSourceIndependent) {
+		this.isLightSourceIndependent = isLightSourceIndependent;
+	}
+
 	@Override
 	public DoubleColour getColour(Ray r, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	{
-		return getColour(i.t);
+		DoubleColour c = getColour(i.t);
+		
+		if(isLightSourceIndependent) return c;
+		else
+		{
+			// the surface colour is not light-source independent
+			// handle through the getColour method of SurfaceColour class
+			return new SurfaceColour(c, DoubleColour.WHITE, shadowThrowing).getColour(r, i, scene, l, traceLevel, raytraceExceptionHandler);
+		}
 	}
 
 	@Override
@@ -65,7 +88,7 @@ public class SurfaceColourTimeDependent extends SurfacePropertyPrimitive
 
 	@Override
 	public SurfacePropertyPrimitive clone() {
-		return new SurfaceColourTimeDependent(getPeriod(), isShadowThrowing());
+		return new SurfaceColourTimeDependent(getPeriod(), isLightSourceIndependent(), isShadowThrowing());
 	}
 }
 

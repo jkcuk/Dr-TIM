@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -538,6 +539,8 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 //		windingFocussingTypeComboBox.addActionListener(this);
 //		windingFocussingPanel.add(GUIBitsAndBobs.makeRow("Type", windingFocussingTypeComboBox), "span");
 
+		windingFocussingTypeSeparationPanel.add(new JLabel("(Works only for logarithmic-spiral lens!)"),"span");
+
 		fMinPanel = new LabelledDoublePanel("Smallest focal length for which winding can be focussed");
 		fMinPanel.setNumber(fMin);
 		windingFocussingTypeSeparationPanel.add(fMinPanel, "span");
@@ -751,7 +754,9 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	 */
 	public double calculateF()
 	{
-		return -f/(1-Math.exp(b*MyMath.deg2rad(rotationAngleDeg)));
+		return 
+				f/(b*MyMath.deg2rad(rotationAngleDeg));
+				// -f/(1-Math.exp(b*MyMath.deg2rad(rotationAngleDeg)));
 	}
 
 	@Override

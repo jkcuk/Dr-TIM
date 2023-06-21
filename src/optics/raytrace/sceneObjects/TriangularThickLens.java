@@ -7,14 +7,14 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.SceneException;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.Refractive;
 
 /**
  * @author johannes
  * A lens with a triangular aperture and spherical surfaces, both with the same radius of curvature.
  */
-public class TriangularThickLens extends SceneObjectIntersection
+public class TriangularThickLens extends SceneObjectIntersectionSimple
 {
 	private static final long serialVersionUID = -4838063942026633127L;
 

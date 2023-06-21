@@ -14,7 +14,7 @@ import optics.raytrace.sceneObjects.solidGeometry.*;
  * @author johannes
  *
  */
-public class ParametrisedCuboid extends SceneObjectIntersection implements Serializable
+public class ParametrisedCuboid extends SceneObjectIntersectionSimple implements Serializable
 {
 	private static final long serialVersionUID = -3315907591510079916L;
 

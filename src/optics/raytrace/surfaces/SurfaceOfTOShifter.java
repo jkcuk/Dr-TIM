@@ -7,7 +7,7 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.sceneObjects.ParametrisedInvertedSphere;
 import optics.raytrace.sceneObjects.ParametrisedSphere;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 
 /**
  * A spherical shell comprising a transformation-optics medium.
@@ -190,7 +190,7 @@ public class SurfaceOfTOShifter extends SurfaceOfMetricSpace
 	 * @param studio
 	 * @return
 	 */
-	public SceneObjectIntersection addSphericalShellSceneObjectAsSurface(
+	public SceneObjectIntersectionSimple addSphericalShellSceneObjectAsSurface(
 			String description,
 			SceneObject parent,
 			Studio studio
@@ -228,7 +228,7 @@ public class SurfaceOfTOShifter extends SurfaceOfMetricSpace
 //				studio
 //		));
 		
-		SceneObjectIntersection s = new SceneObjectIntersection(
+		SceneObjectIntersectionSimple s = new SceneObjectIntersectionSimple(
 				description,
 				new ParametrisedSphere(
 						"Outer sphere",	// description

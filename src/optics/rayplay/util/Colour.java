@@ -8,6 +8,7 @@ public enum Colour {
 		BLUE("Blue", "blue", Color.BLUE),
 		ORANGE("Orange", "orange", Color.ORANGE),
 		CYAN("Cyan", "cyan", Color.CYAN),
+		CORNFLOWERBLUE("Cornflower blue", "cornflowerblue", new Color(255, 87, 51)),	// see https://htmlcolorcodes.com/colors/cornflower-blue/, https://www.december.com/html/spec/colorsvg.html
 		GRAY("Gray", "gray", Color.GRAY);
 	
 		public static Colour RAY_COLOURS[] = {RED, GREEN, BLUE, ORANGE};

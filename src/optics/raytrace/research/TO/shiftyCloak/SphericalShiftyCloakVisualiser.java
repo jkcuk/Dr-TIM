@@ -12,7 +12,7 @@ import math.ODE.IntegrationType;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.*;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
 import optics.raytrace.surfaces.SurfaceOfTOShifter;
@@ -333,7 +333,7 @@ public class SphericalShiftyCloakVisualiser extends NonInteractiveTIMEngine
 
 	
 //	private SurfaceOfTOShifter surfaceOfTOAbyssCloak;
-	private SceneObjectIntersection cloakO, cloakI;
+	private SceneObjectIntersectionSimple cloakO, cloakI;
 	private Vector3D frame0CameraViewDirection;
 
 	/**

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import math.*;
 import math.geometry.ShapeWithRandomPointAndBoundary;
 import optics.raytrace.core.*;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.SurfaceColour;
 
 
@@ -325,7 +325,7 @@ public class ParametrisedTriangle extends SceneObjectPrimitive implements One2On
 		Vector3D vertex2To3 = Vector3D.difference(getVertex1ToVertex3(), getVertex1ToVertex2());
 		Vector3D normalTo2To3 = Vector3D.crossProduct(vertex2To3, getSurfaceNormal());
 
-		SceneObjectIntersection boundary = new SceneObjectIntersection(
+		SceneObjectIntersectionSimple boundary = new SceneObjectIntersectionSimple(
 				"sceneobject intersection", // description,
 				getParent(), // parent,
 				getStudio()

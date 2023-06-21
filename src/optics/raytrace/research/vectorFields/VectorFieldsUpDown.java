@@ -5,7 +5,7 @@ import java.awt.*;
 import math.*;
 import optics.DoubleColour;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection2;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
 import optics.raytrace.surfaces.Transparent;
@@ -161,7 +161,7 @@ public class VectorFieldsUpDown
 
 		Vector3D paraboloidVertex = new Vector3D(0, 1, 10);
 		double paraboloidCoefficient = 0.3;
-		SceneObjectIntersection2 paraboloid = new SceneObjectIntersection2("Paraboloid", scene, studio);
+		SceneObjectIntersection paraboloid = new SceneObjectIntersection("Paraboloid", scene, studio);
 		
 		paraboloid.addPositiveSceneObject(new EditableParametrisedParaboloid(
 				"paraboloid wave front",	// description

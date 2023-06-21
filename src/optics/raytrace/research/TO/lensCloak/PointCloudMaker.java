@@ -14,7 +14,7 @@ import optics.raytrace.sceneObjects.FresnelLensSurface;
 import optics.raytrace.sceneObjects.ParametrisedDisc;
 import optics.raytrace.sceneObjects.ParametrisedPlane;
 import optics.raytrace.sceneObjects.Sphere;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.SurfaceColour;
 
 
@@ -113,7 +113,7 @@ public class PointCloudMaker
 				null, // parent,
 				null // studio
 				);
-		SceneObjectIntersection lensSurface = new SceneObjectIntersection(
+		SceneObjectIntersectionSimple lensSurface = new SceneObjectIntersectionSimple(
 				"one of the two sufaces comprising the FresnelLensShaped", // description,
 				null, // parent,
 				null // studio

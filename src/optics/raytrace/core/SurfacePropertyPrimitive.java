@@ -15,7 +15,7 @@ public abstract class SurfacePropertyPrimitive extends SurfaceProperty implement
 	private double transmissionCoefficient = DEFAULT_TRANSMISSION_COEFFICIENT;
 
 	// does this surface throw a shadow?
-	private boolean shadowThrowing = true;
+	protected boolean shadowThrowing = true;
 
 	public SurfacePropertyPrimitive(double transmissionCoefficient, boolean shadowThrowing)
 	{

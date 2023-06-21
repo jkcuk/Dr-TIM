@@ -12,7 +12,7 @@ import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.sceneObjects.ParametrisedDisc;
 import optics.raytrace.sceneObjects.ParametrisedPlane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.sceneObjects.Arrow;
 import optics.raytrace.sceneObjects.FresnelLensShaped;
@@ -205,7 +205,7 @@ public class LensVisualiser extends NonInteractiveTIMEngine
 				null, // parent,
 				null // studio
 				);
-		SceneObjectIntersection lensSurface = new SceneObjectIntersection(
+		SceneObjectIntersectionSimple lensSurface = new SceneObjectIntersectionSimple(
 				"one of the two sufaces comprising the FresnelLensShaped", // description,
 				null, // parent,
 				null // studio

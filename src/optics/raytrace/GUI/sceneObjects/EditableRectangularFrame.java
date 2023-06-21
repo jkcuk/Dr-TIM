@@ -18,7 +18,7 @@ import optics.raytrace.GUI.surfaces.SurfacePropertyPanel;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersectionSimple;
 import optics.raytrace.surfaces.SurfaceColour;
 
 /**
@@ -300,10 +300,10 @@ public class EditableRectangularFrame extends EditableSceneObjectCollection impl
 		clear();
 
 		EditableSceneObjectCollection
-			left = new EditableSceneObjectCollection(new SceneObjectIntersection("Left side", this, getStudio()), true),
-			right = new EditableSceneObjectCollection(new SceneObjectIntersection("Right side", this, getStudio()), true),
-			bottom = new EditableSceneObjectCollection(new SceneObjectIntersection("Bottom side", this, getStudio()), true),
-			top = new EditableSceneObjectCollection(new SceneObjectIntersection("Top side", this, getStudio()), true);
+			left = new EditableSceneObjectCollection(new SceneObjectIntersectionSimple("Left side", this, getStudio()), true),
+			right = new EditableSceneObjectCollection(new SceneObjectIntersectionSimple("Right side", this, getStudio()), true),
+			bottom = new EditableSceneObjectCollection(new SceneObjectIntersectionSimple("Bottom side", this, getStudio()), true),
+			top = new EditableSceneObjectCollection(new SceneObjectIntersectionSimple("Top side", this, getStudio()), true);
 
 		// the left side of the frame
 		addFrontAndBack(left);
