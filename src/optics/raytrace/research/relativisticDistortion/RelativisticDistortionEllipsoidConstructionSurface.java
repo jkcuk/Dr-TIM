@@ -26,6 +26,7 @@ import optics.raytrace.sceneObjects.Ellipsoid;
  * the unit sphere, and with it the point P, are stretched by a factor 1/gamma in the directions perpendicular to beta (the sphere then becomes an ellipsoid), and the
  * ellipsoid -- and with it the point on it that corresponds to P --, are displaced by beta.
  * 
+ * @deprecated
  * @author Johannes Courtial
  */
 public class RelativisticDistortionEllipsoidConstructionSurface extends SurfacePropertyPrimitive

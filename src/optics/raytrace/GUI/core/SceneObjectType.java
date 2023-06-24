@@ -16,6 +16,7 @@ import optics.raytrace.GUI.sceneObjects.EditableComplexThinLens;
 import optics.raytrace.GUI.sceneObjects.EditableCuboid;
 import optics.raytrace.GUI.sceneObjects.EditableCylinderFrame;
 import optics.raytrace.GUI.sceneObjects.EditableCylinderLattice;
+import optics.raytrace.GUI.sceneObjects.EditableDistortedLookalikeSphere;
 import optics.raytrace.GUI.sceneObjects.EditableEatonLens;
 import optics.raytrace.GUI.sceneObjects.EditableFramedGCLAMappingGoggles;
 import optics.raytrace.GUI.sceneObjects.EditableFramedUSAFTestChart;
@@ -105,6 +106,7 @@ public enum SceneObjectType
 	CUBOID("Cuboid"),
 	CYLINDER("Cylinder"),
 	DISC("Disc"),
+	DISTORTED_LOOKALIKE_SPHERE("Distorted lookalike sphere"),
 	EATON_LENS("Eaton lens"),
 	EXTENDED_ROCHESTER_CLOAK("Extended Rochester cloak"),	// commented out temporarily
 	FRAME("Frame"),
@@ -307,6 +309,12 @@ public enum SceneObjectType
 					parent,
 					studio
 			));
+		case DISTORTED_LOOKALIKE_SPHERE:
+			return(new EditableDistortedLookalikeSphere(
+					"distorted lookalike sphere",	// description,
+					parent, 
+					studio
+				));
 		case EATON_LENS:
 			return(new EditableEatonLens(
 					"Eaton lens",	// description

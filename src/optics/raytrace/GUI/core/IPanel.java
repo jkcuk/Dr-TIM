@@ -246,6 +246,14 @@ implements StatusIndicator, ActionListener
 		updateRest();
 	}
 	
+//	public IPanelComponent getNextToFrontComponent()
+//	{
+//		System.out.println("stack size = "+titleStack.size());
+//		System.out.flush();
+//		System.out.println("title = "+titleStack.get(titleStack.size()));
+//		return mainPanelComponentStack.get(mainPanelComponentStack.size());
+//	}
+	
 	public void mainPanelChanged()
 	{
 		revalidate();

@@ -4,8 +4,10 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import math.Vector3D;
 import net.miginfocom.swing.MigLayout;
@@ -14,9 +16,9 @@ import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.LabelledComboBoxPanel;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
-import optics.raytrace.cameras.RelativisticAnyFocusSurfaceCamera;
 import optics.raytrace.cameras.shutterModels.ArbitraryPlaneShutterModel;
 import optics.raytrace.cameras.shutterModels.DetectorPlaneShutterModel;
+import optics.raytrace.cameras.RelativisticAnyFocusSurfaceCamera;
 import optics.raytrace.cameras.shutterModels.AperturePlaneShutterModel;
 import optics.raytrace.cameras.shutterModels.FixedPointSurfaceShutterModel;
 import optics.raytrace.cameras.shutterModels.FocusSurfaceShutterModel;
@@ -38,6 +40,11 @@ public class ShutterModelPanel extends JPanel implements ActionListener
 
 	// common panels
 	private LabelledDoublePanel shutterOpeningTimePanel;
+	
+	// aperture-plane shutter-model panel
+	private JPanel aperturePlaneShutterModelPanel;
+	private JTextField aperturePlaneShutterModelInfoTextField;
+	private JButton updateAperturePlaneShutterModelInfoButton;
 
 	// arbitrary-plane-shutter-model panel
 	private JPanel arbitraryPlaneShutterModelPanel;
@@ -52,6 +59,8 @@ public class ShutterModelPanel extends JPanel implements ActionListener
 	
 	// this panel needs to know the camera whose shutter model it is editing
 	private RelativisticAnyFocusSurfaceCamera camera;
+	
+	private IPanelComponent cameraIPanel;
 
 	public ShutterModelPanel(String description, boolean showFrame, RelativisticAnyFocusSurfaceCamera camera)
 	{
@@ -70,6 +79,7 @@ public class ShutterModelPanel extends JPanel implements ActionListener
 		add(GUIBitsAndBobs.makeRow("Type", shutterModelComboBox), "wrap");
 
 		shutterOpeningTimePanel = new LabelledDoublePanel("Shutter-opening time (c=1)");
+		shutterOpeningTimePanel.getDoublePanel().addActionListener(this);
 		add(shutterOpeningTimePanel, "wrap");
 
 		optionalParametersPanel = new JPanel();
@@ -78,6 +88,16 @@ public class ShutterModelPanel extends JPanel implements ActionListener
 		//
 		// initialise the optional-parameter panels
 		//
+		
+		// aperture-plane shutter-model panel
+		aperturePlaneShutterModelPanel = new JPanel();
+		aperturePlaneShutterModelPanel.setLayout(new MigLayout("insets 0"));
+		aperturePlaneShutterModelInfoTextField = new JTextField(40);
+		aperturePlaneShutterModelInfoTextField.setEditable(false);
+		updateAperturePlaneShutterModelInfoButton = new JButton("Update");
+		updateAperturePlaneShutterModelInfoButton.addActionListener(this);
+		aperturePlaneShutterModelPanel.add(GUIBitsAndBobs.makeRow(aperturePlaneShutterModelInfoTextField, updateAperturePlaneShutterModelInfoButton), "wrap");
+		aperturePlaneShutterModelPanel.validate();
 		
 		// arbitrary-plane-shutter-model panel
 		arbitraryPlaneShutterModelPanel = new JPanel();
@@ -122,6 +142,15 @@ public class ShutterModelPanel extends JPanel implements ActionListener
 	public void setIPanel(IPanel iPanel)
 	{
 		this.iPanel = iPanel;
+	}
+	
+
+	public IPanelComponent getCameraIPanel() {
+		return cameraIPanel;
+	}
+
+	public void setCameraIPanel(IPanelComponent cameraIPanel) {
+		this.cameraIPanel = cameraIPanel;
 	}
 
 	private void setOptionalParameterPanelComponent(Component newComponent)
@@ -169,7 +198,8 @@ public class ShutterModelPanel extends JPanel implements ActionListener
 			setOptionalParameterPanelComponent(arbitraryPlaneShutterModelPanel);
 			break;
 		case APERTURE_PLANE_SHUTTER:
-			setOptionalParameterPanelComponent(null);
+			setOptionalParameterPanelComponent(aperturePlaneShutterModelPanel);
+			updateAperturePlaneShutterModelInfo();
 			break;
 		case FOCUS_SURFACE_SHUTTER:
 			setOptionalParameterPanelComponent(null);
@@ -220,16 +250,33 @@ public class ShutterModelPanel extends JPanel implements ActionListener
 				);
 		}
 	}
+	
+	private void updateAperturePlaneShutterModelInfo()
+	{
+		if(cameraIPanel != null)
+		{
+		aperturePlaneShutterModelInfoTextField.setText(
+				"Aperture centre (beta = "+camera.getBeta()+", t = "+shutterOpeningTimePanel.getNumber()+
+				"): "+
+				camera.getSpaceTimeTransformation().getTransformedPosition(
+						camera.getApertureCentre(),
+						shutterOpeningTimePanel.getNumber()
+					)
+			);
+		}
+		else
+			aperturePlaneShutterModelInfoTextField.setText("--- unable to calculate required information ---");
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		if(e.getSource() == shutterModelComboBox)
+		if(e.getSource().equals(shutterModelComboBox))
 		{
 			switch((ShutterModelType)(shutterModelComboBox.getSelectedItem()))
 			{
 			case APERTURE_PLANE_SHUTTER:
-				setOptionalParameterPanelComponent(null);
+				setOptionalParameterPanelComponent(aperturePlaneShutterModelPanel);
 				shutterOpeningTimePanel.setEnabled(true);
 				break;
 			case ARBITRARY_PLANE_SHUTTER:
@@ -248,6 +295,14 @@ public class ShutterModelPanel extends JPanel implements ActionListener
 			default:
 				setOptionalParameterPanelComponent(detectorPlaneShutterModelPanel);
 				shutterOpeningTimePanel.setEnabled(true);
+			}
+		}
+		else if(e.getSource().equals(updateAperturePlaneShutterModelInfoButton))
+		{
+			if(cameraIPanel != null)
+			{
+				cameraIPanel.acceptValuesInEditPanel();
+				updateAperturePlaneShutterModelInfo();
 			}
 		}
 	}

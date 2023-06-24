@@ -502,6 +502,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 		editCameraFrameSceneButton.addActionListener(this);
 		relativisticPanel.add(editCameraFrameSceneButton, "wrap");
 		shutterModelPanel = new ShutterModelPanel(this);
+		shutterModelPanel.setCameraIPanel(this);
 		relativisticPanel.add(shutterModelPanel, "wrap");
 		JComboBox<LensType> lensTypeComboBox = new JComboBox<LensType>(LensType.values());
 		lensTypeComboBox.setSelectedItem(LensType.IDEAL_LENS);

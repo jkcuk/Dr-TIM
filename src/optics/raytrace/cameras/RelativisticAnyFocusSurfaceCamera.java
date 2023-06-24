@@ -244,6 +244,17 @@ public class RelativisticAnyFocusSurfaceCamera extends AnyFocusSurfaceCamera imp
 	public SpaceTimeTransformationType getTransformType() {
 		return spaceTimeTransformation.getSpaceTimeTransformationType();
 	}
+	
+	
+	public SpaceTimeTransformation getSpaceTimeTransformation() {
+		return spaceTimeTransformation;
+	}
+
+	public void setSpaceTimeTransformation(SpaceTimeTransformation spaceTimeTransformation) {
+		this.spaceTimeTransformation = spaceTimeTransformation;
+	}
+
+
 
 
 	/**

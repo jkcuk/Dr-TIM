@@ -26,6 +26,7 @@ import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.SceneException;
+import optics.raytrace.sceneObjects.DistortedLookalikeSphere;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.SurfaceColour;
 
@@ -335,10 +336,26 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		{
 			// scene.addSceneObject(new Sphere("Sphere", new Vector3D(0, 0, 10), 1, SurfaceColour.CYAN_SHINY, scene, studio));
 
-			RelativisticDistortionEllipsoidConstructionSurface s =
-					new RelativisticDistortionEllipsoidConstructionSurface(new Vector3D(0, 0, 0), beta, cameraSpaceTimeTransformationType, ellipsoidPrincipalRadiusInBetaDirection);
-			
-			scene.addSceneObject(s.createAndSetEllipsoid("Ellipsoid", scene, studio));
+			scene.addSceneObject(
+					new DistortedLookalikeSphere(
+							"Distorted lookalike sphere",	// description
+							new Vector3D(0, 0, 0),
+							beta,
+							cameraSpaceTimeTransformationType,
+							ellipsoidPrincipalRadiusInBetaDirection,
+							scene,
+							studio
+							));
+						
+//			RelativisticDistortionEllipsoidConstructionSurface s =
+//					new RelativisticDistortionEllipsoidConstructionSurface(
+//							new Vector3D(0, 0, 0),
+//							beta,
+//							cameraSpaceTimeTransformationType,
+//							ellipsoidPrincipalRadiusInBetaDirection
+//						);
+//			
+//			scene.addSceneObject(s.createAndSetEllipsoid("Ellipsoid", scene, studio));
 
 			cameraBeta = new Vector3D(0, 0, 0);
 		}
