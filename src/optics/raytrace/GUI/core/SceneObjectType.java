@@ -37,6 +37,7 @@ import optics.raytrace.GUI.sceneObjects.EditableMirroredSpaceCancellingWedge;
 import optics.raytrace.GUI.sceneObjects.EditableNegativeSpaceWedgeStar;
 import optics.raytrace.GUI.sceneObjects.EditableNetOfHypercube;
 import optics.raytrace.GUI.sceneObjects.EditableNetOfSymmetric4Simplex;
+import optics.raytrace.GUI.sceneObjects.EditableNightSky;
 import optics.raytrace.GUI.sceneObjects.EditableNinkyNonkSilhouette;
 import optics.raytrace.GUI.sceneObjects.EditableSpaceCancellingWedge;
 import optics.raytrace.GUI.sceneObjects.EditableObjectCoordinateSystem;
@@ -129,6 +130,7 @@ public enum SceneObjectType
 	NEGATIVE_SPACE_WEDGE_STAR("Negative-space-wedge star"),
 	NET_OF_SYMMETRIC_4_SIMPLEX("Net of symmetric 4-simplex"),
 	NET_OF_HYPERCUBE("Net of hypercube"),
+	NIGHT_SKY("Night sky"),
 	NINKY_NONK_SILHOUETTE("Ninky-Nonk silhouette"),
 	NULL_SPACE_WEDGE("Null-space wedge"),
 	COORDINATES("Object's local coordinate system"),
@@ -444,6 +446,8 @@ public enum SceneObjectType
 			return new EditableNetOfHypercube(parent, studio);
 		case NINKY_NONK_SILHOUETTE:
 			return(new EditableNinkyNonkSilhouette(parent, studio));
+		case NIGHT_SKY:
+			return(new EditableNightSky(parent, studio));
 		case NULL_SPACE_WEDGE:
 			return new EditableSpaceCancellingWedge(parent, studio);
 		case PARABOLOID:

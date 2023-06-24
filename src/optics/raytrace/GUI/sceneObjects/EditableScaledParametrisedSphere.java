@@ -30,15 +30,15 @@ public class EditableScaledParametrisedSphere extends ScaledParametrisedSphere i
 {
 	private static final long serialVersionUID = 7127930825442857785L;
 
-	private JPanel editPanel, basicParametersPanel, parametrisationPanel;
-	private LabelledStringPanel descriptionPanel;
-	private LabelledVector3DPanel centrePanel;
-	private LabelledDoublePanel radiusPanel;
-	private SurfacePropertyPanel surfacePropertyPanel;
+	protected JPanel editPanel, basicParametersPanel, parametrisationPanel;
+	protected LabelledStringPanel descriptionPanel;
+	protected LabelledVector3DPanel centrePanel;
+	protected LabelledDoublePanel radiusPanel;
+	protected SurfacePropertyPanel surfacePropertyPanel;
 	
 	// panels in the parametrisation panel
-	private LabelledVector3DPanel northPolePanel, phi0DirectionPanel;
-	private LabelledMinMaxPanel sThetaMinMaxPanel, sPhiMinMaxPanel;
+	protected LabelledVector3DPanel northPolePanel, phi0DirectionPanel;
+	protected LabelledMinMaxPanel sThetaMinMaxPanel, sPhiMinMaxPanel;
 
 
 	/**
