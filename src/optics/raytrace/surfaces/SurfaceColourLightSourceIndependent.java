@@ -75,11 +75,18 @@ public class SurfaceColourLightSourceIndependent extends SurfaceProperty impleme
 		return colour;
 	}
 	
+	// setters & getters
+	
 	public DoubleColour getColour()
 	{
 		return colour;
 	}
 
+	public void setColour(DoubleColour colour)
+	{
+		this.colour = colour;
+	}
+	
 	@Override
 	public boolean isShadowThrowing() {
 		return shadowThrowing;

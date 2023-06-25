@@ -8,14 +8,17 @@ import javax.swing.*;
 
 import math.*;
 import math.SpaceTimeTransformation.SpaceTimeTransformationType;
+import optics.raytrace.surfaces.Checked;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.core.*;
+import optics.DoubleColour;
 import optics.raytrace.GUI.cameras.*;
 import optics.raytrace.GUI.core.*;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.Format3DType;
 import optics.raytrace.GUI.lowLevel.GUIPanel;
 import optics.raytrace.GUI.sceneObjects.*;
+import optics.raytrace.GUI.surfaces.EditableSurfaceTiling;
 import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
 
 /**
@@ -197,6 +200,48 @@ public class TIMInteractiveBits
 		
 		// the camera-frame scene
 		EditableSceneObjectCollection cameraFrameScene = new EditableSceneObjectCollection("camera-frame scene", false, studio.getScene(), studio);
+		// the floor
+		cameraFrameScene.addSceneObject(new EditableScaledParametrisedParallelogram(
+				"floor",	// description, 
+				new Vector3D(-5, -4, 0),	// corner, 
+				new Vector3D(10, 0, 0),	// spanVector1,
+				new Vector3D(0, 0, 10),	// spanVector2, 
+				0,	// suMin,
+				10,	// suMax,
+				0,	// svMin,
+				10,	// svMax,
+				new EditableSurfaceTiling(SurfaceColour.GREY80_SHINY, SurfaceColour.WHITE_SHINY, 1, 1, cameraFrameScene),	// surfaceProperty,
+				cameraFrameScene,	// parent,
+				studio
+				),
+				false
+				);
+		// Tim's head
+		cameraFrameScene.addSceneObject(new EditableTimHead(
+				"Tim's head",	// description,
+				new Vector3D(0, -2, 5),	// centre,
+				1,	// radius,
+				new Vector3D(0, 0, -1),	// frontDirection,
+				new Vector3D(0, 1, 0),	// topDirection,
+				new Vector3D(1, 0, 0),	// rightDirection,
+				cameraFrameScene,	// parent, 
+				studio
+				),
+				false
+				);
+		// Tim's head's pedestal
+		cameraFrameScene.addSceneObject(new EditableCuboid(
+				"Tim's head's pedestal",	// description,
+				new Vector3D(0, -3.5, 5),	// centre,
+				new Vector3D(1, 0, 0),	// centre2centreOfFace1,
+				new Vector3D(0, 0.5, 0),	// centre2centreOfFace2,
+				new Vector3D(0, 0, 1),	// centre2centreOfFace3,
+				SurfaceColour.GREY20_MATT,	// surfaceProperty,
+				cameraFrameScene,	// parent,
+				studio
+				),
+				false
+				);
 		
 		// define the cameras
 		//

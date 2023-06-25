@@ -48,6 +48,8 @@ public class PictureSurface extends SurfaceProperty implements SurfacePropertyWi
 	
 	private boolean shadowThrowing = true;
 	
+	private SurfaceProperty surfacePropertyOutsidePicture;
+	
 	/**
 	 * Loads a bitmap and sets the range of x and y (the two parameters in terms of which the surface is parametrised) into which the picture will be mapped.
 	 *
@@ -58,7 +60,14 @@ public class PictureSurface extends SurfaceProperty implements SurfacePropertyWi
 	 * @param yMax
 	 * @param specularColour
 	 */
-	public PictureSurface(String filename, double xMin, double xMax, double yMin, double yMax, boolean shadowThrowing)
+	public PictureSurface(
+			String filename, 
+			double xMin, 
+			double xMax, 
+			double yMin, 
+			double yMax, 
+			boolean shadowThrowing
+		)
 	{	
 		super();
 		
@@ -69,6 +78,7 @@ public class PictureSurface extends SurfaceProperty implements SurfacePropertyWi
 		this.yMin = yMin;
 		this.yMax = yMax;
 		this.shadowThrowing = shadowThrowing;
+		this.surfacePropertyOutsidePicture = Transparent.PERFECT;
 	}
 
 	/**
@@ -92,6 +102,7 @@ public class PictureSurface extends SurfaceProperty implements SurfacePropertyWi
 		this.yMin = yMin;
 		this.yMax = yMax;
 		this.shadowThrowing = shadowThrowing;
+		this.surfacePropertyOutsidePicture = Transparent.PERFECT;
 	}
 
 	/**
@@ -109,6 +120,7 @@ public class PictureSurface extends SurfaceProperty implements SurfacePropertyWi
 		yMin = original.getyMin();
 		yMax = original.getyMax();
 		setPicture(original.getPicture());
+		setSurfacePropertyOutsidePicture(original.getSurfacePropertyOutsidePicture());
 	}
 	
 	/*
@@ -250,6 +262,14 @@ public class PictureSurface extends SurfaceProperty implements SurfacePropertyWi
 		return height;
 	}
 
+	public SurfaceProperty getSurfacePropertyOutsidePicture() {
+		return surfacePropertyOutsidePicture;
+	}
+
+	public void setSurfacePropertyOutsidePicture(SurfaceProperty surfacePropertyOutsidePicture) {
+		this.surfacePropertyOutsidePicture = surfacePropertyOutsidePicture;
+	}
+
 	/* (non-Javadoc)
 	 * @see optics.raytrace.surfaces.SurfaceProperty#getColour(optics.raytrace.core.Ray, optics.raytrace.core.RaySceneObjectIntersection, optics.raytrace.sceneObjects.SceneObject, optics.raytrace.lights.LightSource, int)
 	 */
@@ -287,22 +307,25 @@ public class PictureSurface extends SurfaceProperty implements SurfacePropertyWi
 		else
 		{
 			// the intersection is outside the area covered by the picture;
-			// the surface is then transparent, so keep tracing
-			// launch a new ray from here
 			
-			return scene.getColourAvoidingOrigin(
-				ray.getBranchRay(
-						i.p,
-						ray.getD(),
-						i.t,
-						ray.isReportToConsole()
-				),
-				i.o,
-				l,
-				scene,
-				traceLevel-1,
-				raytraceExceptionHandler
-			);
+			return surfacePropertyOutsidePicture.getColour(ray, i, scene, l, traceLevel, raytraceExceptionHandler);
+			
+//			// the surface is then transparent, so keep tracing
+//			// launch a new ray from here
+//			
+//			return scene.getColourAvoidingOrigin(
+//				ray.getBranchRay(
+//						i.p,
+//						ray.getD(),
+//						i.t,
+//						ray.isReportToConsole()
+//				),
+//				i.o,
+//				l,
+//				scene,
+//				traceLevel-1,
+//				raytraceExceptionHandler
+//			);
 		}
 	}
 

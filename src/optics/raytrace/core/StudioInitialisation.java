@@ -13,4 +13,14 @@ public abstract class StudioInitialisation
 	 * @param studio
 	 */
 	public abstract void initialiseSceneAndLights(SceneObjectContainer scene, Studio studio);
+	
+	/**
+	 * Override if necessary
+	 * @param scene
+	 * @param studio
+	 */
+	public void initialiseCameraScene(SceneObjectContainer cameraScene, Studio studio)
+	{
+		//
+	}
 }

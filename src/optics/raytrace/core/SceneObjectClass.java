@@ -3,6 +3,8 @@ package optics.raytrace.core;
 import optics.DoubleColour;
 import optics.raytrace.GUI.sceneObjects.EditableParametrisedPlane;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedSphere;
+import optics.raytrace.GUI.sceneObjects.EditableSky;
+import optics.raytrace.GUI.sceneObjects.EditableSky.SkyType;
 import optics.raytrace.GUI.surfaces.EditableSurfaceTiling;
 
 import math.MyMath;
@@ -46,23 +48,33 @@ public abstract class SceneObjectClass implements SceneObject, Serializable, Clo
 	}
 
 	/**
-	 * A common object found in a lot of scenes is a blue sky
+	 * A common object found in a lot of scenes is a blue sky, but sometimes it needs to be brighter
 	 */
 	public static EditableScaledParametrisedSphere getSkySphere(double brightnessFactor, SceneObject parent, Studio studio)
 	{
-		return new EditableScaledParametrisedSphere(
-			"sky",
-			new Vector3D(0,0,0),	// centre
-			MyMath.HUGE,	// huge radius
-			new SurfaceColourLightSourceIndependent(DoubleColour.LIGHT_BLUE.multiply(brightnessFactor), true),
-			parent,
-			studio
-		);
+		EditableSky s = new EditableSky(SkyType.DAY, parent, studio);
+		// make the surface a bit brighter
+		SurfaceColourLightSourceIndependent c = (SurfaceColourLightSourceIndependent)s.getSurfaceProperty();
+		c.setColour(c.getColour().multiply(brightnessFactor));
+		
+		return s;
+//		return new EditableScaledParametrisedSphere(
+//			"sky",
+//			new Vector3D(0,0,0),	// centre
+//			MyMath.HUGE,	// huge radius
+//			new SurfaceColourLightSourceIndependent(DoubleColour.LIGHT_BLUE.multiply(brightnessFactor), true),
+//			parent,
+//			studio
+//		);
 	}
 	
+	/**
+	 * A common object found in a lot of scenes is a blue sky
+	 */
 	public static EditableScaledParametrisedSphere getSkySphere(SceneObject parent, Studio studio)
 	{
-		return getSkySphere(1, parent, studio);
+		return new EditableSky(parent, studio);
+		// return getSkySphere(1, parent, studio);
 	}
 
 
