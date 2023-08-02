@@ -367,16 +367,16 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 				scene,	// parent
 				studio
 				);
-		double a;
-		switch(cylindricalLensSpiralType)
-		{
-		case ARCHIMEDEAN:
-			a = 1+b*MyMath.deg2rad(rotationAngleDeg);
-			break;
-		case LOGARITHMIC:
-		default:
-			a = 1*Math.exp(b*MyMath.deg2rad(rotationAngleDeg));
-		}
+//		double a;
+//		switch(cylindricalLensSpiralType)
+//		{
+//		case ARCHIMEDEAN:
+//			a = 1+b*MyMath.deg2rad(rotationAngleDeg);
+//			break;
+//		case LOGARITHMIC:
+//		default:
+//			a = 1*Math.exp(b*MyMath.deg2rad(rotationAngleDeg));
+//		}
 		PhaseHologramOfCylindricalLensSpiral hologram2 = new PhaseHologramOfCylindricalLensSpiral(
 				cylindricalLensSpiralType,
 				getFOfFocussedCylindricalLens(-f),	// focalLength
