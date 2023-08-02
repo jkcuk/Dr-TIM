@@ -2,6 +2,7 @@ package optics.raytrace.surfaces;
 
 import java.util.ArrayList;
 
+import math.MyMath;
 import math.Vector2D;
 import math.Vector3D;
 import optics.raytrace.core.One2OneParametrisedObject;
@@ -39,18 +40,21 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	private CylindricalLensSpiralType cylindricalLensSpiralType;
 
 	/**
-	 * the cylindrical lens's focal length (at distance r=1);
+	 * the cylindrical lens's focal length, in the case of the Archimedean spiral at r=1 and in the case of the
+	 * hyperbolic spiral for phi=1;
 	 * the cross-section of the cylindrical lens is Phi(r) = (pi d^2)(lambda f), where r is the radial distance
 	 */
 	private double focalLength1;
 	
 	/**
-	 * the centre of the cylindrical lens follows either the logarithmic spiral r = a exp(b phi), or the Archimedean spiral r = a + b phi
+	 * the rotation angle of the spiral
 	 */
-	private double a;
+	private double deltaPhi;
 
 	/**
-	 * the centre of the cylindrical lens follows either the logarithmic spiral r = a exp(b phi), or the Archimedean spiral r = a + b phi
+	 * the centre of the cylindrical lens follows either the logarithmic spiral r = exp(b (phi+deltaPhi)), 
+	 * or the Archimedean spiral r = b (phi+deltaPhi),
+	 * or the hyperbolic spiral r = b/(phi + deltaPhi)
 	 */
 	private double b;
 	
@@ -69,10 +73,13 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	// internal variables
 	
 	/**
-	 * pre-calculated variable in setB();
+	 * pre-calculated variable in setB()
 	 */
 	private double b2pi;
 	private double nHalf;
+	
+	// pre-calculated in preCalculateA()
+	private double a;
 	
 
 	//
@@ -80,8 +87,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	//
 	/**
 	 * @param cylindricalLensSpiralType
-	 * @param focalLength
-	 * @param a
+	 * @param focalLength1
+	 * @param deltaPhi
 	 * @param b
 	 * @param throughputCoefficient
 	 * @param AlvarezWindingFocusing
@@ -90,8 +97,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	 */
 	public PhaseHologramOfCylindricalLensSpiral(
 			CylindricalLensSpiralType cylindricalLensSpiralType,
-			double focalLength,
-			double a,
+			double focalLength1,
+			double deltaPhi,
 			double b,
 			One2OneParametrisedObject sceneObject,
 			double throughputCoefficient,
@@ -102,17 +109,18 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	{
 		super(throughputCoefficient, reflective, shadowThrowing);
 		setCylindricalLensSpiralType(cylindricalLensSpiralType);
-		setFocalLength(focalLength);
-		setA(a);
+		setFocalLength1(focalLength1);
+		setDeltaPhi(deltaPhi);
 		setB(b);
+		preCalculateA();
 		setAlvarezWindingFocusing(alvarezWindingFocusing);
 		setSceneObject(sceneObject);
 	}
 
 	/**
 	 * @param cylindricalLensSpiralType
-	 * @param focalLength
-	 * @param a
+	 * @param focalLength1
+	 * @param deltaPhi
 	 * @param b
 	 * @param throughputCoefficient
 	 * @param reflective
@@ -120,8 +128,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	 */
 	public PhaseHologramOfCylindricalLensSpiral(
 			CylindricalLensSpiralType cylindricalLensSpiralType,
-			double focalLength,
-			double a,
+			double focalLength1,
+			double deltaPhi,
 			double b,
 			One2OneParametrisedObject sceneObject,
 			double throughputCoefficient,
@@ -131,9 +139,10 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	{
 		super(throughputCoefficient, reflective, shadowThrowing);
 		setCylindricalLensSpiralType(cylindricalLensSpiralType);
-		setFocalLength(focalLength);
-		setA(a);
+		setFocalLength1(focalLength1);
+		setDeltaPhi(deltaPhi);
 		setB(b);
+		preCalculateA();
 		setAlvarezWindingFocusing(false);
 		setSceneObject(sceneObject);
 	}
@@ -141,9 +150,10 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	public PhaseHologramOfCylindricalLensSpiral(PhaseHologramOfCylindricalLensSpiral original) {
 		super(original);
 		setCylindricalLensSpiralType(original.getCylindricalLensSpiralType());
-		setFocalLength(original.getFocalLength());
-		setA(original.getA());
+		setFocalLength1(original.getFocalLength1());
+		setDeltaPhi(original.getDeltaPhi());
 		setB(original.getB());
+		preCalculateA();
 		setAlvarezWindingFocusing(original.isAlvarezWindingFocusing());
 		setSceneObject(original.getSceneObject());
 	}
@@ -168,20 +178,20 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		this.cylindricalLensSpiralType = cylindricalLensSpiralType;
 	}
 
-	public double getFocalLength() {
+	public double getFocalLength1() {
 		return focalLength1;
 	}
 
-	public void setFocalLength(double focalLength) {
-		this.focalLength1 = focalLength;
+	public void setFocalLength1(double focalLength1) {
+		this.focalLength1 = focalLength1;
 	}
 
-	public double getA() {
-		return a;
+	public double getDeltaPhi() {
+		return deltaPhi;
 	}
 
-	public void setA(double a) {
-		this.a = a;
+	public void setDeltaPhi(double deltaPhi) {
+		this.deltaPhi = deltaPhi;
 	}
 
 	public double getB() {
@@ -210,6 +220,19 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		this.sceneObject = sceneObject;
 	}
 
+	private void preCalculateA()
+	{
+		switch(cylindricalLensSpiralType)
+		{
+		case ARCHIMEDEAN:
+			a = 1+b*deltaPhi;
+			break;
+		case LOGARITHMIC:
+		default:
+			a = 1*Math.exp(b*deltaPhi);
+		}
+	}
+
 	
 	
 	/**
@@ -224,7 +247,7 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		switch(cylindricalLensSpiralType)
 		{
 		case ARCHIMEDEAN:
-			return a + b*(phi+n*2*Math.PI);
+			return a+b*(phi+n*2*Math.PI);
 		case LOGARITHMIC:
 		default:
 			return a*Math.exp(b*(phi+n*2*Math.PI));			

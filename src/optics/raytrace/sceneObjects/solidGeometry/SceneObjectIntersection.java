@@ -558,9 +558,12 @@ implements Serializable
 		RaySceneObjectIntersection intersection = sceneObject.getClosestRayIntersectionAvoidingOrigin(ray, excludeObject);
 
 
+		int counter = 100;	// TODO without the counter, the program sometimes gets stuck in the while loop below; understand this!
 		// while there is an intersection point...
-		while(intersection != RaySceneObjectIntersection.NO_INTERSECTION)
+		while((intersection != RaySceneObjectIntersection.NO_INTERSECTION) && (counter-- > 0))
 		{
+			// System.out.println("SceneObjectIntersection::lookForBetterIntersection: counter="+counter++);
+			
 			if(iic.include(intersection))
 			{
 				// calculate the distance (squared) to the intersection point

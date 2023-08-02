@@ -338,7 +338,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		PhaseHologramOfCylindricalLensSpiral hologram1 = new PhaseHologramOfCylindricalLensSpiral(
 				cylindricalLensSpiralType,
 				getFOfFocussedCylindricalLens(f),	// focalLength
-				1,	// a
+				0,	// deltaPhi
 				b,
 				spiralLens1,	// sceneObject
 				0.96,	// throughputCoefficient
@@ -380,7 +380,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		PhaseHologramOfCylindricalLensSpiral hologram2 = new PhaseHologramOfCylindricalLensSpiral(
 				cylindricalLensSpiralType,
 				getFOfFocussedCylindricalLens(-f),	// focalLength
-				a,	// a
+				MyMath.deg2rad(rotationAngleDeg),	// deltaPhi
 				b,
 				spiralLens2,	// sceneObject
 				0.96,	// throughputCoefficient

@@ -91,6 +91,7 @@ public class EditableScaledParametrisedDisc extends ScaledParametrisedDisc imple
 	}
 
 	/**
+	 * A disc, parametrised by polar coordinates
 	 * @param description
 	 * @param centre
 	 * @param normal
@@ -121,7 +122,8 @@ public class EditableScaledParametrisedDisc extends ScaledParametrisedDisc imple
 	}
 
 	/**
-	 * Constructor that picks random directions
+	 * A disc, parametrised by polar coordinates.
+	 * This constructor that picks random directions
 	 * 
 	 * @param description
 	 * @param centre	centre of the disc

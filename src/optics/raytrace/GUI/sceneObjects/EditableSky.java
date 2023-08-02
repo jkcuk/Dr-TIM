@@ -34,6 +34,7 @@ public class EditableSky extends EditableScaledParametrisedSphere implements IPa
 	{
 		DAY("Day sky"),
 		NIGHT("Night sky"),
+		HEAVEN("Heaven"),
 		EARTHRISE("Earthrise");
 		
 		private String description;
@@ -108,9 +109,13 @@ public class EditableSky extends EditableScaledParametrisedSphere implements IPa
 			ps.setSurfacePropertyOutsidePicture(SurfaceColourLightSourceIndependent.BLACK);
 			setSurfaceProperty(ps);
 			break;
+		case HEAVEN:
+			setSurfaceProperty(new SurfaceColourLightSourceIndependent(DoubleColour.WHITE, false));
+			break;
 		case NIGHT:
+			// from https://svs.gsfc.nasa.gov/4851
 			setSurfaceProperty(new PictureSurface(
-					this.getClass().getResource("SkyMap.png"),	// java.net.URL imageURL
+					this.getClass().getResource("starmap_2020_8k.png"),	// java.net.URL imageURL
 					0,	// double xMin
 					Math.PI,	// double xMax
 					0,	// double yMin

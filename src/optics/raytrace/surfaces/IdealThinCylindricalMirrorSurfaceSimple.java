@@ -123,7 +123,7 @@ public class IdealThinCylindricalMirrorSurfaceSimple extends SurfacePropertyPrim
 	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	throws RayTraceException
 	{
-		System.out.println("TraceLevel="+traceLevel);
+		// System.out.println("TraceLevel="+traceLevel);
 		
 		if (traceLevel <= 0) return DoubleColour.BLACK;
 		
