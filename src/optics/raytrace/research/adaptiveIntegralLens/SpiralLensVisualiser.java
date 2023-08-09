@@ -65,6 +65,9 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	/**
 	 * focal length of the cylindrical lenses (everywhere in the case of the logarithmic spiral lens, at r=1 in the case of the Archimedean spiral lens)
 	 */
+	//dwu10for powDdefinationinSpiralLensVisualiser begin--
+//	private double powD;
+	//dwu10for powDdefinationinSpiralLensVisualiser end--
 	private double f;
 
 	/**
@@ -248,6 +251,9 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		printStream.println("spiralLens2AdditionalOffset = "+spiralLens2AdditionalOffset);
 		printStream.println("b = "+b);
 		printStream.println("f = "+f);
+		//dwu12for powDprintStream begin--
+//		printStream.println("powD = "+powD);
+		//dwu12for powDprintStream end--
 		printStream.println("fMin = "+fMin);
 		printStream.println("rotationAngleDeg = "+rotationAngleDeg);
 		printStream.println("distanceOfLens2BehindLens1 = "+distanceOfLens2BehindLens1);
@@ -340,6 +346,9 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 				getFOfFocussedCylindricalLens(f),	// focalLength
 				0,	// deltaPhi
 				b,
+				//dwu13for powDinhologram1 begin--
+//				powD,
+				//dwu13for powDinhologram1 end--
 				spiralLens1,	// sceneObject
 				0.96,	// throughputCoefficient
 				windingFocussingType == WindingFocussingType.ALVAREZ,	// alvarezWindingFocusing
@@ -382,6 +391,9 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 				getFOfFocussedCylindricalLens(-f),	// focalLength
 				MyMath.deg2rad(rotationAngleDeg),	// deltaPhi
 				b,
+				//dwu15for powDinhologram1 begin--
+//				powD,
+				//dwu15for powDinhologram1 end--
 				spiralLens2,	// sceneObject
 				0.96,	// throughputCoefficient
 				windingFocussingType == WindingFocussingType.ALVAREZ,	// alvarezWindingFocusing
@@ -754,9 +766,17 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	 */
 	public double calculateF()
 	{
-		return 
-				f/(b*MyMath.deg2rad(rotationAngleDeg));
-				// -f/(1-Math.exp(b*MyMath.deg2rad(rotationAngleDeg)));
+		switch(cylindricalLensSpiralType)
+		{
+		case ARCHIMEDEAN:
+		case LOGARITHMIC:
+			return 
+					f/(b*MyMath.deg2rad(rotationAngleDeg));
+					// -f/(1-Math.exp(b*MyMath.deg2rad(rotationAngleDeg)));
+		case HYPERBOLIC:
+		default:
+			return -f/MyMath.deg2rad(rotationAngleDeg);
+		}
 	}
 
 	@Override
@@ -772,7 +792,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 			acceptValuesInInteractiveControlPanel();
 			double f1 = getFOfFocussedCylindricalLens(f);
 			double f2 = getFOfFocussedCylindricalLens(-f);
-			System.out.println("SpiralLensVisualiser::actionPerformed: f1="+f1+", f2="+f2);
+			// System.out.println("SpiralLensVisualiser::actionPerformed: f1="+f1+", f2="+f2);
 			distanceOfLens2BehindLens1Panel.setNumber(Math.max(-f1*f2*(1/calculateF() - 1/f1 - 1/f2), 0.00001));
 			// distanceOfLens2BehindLens1Panel.setNumber(Math.max(f*f/calculateF(), 0.00001));
 		}

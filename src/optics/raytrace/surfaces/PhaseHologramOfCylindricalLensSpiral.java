@@ -2,7 +2,6 @@ package optics.raytrace.surfaces;
 
 import java.util.ArrayList;
 
-import math.MyMath;
 import math.Vector2D;
 import math.Vector3D;
 import optics.raytrace.core.One2OneParametrisedObject;
@@ -26,8 +25,11 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	public enum CylindricalLensSpiralType
 	{
 		ARCHIMEDEAN("Archimedean"),
-		LOGARITHMIC("Logarithmic");
-		
+		LOGARITHMIC("Logarithmic"),
+		//dwu hyperbolic begin--
+		HYPERBOLIC("Hyperbolic");
+
+		//dwu hyperbolic end--
 		private String description;
 		private CylindricalLensSpiralType(String description) {this.description = description;}	
 		@Override
@@ -57,7 +59,12 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	 * or the hyperbolic spiral r = b/(phi + deltaPhi)
 	 */
 	private double b;
-	
+	//dwu3for powD begin--
+	/**
+	 *
+	 */
+//	private double powD;
+	//dwu3for powD end--
 	/**
 	 * the winding focusing achieved by changing the "surface" of the cylinder spiral to that of an Alvarez lens. 
 	 * More precisely, the surface of two Alvarez lenses with zero separation between them and approximated for small relative rotation angles. 
@@ -100,6 +107,9 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 			double focalLength1,
 			double deltaPhi,
 			double b,
+			//dwu8 forpowDinconstructor begin--
+//			double powD,
+			//dwu8 forpowDinconstructor end--
 			One2OneParametrisedObject sceneObject,
 			double throughputCoefficient,
 			boolean alvarezWindingFocusing,
@@ -112,6 +122,9 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		setFocalLength1(focalLength1);
 		setDeltaPhi(deltaPhi);
 		setB(b);
+		//dwu9 forpowDinconstructor begin--
+//		setPowD(powD);
+		//dwu9 forpowDinconstructor end--
 		preCalculateA();
 		setAlvarezWindingFocusing(alvarezWindingFocusing);
 		setSceneObject(sceneObject);
@@ -153,6 +166,9 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		setFocalLength1(original.getFocalLength1());
 		setDeltaPhi(original.getDeltaPhi());
 		setB(original.getB());
+		//dwu7for getsetinconstructor begin--
+//		setPowD(original.getPowD());
+		//dwu7for getsetinconstructor end--
 		preCalculateA();
 		setAlvarezWindingFocusing(original.isAlvarezWindingFocusing());
 		setSceneObject(original.getSceneObject());
@@ -203,7 +219,12 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		b2pi = 2*b*Math.PI;
 		nHalf = Math.log(0.5*(1. + Math.exp(b2pi)))/b2pi;
 	}
-	
+	//dwu6for getsetPowD begin--
+//	public double getPowD() {
+//		return powD;
+//	}
+//	public void setPowD(double powD){this.powD=powD;}
+	//dwu6for getsetPowD end--
 	public boolean isAlvarezWindingFocusing() {
 		return alvarezWindingFocusing;
 	}
@@ -248,6 +269,10 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		{
 		case ARCHIMEDEAN:
 			return a+b*(phi+n*2*Math.PI);
+		//dwu1for calculateSpiralDistanceFromCentre hyperbolic begin--
+		case HYPERBOLIC:
+			return b/((phi+deltaPhi)+n*2*Math.PI);
+		//dwu1for calculateSpiralDistanceFromCentre hyperbolic end--
 		case LOGARITHMIC:
 		default:
 			return a*Math.exp(b*(phi+n*2*Math.PI));			
@@ -260,6 +285,22 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		{
 		case ARCHIMEDEAN:
 			return Math.ceil(-((b*phi - r + a)/b2pi) - 0.5);
+		//dwu2for calculateN hyperbolic begin--
+		case HYPERBOLIC:
+//			return Math.ceil((b-phi*r)/(2*r*Math.PI)-(-phi-2*Math.PI*Math.floor((b-phi*r)/(2*r*Math.PI)))/(2*Math.PI)-
+//					(Math.sqrt(phi*phi+2*phi*Math.PI+4*phi*Math.PI*Math.floor((b-phi*r)/(2*r*Math.PI))+4*Math.PI*Math.PI
+//							*Math.floor((b-phi*r)/(2*r*Math.PI))+4*Math.PI*Math.PI*Math.floor((b-phi*r)/(2*r*Math.PI))*
+//							Math.floor((b-phi*r)/(2*r*Math.PI))))/(2*Math.PI));
+//			return Math.ceil((b-(phi+deltaPhi)*r)/(2*r*Math.PI)-(-(phi+deltaPhi)-2*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI)))/(2*Math.PI)-
+//						(Math.sqrt(Math.abs((phi+deltaPhi)*(phi+deltaPhi)+2*(phi+deltaPhi)*Math.PI+4*(phi+deltaPhi)*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))+4*Math.PI*Math.PI
+//								*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))+4*Math.PI*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))*
+//								Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI)))))/(2*Math.PI));
+			return Math.ceil((b-(phi+deltaPhi)*r)/(2*r*Math.PI)-(-(phi+deltaPhi)-2*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI)))/(2*Math.PI)-
+					(Math.sqrt(((phi+deltaPhi)*(phi+deltaPhi)+2*(phi+deltaPhi)*Math.PI+4*(phi+deltaPhi)*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))+4*Math.PI*Math.PI
+							*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))+4*Math.PI*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))*
+							Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI)))))/(2*Math.PI));
+			// this becomes imaginary if b is <7ish
+		//dwu2for calculateN hyperbolic end--
 		case LOGARITHMIC:
 		default:
 			return Math.ceil(-((b*phi - Math.log(r/a))/b2pi) - nHalf);
@@ -295,6 +336,12 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 			}else {
 				return -(((x/r)+b*y/r2)*(r-r_n))/fArch;
 			}
+		//dwu4for calculateXDerivative begin--
+		case HYPERBOLIC:
+		//System.out.println(powD);
+				double powD = -1/focalLength1;
+				return -(powD*y*(r-r_n)*(r-r_n)/(2*r*r))+((phi+deltaPhi)+2*n*Math.PI)*powD*(r-r_n)*((x/r)-((y*r_n*r_n)/(b*r*r)));
+		//dwu4for calculateXDerivative end--
 		case LOGARITHMIC:
 		default:
 			//In the logarithmic case the focal length, fLog, is constant and hence simply the focalLength.
@@ -331,6 +378,11 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 			}else {
 				return -(((y/r)-b*x/r2)*(r-r_n))/fArch;
 			}
+		//dwu5for calculateYDerivative begin--
+		case HYPERBOLIC:
+			double powD = -1/focalLength1;
+			return (powD*x*(r-r_n)*(r-r_n)/(2*r*r))+(phi+2*n*Math.PI)*powD*(r-r_n)*((y/r)+((x*r_n*r_n)/(b*r*r)));
+		//dwu5for calculateYDerivative begin--
 		case LOGARITHMIC:
 		default:
 			//In the logarithmic case the focal length, fLog, is constant and hence simply the focalLength.
