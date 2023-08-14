@@ -272,9 +272,9 @@ public class AdamsIdealLensLookalikeTest extends NonInteractiveTIMEngine
 				steps,// jSteps,
 				stepSize,//stepSize
 				n,// n,
-//				surfaceProperty1,// surfaceProperty1,
-//				surfaceProperty2,// surfaceProperty2,
-//				surfacePropertySides,// surfacePropertySides,
+				surfaceProperty1,// surfaceProperty1,
+				surfaceProperty1,// surfaceProperty2,
+				null,// surfacePropertySides,
 				scene,	// parent
 				studio
 				);
@@ -291,19 +291,21 @@ public class AdamsIdealLensLookalikeTest extends NonInteractiveTIMEngine
 
 			
 			ScaledParametrisedCentredParallelogram il;						
-			try {
-				Vector3D pp = Geometry.linePlaneIntersection(p, Vector3D.difference(p,q).getNormalised(), pointOnIdealLens, idealLensNormal);	// centre
+				//Vector3D pp = Geometry.linePlaneIntersection(p, Vector3D.difference(p,q).getNormalised(), pointOnIdealLens, idealLensNormal);	// centre
 						//System.out.println(pp);
+				Vector3D v1 = Vector3D.getANormal(idealLensNormal);	
 				il = new ScaledParametrisedCentredParallelogram(
 						"Ideal lens",	// description
-						pp,
-						new Vector3D(2*radius, 0, 0),	// spanVector1
-						new Vector3D(0, 2*radius, 0),	// spanVector2
+						pointOnIdealLens,
+						v1.getWithLength(2*radius),
+						Vector3D.crossProduct(v1, idealLensNormal).getWithLength(2*radius),
+//						new Vector3D(2*radius, 0, 0),	// spanVector1
+//						new Vector3D(0, 2*radius, 0),	// spanVector2
 						// size
 						new IdealThinLensSurfaceSimple(
-								pp,
+								pointOnIdealLens,
 								idealLensNormal,	// opticalAxisDirection
-								1./(-1./(-Vector3D.getDistance(pp, p)) + 1./(Vector3D.getDistance(pp, q))),	// focalLength; 1/f = -1/o + 1/i
+								1./(-1./(-Vector3D.getDistance(pointOnIdealLens, p.getPartParallelTo(idealLensNormal))) + 1./(Vector3D.getDistance(pointOnIdealLens, q.getPartParallelTo(idealLensNormal)))),	// focalLength; 1/f = -1/o + 1/i
 								SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// transmissionCoefficient
 								true	// shadowThrowing
 						),	// surfaceProperty
@@ -311,10 +313,7 @@ public class AdamsIdealLensLookalikeTest extends NonInteractiveTIMEngine
 						studio
 				);
 				scene.addSceneObject(il);
-			} catch (MathException e) {
-				// couldn't create ideal lens
-				e.printStackTrace();
-			}
+			
 			
 		}else { scene.addSceneObject(lookalikeLens);
 
