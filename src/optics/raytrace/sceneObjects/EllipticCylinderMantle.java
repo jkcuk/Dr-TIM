@@ -158,7 +158,6 @@ public class EllipticCylinderMantle extends SceneObjectPrimitive
 	// private variables
 	
 	private Vector3D aHat, bHat, cHat;
-//	private double a2, b2, c2;
 
 	public Vector3D getStartPoint()
 	{

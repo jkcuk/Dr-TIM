@@ -34,13 +34,10 @@ import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 
 
 /**
- * Visualise the view within the pendrose cavity[TODO get a ref].
+ * Visualise the view within the pendrose cavity[TODO ref].
  * 
  * This consists of an ellipse with two "mushroom" shaped extrusiones from either side.
- * The elipses are tunable with a provided focal length along with a major axis.
- * 
- * The main method renders the image defined by createStudio(), saves it to a file
- * (whose name is given by the constant FILENAME), and displays it in a new window.
+ * The ellipses are tunable with a provided focal length along with a major axis.
  * 
  * @author Maik
  */
