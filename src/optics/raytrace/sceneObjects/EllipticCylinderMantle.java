@@ -61,6 +61,43 @@ public class EllipticCylinderMantle extends SceneObjectPrimitive
 		validate();
 		setABC(spanA, axis.getNormalised(), spanC);
 	}
+	
+	/**
+	 * creates an elliptic cylinder mantle, this time using the focal lengths, which must be shorter than the length of the span vector A
+	 * @param description
+	 * @param startPoint
+	 * @param endPoint
+	 * @param spanA
+	 * @param focalLength
+	 * @param infinte
+	 * @param surfaceProperty
+	 * @param parent
+	 * @param studio
+	 */
+	public EllipticCylinderMantle(
+			String description,
+			Vector3D startPoint,
+			Vector3D endPoint,
+			Vector3D spanA,
+			double focalLength,
+			boolean infinite,
+			SurfaceProperty surfaceProperty,
+			SceneObject parent,
+			Studio studio
+		)
+	{
+		this(
+				description,
+				startPoint,
+				endPoint,
+				spanA,
+				calculateSpanC(startPoint, endPoint, spanA, focalLength),
+				infinite,	// infinite
+				surfaceProperty,
+				parent,
+				studio
+			);
+	}
 
 	/**
 	 * creates an elliptic cylinder mantle, this time using the focal lengths, which must be shorter than the length of the span vector A
