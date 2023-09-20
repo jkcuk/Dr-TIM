@@ -10,13 +10,14 @@ import optics.raytrace.core.Orientation;
 /**
  * A phase hologram of a cylindrical-lens spiral.
  * This is a cylindrical lens of focal length f, bent into a spiral centred at surface coordinates (0, 0).
- * If the spiral type is LOGARITHMIC, then the spiral is of the form r = a exp(b phi),
+ * If the spiral type is LOGARITHMIC, then the spiral is of the form r = exp(b phi),
  * where r=sqrt(x^2+y^2) and phi=atan2(y,x) and x and y are the surface coordinates.
- * If the spiral type is ARCHIMEDEAN, then the spiral is of the form r = a + b phi.
+ * If the spiral type is ARCHIMEDEAN, then the spiral is of the form r = b phi.
+ * If the spiral type is HYPERBOLIC, then the spiral is of the form r = b/phi.
  * 
  * The associated SceneObject must be a ParametrisedObject as the getSurfaceCoordinates(Vector3D) method is used to calculate the coordinates on the surface.
  * 
- * @author johannes, Ivan
+ * @author johannes, Ivan, Di Wu, Maik
  */
 public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 {
@@ -26,10 +27,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	{
 		ARCHIMEDEAN("Archimedean"),
 		LOGARITHMIC("Logarithmic"),
-		//dwu hyperbolic begin--
 		HYPERBOLIC("Hyperbolic");
 
-		//dwu hyperbolic end--
 		private String description;
 		private CylindricalLensSpiralType(String description) {this.description = description;}	
 		@Override
@@ -39,42 +38,39 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	/**
 	 * type of the cylindrical-lens spiral
 	 */
-	private CylindricalLensSpiralType cylindricalLensSpiralType;
+	protected CylindricalLensSpiralType cylindricalLensSpiralType;
 
 	/**
 	 * the cylindrical lens's focal length, in the case of the Archimedean spiral at r=1 and in the case of the
 	 * hyperbolic spiral for phi=1;
-	 * the cross-section of the cylindrical lens is Phi(r) = (pi d^2)(lambda f), where r is the radial distance
+	 * the cross-section of the cylindrical lens (without Alvarez winding focussing) is 
+	 *   Phi(r) = (pi d^2)(lambda f),
+	 * where r is the radial distance
 	 */
-	private double focalLength1;
+	protected double focalLength1;
 	
 	/**
 	 * the rotation angle of the spiral
 	 */
-	private double deltaPhi;
+	protected double deltaPhi;
 
 	/**
 	 * the centre of the cylindrical lens follows either the logarithmic spiral r = exp(b (phi+deltaPhi)), 
 	 * or the Archimedean spiral r = b (phi+deltaPhi),
 	 * or the hyperbolic spiral r = b/(phi + deltaPhi)
 	 */
-	private double b;
-	//dwu3for powD begin--
-	/**
-	 *
-	 */
-//	private double powD;
-	//dwu3for powD end--
+	protected double b;
+
 	/**
 	 * the winding focusing achieved by changing the "surface" of the cylinder spiral to that of an Alvarez lens. 
 	 * More precisely, the surface of two Alvarez lenses with zero separation between them and approximated for small relative rotation angles. 
 	 */
-	private boolean alvarezWindingFocusing;
+	protected boolean alvarezWindingFocusing;
 	
 	/**
 	 * the scene object this surface property is associated with
 	 */
-	private One2OneParametrisedObject sceneObject;
+	protected One2OneParametrisedObject sceneObject;
 	
 	
 	// internal variables
@@ -82,12 +78,9 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	/**
 	 * pre-calculated variable in setB()
 	 */
-	private double b2pi;
-	private double nHalf;
-	
-	// pre-calculated in preCalculateA()
-	private double a;
-	
+	protected double b2pi;
+	protected double nHalf;
+		
 
 	//
 	// constructors etc.
@@ -107,9 +100,6 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 			double focalLength1,
 			double deltaPhi,
 			double b,
-			//dwu8 forpowDinconstructor begin--
-//			double powD,
-			//dwu8 forpowDinconstructor end--
 			One2OneParametrisedObject sceneObject,
 			double throughputCoefficient,
 			boolean alvarezWindingFocusing,
@@ -122,10 +112,6 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		setFocalLength1(focalLength1);
 		setDeltaPhi(deltaPhi);
 		setB(b);
-		//dwu9 forpowDinconstructor begin--
-//		setPowD(powD);
-		//dwu9 forpowDinconstructor end--
-		preCalculateA();
 		setAlvarezWindingFocusing(alvarezWindingFocusing);
 		setSceneObject(sceneObject);
 	}
@@ -155,7 +141,6 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		setFocalLength1(focalLength1);
 		setDeltaPhi(deltaPhi);
 		setB(b);
-		preCalculateA();
 		setAlvarezWindingFocusing(false);
 		setSceneObject(sceneObject);
 	}
@@ -166,10 +151,6 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		setFocalLength1(original.getFocalLength1());
 		setDeltaPhi(original.getDeltaPhi());
 		setB(original.getB());
-		//dwu7for getsetinconstructor begin--
-//		setPowD(original.getPowD());
-		//dwu7for getsetinconstructor end--
-		preCalculateA();
 		setAlvarezWindingFocusing(original.isAlvarezWindingFocusing());
 		setSceneObject(original.getSceneObject());
 	}
@@ -219,12 +200,7 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		b2pi = 2*b*Math.PI;
 		nHalf = Math.log(0.5*(1. + Math.exp(b2pi)))/b2pi;
 	}
-	//dwu6for getsetPowD begin--
-//	public double getPowD() {
-//		return powD;
-//	}
-//	public void setPowD(double powD){this.powD=powD;}
-	//dwu6for getsetPowD end--
+
 	public boolean isAlvarezWindingFocusing() {
 		return alvarezWindingFocusing;
 	}
@@ -241,19 +217,6 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		this.sceneObject = sceneObject;
 	}
 
-	private void preCalculateA()
-	{
-		switch(cylindricalLensSpiralType)
-		{
-		case ARCHIMEDEAN:
-			a = 1+b*deltaPhi;
-			break;
-		case LOGARITHMIC:
-		default:
-			a = 1*Math.exp(b*deltaPhi);
-		}
-	}
-
 	
 	
 	/**
@@ -268,88 +231,79 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		switch(cylindricalLensSpiralType)
 		{
 		case ARCHIMEDEAN:
-			return a+b*(phi+n*2*Math.PI);
+			return b*(phi+deltaPhi+n*2*Math.PI);
 		//dwu1for calculateSpiralDistanceFromCentre hyperbolic begin--
 		case HYPERBOLIC:
-			return b/((phi+deltaPhi)+n*2*Math.PI);
+			return b/(phi+deltaPhi+n*2*Math.PI);
 		//dwu1for calculateSpiralDistanceFromCentre hyperbolic end--
 		case LOGARITHMIC:
 		default:
-			return a*Math.exp(b*(phi+n*2*Math.PI));			
+			return Math.exp(b*(phi+deltaPhi+n*2*Math.PI));			
 		}
 	}
 	
+	/**
+	 * @param r
+	 * @param phi
+	 * @return	the number of the winding that corresponds to position (r, phi)
+	 */
 	public double calculateN(double r, double phi)
 	{
+		double phiPlus = phi+deltaPhi;
+		
 		switch(cylindricalLensSpiralType)
 		{
 		case ARCHIMEDEAN:
-			return Math.ceil(-((b*phi - r + a)/b2pi) - 0.5);
-		//dwu2for calculateN hyperbolic begin--
+			return Math.ceil(-((b*phiPlus - r)/b2pi) - 0.5);
 		case HYPERBOLIC:
-//			return Math.ceil((b-phi*r)/(2*r*Math.PI)-(-phi-2*Math.PI*Math.floor((b-phi*r)/(2*r*Math.PI)))/(2*Math.PI)-
-//					(Math.sqrt(phi*phi+2*phi*Math.PI+4*phi*Math.PI*Math.floor((b-phi*r)/(2*r*Math.PI))+4*Math.PI*Math.PI
-//							*Math.floor((b-phi*r)/(2*r*Math.PI))+4*Math.PI*Math.PI*Math.floor((b-phi*r)/(2*r*Math.PI))*
-//							Math.floor((b-phi*r)/(2*r*Math.PI))))/(2*Math.PI));
-//			return Math.ceil((b-(phi+deltaPhi)*r)/(2*r*Math.PI)-(-(phi+deltaPhi)-2*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI)))/(2*Math.PI)-
-//						(Math.sqrt(Math.abs((phi+deltaPhi)*(phi+deltaPhi)+2*(phi+deltaPhi)*Math.PI+4*(phi+deltaPhi)*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))+4*Math.PI*Math.PI
-//								*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))+4*Math.PI*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))*
-//								Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI)))))/(2*Math.PI));
-			return Math.ceil((b-(phi+deltaPhi)*r)/(2*r*Math.PI)-(-(phi+deltaPhi)-2*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI)))/(2*Math.PI)-
-					(Math.sqrt(((phi+deltaPhi)*(phi+deltaPhi)+2*(phi+deltaPhi)*Math.PI+4*(phi+deltaPhi)*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))+4*Math.PI*Math.PI
-							*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))+4*Math.PI*Math.PI*Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI))*
-							Math.floor((b-(phi+deltaPhi)*r)/(2*r*Math.PI)))))/(2*Math.PI));
+			return Math.ceil((b-phiPlus*r)/(2*r*Math.PI)-(-phiPlus-2*Math.PI*Math.floor((b-phiPlus*r)/(2*r*Math.PI)))/(2*Math.PI)-
+					(Math.sqrt((phiPlus*phiPlus+2*phiPlus*Math.PI+4*phiPlus*Math.PI*Math.floor((b-phiPlus*r)/(2*r*Math.PI))+4*Math.PI*Math.PI
+							*Math.floor((b-phiPlus*r)/(2*r*Math.PI))+4*Math.PI*Math.PI*Math.floor((b-phiPlus*r)/(2*r*Math.PI))*
+							Math.floor((b-phiPlus*r)/(2*r*Math.PI)))))/(2*Math.PI));
 			// this becomes imaginary if b is <7ish
-		//dwu2for calculateN hyperbolic end--
 		case LOGARITHMIC:
 		default:
-			return Math.ceil(-((b*phi - Math.log(r/a))/b2pi) - nHalf);
+			return Math.ceil(-((b*phiPlus - Math.log(r))/b2pi) - nHalf);
 		}
 	}
 	
-//	public double lensHeight1(double r, double phi)
-//	{
-//		switch(cylindricalLensSpiralType)
-//		{
-//		case ARCHIMEDEAN:
-//			return 
-//		case LOGARITHMIC:
-//		default:
-//			return MyMath.square(r-calculateSpiralDistanceFromCentre(phi, calculateN(r, phi)));
-//		// return MyMath.square(r-calculateSpiralDistanceFromCentre(phi+calculateDeltaPhi(r, phi)));
-//	}
+	double calculatePhiUForCentreOfWinding(double r, double phi)
+	{
+		return phi + deltaPhi + calculateN(r, phi)*2*Math.PI;
+	}
 	
-	private double calculateXDerivative(double x, double y, double r, double r2, double phi, double n)
+	
+	double calculateXDerivative(double x, double y, double r, double r2, double phi, double n)
 	{	
 		double r_n = calculateSpiralDistanceFromCentre(phi, n);
+		double phiPlus = phi+deltaPhi;
+
 		// calculated in Mathematica
 		switch(cylindricalLensSpiralType)
 		{
 		case ARCHIMEDEAN:
 			//In the Archimedean case the focal length fArch is given by the ratio of the focal length at radius 1 and the radius
 			// hence fArch is given by the focalLength divided by the radius at any given point. 
-			double fArch = focalLength1/r_n;
 			if(alvarezWindingFocusing){
 				return 
 						(r_n-r)*(2*r*r*x+b*(r_n+r)*y)/(2*focalLength1*r*r);
 						// (r_n-r)*(2*b*y*r_n+r*x*(r+r_n))/(2*focalLength1*r*r);
-			}else {
-				return -(((x/r)+b*y/r2)*(r-r_n))/fArch;
 			}
-		//dwu4for calculateXDerivative begin--
+			else
+			{
+				return -(((x/r)+b*y/r2)*(r-r_n))/(focalLength1/r_n);
+			}
 		case HYPERBOLIC:
-		//System.out.println(powD);
-				double powD = -1/focalLength1;
-				return -(powD*y*(r-r_n)*(r-r_n)/(2*r*r))+((phi+deltaPhi)+2*n*Math.PI)*powD*(r-r_n)*((x/r)-((y*r_n*r_n)/(b*r*r)));
-		//dwu4for calculateXDerivative end--
+			return ((y*(r-r_n)*(r-r_n)/(2*r*r))-(phiPlus+2*n*Math.PI)*(r-r_n)*((x/r)-((y*r_n*r_n)/(b*r*r))))/focalLength1;
 		case LOGARITHMIC:
 		default:
 			//In the logarithmic case the focal length, fLog, is constant and hence simply the focalLength.
-			double fLog = focalLength1;
 			if(alvarezWindingFocusing){
-				return (-r*r*r*(3*x+b*y)+3*r*r_n*r_n*(x-b*y)+4*b*y*r_n*r_n*r_n)/(6*r_n*fLog*r*r);
-			}else {
-				return -(((a*b*Math.exp(b*(phi+n*2*Math.PI))*y)/r2 + x/r) * (-a*Math.exp(b*(phi+n*2*Math.PI)) + r))/fLog;
+				return (-r*r*r*(3*x+b*y)+3*r*r_n*r_n*(x-b*y)+4*b*y*r_n*r_n*r_n)/(6*r_n*focalLength1*r*r);
+			}
+			else
+			{
+				return -(((b*Math.exp(b*(phi+n*2*Math.PI))*y)/r2 + x/r) * (-Math.exp(b*(phiPlus+n*2*Math.PI)) + r))/focalLength1;
 			}
 
 			
@@ -361,36 +315,33 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		}
 	}
 	
-	private double calculateYDerivative(double x, double y, double r, double r2, double phi, double n)
+	double calculateYDerivative(double x, double y, double r, double r2, double phi, double n)
 	{
 		double r_n = calculateSpiralDistanceFromCentre(phi, n);
+		double phiPlus = phi+deltaPhi;
+
 		// calculated in Mathematica
 		switch(cylindricalLensSpiralType)
 		{
 		case ARCHIMEDEAN:
 			//In the Archimedean case the focal length fArch is given by the ratio of the focal length at radius 1 and the radius
 			// hence fArch is given by the focalLength divided by the radius at any given point. 
-			double fArch = focalLength1/r_n;
 			if(alvarezWindingFocusing){
 				return 
 						(r_n-r)*(2*r*r*y-b*(r_n+r)*x)/(2*focalLength1*r*r);
 						// -(r_n-r)*(2*b*x*r_n-r*y*(r+r_n))/(2*focalLength1*r*r);
 			}else {
-				return -(((y/r)-b*x/r2)*(r-r_n))/fArch;
+				return -(((y/r)-b*x/r2)*(r-r_n))/(focalLength1/r_n);
 			}
-		//dwu5for calculateYDerivative begin--
 		case HYPERBOLIC:
-			double powD = -1/focalLength1;
-			return (powD*x*(r-r_n)*(r-r_n)/(2*r*r))+(phi+2*n*Math.PI)*powD*(r-r_n)*((y/r)+((x*r_n*r_n)/(b*r*r)));
-		//dwu5for calculateYDerivative begin--
+			return -((x*(r-r_n)*(r-r_n)/(2*r*r))+(phiPlus+2*n*Math.PI)*(r-r_n)*((y/r)+((x*r_n*r_n)/(b*r*r))))/focalLength1;
 		case LOGARITHMIC:
 		default:
 			//In the logarithmic case the focal length, fLog, is constant and hence simply the focalLength.
-			double fLog = focalLength1;
 			if(alvarezWindingFocusing){
-				return (r*r*r*(b*x-3*y)+3*r*r_n*r_n*(b*x+y)-4*b*x*r_n*r_n*r_n)/(6*fLog*r*r*r_n);
+				return (r*r*r*(b*x-3*y)+3*r*r_n*r_n*(b*x+y)-4*b*x*r_n*r_n*r_n)/(6*focalLength1*r*r*r_n);
 			}else {
-				return -(((-a*b*Math.exp(b*(phi+n*2*Math.PI))*x)/r2 + y/r) * (-a*Math.exp(b*(phi+n*2*Math.PI)) + r))/fLog;
+				return -(((-b*Math.exp(b*(phiPlus+n*2*Math.PI))*x)/r2 + y/r) * (-Math.exp(b*(phiPlus+n*2*Math.PI)) + r))/focalLength1;
 			}
 			
 			
@@ -399,6 +350,184 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 			//double r_n = calculateSpiralDistanceFromCentre(phi, n);
 			//return -((r_n-r)*(r*r*(-b*x+3*y)+r_n*(b*r*x+9*r*y+8*b*x*r_n)))/(3*r*r*r_n);
 		}
+	}
+	
+	/**
+	 * @param phiU	the (unbound) angle phi, i.e. it can take values outside of some 2 pi range
+	 * @return	the radial distance that corresponds to the value phi
+	 */
+	double calculateR(double phiU)
+	{
+		switch(cylindricalLensSpiralType)
+		{
+		case ARCHIMEDEAN:
+			return b*phiU;
+		case HYPERBOLIC:
+			return b/phiU;
+		case LOGARITHMIC:
+		default:
+			return Math.exp(b*phiU);
+		}
+	}
+	
+	/**
+	 * @param phiU	the (unbound) angle phi, i.e. it can take values outside of some 2 pi range
+	 * @return	the focal length of the cylindrical lens that corresponds to the value phi
+	 */
+	double calculateF(double phiU)
+	{
+		switch(cylindricalLensSpiralType)
+		{
+		case ARCHIMEDEAN:
+			return focalLength1/calculateR(phiU);
+		case HYPERBOLIC:
+			return focalLength1/phiU;
+		case LOGARITHMIC:
+		default:
+			return focalLength1;
+		}
+	}
+	
+
+	/**
+	 * @param r
+	 * @return	the (unbound) angle phi (i.e. it can take values outside of some 2 pi range) that corresponds to the radial distance r
+	 */
+	double calculateUnboundPhi(double r)
+	{
+		switch(cylindricalLensSpiralType)
+		{
+		case ARCHIMEDEAN:
+			// r = b phi, so phi = r/b
+			return r/b;
+		case HYPERBOLIC:
+			// r = b / phi, so phi = b / r
+			return b / r;
+		case LOGARITHMIC:
+		default:
+			// r = e^(b phi), so ln r = b phi, so phi = ln r / b
+			return Math.log(r)/b;
+		}
+	}
+	
+	/**
+	 * @param phiU	the (unbound) angle phi, i.e. it can take values outside of some 2 pi range
+	 * @return	the width of the winding at phi
+	 */
+	double calculateWindingWidth(double phiU)
+	{
+		return Math.abs(calculateR(phiU-Math.PI) - calculateR(phiU+Math.PI));
+	}
+	
+	double calculateRadialOffset(double phi, double deltaPhi)
+	{
+		return calculateR(phi-0.5*deltaPhi) - calculateR(phi+0.5*deltaPhi);
+	}
+	
+	/**
+	 * @param r
+	 * @param phi
+	 * @return	the direction of the spiral line
+	 */
+	Vector3D calculateSpiralDirection(double r, double phi)
+	{
+		// the position vector for the position described by (r, phi)
+		Vector3D pos = sceneObject.getPointForSurfaceCoordinates(r, phi);
+		
+		// the surface coordinates of this position, i.e. Cartesian coordinates in the plane of the scene object
+		Vector2D xy = sceneObject.getSurfaceCoordinates(pos);
+		double x = xy.x;
+		double y = xy.y;
+		double rr = Math.sqrt(x*x+y*y);
+		
+		ArrayList<Vector3D> axes = sceneObject.getSurfaceCoordinateAxes(pos);
+		// the vector rHat, a unit vector from the centre to pos
+		Vector3D rHat = Vector3D.sum(
+				axes.get(0).getProductWith(x/rr),
+				axes.get(1).getProductWith(y/rr)
+			);
+		// the vector phiHat, a unit vector pointing in the azimuthal direction
+		Vector3D phiHat = Vector3D.sum(
+				axes.get(0).getProductWith(-y/rr),
+				axes.get(1).getProductWith(x/rr)
+			);
+		
+		// the non-normalised direction of the spiral, given by the direction 
+		// (d rv/d phiU) / r, is (see J's lab book entry 14/9/23, p. 154-5)
+		// 		1/phiU rHat + phiHat (Archimedean spiral; rHat term dominates at centre (phiU -> 0))
+		// 		b rHat + phiHat (logarithmic spiral; direction is same everywhere)
+		// 		-1/phiU rHat + phiHat (hyperbolic spiral; rHat term insignificant at centre (phiU -> \infty))
+		// (phiU is the *unbound* angle phi)
+		
+		double phiU = 
+				calculatePhiUForCentreOfWinding(r, phi);
+				// calculateUnboundPhi(r);	// unbound phi
+		double rHatFactor;
+		switch(cylindricalLensSpiralType)
+		{
+		case ARCHIMEDEAN:
+			rHatFactor = 1./phiU;
+			break;
+		case HYPERBOLIC:
+			rHatFactor = -1./phiU;
+			break;
+		case LOGARITHMIC:
+		default:
+			rHatFactor = b;
+		}
+		
+		return Vector3D.sum(rHat.getProductWith(rHatFactor), phiHat);
+	}
+	/**
+	 * @param r
+	 * @param phi
+	 * @return	a (non-normalised) outwards normal to the spiral direction
+	 */
+	Vector3D calculateSpiralOutwardsNormalDirection(double r, double phi)
+	{
+		// the position vector for the position described by (r, phi)
+		Vector3D pos = sceneObject.getPointForSurfaceCoordinates(r, phi);
+		
+		// the surface coordinates of this position, i.e. Cartesian coordinates in the plane of the scene object
+		Vector2D xy = sceneObject.getSurfaceCoordinates(pos);
+		double x = xy.x;
+		double y = xy.y;
+		double rr = Math.sqrt(x*x+y*y);
+		
+		ArrayList<Vector3D> axes = sceneObject.getSurfaceCoordinateAxes(pos);
+		// the vector rHat, a unit vector from the centre to pos
+		Vector3D rHat = Vector3D.sum(
+				axes.get(0).getProductWith(x/rr),
+				axes.get(1).getProductWith(y/rr)
+			);
+		// the vector phiHat, a unit vector pointing in the azimuthal direction
+		Vector3D phiHat = Vector3D.sum(
+				axes.get(0).getProductWith(-y/rr),
+				axes.get(1).getProductWith(x/rr)
+			);
+		
+		// the non-normalised outwards normal direction to the spiral is (see J's lab book entry 15/9/23, p. 156)
+		// 		rHat - (1/phiU) phiHat (Archimedean spiral)
+		// 		rHat - b phiHat (logarithmic spiral)
+		// 		rHat + (1/phiU) phiHat (hyperbolic spiral)
+		// (phiU is the *unbound* angle phi)
+		
+		double phiU = calculateUnboundPhi(r);	// unbound phi
+		double phiHatFactor;
+		switch(cylindricalLensSpiralType)
+		{
+		case ARCHIMEDEAN:
+			phiHatFactor = -1./phiU;
+			break;
+		case HYPERBOLIC:
+			phiHatFactor = 1./phiU;
+			break;
+		case LOGARITHMIC:
+		default:
+			phiHatFactor = -b;
+		}
+		
+		return Vector3D.sum(rHat, phiHat.getProductWith(phiHatFactor));
 	}
 
 	@Override
@@ -420,6 +549,7 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		double xDerivative = calculateXDerivative(x, y, r, r2, phi, n);
 		double yDerivative = calculateYDerivative(x, y, r, r2, phi, n);
 		
+		// from the derivatives, construct the transverse direction change in global (x, y, z) coordinates
 		ArrayList<Vector3D> xHatYHat = sceneObject.getSurfaceCoordinateAxes(surfacePosition);
 		return Vector3D.sum(xHatYHat.get(0).getProductWith(xDerivative), xHatYHat.get(1).getProductWith(yDerivative));
 	}
