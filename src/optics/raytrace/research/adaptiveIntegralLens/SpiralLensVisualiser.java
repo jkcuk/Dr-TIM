@@ -385,7 +385,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 
 		if(!showLensesCombined)
 		{
-			Vector3D spiralLens2Centre = Vector3D.sum( 
+			Vector3D spiralLens2Centre = Vector3D.sum(
 					centre, 
 					lensNormal.getWithLength((windingFocussingType==WindingFocussingType.SEPARATION)?distanceOfLens2BehindLens1:1e-8), 
 					spiralLens2AdditionalOffset
