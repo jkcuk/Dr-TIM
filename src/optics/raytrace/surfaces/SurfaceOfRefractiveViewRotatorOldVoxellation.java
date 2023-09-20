@@ -14,7 +14,7 @@ import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
-import optics.raytrace.utility.SingleSlitDiffraction;
+import optics.raytrace.surfaces.diffraction.SingleSlitDiffraction;
 import optics.raytrace.voxellations.FanOfPlanes;
 import optics.raytrace.voxellations.Voxellation;
 
