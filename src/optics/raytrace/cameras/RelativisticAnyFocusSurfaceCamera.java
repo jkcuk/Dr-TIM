@@ -14,7 +14,7 @@ import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
-import optics.raytrace.utility.CircularApertureDiffraction;
+import optics.raytrace.surfaces.diffraction.CircularApertureDiffraction;
 
 /**
  * @author johannes

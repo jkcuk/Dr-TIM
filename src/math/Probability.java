@@ -21,7 +21,7 @@ public class Probability {
 		for(int i=0; i<probabilities.size(); i++)
 		{
 			sum += probabilities.get(i);
-			if(sum > rand) return i;
+			if(sum >= rand) return i;
 		}
 		
 		throw new RuntimeException("This shouldn't happen!");

@@ -2,7 +2,7 @@ package optics.raytrace.surfaces;
 
 import math.Vector3D;
 import optics.raytrace.core.Orientation;
-import optics.raytrace.utility.SingleSlitDiffraction;
+import optics.raytrace.surfaces.diffraction.SingleSlitDiffraction;
 
 /**
  * A phase hologram of a rectangular array of Lohmann lens parts.

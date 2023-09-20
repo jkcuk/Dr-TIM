@@ -7,7 +7,7 @@ import optics.DoubleColour;
 import optics.raytrace.core.*;
 import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
-import optics.raytrace.utility.CircularApertureDiffraction;
+import optics.raytrace.surfaces.diffraction.CircularApertureDiffraction;
 
 /**
  * A camera that can focus on arbitrary surfaces (and not just planes, like normal cameras).

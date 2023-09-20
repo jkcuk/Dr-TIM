@@ -7,7 +7,7 @@ import math.Vector3D;
 import optics.raytrace.core.One2OneParametrisedObject;
 import optics.raytrace.core.Orientation;
 import optics.raytrace.core.RaySceneObjectIntersection;
-import optics.raytrace.utility.SingleSlitDiffraction;
+import optics.raytrace.surfaces.diffraction.SingleSlitDiffraction;
 
 /**
  * A phase hologram of a sparse rectangular array of lenslets of focal length f.

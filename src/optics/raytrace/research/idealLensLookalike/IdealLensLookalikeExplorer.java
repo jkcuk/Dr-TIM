@@ -625,11 +625,11 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 		lensPanel.setLayout(new MigLayout("insets 0"));
 		tabbedPane.addTab("Lenses", lensPanel);
 
-		p1Panel = new LabelledVector3DPanel("P1");
+		p1Panel = new LabelledVector3DPanel("P");
 		p1Panel.setVector3D(p1);
 		lensPanel.add(p1Panel, "span");
 
-		p2Panel = new LabelledVector3DPanel("P2");
+		p2Panel = new LabelledVector3DPanel("Q");
 		p2Panel.setVector3D(p2);
 		lensPanel.add(p2Panel, "span");
 
@@ -688,11 +688,11 @@ public class IdealLensLookalikeExplorer extends NonInteractiveTIMEngine
 		lookalikeLensSizePanel.setNumber(lookalikeLensSize);
 		idealLensLookalikePanel.add(lookalikeLensSizePanel, "span");
 
-		d1Panel = new LabelledDoublePanel("d1");
+		d1Panel = new LabelledDoublePanel("p");
 		d1Panel.setNumber(d1);
 		idealLensLookalikePanel.add(d1Panel, "span");
 
-		d2Panel = new LabelledDoublePanel("d2");
+		d2Panel = new LabelledDoublePanel("q");
 		d2Panel.setNumber(d2);
 		idealLensLookalikePanel.add(d2Panel, "span");
 

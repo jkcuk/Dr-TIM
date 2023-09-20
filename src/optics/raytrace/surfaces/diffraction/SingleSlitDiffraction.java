@@ -1,4 +1,4 @@
-package optics.raytrace.utility;
+package optics.raytrace.surfaces.diffraction;
 
 import math.InterpolatedFunction1D;
 import math.Vector3D;

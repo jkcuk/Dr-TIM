@@ -10,7 +10,7 @@ import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.SurfacePropertyPrimitive;
 import optics.raytrace.exceptions.RayTraceException;
-import optics.raytrace.utility.SingleSlitDiffraction;
+import optics.raytrace.surfaces.diffraction.SingleSlitDiffraction;
 
 /**
  * A rectangular array of lenslets of focal length f.

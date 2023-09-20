@@ -1,7 +1,7 @@
 package optics.raytrace.surfaces;
 
 import math.Vector3D;
-import optics.raytrace.utility.SingleSlitDiffraction;
+import optics.raytrace.surfaces.diffraction.SingleSlitDiffraction;
 
 /**
  * @author johannes

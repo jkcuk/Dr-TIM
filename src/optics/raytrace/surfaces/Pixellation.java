@@ -13,7 +13,7 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
-import optics.raytrace.utility.SingleSlitDiffraction;
+import optics.raytrace.surfaces.diffraction.SingleSlitDiffraction;
 
 /**
  * @author johannes

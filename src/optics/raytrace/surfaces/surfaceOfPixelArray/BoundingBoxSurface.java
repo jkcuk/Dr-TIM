@@ -5,7 +5,7 @@ import optics.DoubleColour;
 import optics.raytrace.core.*;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.sceneObjects.WrappedSceneObjectPrimitive;
-import optics.raytrace.utility.SingleSlitDiffraction;
+import optics.raytrace.surfaces.diffraction.SingleSlitDiffraction;
 
 
 /**

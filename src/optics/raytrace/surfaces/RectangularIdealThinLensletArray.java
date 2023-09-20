@@ -14,7 +14,7 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.SurfacePropertyPrimitive;
 import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
-import optics.raytrace.utility.SingleSlitDiffraction;
+import optics.raytrace.surfaces.diffraction.SingleSlitDiffraction;
 
 /**
  * A rectangular array of ideal thin lenslets of focal length f.

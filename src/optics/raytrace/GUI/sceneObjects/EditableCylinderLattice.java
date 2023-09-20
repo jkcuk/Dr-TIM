@@ -4,9 +4,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
+import optics.DoubleColour;
 import optics.raytrace.GUI.core.IPanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
@@ -30,6 +32,7 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 	private double xMin, xMax, yMin, yMax, zMin, zMax, radius;
 	private int nX, nY, nZ;	// number of cylinders in x, y, and z direction
 	private Vector3D xVector, yVector, zVector, centre;  //////
+	private boolean shadowThrowing;
 
 	// GUI panels
 //	private JPanel editPanel;
@@ -38,6 +41,7 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 	private LabelledIntPanel nXPanel, nYPanel, nZPanel;
 	private LabelledVector3DPanel xVectorPanel, yVectorPanel, zVectorPanel, centrePanel; //////
 	private JButton convertButton;
+	private JCheckBox shadowThrowingCheckBox;
 
 	
 	/**
@@ -80,7 +84,7 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 		this.zMax = zMax;
 		this.nZ = nZ;
 		this.radius = radius;
-		
+		this.shadowThrowing = true;
 		this.centre = new Vector3D(0,0,0);
 		this.xVector = Vector3D.X;
 		this.yVector = Vector3D.Y;
@@ -130,7 +134,7 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 		this.zMax = zMax;
 		this.nZ = nZ;
 		this.radius = radius;
-		
+		this.shadowThrowing = true;
 		this.centre = centre;
 		this.xVector = Vector3D.X;
 		this.yVector = Vector3D.Y;
@@ -182,7 +186,7 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 		this.zMax = zMax;
 		this.nZ = nZ;
 		this.radius = radius;
-
+		this.shadowThrowing = true;
 		this.centre = new Vector3D(0,0,0);
 		this.xVector = xVector.getNormalised();
 		this.yVector = yVector.getNormalised();
@@ -235,7 +239,63 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 		this.zMax = zMax;
 		this.nZ = nZ;
 		this.radius = radius;
-
+		this.shadowThrowing = true;
+		this.centre = centre;
+		this.xVector = xVector.getNormalised();
+		this.yVector = yVector.getNormalised();
+		this.zVector = zVector.getNormalised();
+		
+		addCylinders();
+	}
+	
+	/**
+	 * this constructor allows one to choose the three axis along which the lattice is constructed and where its centred and if it should be shadow throwing
+	 * @param description
+	 * @param xMin
+	 * @param xMax
+	 * @param nX
+	 * @param xVector
+	 * @param yMin
+	 * @param yMax
+	 * @param nY
+	 * @param yVector
+	 * @param zMin
+	 * @param zMax
+	 * @param nZ
+	 * @param zVector
+	 * @param radius
+	 * @param centre
+	 * @param shadowThrowing
+	 * @param parent
+	 * @param studio
+	 */
+	public EditableCylinderLattice(
+			String description,
+			double xMin, double xMax, int nX, Vector3D xVector,
+			double yMin, double yMax, int nY, Vector3D yVector,
+			double zMin, double zMax, int nZ, Vector3D zVector,
+			double radius,
+			Vector3D centre,
+			boolean shadowThrowing,
+			SceneObject parent, 
+			Studio studio
+	)
+	{
+		// constructor of superclass
+		super(description, true, parent, studio);
+		
+		// copy the parameters into this instance's variables
+		this.xMin = xMin;
+		this.xMax = xMax;
+		this.nX = nX;
+		this.yMin = yMin;
+		this.yMax = yMax;
+		this.nY = nY;
+		this.zMin = zMin;
+		this.zMax = zMax;
+		this.nZ = nZ;
+		this.radius = radius;
+		this.shadowThrowing = shadowThrowing;
 		this.centre = centre;
 		this.xVector = xVector.getNormalised();
 		this.yVector = yVector.getNormalised();
@@ -264,7 +324,7 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 		this.zMax = original.zMax;
 		this.nZ = original.nZ;
 		this.radius = original.radius;
-		
+		this.shadowThrowing = original.shadowThrowing;
 		this.centre = original.centre;
 		this.xVector = original.xVector;
 		this.yVector = original.yVector;
@@ -390,6 +450,14 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 		this.centre = centre;
 	}
 	
+	public boolean isShadowThrowing() {
+		return shadowThrowing;
+	}
+
+	public void setShadowThrowing(boolean shadowThrowing) {
+		this.shadowThrowing = shadowThrowing;
+	}
+
 	private void addCylinders()
 	{
 		// create all the cylinders
@@ -406,7 +474,7 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 						Vector3D.sum(centre, xVector.getProductWith(x), yVector.getProductWith(y), zVector.getProductWith(zMin)),//new Vector3D(x, y, zMin),	// start point
 						Vector3D.sum(centre, xVector.getProductWith(x), yVector.getProductWith(y), zVector.getProductWith(zMax)),//new Vector3D(x, y, zMax),	// end point
 						radius,	// radius
-						SurfaceColour.RED_SHINY,
+						new SurfaceColour("red shiny", DoubleColour.RED, DoubleColour.WHITE, shadowThrowing),
 						redCylinders,
 						getStudio()
 				));
@@ -427,7 +495,7 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 						Vector3D.sum(centre, xVector.getProductWith(xMin), yVector.getProductWith(y), zVector.getProductWith(z)), //new Vector3D(xMin, y, z),	// start point
 						Vector3D.sum(centre, xVector.getProductWith(xMax), yVector.getProductWith(y), zVector.getProductWith(z)),//new Vector3D(xMax, y, z),	// end point
 						radius,	// radius
-						SurfaceColour.BLUE_SHINY,
+						new SurfaceColour("blue shiny", DoubleColour.BLUE, DoubleColour.WHITE, shadowThrowing),
 						blueCylinders,
 						getStudio()
 				));
@@ -448,7 +516,7 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 						Vector3D.sum(centre, xVector.getProductWith(x), yVector.getProductWith(yMin), zVector.getProductWith(z)),//new Vector3D(x, yMin, z),	// start point
 						Vector3D.sum(centre, xVector.getProductWith(x), yVector.getProductWith(yMax), zVector.getProductWith(z)),//new Vector3D(x, yMax, z),	// end point
 						radius,	// radius
-						SurfaceColour.GREEN_SHINY,
+						new SurfaceColour("green shiny", DoubleColour.GREEN, DoubleColour.WHITE, shadowThrowing),
 						greenCylinders,
 						getStudio()
 				));
@@ -527,7 +595,11 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 		// the centre
 		
 		centrePanel = new LabelledVector3DPanel(", the centre of the lattice");
-		editPanel.add(centrePanel, "wrap");  //"wrap"???		
+		editPanel.add(centrePanel, "wrap");  //"wrap"???	
+		
+		// the shadow throwing option
+		shadowThrowingCheckBox = new JCheckBox("Shadow throwing");
+		editPanel.add(shadowThrowingCheckBox, "wrap");
 		
 		// the convert button
 
@@ -561,6 +633,7 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 		zVectorPanel.setVector3D(getZVector());
 		radiusPanel.setNumber(getRadius());
 		centrePanel.setVector3D(getCentre());
+		shadowThrowingCheckBox.setSelected(isShadowThrowing());
 	}
 
 	/* (non-Javadoc)
@@ -588,6 +661,7 @@ public class EditableCylinderLattice extends EditableSceneObjectCollection imple
 		setZVector(zVectorPanel.getVector3D().getNormalised());
 		setRadius(radiusPanel.getNumber());
 		setCentre(centrePanel.getVector3D());
+		setShadowThrowing(shadowThrowingCheckBox.isSelected());
 
 		// get rid of anything that's in this SceneObjectContainer at the moment...
 		clear();
