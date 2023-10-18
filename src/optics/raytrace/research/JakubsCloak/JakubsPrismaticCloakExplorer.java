@@ -12,6 +12,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
+import math.Geometry;
 import math.MyMath;
 import math.Vector3D;
 import net.miginfocom.swing.MigLayout;
@@ -23,6 +24,7 @@ import optics.raytrace.GUI.lowLevel.ApertureSizeComboBox;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
+import optics.raytrace.GUI.lowLevel.IntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledComponent;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableCylinderLattice;
@@ -160,6 +162,11 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 	
 	private Vector3D rayTraceStartingPosition, rayTracePosition;
 	
+	/**
+	 * Movie parameter
+	 */
+	private Vector3D movieSymmetryAxis;
+	
 	
 	public JakubsPrismaticCloakExplorer()
 	{
@@ -199,6 +206,13 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 		cameraApertureSize = ApertureSizeType.PINHOLE;
 		cameraHorizontalFOVDeg = 40;
 		cameraDistance = 10;
+		
+		//movie mode relevant params
+		movie = false;
+		numberOfFrames = 10;
+		firstFrame = 0;
+		lastFrame = numberOfFrames-1;
+		movieSymmetryAxis = Vector3D.Y;
 		
 
 		
@@ -248,13 +262,17 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 		printStream.println("show lattice " + toggleBackgroundLattice);
 		printStream.println("View Object " + viewObject);
 		printStream.println("radius " + radius);
-	
+		
+		printStream.println("Movie mode " + movie);
+		
 		//camera stuff should all be in the Tim engine
 		// write all parameters defined in NonInteractiveTIMEngine
 		super.writeParameters(printStream);		
 	}
 
 
+	private Vector3D initialCameraViewDirection;
+	
 	public void populateStudio()
 			throws SceneException{
 			
@@ -554,6 +572,32 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			
 			}
 			
+			if(movie)
+			{
+				// calculate view position that corresponds to the current frame
+				// initial camera position
+				Vector3D initialCameraPosition = Vector3D.sum(cameraViewCentre, initialCameraViewDirection.getWithLength(-cameraDistance));
+				// the camera will move in a circle; calculate its centre
+				Vector3D centreOfCircle = Geometry.getPointOnLineClosestToPoint(
+						cameraViewCentre,	// pointOnLine
+						movieSymmetryAxis,	// directionOfLine
+						initialCameraPosition	// point
+					);
+				// construct two unit vectors that span the plane of the circle in which the camera will move
+				Vector3D uHat = Vector3D.difference(initialCameraPosition, centreOfCircle).getNormalised();
+				Vector3D vHat = Vector3D.crossProduct(movieSymmetryAxis, uHat).getNormalised();
+
+				// define the azimuthal angle phi that parametrises the circle
+				double phi = 2.*Math.PI*frame/numberOfFrames;
+				System.out.println("LensCloakVisualiser::populateStudio: phi="+phi+"(="+MyMath.rad2deg(phi)+"deg)");
+				
+				// finally, calculate the view direction
+				cameraViewDirection = Vector3D.difference(
+						cameraViewCentre, 
+						Vector3D.sum(centreOfCircle, uHat.getProductWith(Math.cos(phi)*cameraDistance), vHat.getProductWith(Math.sin(phi)*cameraDistance))
+					);
+			}
+			
 			studio.setLights(LightSource.getStandardLightsFromBehind());
 			studio.setCamera(getStandardCamera());
 			studio.setScene(scene);
@@ -578,6 +622,10 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 	private JButton rayLastClickInfo;
 	private JCheckBox traceRayCheckBox;
 
+	private JCheckBox movieCheckBox;
+	private LabelledVector3DPanel movieSymmetryAxisPanel;
+	private IntPanel numberOfFramesPanel, firstFramePanel, lastFramePanel;
+	
 	JTabbedPane rayAimOptionPanel;
 		
 		protected void createInteractiveControlPanel()
@@ -694,6 +742,34 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			cameraFocussingDistancePanel = new DoublePanel();
 			cameraFocussingDistancePanel.setNumber(cameraFocussingDistance);
 			cameraPanel.add(GUIBitsAndBobs.makeRow("Camera focusing distance", cameraFocussingDistancePanel), "span");
+			
+			// movie panel
+			
+			JPanel moviePanel = new JPanel();
+			moviePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Movie"));
+			moviePanel.setLayout(new MigLayout("insets 0"));
+			cameraPanel.add(moviePanel, "span");
+
+			movieCheckBox = new JCheckBox("Create movie");
+			movieCheckBox.setSelected(movie);
+			moviePanel.add(movieCheckBox, "span");
+			
+			movieSymmetryAxisPanel = new LabelledVector3DPanel("Direction of rotation axis");
+			movieSymmetryAxisPanel.setVector3D(movieSymmetryAxis);
+			moviePanel.add(movieSymmetryAxisPanel, "span");
+			
+			numberOfFramesPanel = new IntPanel();
+			numberOfFramesPanel.setNumber(numberOfFrames);
+			
+			firstFramePanel = new IntPanel();
+			firstFramePanel.setNumber(firstFrame);
+			
+			lastFramePanel = new IntPanel();
+			lastFramePanel.setNumber(lastFrame);
+
+			moviePanel.add(GUIBitsAndBobs.makeRow("Calculate frames", firstFramePanel, "to", lastFramePanel, "out of", numberOfFramesPanel), "wrap");
+
+			tabbedPane.addTab("Camera", cameraPanel);
 
 			
 			
@@ -763,6 +839,12 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			cameraDistance = cameraDistancePanel.getNumber();
 			cameraApertureSize = cameraApertureSizeComboBox.getApertureSize();
 			
+			movie = movieCheckBox.isSelected();
+			movieSymmetryAxis = movieSymmetryAxisPanel.getVector3D();
+			numberOfFrames = numberOfFramesPanel.getNumber();
+			firstFrame = firstFramePanel.getNumber();
+			lastFrame = lastFramePanel.getNumber();
+			
 			
 			//ray trace
 			traceRay = traceRayCheckBox.isSelected();
@@ -784,7 +866,7 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			}
 			
 			
-
+			initialCameraViewDirection = cameraViewDirection; 
 		}
 			
 		
