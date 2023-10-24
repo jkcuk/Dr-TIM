@@ -66,9 +66,14 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 	private Vector3D symmetryAxis;
 
 	/**
-	 * d, the separation between the inner prisms
+	 * d, the separation between the inner prisms or in case of the hologram the radius of the inner hologram
 	 */
 	private double d;
+	
+	/**
+	 * outerRadius, the radius of the outer hologram.
+	 */
+	private double outerRadius;
 
 	/**
 	 * w, the interior angle of the prisms
@@ -183,6 +188,7 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 		magnitudeInner = -0.5;
 		magnitudeOuter = 0.5;
 		cropHologram = false;
+		outerRadius = 10;
 
 
 		//object stuff
@@ -242,6 +248,7 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 		printStream.println("centre = "+centre);
 		printStream.println("symmetry Axis = "+symmetryAxis);
 		printStream.println("d = "+d);
+		printStream.println("outerRadius = "+outerRadius);
 		printStream.println("omega = "+w);
 		printStream.println("h = "+h);
 		printStream.println("n = "+n);
@@ -455,7 +462,8 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 						"prism1",// description,
 						Vector3D.sum(symmetryAxis.getProductWith(-10), centre),// startPoint,
 						Vector3D.sum(symmetryAxis.getProductWith(10), centre),// endPoint,
-						D,// radius,
+						outerRadius,// radius,
+						false, //infinity
 				new PhaseHologramOfSimplePrism(
 						symmetryAxis,// uDirection,
 						magnitudeOuter,// magnitude,
@@ -471,6 +479,7 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 						Vector3D.sum(symmetryAxis.getProductWith(-10), centre),// startPoint,
 						Vector3D.sum(symmetryAxis.getProductWith(10), centre),// endPoint,
 						d,// radius,
+						false, //inifnity
 				new PhaseHologramOfSimplePrism(
 						symmetryAxis,/// uDirection,
 						magnitudeInner,// magnitude,
@@ -607,7 +616,7 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 
 	private LabelledVector3DPanel centrePanel, normalisedOpticalAxisDirectionPanel;
 	private JComboBox<ViewObject> viewObjectComboBox;
-	private DoublePanel dPanel, wPanel, hPanel, nPanel, surfaceTransmissionCoefficientPanel, radiusPanel, magnitudeInnerPanel, magnitudeOuterPanel;
+	private DoublePanel dPanel, outerRadiusPanel, wPanel, hPanel, nPanel, surfaceTransmissionCoefficientPanel, radiusPanel, magnitudeInnerPanel, magnitudeOuterPanel;
 	private JCheckBox shadowThrowingCheckBox, toggleBackgroundLatticeCheckBox, cropHologramCheckBox;
 	private JComboBox<CloakingStrat> cloakingStratComboBox;
 
@@ -684,6 +693,10 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			dPanel = new DoublePanel();
 			dPanel.setNumber(d);
 			cloakPanel.add(GUIBitsAndBobs.makeRow("d, inner prism separation", dPanel),"span");
+			
+			outerRadiusPanel = new DoublePanel();
+			outerRadiusPanel.setNumber(outerRadius);
+			cloakPanel.add(GUIBitsAndBobs.makeRow("Outer hologram radius", outerRadiusPanel),"span");
 			
 			nPanel = new DoublePanel();
 			nPanel.setNumber(n);
@@ -819,6 +832,7 @@ public class JakubsPrismaticCloakExplorer extends NonInteractiveTIMEngine
 			symmetryAxis = normalisedOpticalAxisDirectionPanel.getVector3D();
 			viewObject = (ViewObject)(viewObjectComboBox.getSelectedItem());
 			d = dPanel.getNumber();
+			outerRadius = outerRadiusPanel.getNumber();
 			w = MyMath.deg2rad(wPanel.getNumber());
 			h = hPanel.getNumber();
 			n = nPanel.getNumber();

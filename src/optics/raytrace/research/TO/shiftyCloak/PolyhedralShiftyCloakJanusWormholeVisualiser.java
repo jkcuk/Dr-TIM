@@ -455,11 +455,11 @@ public class PolyhedralShiftyCloakJanusWormholeVisualiser extends NonInteractive
 							Vector3D.Y,	// new Vector3D(0, 1, 0),	// pole
 							Vector3D.X,	// phi0Direction
 							//new SurfaceColour(sphereColours[i], DoubleColour.WHITE, false),	// surface property: sphereColours[i], made shiny; don't throw shadow
-							new Striped(
+							//new Striped(
 									new SurfaceColour(sphereImageColours[0], DoubleColour.WHITE, false),
-									new Transparent(),
-									Math.PI/24.
-									),	// surface property: sphereColours[i], made shiny; don't throw shadow
+//									new Transparent(),
+//									Math.PI/24.
+//									),	// surface property: sphereColours[i], made shiny; don't throw shadow
 							scene,
 							studio
 							),
@@ -472,11 +472,11 @@ public class PolyhedralShiftyCloakJanusWormholeVisualiser extends NonInteractive
 							sphereRadii[0],	// radius
 							Vector3D.Y,	// new Vector3D(0, 1, 0),	// pole
 							Vector3D.X,	// phi0Direction
-							new Striped(
+//							new Striped(
 									new SurfaceColour(sphereImageColours[0], DoubleColour.WHITE, false),
-									new Transparent(),
-									Math.PI/24.
-									),	// surface property: sphereColours[i], made shiny; don't throw shadow
+//									new Transparent(),
+//									Math.PI/24.
+//									),	// surface property: sphereColours[i], made shiny; don't throw shadow
 							scene,
 							studio
 							),

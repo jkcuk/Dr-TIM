@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import math.*;
 import optics.raytrace.GUI.sceneObjects.EditableSceneObjectCollection;
 import optics.raytrace.GUI.sceneObjects.EditableSphericalCap;
+import optics.raytrace.GUI.sceneObjects.EditableTimHead;
 import optics.raytrace.core.*;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
 import optics.raytrace.surfaces.SurfaceColour;
 
 /**
@@ -16,13 +17,13 @@ import optics.raytrace.surfaces.SurfaceColour;
  * The default head radius is about 20 such that the eyes radius is about that of the human eye.
  * There are two^ types of spectacles to chose from, with free choice in frame colour restricted only by SurfaceColour.
  * 
- * ^two for the moment but may increase if there is fun in making spectacle types.
+ * ^two for the moment but may increase if there is fun in making spectacles...
  * 
  * 
  * @author Maik
  */
 
-public class TimHeadWithSpecs extends SceneObjectContainer implements Serializable
+public class TimHeadWithSpecs extends EditableSceneObjectCollection implements Serializable
 {
 	// units TODO add them maybe? or not necessary?
 	public static double NM = 1e-9;
@@ -34,20 +35,21 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 	private static final long serialVersionUID = -2020879195818245854L;
 
 	//Tim head settings
-	private TimHead timHead;
+	private EditableTimHead timHead;
 	private Vector3D centre;
 	private Vector3D frontDirection;
 	private Vector3D topDirection;
 	private Vector3D rightDirection;
 	private double radius;
+	private double thickness;
 
 	//surface properties of the specs
 	SurfaceProperty leftSpecsSurface;
 	SurfaceProperty rightSpecsSurface;
 
 	//Lens objects
-	SceneObjectPrimitive leftSpecsObject;
-	SceneObjectPrimitive rightSpecsObject;
+	SceneObjectContainer leftSpecsObject;
+	SceneObjectContainer rightSpecsObject;
 
 	Vector3D leftSpecCentre, rightSpecCentre;
 
@@ -68,6 +70,34 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 
 	private FrameType frameType;
 
+	public TimHeadWithSpecs(
+			String description, 
+			Vector3D centre, 
+			double radius,
+			double thickness,
+			Vector3D frontDirection, 
+			Vector3D topDirection, 
+			Vector3D rightDirection, 
+			FrameType frameType,
+			SurfaceColour frameColour,
+			SceneObjectContainer leftSpecsObject,
+			SceneObjectContainer rightSpecsObject,
+			SceneObject parent, 
+			Studio studio)
+	{
+		super(description, true, parent, studio);
+		this.centre = centre;
+		this.radius = radius;
+		this.thickness = thickness;
+		this.frontDirection = frontDirection;
+		this.topDirection = topDirection;
+		this.rightDirection = rightDirection;
+		this.frameType = frameType;
+		this.frameColour = frameColour;
+		this.leftSpecsObject = leftSpecsObject;
+		this.rightSpecsObject = rightSpecsObject;
+		addElements();
+	}
 
 	public TimHeadWithSpecs(
 			String description, 
@@ -78,14 +108,15 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 			Vector3D rightDirection, 
 			FrameType frameType,
 			SurfaceColour frameColour,
-			SceneObjectPrimitive leftSpecsObject,
-			SceneObjectPrimitive rightSpecsObject,
+			SceneObjectContainer leftSpecsObject,
+			SceneObjectContainer rightSpecsObject,
 			SceneObject parent, 
 			Studio studio)
 	{
-		super(description, parent, studio);
+		super(description, true,parent, studio);
 		this.centre = centre;
 		this.radius = radius;
+		this.thickness = radius*0.06;
 		this.frontDirection = frontDirection;
 		this.topDirection = topDirection;
 		this.rightDirection = rightDirection;
@@ -128,16 +159,19 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 			SceneObject parent, 
 			Studio studio)
 	{
-		super(description, parent, studio);
+		super(description, true,parent, studio);
 		this.centre = centre;
 		this.radius = radius;
+		this.thickness = radius*0.06;
 		this.frontDirection = frontDirection;
 		this.topDirection = topDirection;
 		this.rightDirection = rightDirection;
 		this.frameType = frameType;
 		this.frameColour = frameColour;
 
-		this.leftSpecsObject = new Plane (
+		this.leftSpecsObject = new SceneObjectContainer ("Left object",	// description
+				this,	// parent
+				new Plane (
 							"left thin plane",
 							getLeftSpecCentre(new TimHead(
 									"Tim head for calculation", 
@@ -153,9 +187,13 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 							leftSpecsSurface,
 							this,
 							getStudio()
-							);
+							),
+				getStudio()
+				);
 				
-		this.rightSpecsObject =  new Plane (
+		this.rightSpecsObject = new SceneObjectContainer ("Right object",	// description
+				this,	// parent
+				new Plane (
 					"right thin plane",
 					getRightSpecCentre(new TimHead(
 							"Tim head for calculation", 
@@ -171,7 +209,9 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 					leftSpecsSurface,
 					this,
 					getStudio()
-					);
+					),
+				getStudio()
+				);
 		
 		addElements();
 	}
@@ -200,8 +240,8 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 			Vector3D rightDirection, 
 			FrameType frameType,
 			SurfaceColour frameColour,
-			SceneObjectPrimitive leftSpecsObject,
-			SceneObjectPrimitive rightSpecsObject,
+			SceneObjectContainer leftSpecsObject,
+			SceneObjectContainer rightSpecsObject,
 			SceneObject parent, 
 			Studio studio)
 	{
@@ -284,8 +324,8 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 			Vector3D centre, 	
 			FrameType frameType,
 			SurfaceColour frameColour,
-			SceneObjectPrimitive leftSpecsObject,
-			SceneObjectPrimitive rightSpecsObject,
+			SceneObjectContainer leftSpecsObject,
+			SceneObjectContainer rightSpecsObject,
 			SceneObject parent, 
 			Studio studio)
 	{
@@ -353,6 +393,7 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 				original.getDescription(),
 				original.getCentre(),
 				original.getRadius(),
+				original.getThickness(),
 				original.getFrontDirection(),
 				original.getTopDirection(),
 				original.getRightDirection(),
@@ -387,6 +428,15 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 
 	public void setRadius(double radius) {
 		this.radius = radius;
+	}
+
+	
+	public double getThickness() {
+		return thickness;
+	}
+
+	public void setThickness(double thickness) {
+		this.thickness = thickness;
 	}
 
 	public Vector3D getFrontDirection() {
@@ -445,35 +495,36 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 		this.rightSpecsSurface = rightSpecsSurface;
 	}
 
-	public TimHead getTimHead() {
+	public EditableTimHead getTimHead() {
 		return timHead;
 	}
 
-	public void setTimHead(TimHead timHead) {
+	public void setTimHead(EditableTimHead timHead) {
 		this.timHead = timHead;
 	}	
 
-	public SceneObjectPrimitive getLeftSpecsObject() {
+	public SceneObjectContainer getLeftSpecsObject() {
 		return leftSpecsObject;
 	}
 
 
-	public void setLeftSpecsObject(SceneObjectPrimitive leftSpecsObject) {
+	public void setLeftSpecsObject(SceneObjectContainer leftSpecsObject) {
 		this.leftSpecsObject = leftSpecsObject;
 	}
 
 
-	public SceneObjectPrimitive getRightSpecsObject() {
+	public SceneObjectContainer getRightSpecsObject() {
 		return rightSpecsObject;
 	}
 
-	public void setRightSpecsObject(SceneObjectPrimitive rightSpecsObject) {
+	public void setRightSpecsObject(SceneObjectContainer rightSpecsObject) {
 		this.rightSpecsObject = rightSpecsObject;
 	}
 
 	public static Vector3D getLeftSpecCentre(TimHead timHead) {
 		//calculate the left spectacle centre based on the Tim head
-		Vector3D leftEyeCentre = timHead.getLeftEye().getCentre();
+		Vector3D leftPupilCentre = timHead.getLeftEye().getCentre()
+				.getSumWith(timHead.getFrontDirection().getProductWith(timHead.getLeftEye().getRadius()));
 
 		//when the eye radius is that of a normal eye i.e about 1.25cm the specs should be 1.5cm from the eye.
 		//hence the specs scale with head radius as follows: r_head*0.18 = Specs_distance 
@@ -483,8 +534,8 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 		Vector3D specsEyeVector = timHead.getFrontDirection().getWithLength(specsEyeDistance);
 
 		//applying this to every eye now gives a centre position for the specs and the plane within the specs
-		Vector3D.sum(leftEyeCentre, specsEyeVector);		
-		return Vector3D.sum(leftEyeCentre, specsEyeVector);
+		Vector3D.sum(leftPupilCentre, specsEyeVector);		
+		return Vector3D.sum(leftPupilCentre, specsEyeVector);
 	}
 	
 	public void setLeftSpecCentre(Vector3D leftSpecCentre) {
@@ -494,7 +545,8 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 
 	public static Vector3D getRightSpecCentre(TimHead timHead) {
 		//calculate the right spectacle centre based on the Tim head
-		Vector3D rightEyeCentre  = timHead.getRightEye().getCentre();
+		Vector3D rightPupilCentre  = timHead.getRightEye().getCentre()
+				.getSumWith(timHead.getFrontDirection().getProductWith(timHead.getRightEye().getRadius()));
 
 		//when the eye radius is that of a normal eye i.e about 1.25cm the specs should be 1.5cm from the eye.
 		//hence the specs scale with head radius as follows: r_head*0.18 = Specs_distance 
@@ -504,7 +556,24 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 		Vector3D specsEyeVector = timHead.getFrontDirection().getWithLength(specsEyeDistance);
 
 		//applying this to every eye now gives a centre position for the specs and the plane within the specs
-		return Vector3D.sum(rightEyeCentre, specsEyeVector);
+		return Vector3D.sum(rightPupilCentre, specsEyeVector);
+	}
+	
+	public double getMaxSpecRadius(double headRadius){
+		double maxSpecRadius=0;
+		switch(this.frameType) {
+		case ROUND:
+			//taken from the calculations below to create an adequately sized frame.
+			maxSpecRadius = 0.165*headRadius;
+			break;
+		case PILOT:
+			maxSpecRadius = 0.23*headRadius*1.083; //The additional scaling is due to the centre of the specs not being the centre of the specs
+			break;
+		case NOTHING:
+		default:
+			break;
+		}
+		return maxSpecRadius;
 	}
 
 	public void setRightSpecCentre(Vector3D rightSpecCentre) {
@@ -522,8 +591,8 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 		basis.add(topDirection.getNormalised());
 		basis.add(frontDirection.getPartPerpendicularTo(topDirection).getWithLength(-1));
 		//now add tims head
-		timHead = new TimHead(
-				description, 
+		timHead = new EditableTimHead(
+				getDescription(), //TODO
 				centre, 
 				radius, 
 				frontDirection, 
@@ -535,26 +604,30 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 		addSceneObject(timHead);
 
 		//set the important params and scale factors for the specs based on the time head created above...
-		Vector3D leftEyeCentre = timHead.getLeftEye().getCentre();
-		Vector3D rightEyeCentre  = timHead.getRightEye().getCentre();
+		Vector3D leftPupilCentre = timHead.getLeftEye().getCentre()
+		.getSumWith(timHead.getFrontDirection().getProductWith(timHead.getLeftEye().getRadius()));
+		Vector3D rightPupilCentre  = timHead.getRightEye().getCentre()
+				.getSumWith(timHead.getFrontDirection().getProductWith(timHead.getRightEye().getRadius()));
 
 		//when the eye radius is that of a normal eye i.e about 1.25cm the specs should be 1.5cm from the eye.
 		//hence the specs scale with head radius as follows: r_head*0.18 = Specs_distance 
 		double specsEyeDistance = timHead.getRadius()*0.18;
+		
+		//System.out.println(timHead.getLeftEye().getRadius());
 
 		//in vector format along the front direction:
 		Vector3D specsEyeVector = timHead.getFrontDirection().getWithLength(specsEyeDistance);
 
 		//applying this to every eye now gives a centre position for the specs and the plane within the specs
-		leftSpecCentre = Vector3D.sum(leftEyeCentre, specsEyeVector);
-		rightSpecCentre = Vector3D.sum(rightEyeCentre, specsEyeVector);
+		leftSpecCentre = Vector3D.sum(leftPupilCentre, specsEyeVector);
+		rightSpecCentre = Vector3D.sum(rightPupilCentre, specsEyeVector);
 
 
 
 		// specs dimensions human about 37 mm tall and 52 mm wide. 
 
 		//make specs 5mm thick when realistic eye size this leads to the following ratio between head radius and spec thickness
-		double frameThickness = timHead.getRadius()*0.06;
+		double frameThickness = thickness;
 		Vector3D frameThicknessVector = timHead.getFrontDirection().getWithLength(frameThickness);
 
 		//frame radius should be about 3.3 cm when humanoid head size
@@ -574,15 +647,15 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 
 
 		//create scene object collections to which each component part can be added.
-		SceneObjectPrimitiveIntersection leftFrames = new SceneObjectPrimitiveIntersection("frames", null, null);
-		SceneObjectPrimitiveIntersection rightFrames = new SceneObjectPrimitiveIntersection("frames", null, null);
-		SceneObjectPrimitiveIntersection leftSpecs = new SceneObjectPrimitiveIntersection("specs", null, null);
-		SceneObjectPrimitiveIntersection rightSpecs = new SceneObjectPrimitiveIntersection("specs", null, null);
+		SceneObjectIntersection leftFrames = new SceneObjectIntersection("frames", null, null);
+		SceneObjectIntersection rightFrames = new SceneObjectIntersection("frames", null, null);
+		SceneObjectIntersection leftSpecs = new SceneObjectIntersection("specs", null, null);
+		SceneObjectIntersection rightSpecs = new SceneObjectIntersection("specs", null, null);
 		//Add a collection for a conneting piece between the two frames... for now only used in the round type
-		SceneObjectPrimitiveIntersection framesConnection = new SceneObjectPrimitiveIntersection("frames", null, null);
+		SceneObjectIntersection framesConnection = new SceneObjectIntersection("frames", null, null);
 		//create two more intersections as these will be needed for more complicated specs for now
-		SceneObjectPrimitiveIntersection leftFramesTop = new SceneObjectPrimitiveIntersection("frames", null, null);
-		SceneObjectPrimitiveIntersection rightFramesTop = new SceneObjectPrimitiveIntersection("frames", null, null);
+		SceneObjectIntersection leftFramesTop = new SceneObjectIntersection("frames", null, null);
+		SceneObjectIntersection rightFramesTop = new SceneObjectIntersection("frames", null, null);
 
 
 		//creating the planes to define the specs frame
@@ -706,31 +779,31 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 			//adding all the objects (positively and negatively) to their corresponding collection
 
 			//left frames
-			leftFrames.addPositiveSceneObjectPrimitive(ocularPlane);
-			leftFrames.addPositiveSceneObjectPrimitive(objectivePlane);
-			leftFrames.addPositiveSceneObjectPrimitive(leftFrameCylinder);
-			leftFrames.addNegativeSceneObjectPrimitive(leftNegativeFrameCylinder);
+			leftFrames.addPositiveSceneObject(ocularPlane);
+			leftFrames.addPositiveSceneObject(objectivePlane);
+			leftFrames.addPositiveSceneObject(leftFrameCylinder);
+			leftFrames.addNegativeSceneObject(leftNegativeFrameCylinder);
 
 			//right frame
-			rightFrames.addPositiveSceneObjectPrimitive(ocularPlane);
-			rightFrames.addPositiveSceneObjectPrimitive(objectivePlane);
-			rightFrames.addPositiveSceneObjectPrimitive(rightFrameCylinder);
-			rightFrames.addNegativeSceneObjectPrimitive(rightNegativeFrameCylinder);
+			rightFrames.addPositiveSceneObject(ocularPlane);
+			rightFrames.addPositiveSceneObject(objectivePlane);
+			rightFrames.addPositiveSceneObject(rightFrameCylinder);
+			rightFrames.addNegativeSceneObject(rightNegativeFrameCylinder);
 
 			//frame connector
-			framesConnection.addNegativeSceneObjectPrimitive(connectorFrameRightCutOff);
-			framesConnection.addNegativeSceneObjectPrimitive(connectorFrameLeftCutOff);
-			framesConnection.addNegativeSceneObjectPrimitive(connectorFrameHorizontalCutOff);
-			framesConnection.addPositiveSceneObjectPrimitive(ocularPlane);
-			framesConnection.addPositiveSceneObjectPrimitive(objectivePlane);
-			framesConnection.addPositiveSceneObjectPrimitive(frameCylinder);
-			framesConnection.addNegativeSceneObjectPrimitive(frameNegativeCylinder);
+			framesConnection.addNegativeSceneObject(connectorFrameRightCutOff);
+			framesConnection.addNegativeSceneObject(connectorFrameLeftCutOff);
+			framesConnection.addNegativeSceneObject(connectorFrameHorizontalCutOff);
+			framesConnection.addPositiveSceneObject(ocularPlane);
+			framesConnection.addPositiveSceneObject(objectivePlane);
+			framesConnection.addPositiveSceneObject(frameCylinder);
+			framesConnection.addNegativeSceneObject(frameNegativeCylinder);
 
 			//adding the specs part
-			leftSpecs.addPositiveSceneObjectPrimitive(leftSpecsObject);
-			leftSpecs.addPositiveSceneObjectPrimitive(leftNegativeFrameCylinder);
-			rightSpecs.addPositiveSceneObjectPrimitive(rightSpecsObject);
-			rightSpecs.addPositiveSceneObjectPrimitive(rightNegativeFrameCylinder);
+			leftSpecs.addPositiveSceneObject(leftSpecsObject);
+			leftSpecs.addPositiveSceneObject(leftNegativeFrameCylinder);
+			rightSpecs.addPositiveSceneObject(rightSpecsObject);
+			rightSpecs.addPositiveSceneObject(rightNegativeFrameCylinder);
 
 
 			break;
@@ -855,38 +928,38 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 
 			//finally create the intersections that will now make the frames
 			//left frames
-			leftFrames.addPositiveSceneObjectPrimitive(ocularPlane);
-			leftFrames.addPositiveSceneObjectPrimitive(objectivePlane);
-			leftFrames.addPositiveSceneObjectPrimitive(leftFrameCylinder);
-			leftFrames.addNegativeSceneObjectPrimitive(leftNegativeFrameCylinder);
-			leftFrames.addPositiveSceneObjectPrimitive(leftHorizontalCutoffPlane);
+			leftFrames.addPositiveSceneObject(ocularPlane);
+			leftFrames.addPositiveSceneObject(objectivePlane);
+			leftFrames.addPositiveSceneObject(leftFrameCylinder);
+			leftFrames.addNegativeSceneObject(leftNegativeFrameCylinder);
+			leftFrames.addPositiveSceneObject(leftHorizontalCutoffPlane);
 
-			leftFramesTop.addPositiveSceneObjectPrimitive(ocularPlane);
-			leftFramesTop.addPositiveSceneObjectPrimitive(objectivePlane);
-			leftFramesTop.addPositiveSceneObjectPrimitive(leftFrameTopCylinder);
-			leftFramesTop.addNegativeSceneObjectPrimitive(leftNegativeFrameTopCylinder);
-			leftFramesTop.addNegativeSceneObjectPrimitive(leftHorizontalCutoffPlane);
+			leftFramesTop.addPositiveSceneObject(ocularPlane);
+			leftFramesTop.addPositiveSceneObject(objectivePlane);
+			leftFramesTop.addPositiveSceneObject(leftFrameTopCylinder);
+			leftFramesTop.addNegativeSceneObject(leftNegativeFrameTopCylinder);
+			leftFramesTop.addNegativeSceneObject(leftHorizontalCutoffPlane);
 
 			//right frames
-			rightFrames.addPositiveSceneObjectPrimitive(ocularPlane);
-			rightFrames.addPositiveSceneObjectPrimitive(objectivePlane);
-			rightFrames.addPositiveSceneObjectPrimitive(rightFrameCylinder);
-			rightFrames.addNegativeSceneObjectPrimitive(rightNegativeFrameCylinder);
-			rightFrames.addPositiveSceneObjectPrimitive(rightHorizontalCutoffPlane);
+			rightFrames.addPositiveSceneObject(ocularPlane);
+			rightFrames.addPositiveSceneObject(objectivePlane);
+			rightFrames.addPositiveSceneObject(rightFrameCylinder);
+			rightFrames.addNegativeSceneObject(rightNegativeFrameCylinder);
+			rightFrames.addPositiveSceneObject(rightHorizontalCutoffPlane);
 
-			rightFramesTop.addPositiveSceneObjectPrimitive(ocularPlane);
-			rightFramesTop.addPositiveSceneObjectPrimitive(objectivePlane);
-			rightFramesTop.addPositiveSceneObjectPrimitive(rightFrameTopCylinder);
-			rightFramesTop.addNegativeSceneObjectPrimitive(rightNegativeFrameTopCylinder);
-			rightFramesTop.addNegativeSceneObjectPrimitive(rightHorizontalCutoffPlane);
+			rightFramesTop.addPositiveSceneObject(ocularPlane);
+			rightFramesTop.addPositiveSceneObject(objectivePlane);
+			rightFramesTop.addPositiveSceneObject(rightFrameTopCylinder);
+			rightFramesTop.addNegativeSceneObject(rightNegativeFrameTopCylinder);
+			rightFramesTop.addNegativeSceneObject(rightHorizontalCutoffPlane);
 
-			leftSpecs.addPositiveSceneObjectPrimitive(leftNegativeFrameCylinder);
-			leftSpecs.addPositiveSceneObjectPrimitive(leftNegativeFrameTopCylinder);
-			leftSpecs.addPositiveSceneObjectPrimitive(leftSpecsObject);
+			leftSpecs.addPositiveSceneObject(leftNegativeFrameCylinder);
+			leftSpecs.addPositiveSceneObject(leftNegativeFrameTopCylinder);
+			leftSpecs.addPositiveSceneObject(leftSpecsObject);
 
-			rightSpecs.addPositiveSceneObjectPrimitive(rightNegativeFrameCylinder);
-			rightSpecs.addPositiveSceneObjectPrimitive(rightNegativeFrameTopCylinder);
-			rightSpecs.addPositiveSceneObjectPrimitive(rightSpecsObject);
+			rightSpecs.addPositiveSceneObject(rightNegativeFrameCylinder);
+			rightSpecs.addPositiveSceneObject(rightNegativeFrameTopCylinder);
+			rightSpecs.addPositiveSceneObject(rightSpecsObject);
 
 
 			break;
@@ -905,7 +978,7 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 		
 		//as a final bonus, give Tim eye lids... 
 		
-		EditableSceneObjectCollection eyeLids = new EditableSceneObjectCollection(new SceneObjectContainer("cap", this, getStudio()), true);
+		EditableSceneObjectCollection eyeLids = new EditableSceneObjectCollection(new SceneObjectContainer("eyelids", this, getStudio()), true);
 		eyeLids.addSceneObject(
 				new EditableSphericalCap(
 						"left eyelid",
@@ -999,25 +1072,25 @@ public class TimHeadWithSpecs extends SceneObjectContainer implements Serializab
 	}
 
 	//TODO add transform to specs maybe? Don't know what this does exactly...
-	@Override
-	public TimHeadWithSpecs transform(Transformation t)
-	{
-		TimHeadWithSpecs h = new TimHeadWithSpecs(
-				getDescription(),
-				t.transformPosition(getCentre()),
-				getFrameType(),
-				getFrameColour(),
-				getLeftSpecsSurface(),
-				getRightSpecsSurface(),
-				getParent(),
-				getStudio()
-				);
-
-		// get rid of all the scene objects in h
-		h.clear();
-		h.setTimHead(getTimHead().transform(t));
-		return h;
-	}
+//	@Override
+//	public TimHeadWithSpecs transform(Transformation t)
+//	{
+//		TimHeadWithSpecs h = new TimHeadWithSpecs(
+//				getDescription(),
+//				t.transformPosition(getCentre()),
+//				getFrameType(),
+//				getFrameColour(),
+//				getLeftSpecsSurface(),
+//				getRightSpecsSurface(),
+//				getParent(),
+//				getStudio()
+//				);
+//
+//		// get rid of all the scene objects in h
+//		h.clear();
+//		h.setTimHead(getTimHead().transform(t));
+//		return h;
+//	}
 
 	@Override
 	public String getType()
