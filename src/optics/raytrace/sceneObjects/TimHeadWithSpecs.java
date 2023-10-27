@@ -48,8 +48,8 @@ public class TimHeadWithSpecs extends EditableSceneObjectCollection implements S
 	SurfaceProperty rightSpecsSurface;
 
 	//Lens objects
-	SceneObjectContainer leftSpecsObject;
-	SceneObjectContainer rightSpecsObject;
+	SceneObject leftSpecsObject;
+	SceneObject rightSpecsObject;
 
 	Vector3D leftSpecCentre, rightSpecCentre;
 
@@ -80,8 +80,8 @@ public class TimHeadWithSpecs extends EditableSceneObjectCollection implements S
 			Vector3D rightDirection, 
 			FrameType frameType,
 			SurfaceColour frameColour,
-			SceneObjectContainer leftSpecsObject,
-			SceneObjectContainer rightSpecsObject,
+			SceneObject leftSpecsObject,
+			SceneObject rightSpecsObject,
 			SceneObject parent, 
 			Studio studio)
 	{
@@ -108,8 +108,8 @@ public class TimHeadWithSpecs extends EditableSceneObjectCollection implements S
 			Vector3D rightDirection, 
 			FrameType frameType,
 			SurfaceColour frameColour,
-			SceneObjectContainer leftSpecsObject,
-			SceneObjectContainer rightSpecsObject,
+			SceneObject leftSpecsObject,
+			SceneObject rightSpecsObject,
 			SceneObject parent, 
 			Studio studio)
 	{
@@ -240,8 +240,8 @@ public class TimHeadWithSpecs extends EditableSceneObjectCollection implements S
 			Vector3D rightDirection, 
 			FrameType frameType,
 			SurfaceColour frameColour,
-			SceneObjectContainer leftSpecsObject,
-			SceneObjectContainer rightSpecsObject,
+			SceneObject leftSpecsObject,
+			SceneObject rightSpecsObject,
 			SceneObject parent, 
 			Studio studio)
 	{
@@ -324,8 +324,8 @@ public class TimHeadWithSpecs extends EditableSceneObjectCollection implements S
 			Vector3D centre, 	
 			FrameType frameType,
 			SurfaceColour frameColour,
-			SceneObjectContainer leftSpecsObject,
-			SceneObjectContainer rightSpecsObject,
+			SceneObject leftSpecsObject,
+			SceneObject rightSpecsObject,
 			SceneObject parent, 
 			Studio studio)
 	{
@@ -503,21 +503,21 @@ public class TimHeadWithSpecs extends EditableSceneObjectCollection implements S
 		this.timHead = timHead;
 	}	
 
-	public SceneObjectContainer getLeftSpecsObject() {
+	public SceneObject getLeftSpecsObject() {
 		return leftSpecsObject;
 	}
 
 
-	public void setLeftSpecsObject(SceneObjectContainer leftSpecsObject) {
+	public void setLeftSpecsObject(SceneObject leftSpecsObject) {
 		this.leftSpecsObject = leftSpecsObject;
 	}
 
 
-	public SceneObjectContainer getRightSpecsObject() {
+	public SceneObject getRightSpecsObject() {
 		return rightSpecsObject;
 	}
 
-	public void setRightSpecsObject(SceneObjectContainer rightSpecsObject) {
+	public void setRightSpecsObject(SceneObject rightSpecsObject) {
 		this.rightSpecsObject = rightSpecsObject;
 	}
 

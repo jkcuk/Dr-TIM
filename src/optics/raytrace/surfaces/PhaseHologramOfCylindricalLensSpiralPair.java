@@ -355,12 +355,13 @@ public class PhaseHologramOfCylindricalLensSpiralPair extends PhaseHologram
 					cylindricalLensSpiralPH[1].calculateWindingWidth(phiU2);
 			double deltaR = cylindricalLensSpiralPH[0].calculateRadialOffset(phiU, deltaPhiPart2 - deltaPhiPart1);
 			double p = deltaR/w;
-			double phiPW = deltaR*(2*Math.PI/lambda)*r/cylindricalLensSpiralPH[0].calculateF(phiU);
+			double phiPW = deltaR*(2*Math.PI/lambda)*deltaR/cylindricalLensSpiralPH[0].calculateF(phiU);
 			// TODO this should be the focal length of the lens that forms that winding, *not* f at r(phi)!
 			// TODO use the mean of the two focal lengths?
 					
 //					(deltaX k x)/f
 //					phiPeak = phiWedge[rH[b, phi], d*w, focalLengthH[f1, phi], k550nm];
+			// -((dR k r)/f)
 			
 			// create a list of transverse Delta k values that we need to consider
 			ArrayList<Double> deltaKList = new ArrayList<Double>();

@@ -436,7 +436,7 @@ public class TimHeadWithSpecsTest extends NonInteractiveTIMEngine
 
 		//Tim head
 		timHead = new TimHeadWithSpecs(
-				"new test subject" , 
+				"new test subject", 
 				centre,
 				radius, 
 				frontDirection, 

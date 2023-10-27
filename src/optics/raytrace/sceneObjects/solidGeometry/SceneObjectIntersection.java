@@ -457,23 +457,7 @@ implements Serializable
 		// the raySceneObjectIntersection lies outside all negative scene objects (other than the one that was involved in the intersection)
 		return true;
 	}
-	
-	/**
-	 * @author johannes
-	 * a little data structure that stores a ray-scene-object intersection and the corresponding distance (squared)
-	 */
-	public class IntersectionAndDistance
-	{
-		public RaySceneObjectIntersection intersection;
-		public double distance2;
 		
-		public IntersectionAndDistance(RaySceneObjectIntersection intersection, double distance2)
-		{
-			this.intersection = intersection;
-			this.distance2 = distance2;
-		}
-	}
-	
 //	/**
 //	 * Set <i>currentlyBestIntersection</i> to a closer one, if possible
 //	 * @param currentlyBestIntersection
@@ -519,32 +503,8 @@ implements Serializable
 //		}
 //	}
 	
-	private interface IntersectionInclusionCriterion
-	{
-		public boolean include(RaySceneObjectIntersection intersection);
-	}
 	
-	private class IncludeAll implements IntersectionInclusionCriterion
-	{
-		@Override
-		public boolean include(RaySceneObjectIntersection intersection)
-		{
-			return true;
-		}
-	}
 	
-	private IncludeAll iicAll = new IncludeAll();
-
-	private class IncludeShadowThrowingOnly implements IntersectionInclusionCriterion
-	{
-		@Override
-		public boolean include(RaySceneObjectIntersection intersection)
-		{
-			return intersection.o.isShadowThrowing();
-		}
-	}
-	
-	private IncludeShadowThrowingOnly iicSTO = new IncludeShadowThrowingOnly();
 
 	private void lookForBetterIntersection(
 			IntersectionAndDistance currentlyBestIntersection,
@@ -637,7 +597,7 @@ implements Serializable
 	@Override
 	public RaySceneObjectIntersection getClosestRayIntersectionAvoidingOrigin(Ray ray, SceneObjectPrimitive excludeObject)
 	{
-		return getClosestRayIntersectionAvoidingOrigin(ray, excludeObject, iicAll);
+		return getClosestRayIntersectionAvoidingOrigin(ray, excludeObject, IntersectionInclusionCriterion.iicAll);
 	}
 	
 	/* (non-Javadoc)
@@ -646,7 +606,7 @@ implements Serializable
 	@Override
 	public RaySceneObjectIntersection getClosestRayIntersectionWithShadowThrowingSceneObjectAvoidingOrigin(Ray ray, SceneObjectPrimitive excludeObject)
 	{
-		return getClosestRayIntersectionAvoidingOrigin(ray, excludeObject, iicSTO);
+		return getClosestRayIntersectionAvoidingOrigin(ray, excludeObject, IntersectionInclusionCriterion.iicSTO);
 	}
 
 	/* (non-Javadoc)
@@ -660,27 +620,27 @@ implements Serializable
 		// add the transformed visible positive...
 		if(positiveSceneObjects != null)
 		for(SceneObject sceneObject:positiveSceneObjects)
-			addPositiveSceneObject(sceneObject.transform(t));
+			transformed.addPositiveSceneObject(sceneObject.transform(t));
 		
 		// ... and negative scene objects
 		if(negativeSceneObjects != null)
 		for(SceneObject sceneObject:negativeSceneObjects)
-			addNegativeSceneObject(sceneObject.transform(t));
+			transformed.addNegativeSceneObject(sceneObject.transform(t));
 
 		// add the transformed invisible positive...
 		if(invisiblePositiveSceneObjects != null)
 		for(SceneObject sceneObject:invisiblePositiveSceneObjects)
-			addInvisiblePositiveSceneObject(sceneObject.transform(t));
+			transformed.addInvisiblePositiveSceneObject(sceneObject.transform(t));
 		
 		// ... and negative scene objects
 		if(invisibleNegativeSceneObjects != null)
 		for(SceneObject sceneObject:invisibleNegativeSceneObjects)
-			addInvisibleNegativeSceneObject(sceneObject.transform(t));
+			transformed.addInvisibleNegativeSceneObject(sceneObject.transform(t));
 
 		// add the transformed clipped scene objects
 		if(clippedSceneObjects != null)
 		for(SceneObject sceneObject:clippedSceneObjects)
-			addClippedSceneObject(sceneObject.transform(t));
+			transformed.addClippedSceneObject(sceneObject.transform(t));
 		
 		return transformed;
 	}
