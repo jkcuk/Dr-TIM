@@ -640,7 +640,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					
 					scene.addSceneObject(new SnellenChart(
 							"A snellen chart",// description,
-							cameraViewDirection.getProductWith(objectDistance),// centre,
+							cameraViewDirection.getWithLength(objectDistance),// centre,
 							vHat,//new Vector3D(0,1,0),// upDirection,
 							uHat,//new Vector3D(1,0,0),// rightDirection,
 							objectHeight,// height,
@@ -1066,34 +1066,37 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			if(sideAngle != 0 || upAngle != 0) {
 				//in spherical coordinates where the view along the z axis is upAngle = 0 sideAngle = 0 
 				cameraViewDirection = Geometry.rotate(Geometry.rotate(Vector3D.Z, Vector3D.Y, Math.toRadians(-sideAngle)),
-						Vector3D.X,	Math.toRadians(-upAngle));
+						Vector3D.X,	Math.toRadians(-upAngle)).getNormalised();
 			}
 
 			Vector3D topDirection = Vector3D.Y.getPartPerpendicularTo(cameraViewDirection);
 			Vector3D cameraCentre;
+			Vector3D cameraAim;
 			if (useEyeballCamera) {
 				//The cameraCentre is now actually the eye centre position
 				cameraCentre = Vector3D.Z.getWithLength(-allRadius);
-				cameraViewCentre = cameraCentre.getSumWith(cameraViewDirection.getWithLength(allRadius));
+				cameraAim = cameraCentre.getSumWith(cameraViewDirection.getWithLength(allRadius));
 			}else {
 				cameraCentre = Vector3D.Z.getWithLength(-cameraDistance);
-				cameraViewCentre = cameraCentre.getSumWith(cameraViewDirection.getWithLength(cameraDistance));
+				cameraAim = cameraCentre.getSumWith(cameraViewDirection.getWithLength(cameraDistance));
 			}
-			cameraTopDirection = Geometry.rotate(topDirection, cameraViewDirection, Math.toRadians(cameraRotation)).getSumWith(cameraCentre); 
-
-			AnyFocusSurfaceCamera defualtCamera = new AnyFocusSurfaceCamera(
+			Vector3D apertureCentre = Vector3D.sum(cameraAim, cameraViewDirection.getWithLength(-cameraDistance));
+			cameraTopDirection = Geometry.rotate(topDirection.getNormalised(), cameraViewDirection, Math.toRadians(cameraRotation));//.getSumWith(cameraCentre); 
+			cameraViewCentre = Vector3D.sum(apertureCentre, cameraViewDirection);
+		
+			AnyFocusSurfaceCamera defaultCamera = new AnyFocusSurfaceCamera(
 					"Camera",
-					Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)),	// centre of aperture
-					cameraViewDirection,	// viewDirection
-					calculateHorizontalSpanVector(cameraViewDirection, cameraTopDirection, cameraHorizontalFOVDeg),// horizontalSpanVector, 
-					calculateVerticalSpanVector(cameraViewDirection, cameraTopDirection, cameraHorizontalFOVDeg, cameraPixelsX, cameraPixelsY) ,//verticalSpanVector,
+					apertureCentre,	// centre of aperture
+					cameraViewCentre,// view Centre take normalised view direction and add it to the camera pos.
+					calculateHorizontalSpanVector(cameraViewDirection, cameraTopDirection.getNormalised(), cameraHorizontalFOVDeg),// horizontalSpanVector, 
+					calculateVerticalSpanVector(cameraViewDirection, cameraTopDirection.getNormalised(), cameraHorizontalFOVDeg, cameraPixelsX, cameraPixelsY) ,//verticalSpanVector,
 					cameraPixelsX, cameraPixelsY,	// logical number of pixels
 					cameraExposureCompensation,	// ExposureCompensationType.EC0,	// exposure compensation +0
 					cameraMaxTraceLevel,	// maxTraceLevel
 					new Plane(
 							"focus plane",	// description
-							Vector3D.sum(Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)), cameraViewDirection.getWithLength(cameraFocussingDistance)),	// pointOnPlane
-							cameraViewDirection,	// normal
+							Vector3D.sum(apertureCentre, cameraViewDirection.getWithLength(cameraFocussingDistance)),	// pointOnPlane
+							cameraViewDirection.getNormalised(),	// normal
 							null,	// surfaceProperty
 							null,	// parent
 							null	// studio
@@ -1104,7 +1107,12 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					550e-9,// lambda,
 		            renderQuality.getBlurQuality().getRaysPerPixel()// raysPerPixel
 		    	);
-			studio.setCamera(defualtCamera);
+			//defualtCamera.getViewDirection();
+			System.out.println("apertureCentre "+apertureCentre);
+			System.out.println("cameraTopDirection "+cameraTopDirection);
+			System.out.println("cameraViewCentre "+cameraViewCentre+" vs "+defaultCamera.getCentreOfView());
+			System.out.println("cameraViewDirection "+cameraViewDirection+". vs "+ defaultCamera.getViewDirection());
+			studio.setCamera(defaultCamera);
 		}
 	}
 
@@ -1770,7 +1778,7 @@ protected void createInteractiveControlPanel()
 		anaglyphCamera = anaglyphCameraCheckBox.isSelected();
 		cameraRotation = cameraRotationPanel.getNumber();
 		cameraDistance = cameraDistancePanel.getNumber()*CM;
-		cameraViewDirection = cameraViewDirectionPanel.getVector3D();
+		cameraViewDirection = cameraViewDirectionPanel.getVector3D().getNormalised();
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
 		cameraApertureSize = (ApertureSizeType)(cameraApertureSizeComboBox.getSelectedItem());
 		setcameraAperture = setcameraApertureCheckBox.isSelected();
