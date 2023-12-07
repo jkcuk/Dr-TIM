@@ -217,8 +217,8 @@ public class EditableRuler extends EditableSceneObjectCollection implements Acti
 				smallerDivisionSpanVector = divisionSpanVector.getProductWith(1/3.);
 			}
 			
-			System.out.println("divisionSpanVector "+divisionSpanVector);
-			System.out.println("smallerDivisionSpanVector "+smallerDivisionSpanVector);
+//			System.out.println("divisionSpanVector "+divisionSpanVector);
+//			System.out.println("smallerDivisionSpanVector "+smallerDivisionSpanVector);
 			
 			double smallerCylinderRadius = cylinderRadius/(((i%nDivisions)==0)?1.4:1.8);
 			double textHeight = smallerCylinderRadius*20/nDivisions;
