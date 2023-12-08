@@ -127,6 +127,16 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	 * the number of segments; each segment covers an angle 360 degrees / <i>n</i>
 	 */
 	private int aFwN;
+	
+	/**
+	 * if true, show two Fresnel wedges; if false,  show just one
+	 */
+	private boolean aFwShowSecondWedge;
+	
+	/**
+	 * separation between the two Fresnel wedges, in case the second one is shown
+	 */
+	private double aFwSeparation;
 
 	//
 	// Additional variables for the pixelated fresnel wedge
@@ -378,6 +388,9 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		aFwB = -9;
 		// aFwSimulateHonestly = true;
 		aFwN = 100;
+		aFwShowSecondWedge = false;
+		aFwSeparation = 1*MM;
+
 
 		//pixelated Fresnel wedge
 		aFwBPixel = -9;
@@ -499,6 +512,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 				case AZIMUTHAL_FRESNEL_WEDGE:
 					printStream.println("aFwB="+aFwB);
 					printStream.println("aFwN="+aFwN);
+					printStream.println("aFwShowSecondWedge="+aFwShowSecondWedge);
+					printStream.println("aFwSeparation="+aFwSeparation);
 					break;
 				case PIXELATED_AZIMUTHAL_FRESNEL_WEDGE:
 					printStream.println("aFwB="+aFwBPixel);
@@ -701,7 +716,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			scene.addSceneObject(
 					new EditableScaledParametrisedDisc(
 							"Azimuthal Fresnel wedge",	// description
-							objectCentre,	// centre
+							objectCentre.getSumWith(new Vector3D(0, 0, aFwShowSecondWedge?-0.5*aFwSeparation:0)),	// centre
 							Vector3D.Z,	// normal
 							3*CM,	// radius
 							new RotationallySymmetricPhaseHologram(
@@ -721,6 +736,34 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 							studio
 							)
 					);
+			
+			//  second azimuthal Fresnel wedge, if required
+			if(aFwShowSecondWedge)
+			{
+				scene.addSceneObject(
+						new EditableScaledParametrisedDisc(
+								"Azimuthal Fresnel wedge",	// description
+								objectCentre.getSumWith(new Vector3D(0, 0, +0.5*aFwSeparation)),	// centre
+								Vector3D.Z,	// normal
+								3*CM,	// radius
+								new RotationallySymmetricPhaseHologram(
+										componentCentre,	// centre
+										-aFwB,	// b
+										2,	// c
+										0,	// s
+										0,	// t
+										true,	// aFwSimulateHonestly,	// simulate honestly?
+										aFwN,	// n
+										new Vector3D(1, 0, 0),	// d0
+										SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,	// throughputCoefficient
+										false,	// reflective
+										true	// shadowThrowing
+										),	// surfaceProperty
+								scene,	// parent
+								studio
+								)
+						);
+			}
 			break;
 
 		case PIXELATED_AZIMUTHAL_FRESNEL_WEDGE:
@@ -1175,14 +1218,16 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	JTabbedPane viewRotatingComponentTabbedPane, backgroundTabbedPane;
 
 	// azimuthal Fresnel wedge
-	private DoublePanel aFwBPanel;
+	private DoublePanel aFwBPanel, aFwSeparationPanel;
 	// private JCheckBox aFwSimulateHonestlyCheckBox;
 	private IntPanel aFwNPanel;
+	private JCheckBox aFwShowSecondWedgeCheckBox;
 
 	//Pixelated azimuthal fresnel wedge
 	private DoublePanel aFwBPixelPanel;
 	private Vector3DPanel latticeSpanVector1Panel, latticeSpanVector2Panel;
 	private JCheckBox diffractiveBlurPixelatedFresnelWedgeCheckBox;
+
 
 	//refractive fresnel wedge
 	private DoublePanel rotationAnglePanel, thicknessPanel, refractiveIndexPanel, surfaceTransmissionCoefficientPanel, startSpanVectorPanel, stopSpanVectorPanel, magnificationFactorPanel;
@@ -1274,8 +1319,20 @@ protected void createInteractiveControlPanel()
 						"The clear aperture is divided into",
 						aFwNPanel,
 						"circular sectors"
-						)
+						),
+				"span"
 				);
+		
+		aFwShowSecondWedgeCheckBox = new JCheckBox("Show second azimuthal Fresnel wedge (experimental)");
+		aFwShowSecondWedgeCheckBox.setSelected(aFwShowSecondWedge);
+		azimuthalFresnelWedgePanel.add(aFwShowSecondWedgeCheckBox, "span");
+
+		aFwSeparationPanel = new DoublePanel();
+		aFwSeparationPanel.setNumber(aFwSeparation/MM);
+		azimuthalFresnelWedgePanel.add(
+				GUIBitsAndBobs.makeRow("Separation between first and second wedge (if shown)", aFwSeparationPanel, "mm"),
+				"span"
+			);
 
 		viewRotatingComponentTabbedPane.addTab("Azimuthal Fresnel wedge", azimuthalFresnelWedgePanel);
 
@@ -1715,6 +1772,9 @@ protected void createInteractiveControlPanel()
 		aFwB = aFwBPanel.getNumber();
 		// aFwSimulateHonestly = aFwSimulateHonestlyCheckBox.isSelected();
 		aFwN = aFwNPanel.getNumber();
+		aFwShowSecondWedge = aFwShowSecondWedgeCheckBox.isSelected();
+		aFwSeparation = aFwSeparationPanel.getNumber()*MM;
+
 
 		aFwBPixel = aFwBPixelPanel.getNumber();
 		latticeSpanVector1 = latticeSpanVector1Panel.getVector3D().getProductWith(MM);
@@ -1778,7 +1838,7 @@ protected void createInteractiveControlPanel()
 		anaglyphCamera = anaglyphCameraCheckBox.isSelected();
 		cameraRotation = cameraRotationPanel.getNumber();
 		cameraDistance = cameraDistancePanel.getNumber()*CM;
-		cameraViewDirection = cameraViewDirectionPanel.getVector3D().getNormalised();
+		cameraViewDirection = cameraViewDirectionPanel.getVector3D();
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
 		cameraApertureSize = (ApertureSizeType)(cameraApertureSizeComboBox.getSelectedItem());
 		setcameraAperture = setcameraApertureCheckBox.isSelected();
