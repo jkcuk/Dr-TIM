@@ -1838,7 +1838,7 @@ protected void createInteractiveControlPanel()
 		anaglyphCamera = anaglyphCameraCheckBox.isSelected();
 		cameraRotation = cameraRotationPanel.getNumber();
 		cameraDistance = cameraDistancePanel.getNumber()*CM;
-		cameraViewDirection = cameraViewDirectionPanel.getVector3D();
+		cameraViewDirection = cameraViewDirectionPanel.getVector3D().getNormalised();
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
 		cameraApertureSize = (ApertureSizeType)(cameraApertureSizeComboBox.getSelectedItem());
 		setcameraAperture = setcameraApertureCheckBox.isSelected();
