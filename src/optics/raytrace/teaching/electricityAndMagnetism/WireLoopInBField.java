@@ -3,12 +3,16 @@ package optics.raytrace.teaching.electricityAndMagnetism;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 
+import javax.swing.JCheckBox;
+
 import math.*;
 import optics.DoubleColour;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
 import optics.raytrace.GUI.cameras.RenderQualityEnum;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
+import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
+import optics.raytrace.GUI.lowLevel.IntPanel;
 import optics.raytrace.GUI.sceneObjects.EditableArrow;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedSphere;
 import optics.raytrace.core.LightSource;
@@ -39,9 +43,11 @@ public class WireLoopInBField extends NonInteractiveTIMEngine
 		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
 
 		// for movie version
-		numberOfFrames = 50;
+		numberOfFrames = 20;
 		firstFrame = 0;
 		lastFrame = numberOfFrames-1;
+		
+		movie = false;
 
 		// camera parameters are set in createStudio()
 	}
@@ -65,7 +71,10 @@ public class WireLoopInBField extends NonInteractiveTIMEngine
 	public void populateStudio()
 	throws SceneException
 	{
-		double phi = -0.25+(movie?2.*Math.PI*frame/(numberOfFrames+1):0);
+		// varies from 0 to (almost) pi
+		double alpha = (movie?Math.PI*frame/(numberOfFrames+1):0);
+		
+		double phi=-0.25;
 		cameraViewDirection = new Vector3D(-Math.sin(phi), -.2, Math.cos(phi));
 		cameraViewCentre = new Vector3D(0, 0, 0);
 		cameraDistance = 10;	// camera is located at (0, 0, 0)
@@ -102,7 +111,7 @@ public class WireLoopInBField extends NonInteractiveTIMEngine
 		double wireRadius = 0.05;
 		double loopWidth = 1;
 		double loopHeight = 1;
-		double loopAngle = MyMath.deg2rad(60);
+		double loopAngle = MyMath.deg2rad(60) + alpha;
 		double cos = Math.cos(loopAngle);
 		double sin = Math.sin(loopAngle);
 		ArrayList<Vector3D> loopVertices = new ArrayList<Vector3D>();
@@ -157,6 +166,43 @@ public class WireLoopInBField extends NonInteractiveTIMEngine
 
 	}
 
+	
+	private JCheckBox movieCheckBox;
+	private IntPanel numberOfFramesPanel;
+	
+	
+	/**
+	 * add controls to the interactive control panel;
+	 * override to modify
+	 */
+	@Override	
+	protected void createInteractiveControlPanel()	
+	{	
+		super.createInteractiveControlPanel();	
+		
+		movieCheckBox = new JCheckBox();
+		movieCheckBox.setSelected(movie);
+		
+		numberOfFramesPanel = new IntPanel();
+		numberOfFramesPanel.setNumber(numberOfFrames);
+		
+		interactiveControlPanel.add(GUIBitsAndBobs.makeRow(movieCheckBox, "create movie with", numberOfFramesPanel, "frames"));
+	}
+	
+	/**
+	 * called before rendering;
+	 * override when adding fields
+	 */
+	@Override
+	protected void acceptValuesInInteractiveControlPanel()
+	{
+		super.acceptValuesInInteractiveControlPanel();
+		
+		movie = movieCheckBox.isSelected();
+		numberOfFrames = numberOfFramesPanel.getNumber();
+		lastFrame = numberOfFrames-1;
+	}
+	
 	
 	/**
 	 * The main method, required so that this class can run as a Java application
