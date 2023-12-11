@@ -42,7 +42,7 @@ public class DistortedLookalikeSphereSurfaceProperty extends SurfacePropertyPrim
 	public DistortedLookalikeSphereSurfaceProperty(DistortedLookalikeSphere ellipsoid)
 	{
 		super(
-				0.9,	// transmissionCoefficient, when looking from inside the ellipsoid
+				ellipsoid.getTransmissionCoefficient(),	// transmissionCoefficient, when looking from inside the ellipsoid
 				false	// shadowThrowing
 			);
 		

@@ -8,11 +8,15 @@ import javax.swing.*;
 
 import math.*;
 import math.SpaceTimeTransformation.SpaceTimeTransformationType;
-import optics.raytrace.surfaces.Checked;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.core.*;
-import optics.DoubleColour;
-import optics.raytrace.GUI.cameras.*;
+import optics.raytrace.GUI.cameras.EditableAutostereogramCamera;
+import optics.raytrace.GUI.cameras.EditableOrthographicCameraSide;
+import optics.raytrace.GUI.cameras.EditableOrthographicCameraTop;
+import optics.raytrace.GUI.cameras.EditableRelativistic3DTVCamera;
+import optics.raytrace.GUI.cameras.EditableRelativisticAnaglyphCamera;
+import optics.raytrace.GUI.cameras.EditableRelativisticAnyFocusSurfaceCamera;
+import optics.raytrace.GUI.cameras.QualityType;
 import optics.raytrace.GUI.core.*;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.Format3DType;
@@ -140,13 +144,24 @@ public class TIMInteractiveBits
 	public static EditableSceneObjectCollection getFocusScene(Studio studio)
 	{
 		EditableSceneObjectCollection focusScene = new EditableSceneObjectCollection("focus scene", false, studio.getScene(), studio);
+		
 		focusScene.addSceneObject(new EditableParametrisedPlane(
-				"focussing plane",
+				"Focussing plane",
 				new Vector3D(0, 0, 10),	// point on plane
 				new Vector3D(0, 0, 1),	// normal to plane
 				SurfaceColour.BLACK_SHINY,
 				studio.getScene(),
 				studio
+		));
+		
+		// for directions in which focussing plane can't be seen
+		focusScene.addSceneObject(new EditableScaledParametrisedSphere(
+			"Distant sphere (for directions in which focussing plane can't be seen)", // description
+			Vector3D.O,	// centre
+			MyMath.HUGE,	// radius
+			SurfaceColour.BLUE_MATT,	// surfaceProperty
+			studio.getScene(),
+			studio
 		));
 		return focusScene;
 	}
@@ -188,6 +203,96 @@ public class TIMInteractiveBits
 		return eyeViewCamera;
 	}
 	
+	public void populateCameraFrameScene(EditableSceneObjectCollection cameraFrameScene, Studio studio)
+	{
+		//  cameraFrameScene.clear();
+	
+		// cameraFrameScene.addSceneObject(new EditableSpacePlatform(cameraFrameScene, studio), false);
+		
+//		// create the space platform collection...
+//		EditableSceneObjectCollection spacePlatform = new EditableSceneObjectCollection("Space platform", false, cameraFrameScene, studio);
+//		cameraFrameScene.addSceneObject(spacePlatform, false);
+//		
+//		// ... and populate it
+//		
+//		// the floor
+//		double floorY = -4;
+//		spacePlatform.addSceneObject(new EditableScaledParametrisedParallelogram(
+//				"Floor",	// description, 
+//				new Vector3D(-5, floorY, -2),	// corner, 
+//				new Vector3D(10, 0, 0),	// spanVector1,
+//				new Vector3D(0, 0, 10),	// spanVector2, 
+//				0,	// suMin,
+//				10,	// suMax,
+//				0,	// svMin,
+//				10,	// svMax,
+//				new EditableSurfaceTiling(SurfaceColour.GREY80_SHINY, SurfaceColour.WHITE_SHINY, 1, 1, cameraFrameScene),	// surfaceProperty,
+//				spacePlatform,	// parent,
+//				studio
+//				));
+//		// Tim's head
+//		spacePlatform.addSceneObject(new EditableTimHead(
+//				"Tim's head",	// description,
+//				new Vector3D(0, -2, 5),	// centre,
+//				1,	// radius,
+//				new Vector3D(0, 0, -1),	// frontDirection,
+//				new Vector3D(0, 1, 0),	// topDirection,
+//				new Vector3D(1, 0, 0),	// rightDirection,
+//				spacePlatform,	// parent, 
+//				studio
+//				));
+//		// Tim's head's pedestal
+//		spacePlatform.addSceneObject(new EditableCuboid(
+//				"Tim's head's pedestal",	// description,
+//				new Vector3D(0, -3.5, 5),	// centre,
+//				new Vector3D(1, 0, 0),	// centre2centreOfFace1,
+//				new Vector3D(0, 0.5, 0),	// centre2centreOfFace2,
+//				new Vector3D(0, 0, 1),	// centre2centreOfFace3,
+//				SurfaceColour.GREY20_MATT,	// surfaceProperty,
+//				spacePlatform,	// parent,
+//				studio
+//				));
+//		
+//		// camera
+//		EditableCameraShape cameraShape = new EditableCameraShape(
+//				"Camera",	// description
+//				new Vector3D(0, 0, -0.01),	// apertureCentre
+//				new Vector3D(0, 0, 1),	// forwardDirection
+//				new Vector3D(0, 1, 0),	// topDirection
+//				1,	// width
+//				SurfaceColour.GREY70_MATT,	// surfacePropertyBody
+//				SurfaceColour.GREY50_MATT,	// surfacePropertyLens
+//				null,	// surfacePropertyGlass
+//				spacePlatform,	// parent,
+//				studio
+//			);
+//		spacePlatform.addSceneObject(cameraShape);
+//		// tripod
+//		double tripodFootprintRadius = 1;
+//		EditableSceneObjectCollection tripod = new EditableSceneObjectCollection("Tripod", false, spacePlatform, studio);
+//		spacePlatform.addSceneObject(tripod);
+//		Vector3D tripodAttachmentPoint = cameraShape.getTripodAttachmentPoint();
+//		for(int i=1; i<=3; i++)
+//		{
+//			tripod.addSceneObject(
+//					new EditableParametrisedCylinder(
+//							"Tripod leg "+i,	// description
+//							tripodAttachmentPoint,	// startPoint
+//							new Vector3D(
+//									tripodAttachmentPoint.x + tripodFootprintRadius*Math.cos(2*Math.PI*i/3.),
+//									floorY, 
+//									tripodAttachmentPoint.z + tripodFootprintRadius*Math.sin(2*Math.PI*i/3.)
+//								),	// endPoint
+//							0.05,	// radius,
+//							SurfaceColour.GREY80_SHINY,	// surfaceProperty
+//							tripod,	// parent
+//							studio
+//					)
+//				);
+//		}
+		
+	}
+	
 	/**
 	 * @return a list of cameras ("Views")
 	 */
@@ -198,50 +303,13 @@ public class TIMInteractiveBits
 		// the focus scene shared by the eye-view camera and the anaglyph camera
 		EditableSceneObjectCollection focusScene = getFocusScene(studio);
 		
-		// the camera-frame scene
+		// create the camera-frame scene...
 		EditableSceneObjectCollection cameraFrameScene = new EditableSceneObjectCollection("camera-frame scene", false, studio.getScene(), studio);
-		// the floor
-		cameraFrameScene.addSceneObject(new EditableScaledParametrisedParallelogram(
-				"floor",	// description, 
-				new Vector3D(-5, -4, 0),	// corner, 
-				new Vector3D(10, 0, 0),	// spanVector1,
-				new Vector3D(0, 0, 10),	// spanVector2, 
-				0,	// suMin,
-				10,	// suMax,
-				0,	// svMin,
-				10,	// svMax,
-				new EditableSurfaceTiling(SurfaceColour.GREY80_SHINY, SurfaceColour.WHITE_SHINY, 1, 1, cameraFrameScene),	// surfaceProperty,
-				cameraFrameScene,	// parent,
-				studio
-				),
-				false
-				);
-		// Tim's head
-		cameraFrameScene.addSceneObject(new EditableTimHead(
-				"Tim's head",	// description,
-				new Vector3D(0, -2, 5),	// centre,
-				1,	// radius,
-				new Vector3D(0, 0, -1),	// frontDirection,
-				new Vector3D(0, 1, 0),	// topDirection,
-				new Vector3D(1, 0, 0),	// rightDirection,
-				cameraFrameScene,	// parent, 
-				studio
-				),
-				false
-				);
-		// Tim's head's pedestal
-		cameraFrameScene.addSceneObject(new EditableCuboid(
-				"Tim's head's pedestal",	// description,
-				new Vector3D(0, -3.5, 5),	// centre,
-				new Vector3D(1, 0, 0),	// centre2centreOfFace1,
-				new Vector3D(0, 0.5, 0),	// centre2centreOfFace2,
-				new Vector3D(0, 0, 1),	// centre2centreOfFace3,
-				SurfaceColour.GREY20_MATT,	// surfaceProperty,
-				cameraFrameScene,	// parent,
-				studio
-				),
-				false
-				);
+		
+		// ... and initialise it
+// 		StudioInitialisationType.DEFAULT.getStudioInitialisation().initialiseCameraFrameScene(cameraFrameScene, studio);
+		
+		populateCameraFrameScene(cameraFrameScene, studio);
 		
 		// define the cameras
 		//
@@ -256,6 +324,9 @@ public class TIMInteractiveBits
 //		eyePupil.setApertureRadius(eyeViewCamera.getApertureRadius());
 //		eyePupil.refreshSceneObjects();
 		
+		cameras.add(eyeViewCamera);
+//		cameras.add(StudioInitialisationType.DEFAULT.getStudioInitialisation().getEyeViewCamera(focusScene, cameraFrameScene, studio));
+
 		EditableOrthographicCameraTop topCamera = new EditableOrthographicCameraTop(
 				"Top view",
 				0,	// xCentre
@@ -265,6 +336,8 @@ public class TIMInteractiveBits
 				100,	// maxTraceLevel
 				QualityType.NORMAL	// anti-aliasing quality
 		);
+		cameras.add(topCamera);
+//		cameras.add(StudioInitialisationType.DEFAULT.getStudioInitialisation().getTopCamera(studio));
 
 		EditableOrthographicCameraSide sideCamera = new EditableOrthographicCameraSide(
 				"Side view",
@@ -275,6 +348,8 @@ public class TIMInteractiveBits
 				100,	// maxTraceLevel
 				QualityType.NORMAL	// anti-aliasing quality
 		);
+		cameras.add(sideCamera);
+//		cameras.add(StudioInitialisationType.DEFAULT.getStudioInitialisation().getSideCamera(studio));
 		
 		double anaglyphViewDistance = 5;
 		EditableRelativisticAnaglyphCamera anaglyphCamera = new EditableRelativisticAnaglyphCamera(
@@ -295,6 +370,8 @@ public class TIMInteractiveBits
 				QualityType.RUBBISH,	// blur quality
 				QualityType.NORMAL	// anti-aliasing quality
 		); 
+		cameras.add(anaglyphCamera);
+//		cameras.add(StudioInitialisationType.DEFAULT.getStudioInitialisation().getAnaglyphCamera(focusScene, cameraFrameScene, studio));
 
 		double the3DTVViewDistance = 5;
 		EditableRelativistic3DTVCamera the3DTVCamera = new EditableRelativistic3DTVCamera(
@@ -313,6 +390,8 @@ public class TIMInteractiveBits
 				QualityType.RUBBISH,	// blur quality
 				QualityType.NORMAL	// anti-aliasing quality
 		); 
+		cameras.add(the3DTVCamera);
+//		cameras.add(StudioInitialisationType.DEFAULT.getStudioInitialisation().get3DTVCamera(focusScene, cameraFrameScene, studio));
 
 		double autostereogramViewDistance = 5;
 		EditableAutostereogramCamera autostereogramCamera = new EditableAutostereogramCamera(
@@ -326,13 +405,8 @@ public class TIMInteractiveBits
 				100,	// maxTraceLevel
 				QualityType.NORMAL	// anti-aliasing quality
 		); 
-
-		cameras.add(eyeViewCamera);
-		cameras.add(topCamera);
-		cameras.add(sideCamera);
-		cameras.add(anaglyphCamera);
-		cameras.add(the3DTVCamera);
 		cameras.add(autostereogramCamera);
+//		cameras.add(StudioInitialisationType.DEFAULT.getStudioInitialisation().getAutostereogramCamera(studio));
 
 		return cameras;
 	}

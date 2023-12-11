@@ -40,6 +40,7 @@ import optics.raytrace.GUI.sceneObjects.EditableNetOfSymmetric4Simplex;
 import optics.raytrace.GUI.sceneObjects.EditableSky;
 import optics.raytrace.GUI.sceneObjects.EditableNinkyNonkSilhouette;
 import optics.raytrace.GUI.sceneObjects.EditableSpaceCancellingWedge;
+import optics.raytrace.GUI.sceneObjects.EditableSpacePlatform;
 import optics.raytrace.GUI.sceneObjects.EditableObjectCoordinateSystem;
 import optics.raytrace.GUI.sceneObjects.EditableParametrisedCone;
 import optics.raytrace.GUI.sceneObjects.EditableParametrisedConvexPolygon;
@@ -149,6 +150,7 @@ public enum SceneObjectType
 	SANTA_SILHOUETTE("Santa silhouette"),
 	SKY("Sky"),
 	SPACE_CANCELLING_WEDGE("Space-cancelling wedge"),
+	SPACE_PLATFORM("Space platform"),
 	SPACE_SHIFTING_PLANE("Space-shifting plane"),
 	SPHERE("Sphere"),
 	SPHERICAL_CAP("Spherical cap"),
@@ -563,6 +565,8 @@ public enum SceneObjectType
 			return(new EditableSky(parent, studio));
 		case SPACE_CANCELLING_WEDGE:
 			return new EditableMirroredSpaceCancellingWedge(parent, studio);
+		case SPACE_PLATFORM:
+			return new EditableSpacePlatform(parent, studio);
 		case SPACE_SHIFTING_PLANE:
 			return(new EditableSpaceShiftingPlane(parent, studio));
 		case SPHERE:

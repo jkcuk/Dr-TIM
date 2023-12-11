@@ -16,6 +16,7 @@ import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.Transformation;
 import optics.raytrace.sceneObjects.DistortedLookalikeSphere;
+import optics.raytrace.surfaces.DistortedLookalikeSphereSurfaceProperty;
 
 
 /**
@@ -33,6 +34,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 	private LabelledVector3DPanel cameraPositionPanel;
 	private LabelledVector3DPanel betaPanel;
 	private LabelledDoublePanel ellipsoidPrincipalRadiusInBetaDirectionPanel;
+	private LabelledDoublePanel transmissionCoefficientPanel;
 	private JComboBox<SpaceTimeTransformationType> spaceTimeTransformationComboBox;
 
 
@@ -40,8 +42,9 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 	 * @param description
 	 * @param cameraPosition
 	 * @param beta
-	 * @param transformType
+	 * @param spaceTimeTransformation
 	 * @param ellipsoidPrincipalRadiusInBetaDirection
+	 * @param transmissionCoefficient
 	 * @param parent
 	 * @param studio
 	 */
@@ -51,11 +54,12 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 			Vector3D beta, 
 			SpaceTimeTransformationType spaceTimeTransformation, 
 			double ellipsoidPrincipalRadiusInBetaDirection,
+			double transmissionCoefficient,
 			SceneObject parent,
 			Studio studio
 		)
 	{
-		super(description, cameraPosition, beta, spaceTimeTransformation, ellipsoidPrincipalRadiusInBetaDirection, parent, studio);
+		super(description, cameraPosition, beta, spaceTimeTransformation, ellipsoidPrincipalRadiusInBetaDirection, transmissionCoefficient, parent, studio);
 	}
 	
 	/**
@@ -74,6 +78,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 				Vector3D.O,	// beta, 
 				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,	// transformType, 
 				1,	// ellipsoidPrincipalRadiusInBetaDirection,
+				1,	// transmissionCoefficient
 				parent, studio
 			);
 	}
@@ -90,6 +95,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 				original.getBeta(),
 				original.getTransformType(),
 				original.getEllipsoidPrincipalRadiusInBetaDirection(),
+				original.getTransmissionCoefficient(),
 				original.getParent(),
 				original.getStudio()
 			);
@@ -141,6 +147,9 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 		ellipsoidPrincipalRadiusInBetaDirectionPanel = new LabelledDoublePanel("Radius in beta direction");
 		editPanel.add(ellipsoidPrincipalRadiusInBetaDirectionPanel, "wrap");
 
+		transmissionCoefficientPanel = new LabelledDoublePanel("Brightness factor");
+		editPanel.add(transmissionCoefficientPanel, "wrap");
+
 		editPanel.validate();
 	}
 
@@ -171,6 +180,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 		betaPanel.setVector3D(getBeta()); 
 		spaceTimeTransformationComboBox.setSelectedItem(getTransformType());
 		ellipsoidPrincipalRadiusInBetaDirectionPanel.setNumber(getEllipsoidPrincipalRadiusInBetaDirection());
+		transmissionCoefficientPanel.setNumber(getTransmissionCoefficient());
 	}
 
 	/* (non-Javadoc)
@@ -184,9 +194,12 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 		setBeta(betaPanel.getVector3D());
 		setTransformType((SpaceTimeTransformationType)spaceTimeTransformationComboBox.getSelectedItem());
 		setEllipsoidPrincipalRadiusInBetaDirection(ellipsoidPrincipalRadiusInBetaDirectionPanel.getNumber());
-		
+
 		calculateEllipsoidParameters();
 
+		setTransmissionCoefficient(transmissionCoefficientPanel.getNumber());
+		((DistortedLookalikeSphereSurfaceProperty)getSurfaceProperty()).setTransmissionCoefficient(getTransmissionCoefficient());
+		
 		return this;
 	}
 	
@@ -199,6 +212,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 				t.transformDirection(getBeta()),	// beta, 
 				getTransformType(),	// spaceTimeTransformation, 
 				getEllipsoidPrincipalRadiusInBetaDirection(),
+				getTransmissionCoefficient(),
 				getParent(), 
 				getStudio()
 			);

@@ -343,6 +343,7 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 							beta,
 							cameraSpaceTimeTransformationType,
 							ellipsoidPrincipalRadiusInBetaDirection,
+							1,
 							scene,
 							studio
 							));

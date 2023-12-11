@@ -71,7 +71,7 @@ public abstract class SceneObjectClass implements SceneObject, Serializable, Clo
 	/**
 	 * A common object found in a lot of scenes is a blue sky
 	 */
-	public static EditableScaledParametrisedSphere getSkySphere(SceneObject parent, Studio studio)
+	public static EditableSky getSkySphere(SceneObject parent, Studio studio)
 	{
 		return new EditableSky(parent, studio);
 		// return getSkySphere(1, parent, studio);
