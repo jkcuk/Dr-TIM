@@ -1862,7 +1862,7 @@ protected void createInteractiveControlPanel()
 		upAngle = upAnglePanel.getNumber();
 		sideAngle = sideAnglePanel.getNumber();
 		cameraApertureDiffraction = cameraApertureDiffractionCheckBox.isSelected(); 
-		rotateViewSystem = rotateViewSystemCheckBox.isSelected();
+		rotateViewSystem = rotateViewSystemCheckBox.isSelected(); 
 
 	}
 
