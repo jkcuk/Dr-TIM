@@ -324,6 +324,8 @@ implements SceneObject, IPanelComponent, ActionListener, Cloneable, Serializable
 			// show the new contents
 			if(TABLE) sceneObjectTablePanel.setSceneObjectContainer(sceneObjectContainer);
 			else sceneObjectListPanel.setSceneObjectContainer(sceneObjectContainer);
+			
+			// 
 		}
 	}
 

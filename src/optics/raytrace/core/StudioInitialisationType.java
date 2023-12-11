@@ -19,6 +19,7 @@ import optics.raytrace.studioInitialisation.OriginalInitialisation;
 import optics.raytrace.studioInitialisation.ShinyBallsInitialisation;
 import optics.raytrace.studioInitialisation.SurrealistInitialisation;
 import optics.raytrace.studioInitialisation.SurroundLatticeInitialisation;
+import optics.raytrace.studioInitialisation.TIMInSpaceInitialisation;
 import optics.raytrace.studioInitialisation.TestInitialisation;
 import optics.raytrace.studioInitialisation.TimHeadInitialisation;
 
@@ -53,18 +54,19 @@ public enum StudioInitialisationType
 	SURREALIST(new SurrealistInitialisation()),
 	SURROUND_LATTICE(new SurroundLatticeInitialisation()),
 	TEST(new TestInitialisation()),
-	TIM_HEAD(new TimHeadInitialisation());
+	TIM_HEAD(new TimHeadInitialisation()),
+	TIM_IN_SPACE(new TIMInSpaceInitialisation());
 	
 	private StudioInitialisation studioInitialisation;
 	private StudioInitialisationType(StudioInitialisation studioInitialisation) {this.studioInitialisation = studioInitialisation;}	
 	@Override
 	public String toString() {return studioInitialisation.getDescription();}
-	private StudioInitialisation getStudioInitialisation() {return studioInitialisation;}
+	public StudioInitialisation getStudioInitialisation() {return studioInitialisation;}
 	
 	/**
 	 * an alternative to values() that gives a limited list of values, in this case those that are available in fully-interactive TIM
 	 */
-	public static StudioInitialisationType[] limitedValuesForInteractiveTIM = {CHRISTMAS, DARKNESS, HALLOWEEN, HEAVEN, MINIMALIST, SHINY_BALLS, SURREALIST, SURROUND_LATTICE, TIM_HEAD, AUTOSTEREOGRAM_RESONATOR, CLOAKING, CURVED_SPACE}; 
+	public static StudioInitialisationType[] limitedValuesForInteractiveTIM = {CHRISTMAS, DARKNESS, HALLOWEEN, HEAVEN, MINIMALIST, SHINY_BALLS, SURREALIST, SURROUND_LATTICE, TIM_HEAD, TIM_IN_SPACE, AUTOSTEREOGRAM_RESONATOR, CLOAKING, CURVED_SPACE}; 
 
 	/**
 	 * an alternative to values() that gives a limited list of values, in this case those suitable as backgrounds
@@ -84,5 +86,5 @@ public enum StudioInitialisationType
 	public static void initialiseSceneAndLights(StudioInitialisationType studioInitialisationType, SceneObjectContainer sceneObjectContainer, Studio studio)
 	{
 		studioInitialisationType.getStudioInitialisation().initialiseSceneAndLights(sceneObjectContainer, studio);
-	}	
+	}
 }

@@ -112,7 +112,7 @@ public class EditableCameraShape extends EditableSceneObjectCollection implement
 		this(
 				"Camera",	// description
 				new Vector3D(0, 0, 10),	// apertureCentre
-				new Vector3D(0, 0, -1),	// forwardDirection
+				new Vector3D(0, 0, 1),	// forwardDirection
 				new Vector3D(0, 1, 0),	// topDirection
 				1,	// width
 				SurfaceColour.GREY50_MATT,	// surfacePropertyBody
@@ -254,16 +254,16 @@ public class EditableCameraShape extends EditableSceneObjectCollection implement
 		clear();
 		
 		// calculate the directions
-		Vector3D front = forwardDirection.getNormalised();
-		Vector3D up = topDirection.getPartPerpendicularTo(front).getNormalised();
-		Vector3D right = Vector3D.crossProduct(front, up);	// should be normalised already
+		Vector3D front = getNormalisedFrontDirection();	// forwardDirection.getNormalised();
+		Vector3D up = getNormalisedUpDirection();	// topDirection.getPartPerpendicularTo(front).getNormalised();
+		Vector3D right = getNormalisedRightDirection();	// Vector3D.crossProduct(front, up);	// should be normalised already
 
-		double bodyHeight = 0.6*width;
-		double bodyDepth = 0.3*width;
-		double lensLength = 0.25*width;
-		double lensRadius = 0.35*bodyHeight;
-		double viewFinderWidth = 0.2*width;
-		double viewFinderHeight = 0.15*width;
+		double bodyHeight = getBodyHeight();	// 0.6*width;
+		double bodyDepth = getBodyDepth();	// 0.3*width;
+		double lensLength = getLensLength();	// 0.25*width;
+		double lensRadius = getLensRadius();	// 0.35*bodyHeight;
+		double viewFinderWidth = getViewFinderWidth();	// 0.2*width;
+		double viewFinderHeight = getViewFinderHeight();	// 0.15*width;
 		
 		addSceneObject(
 				new EditableCuboid(
@@ -386,6 +386,30 @@ public class EditableCameraShape extends EditableSceneObjectCollection implement
 		
 		addSceneObject(viewFinderOpening);
 		addSceneObject(apertureOpening);
+	}
+	
+	
+	// useful methods
+	
+	public Vector3D getNormalisedFrontDirection() {return forwardDirection.getNormalised();}
+	public Vector3D getNormalisedUpDirection() {return topDirection.getPartPerpendicularTo(forwardDirection).getNormalised();}
+	public Vector3D getNormalisedRightDirection() {return Vector3D.crossProduct(forwardDirection, topDirection).getNormalised();}
+	
+	public double getBodyHeight() {return 0.6*width;}
+	public double getBodyDepth() {return 0.3*width;}
+	public double getLensLength() {return 0.25*width;}
+	public double getLensRadius() {return 0.21*width;}
+	public double getViewFinderWidth() {return 0.2*width;}
+	public double getViewFinderHeight() {return 0.15*width;}
+
+	
+	public Vector3D getTripodAttachmentPoint()
+	{
+		return Vector3D.sum(
+				apertureCentre, 
+				getNormalisedFrontDirection().getProductWith(-getLensLength()-0.5*getBodyDepth()), 
+				getNormalisedUpDirection().getProductWith(-0.5*getBodyHeight())
+			);
 	}
 	
 		

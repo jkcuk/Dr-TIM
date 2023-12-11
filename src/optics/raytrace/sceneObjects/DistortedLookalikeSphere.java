@@ -44,6 +44,8 @@ public class DistortedLookalikeSphere extends Ellipsoid
 	
 	private SpaceTimeTransformationType transformType;
 	
+	private double transmissionCoefficient;
+	
 
 	
 	// constructors etc.
@@ -59,6 +61,7 @@ public class DistortedLookalikeSphere extends Ellipsoid
 			Vector3D beta, 
 			SpaceTimeTransformationType transformType, 
 			double ellipsoidPrincipalRadiusInBetaDirection,
+			double transmissionCoefficient,
 			SceneObject parent,
 			Studio studio
 		)
@@ -78,6 +81,7 @@ public class DistortedLookalikeSphere extends Ellipsoid
 		setBetaAbs(beta.getLength());
 		setTransformType(transformType);
 		setEllipsoidPrincipalRadiusInBetaDirection(ellipsoidPrincipalRadiusInBetaDirection);
+		setTransmissionCoefficient(transmissionCoefficient);
 		
 		calculateEllipsoidParameters();
 		setSurfaceProperty(new DistortedLookalikeSphereSurfaceProperty(this));
@@ -95,6 +99,7 @@ public class DistortedLookalikeSphere extends Ellipsoid
 				getBeta(),
 				transformType,
 				ellipsoidPrincipalRadiusInBetaDirection,
+				transmissionCoefficient,
 				getParent(),
 				getStudio()
 			);
@@ -164,12 +169,19 @@ public class DistortedLookalikeSphere extends Ellipsoid
 		return transverseStretchFactor;
 	}
 
+	public double getTransmissionCoefficient() {
+		return transmissionCoefficient;
+	}
+
+	public void setTransmissionCoefficient(double transmissionCoefficient) {
+		this.transmissionCoefficient = transmissionCoefficient;
+	}
+
 
 
 		
 	// internal variables
 		
-
 
 
 	/**
