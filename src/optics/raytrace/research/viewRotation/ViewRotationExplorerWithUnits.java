@@ -320,6 +320,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private double cameraRotation;
 	
 	/**
+	 * Should the rotated camera move along the new rotated coordinate system or along the unrotated one?
+	 */
+	private boolean rotateViewSystem;
+	
+	/**
 	 * Camera diffraction 
 	 */
 	private boolean cameraApertureDiffraction;
@@ -466,6 +471,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		useEyeballCamera = true;
 		autoFocus = false;
 		cameraApertureDiffraction = false;
+		rotateViewSystem = false;
 		
 		//Move mode to change pixel span vector frame by frame
 		movie = false;
@@ -587,6 +593,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 				printStream.println("Camera");
 				printStream.println(" cD="+cameraDistance);
 				printStream.println(" cVD="+cameraViewDirection);
+				printStream.println(" rotateViewSystem="+rotateViewSystem);
 				printStream.println(" cVD vertical angle="+upAngle);
 				printStream.println(" cVD horizontal angle="+sideAngle);
 				printStream.println(" cFOV="+cameraHorizontalFOVDeg);
@@ -1111,6 +1118,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 				cameraViewDirection = Geometry.rotate(Geometry.rotate(Vector3D.Z, Vector3D.Y, Math.toRadians(-sideAngle)),
 						Vector3D.X,	Math.toRadians(-upAngle)).getNormalised();
 			}
+			
+			if(rotateViewSystem) cameraViewDirection = Geometry.rotate(cameraViewDirection, Vector3D.Z, Math.toRadians(cameraRotation));
 
 			Vector3D topDirection = Vector3D.Y.getPartPerpendicularTo(cameraViewDirection);
 			Vector3D cameraCentre;
@@ -1271,7 +1280,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
 	private DoublePanel cameraFocussingDistancePanel, cameraAperturePanel;
 	private JCheckBox anaglyphCameraCheckBox, useEyeballCameraCheckBox, setcameraApertureCheckBox;
-	private JCheckBox movieCheckBox, autoFocusCheckBox, cameraApertureDiffractionCheckBox;
+	private JCheckBox movieCheckBox, autoFocusCheckBox, cameraApertureDiffractionCheckBox, rotateViewSystemCheckBox;
 	private IntPanel numberOfFramesPanel, firstFramePanel, lastFramePanel;  
 
 
@@ -1670,7 +1679,11 @@ protected void createInteractiveControlPanel()
 
 		cameraRotationPanel = new DoublePanel();
 		cameraRotationPanel.setNumber(cameraRotation);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera/eye rotation",cameraRotationPanel,"<html>&deg;</html>,"),"span"); 
+		
+		rotateViewSystemCheckBox = new JCheckBox();
+		rotateViewSystemCheckBox.setSelected(rotateViewSystem);
+
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera/eye rotation",cameraRotationPanel,"<html>&deg;</html>. Tick ",rotateViewSystemCheckBox, "to move camera view direction along rotated axis."),"span"); 
 
 		cameraViewDirectionPanel = new LabelledVector3DPanel("View direction");
 		cameraViewDirectionPanel.setVector3D(cameraViewDirection);
@@ -1849,6 +1862,7 @@ protected void createInteractiveControlPanel()
 		upAngle = upAnglePanel.getNumber();
 		sideAngle = sideAnglePanel.getNumber();
 		cameraApertureDiffraction = cameraApertureDiffractionCheckBox.isSelected(); 
+		rotateViewSystem = rotateViewSystemCheckBox.isSelected();
 
 	}
 
