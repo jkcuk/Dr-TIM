@@ -8,7 +8,7 @@ public class DerivativeControlSurfaceRotating extends DerivativeControlSurface {
 	private static final long serialVersionUID = -3598838329885511533L;
 	
 	/**
-	 * rotation angle (in  radians)
+	 * rotation angle (in radians)
 	 */
 	private double theta;
 	

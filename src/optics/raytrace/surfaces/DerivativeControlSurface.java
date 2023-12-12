@@ -13,45 +13,44 @@ import optics.raytrace.sceneObjects.ParametrisedPlane;
 
 /**
  * 
- * A surface that changes one particular incident light-ray direction to a corresponding outgoing light-ray direction,  and if the incident light-ray direction
- * is  not that  particular one then it  uses the Jacobian to  calculate the  corresponding  outgoing  light-ray direction.
+ * A surface that changes one particular pair of light-ray directions, Di0 on the inside and Do0 on the outside, into other.
+ * If the incident light-ray direction is not either Di0 (if the light ray is incident from  the inside) or Do0 (if incident from the outside),
+ * a Jacobian matrix is used to calculate the corresponding outgoing light-ray direction.
  * 
- * The relationship between the  inside light-ray direction  and outside direction is given  by the equation
- *     d_i0  + (d_i - d_i0) =  d_o0  + (d_o - d_o0) = d_o0 + JacobianIn2Out (d_i  - d_i0)
- * i.e. (d_o -  d_o0) = JacobianIn2Out (d_i - d_i0).
+ * The directions Di0 and Do0, as well as the Jacobian, can vary from point to point.
  * 
- * Those directions and the  Jacobian vary from point to point.
+ * The details are as follows:
+ * (1) The (3D) incident light-ray direction is normalised and projected into the tangent plane at the ray-scene object intersection point.
+ * (2) If the ray is incident from the scene object's inside, the (2D) projected light-ray direction is called d_i0, otherwise d_o0.
+ * (3) The relationship between the inside light-ray direction and outside direction is given by the equation
+ *       d_o = d_o0 + JacobianIn2Out (d_i  - d_i0)
+ *     i.e. (d_o -  d_o0) = JacobianIn2Out (d_i - d_i0).
+ *     This equation is used to calculate the outgoing light-ray direction.
+ *     d_i0 and d_o0 are the (2D) projections into the tangent plane at the ray-scene object intersection point of two (3D) light-ray directions.
+ * (4) The (2D) outgoing light-ray direction is converted into a 3D light-ray direction.
  * 
  * @author Ewan, Maik, Johannes
  *
  */
 public class DerivativeControlSurface extends SurfacePropertyPrimitive
 {
-	private static final long serialVersionUID = -8805761209985615963L;
-
-//	/**
-//	 * the u direction
-//	 */
-//	private Vector3D uHat;
-//	
-//	/**
-//	 * the v direction
-//	 */
-//	private Vector3D vHat;
-//	
-//	/**
-//	 * outwards-facing  normal (normalised)
-//	 */
-//	private Vector3D nHat;
-	
+	private static final long serialVersionUID = -8805761209985615963L;	
 	
 	/**
 	 * the parametrised SceneObject this surface property is associated with
 	 */
-	private ParametrisedObject parametrisedObject;
+	protected ParametrisedObject parametrisedObject;
 	
-	// TODO allow for a different normalisation (n component = 1)
-	
+	//  for the normalisation
+	public enum RayDirectionNormalisationType
+	{
+		LENGTH1("Length = 1"),
+		PERPENDICULAR_COMPONENT_1("Perpendicular component = 1");
+		
+		private final String description;
+		public String toString() {return description;}
+		RayDirectionNormalisationType(String description) {this.description = description;}
+	}	
 	
 	
 	public DerivativeControlSurface(ParametrisedObject parametrisedObject, double transmissionCoefficient, boolean shadowThrowing)
@@ -113,11 +112,7 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 	/**
 	 * Override to customise
 	 * @param pointOnSurface
-	 * @return
-	 */
-	/**
-	 * @param pointOnSurface
-	 * @return
+	 * @return	the 3D light-ray direction
 	 */
 	public Vector3D getDi0Outwards(Vector3D pointOnSurface)
 	{
@@ -153,32 +148,47 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 		return new Matrix(components);
 	}
 	
+	public RayDirectionNormalisationType rayDirectionNormalisationType(Vector3D pointOnSurface)
+	{
+		return RayDirectionNormalisationType.LENGTH1;
+	}
+	
 	
 	
 	// useful  methods
 	
-	public Vector3D getDi0(Vector3D pointOnSurface, boolean inwards)
+	/**
+	 * @param pointOnSurface
+	 * @param orientation
+	 * @return	the "inside" direction Di0 with the given orientation (i.e. inwards or outwards)
+	 */
+	public Vector3D getDi0(Vector3D pointOnSurface, Orientation orientation)
 	{
 		Vector3D di0 = getDi0Outwards(pointOnSurface);
 
-		if(!inwards) return di0;
-		
-		return di0.getProductWith(-1);
+		return di0.getProductWith(orientation.getScalarProductSign());
 	}
 
-	public Vector3D getDo0(Vector3D pointOnSurface, boolean inwards)
+	public Vector3D getDo0(Vector3D pointOnSurface, Orientation orientation)
 	{
-		return null;
+		Vector3D do0 = getDo0Outwards(pointOnSurface);
+
+		return do0.getProductWith(orientation.getScalarProductSign());
 	}
 
-	public Matrix getJacobian(Vector3D pointOnSurface, boolean inwards)
+	public Matrix getJacobian(Vector3D pointOnSurface, Orientation orientation)
 	{
 		// calculate outwards Jacobian
 		Matrix j = getJacobianOutwards(pointOnSurface);
 		
-		if(!inwards) return j;
-		
-		return j.inverse();
+		switch(orientation)
+		{
+		case INWARDS:
+			return j.inverse();
+		case OUTWARDS:
+		default:
+			return j;
+		}
 	}
 	
 	public ArrayList<Vector3D> getNormalisedSurfaceCoordinateAxes(Vector3D pointOnSurface)
@@ -214,11 +224,11 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 
 	/**
 	 * @param v2D
-	 * @param inwards
+	 * @param orientation
 	 * @return
 	 * @throws EvanescentException
 	 */
-	public Vector3D jamaVector2D2Vector3D(Matrix a, boolean inwards, Vector3D u, Vector3D v, Vector3D n)
+	public Vector3D jamaVector2D2Vector3D(Matrix a, Orientation orientation, Vector3D u, Vector3D v, Vector3D n)
 	throws EvanescentException
 	{
 		// extract the u and v components of the vector
@@ -237,7 +247,7 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 		}
 		
 		// calculate the normal component
-		double an = (inwards?-1:1)*Math.sqrt(an2);
+		double an = orientation.getScalarProductSign()*Math.sqrt(an2);
 		
 		// return the 3D vector
 		// ArrayList<Vector3D> axes = parametrisedObject.getSurfaceCoordinateAxes(pointOnSurface);
@@ -266,19 +276,33 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 		Vector3D n = parametrisedObject.getNormalisedOutwardsSurfaceNormal(i.p);
 		
 		// is the ray approaching inwards or outwards?
-		boolean inwards = Vector3D.scalarProduct(ray.getD(), n) < 0;
+		Orientation orientation = Orientation.getOrientation(ray, n);
+		//  boolean inwards = Vector3D.scalarProduct(ray.getD(), n) < 0;
+		
+		Vector3D d0, dPrime0;
+		switch(orientation)
+		{
+		case INWARDS:
+			d0 = getDo0(i.p, orientation);
+			dPrime0 = getDi0(i.p, orientation);
+			break;
+		case OUTWARDS:
+		default:
+			d0 = getDi0(i.p, orientation);
+			dPrime0 = getDo0(i.p, orientation);
+		}
 		
 		// calculate the 2D vector that corresponds to the incident light-ray direction
-		Matrix v2 = vector3D2JamaVector2D(ray.getD(), u, v).minus(vector3D2JamaVector2D(inwards?getDo0(i.p, inwards):getDi0(i.p, inwards), u, v));
+		Matrix v2 = vector3D2JamaVector2D(ray.getD(), u, v).minus(vector3D2JamaVector2D(d0, u, v));
 		
 		//  get the Jacobian for the point  on the surface
-		Matrix j = getJacobian(i.p, inwards);
+		Matrix j = getJacobian(i.p, orientation);
 		
 		// calculate the 2D vector that corresponds to the outgoing light-ray direction...
-		Matrix vPrime2 = j.times(v2).plus(vector3D2JamaVector2D(inwards?getDi0(i.p, inwards):getDo0(i.p, inwards), u, v));
+		Matrix vPrime2 = j.times(v2).plus(vector3D2JamaVector2D(dPrime0, u, v));
 		
 		// ... and  turn that into  a 3D vector
-		Vector3D newRayDirection = jamaVector2D2Vector3D(vPrime2, inwards, u, v, n);
+		Vector3D newRayDirection = jamaVector2D2Vector3D(vPrime2, orientation, u, v, n);
 
 		
 		// launch a new ray from here

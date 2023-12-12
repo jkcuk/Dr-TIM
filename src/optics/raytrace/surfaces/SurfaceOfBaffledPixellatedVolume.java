@@ -274,7 +274,7 @@ extends SurfacePropertyPrimitive
 		Ray newRay = calculateRayAfterInteractingWithSurface(ray, intersection);
 		
 		// Is the refracted ray travelling inside the pixellated volume?
-		if(Orientation.getRayOrientation(newRay, intersection) == Orientation.OUTWARDS)
+		if(Orientation.getOrientation(newRay, intersection) == Orientation.OUTWARDS)
 		{
 			// No, it is travelling outwards, so continue raytracing as usual
 			// launch a new ray from here

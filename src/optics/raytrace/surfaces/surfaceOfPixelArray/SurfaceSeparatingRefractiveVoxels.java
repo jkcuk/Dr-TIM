@@ -52,7 +52,7 @@ public class SurfaceSeparatingRefractiveVoxels extends SurfaceSeparatingVoxels
 	{		
 		if(traceLevelInside <= 0) return DoubleColour.BLACK;
 
-		if(Orientation.getRayOrientation(r, i) == Orientation.INWARDS)
+		if(Orientation.getOrientation(r, i) == Orientation.INWARDS)
 		{
 			// this only happens if the ray passes through the surface again (when it shouldn't)
 			return surfaceOfPixelArray.getColourStartingInPixel(
@@ -121,7 +121,7 @@ public class SurfaceSeparatingRefractiveVoxels extends SurfaceSeparatingVoxels
 		}
 
 		return surfaceOfPixelArray.getColourStartingInPixel(
-				(Orientation.getRayOrientation(r, i) == Orientation.OUTWARDS)?voxellationIndicesOnOutside:voxellationIndicesOnInside,
+				(Orientation.getOrientation(r, i) == Orientation.OUTWARDS)?voxellationIndicesOnOutside:voxellationIndicesOnInside,
 				r.getBranchRay(i.p, d2, i.t, r.isReportToConsole()),	// .getAdvancedRay(MyMath.TINY),
 				i,
 				scene,

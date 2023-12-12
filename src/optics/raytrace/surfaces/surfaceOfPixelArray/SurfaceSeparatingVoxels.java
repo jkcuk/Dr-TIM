@@ -95,7 +95,7 @@ public class SurfaceSeparatingVoxels extends SurfaceProperty
 		}
 		
 		return surfaceOfPixelArray.getColourStartingInPixel(
-				(Orientation.getRayOrientation(r, i) == Orientation.OUTWARDS)?voxellationIndicesOnOutside:voxellationIndicesOnInside,
+				(Orientation.getOrientation(r, i) == Orientation.OUTWARDS)?voxellationIndicesOnOutside:voxellationIndicesOnInside,
 				r.getBranchRay(i.p, r.getD(), i.t, r.isReportToConsole()),	// .getAdvancedRay(MyMath.TINY),
 				i,
 				scene,

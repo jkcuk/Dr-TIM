@@ -8,25 +8,23 @@ import javax.swing.JTabbedPane;
 
 import math.*;
 import net.miginfocom.swing.MigLayout;
-import optics.DoubleColour;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
 import optics.raytrace.GUI.cameras.RenderQualityEnum;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
-import optics.raytrace.GUI.lowLevel.LabelledDoubleColourPanel;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
-import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.SceneObjectPrimitive;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
+import optics.raytrace.core.SurfacePropertyPrimitive;
 import optics.raytrace.exceptions.SceneException;
-import optics.raytrace.sceneObjects.CatHead;
+import optics.raytrace.sceneObjects.ParametrisedPlane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-import optics.raytrace.surfaces.DerivativeControlSurface;
-import optics.raytrace.surfaces.DerivativeControlSurfaceRotating;
+import optics.raytrace.surfaces.DerivativeControlSurfaceRotatingPhaseHologramApproximation;
+import optics.raytrace.surfaces.SurfaceColour;
 
 
 
@@ -45,7 +43,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		cameraViewDirection = new Vector3D(0,0,1);
 		cameraHorizontalFOVDeg = 10;
 		cameraTopDirection = new Vector3D(0,1,0); 
-		cameraDistance = 10;
+		cameraDistance = 0;
 		traceRaysWithTrajectory = false;
 		
 		theta = MyMath.deg2rad(90);
@@ -103,7 +101,26 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		// ... and then adding scene objects to scene
 		
 		
-		DerivativeControlSurfaceRotating dcs = new DerivativeControlSurfaceRotating(theta);
+//		DerivativeControlSurfaceRotating dcs = new DerivativeControlSurfaceRotating(theta);
+		
+		DerivativeControlSurfaceRotatingPhaseHologramApproximation dcs =  new DerivativeControlSurfaceRotatingPhaseHologramApproximation(
+				new ParametrisedPlane(
+						"Plane", // description
+						new Vector3D(0, 0, 10),	// pointOnPlane
+						new Vector3D(0, 0, 1),	// normal
+						new Vector3D(1, 0, 0),	// v1
+						new Vector3D(0, 1, 0),	// v2
+						SurfaceColour.BLUE_SHINY,	// sp
+						null,	// parent
+						null	// studio
+					),
+				SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,
+				false,	//  shadow-throwing
+				new Vector3D(0, 0, 0),	// eyePosition
+				new Vector3D(0, 0, 40),	// pointOnPlane,
+				new Vector3D(0, 0, 1),	// normalisedPlaneNormal, 
+				theta	// rotationAngleRad
+			); 
 		
 		SceneObjectPrimitive s = (SceneObjectPrimitive)(dcs.getParametrisedObject());
 		s.setSurfaceProperty(dcs);
@@ -119,14 +136,14 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 	private LabelledDoublePanel thetaPanel;
 //	private LabelledDoubleColourPanel headColourPanel, noseColourPanel, innerEarColourPanel, rightEyeColourPanel, leftEyeColourPanel, whiskerColourPanel;
 //	
-//	// camera
-//	private LabelledVector3DPanel cameraViewCentrePanel;
-//	// private JButton setCameraViewCentreToCloakCentroidButton;
-//	private LabelledVector3DPanel cameraViewDirectionPanel;
-//	private LabelledDoublePanel cameraDistancePanel;
-//	private DoublePanel cameraHorizontalFOVDegPanel;
-//	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
-//	private LabelledDoublePanel cameraFocussingDistancePanel;
+	// camera
+	private LabelledVector3DPanel cameraViewCentrePanel;
+	// private JButton setCameraViewCentreToCloakCentroidButton;
+	private LabelledVector3DPanel cameraViewDirectionPanel;
+	private LabelledDoublePanel cameraDistancePanel;
+	private DoublePanel cameraHorizontalFOVDegPanel;
+	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
+	private LabelledDoublePanel cameraFocussingDistancePanel;
 //
 //	JTabbedPane lensTabbedPane;
 //
@@ -139,14 +156,14 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 	protected void createInteractiveControlPanel()
 	{
 		super.createInteractiveControlPanel();
-//
-//		JTabbedPane tabbedPane = new JTabbedPane();
-//		interactiveControlPanel.add(tabbedPane, "span");
-//
-//		JPanel catPanel = new JPanel();
-//		catPanel.setLayout(new MigLayout("insets 0"));
-//		tabbedPane.addTab("cat", catPanel);
-//	
+
+		JTabbedPane tabbedPane = new JTabbedPane();
+		interactiveControlPanel.add(tabbedPane, "span");
+
+		JPanel catPanel = new JPanel();
+		catPanel.setLayout(new MigLayout("insets 0"));
+		tabbedPane.addTab("Derivative-control surface", catPanel);
+	
 //		centrePanel = new LabelledVector3DPanel("centre");
 //		centrePanel.setVector3D(centre);
 //		catPanel.add(centrePanel, "span");
@@ -161,7 +178,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 //		
 		thetaPanel = new LabelledDoublePanel("rotation angle (degrees)");
 		thetaPanel.setNumber(MyMath.rad2deg(theta));
-		interactiveControlPanel.add(thetaPanel, "span");
+		catPanel.add(thetaPanel, "span");
 //		
 //		headColourPanel = new LabelledDoubleColourPanel("Head colour");
 //		headColourPanel.setDoubleColour(headColour);
@@ -188,40 +205,40 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 //		catPanel.add(whiskerColourPanel, "wrap");
 //		
 //		
-//		
-//		JPanel cameraPanel = new JPanel();
-//		cameraPanel.setLayout(new MigLayout("insets 0"));
-//		tabbedPane.addTab("Camera", cameraPanel);
-//
-//		JPanel cameraViewCentreJPanel = new JPanel();
-//		cameraViewCentreJPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Centre of view"));
-//		cameraViewCentreJPanel.setLayout(new MigLayout("insets 0"));
-//		cameraPanel.add(cameraViewCentreJPanel, "span");
-//
-//		cameraViewCentrePanel = new LabelledVector3DPanel("Position");
-//		cameraViewCentrePanel.setVector3D(cameraViewCentre);
-//		cameraViewCentreJPanel.add(cameraViewCentrePanel, "span");
-//
-//		cameraViewDirectionPanel = new LabelledVector3DPanel("View direction");
-//		cameraViewDirectionPanel.setVector3D(cameraViewDirection);
-//		cameraPanel.add(cameraViewDirectionPanel, "span");
-//
-//		cameraDistancePanel = new LabelledDoublePanel("Camera distance");
-//		cameraDistancePanel.setNumber(cameraDistance);
-//		cameraPanel.add(cameraDistancePanel, "span");
-//
-//		cameraHorizontalFOVDegPanel = new DoublePanel();
-//		cameraHorizontalFOVDegPanel.setNumber(cameraHorizontalFOVDeg);
-//		cameraPanel.add(GUIBitsAndBobs.makeRow("Horizontal FOV", cameraHorizontalFOVDegPanel, "°"), "span");
-//
-//		cameraApertureSizeComboBox = new JComboBox<ApertureSizeType>(ApertureSizeType.values());
-//		cameraApertureSizeComboBox.setSelectedItem(cameraApertureSize);
-//		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera aperture", cameraApertureSizeComboBox), "span");		
-//
-//		cameraFocussingDistancePanel = new LabelledDoublePanel("Focussing distance");
-//		cameraFocussingDistancePanel.setNumber(cameraFocussingDistance);
-//		cameraPanel.add(cameraFocussingDistancePanel);
-//
+		
+		JPanel cameraPanel = new JPanel();
+		cameraPanel.setLayout(new MigLayout("insets 0"));
+		tabbedPane.addTab("Camera", cameraPanel);
+
+		JPanel cameraViewCentreJPanel = new JPanel();
+		cameraViewCentreJPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Centre of view"));
+		cameraViewCentreJPanel.setLayout(new MigLayout("insets 0"));
+		cameraPanel.add(cameraViewCentreJPanel, "span");
+
+		cameraViewCentrePanel = new LabelledVector3DPanel("Position");
+		cameraViewCentrePanel.setVector3D(cameraViewCentre);
+		cameraViewCentreJPanel.add(cameraViewCentrePanel, "span");
+
+		cameraViewDirectionPanel = new LabelledVector3DPanel("View direction");
+		cameraViewDirectionPanel.setVector3D(cameraViewDirection);
+		cameraPanel.add(cameraViewDirectionPanel, "span");
+
+		cameraDistancePanel = new LabelledDoublePanel("Camera distance");
+		cameraDistancePanel.setNumber(cameraDistance);
+		cameraPanel.add(cameraDistancePanel, "span");
+
+		cameraHorizontalFOVDegPanel = new DoublePanel();
+		cameraHorizontalFOVDegPanel.setNumber(cameraHorizontalFOVDeg);
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Horizontal FOV", cameraHorizontalFOVDegPanel, "°"), "span");
+
+		cameraApertureSizeComboBox = new JComboBox<ApertureSizeType>(ApertureSizeType.values());
+		cameraApertureSizeComboBox.setSelectedItem(cameraApertureSize);
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera aperture", cameraApertureSizeComboBox), "span");		
+
+		cameraFocussingDistancePanel = new LabelledDoublePanel("Focussing distance");
+		cameraFocussingDistancePanel.setNumber(cameraFocussingDistance);
+		cameraPanel.add(cameraFocussingDistancePanel);
+
 	}
 //
 	/**
@@ -244,14 +261,14 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 //		leftEyeColour = leftEyeColourPanel.getDoubleColour();
 //		whiskerColour = whiskerColourPanel.getDoubleColour();
 //		
-//		
-//		// cameras
-//		cameraViewCentre = cameraViewCentrePanel.getVector3D();
-//		cameraViewDirection = cameraViewDirectionPanel.getVector3D();
-//		cameraDistance = cameraDistancePanel.getNumber();
-//		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
-//		cameraApertureSize = (ApertureSizeType)(cameraApertureSizeComboBox.getSelectedItem());
-//		cameraFocussingDistance = cameraFocussingDistancePanel.getNumber();
+		
+		// cameras
+		cameraViewCentre = cameraViewCentrePanel.getVector3D();
+		cameraViewDirection = cameraViewDirectionPanel.getVector3D();
+		cameraDistance = cameraDistancePanel.getNumber();
+		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
+		cameraApertureSize = (ApertureSizeType)(cameraApertureSizeComboBox.getSelectedItem());
+		cameraFocussingDistance = cameraFocussingDistancePanel.getNumber();
 	}
 	
 	/**

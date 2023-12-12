@@ -58,12 +58,12 @@ public class RaySceneObjectIntersection implements Serializable
 	 */
 	public Orientation getRayOrientation(Ray ray)
 	{
-		return Orientation.getRayOrientation(ray, this);
+		return Orientation.getOrientation(ray, this);
 	}
 	
 	public Orientation getOrientation()
 	{
-		return Orientation.getRayOrientation(ray, this);
+		return Orientation.getOrientation(ray, this);
 	}
 	
 	public Vector3D getNormalisedOutwardsSurfaceNormal()

@@ -253,7 +253,7 @@ public class GeneralisedConfocalLensletArrays extends SurfacePropertyPrimitive
 		// non-normalised ray direction
 		Vector3D d = ray.getD();	// .getNormalised();
 		
-		Orientation orientation = Orientation.getRayOrientation(ray, intersection);
+		Orientation orientation = Orientation.getOrientation(ray, intersection);
 		
 		// calculate aHat and uHat in the global (x,y,z) coordinate basis
 		Vector3D aHatXYZ, uHatXYZ, vHatXYZ; // , surfaceNormal;
