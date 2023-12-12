@@ -39,8 +39,9 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 	/**
 	 * the parametrised SceneObject this surface property is associated with
 	 */
-	protected ParametrisedObject parametrisedObject;
+	protected One2OneParametrisedObject parametrisedObject;
 	
+	// TODO make use of this normalisation type!
 	//  for the normalisation
 	public enum RayDirectionNormalisationType
 	{
@@ -50,14 +51,28 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 		private final String description;
 		public String toString() {return description;}
 		RayDirectionNormalisationType(String description) {this.description = description;}
-	}	
+	}
+	
+	private boolean pixellated;
+	private double pixelPeriodU;
+	private double pixelPeriodV;
 	
 	
-	public DerivativeControlSurface(ParametrisedObject parametrisedObject, double transmissionCoefficient, boolean shadowThrowing)
+	public DerivativeControlSurface(
+			One2OneParametrisedObject parametrisedObject, 
+			boolean pixellated, 
+			double pixelPeriodU, 
+			double pixelPeriodV, 
+			double transmissionCoefficient, 
+			boolean shadowThrowing
+		)
 	{
 		super(transmissionCoefficient, shadowThrowing);
 		
 		setParametrisedObject(parametrisedObject);
+		setPixellated(pixellated);
+		setPixelPeriodU(pixelPeriodU);
+		setPixelPeriodV(pixelPeriodV);
 	}
 	
 	/**
@@ -76,6 +91,9 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 						null,	// parent
 						null	// studio
 					),
+				false,	//  pixellated
+				1,	// pixelPeriodU
+				1,	// pixelPeriodV
 				DEFAULT_TRANSMISSION_COEFFICIENT,
 				false
 			);
@@ -89,6 +107,9 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 	{
 		return new DerivativeControlSurface(
 				getParametrisedObject(),
+				isPixellated(),
+				getPixelPeriodU(),
+				getPixelPeriodV(),
 				getTransmissionCoefficient(),
 				isShadowThrowing()
 			);
@@ -97,18 +118,62 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 
 	// setters & getters
 	
-	public ParametrisedObject getParametrisedObject() {
+	public One2OneParametrisedObject getParametrisedObject() {
 		return parametrisedObject;
 	}
 
-	public void setParametrisedObject(ParametrisedObject parametrisedObject) {
+	public void setParametrisedObject(One2OneParametrisedObject parametrisedObject) {
 		this.parametrisedObject = parametrisedObject;
 	}
 
+	/**
+	 * @return the pixellated
+	 */
+	public boolean isPixellated() {
+		return pixellated;
+	}
+
+	/**
+	 * @param pixellated the pixellated to set
+	 */
+	public void setPixellated(boolean pixellated) {
+		this.pixellated = pixellated;
+	}
+
+	/**
+	 * @return the pixelPeriodU
+	 */
+	public double getPixelPeriodU() {
+		return pixelPeriodU;
+	}
+
+	/**
+	 * @param pixelPeriodU the pixelPeriodU to set
+	 */
+	public void setPixelPeriodU(double pixelPeriodU) {
+		this.pixelPeriodU = pixelPeriodU;
+	}
+
+	/**
+	 * @return the pixelPeriodV
+	 */
+	public double getPixelPeriodV() {
+		return pixelPeriodV;
+	}
+
+	/**
+	 * @param pixelPeriodV the pixelPeriodV to set
+	 */
+	public void setPixelPeriodV(double pixelPeriodV) {
+		this.pixelPeriodV = pixelPeriodV;
+	}
+
+	
 
 	
 	// methods that define the surface
 	
+
 	/**
 	 * Override to customise
 	 * @param pointOnSurface
@@ -269,40 +334,55 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 	{
 		if(traceLevel <= 0) return DoubleColour.BLACK;
 		
+		Vector3D pixelCentre;
+		if(pixellated)
+		{
+			Vector2D uv = parametrisedObject.getSurfaceCoordinates(i.p);
+			
+			// calculate u and v parameters of pixel centre
+			double uC = Math.floor(uv.x/pixelPeriodU + 0.5)*pixelPeriodU;
+			double vC = Math.floor(uv.y/pixelPeriodV + 0.5)*pixelPeriodV;
+			
+			pixelCentre = parametrisedObject.getPointForSurfaceCoordinates(uC, vC);
+		}
+		else
+			pixelCentre = i.p;
+		
 		// get the basis vectors
-		ArrayList<Vector3D> normalisedAxes = getNormalisedSurfaceCoordinateAxes(i.p);
-		Vector3D u = normalisedAxes.get(0);
-		Vector3D v = normalisedAxes.get(1);
-		Vector3D n = parametrisedObject.getNormalisedOutwardsSurfaceNormal(i.p);
+		// TODO do we want those at the pixelCentre or at i.p?
+		ArrayList<Vector3D> normalisedAxes = getNormalisedSurfaceCoordinateAxes(pixelCentre);
+		Vector3D uHat = normalisedAxes.get(0);
+		Vector3D vHat = normalisedAxes.get(1);
+		Vector3D nHat = parametrisedObject.getNormalisedOutwardsSurfaceNormal(pixelCentre);
 		
 		// is the ray approaching inwards or outwards?
-		Orientation orientation = Orientation.getOrientation(ray, n);
+		Orientation orientation = Orientation.getOrientation(ray, nHat);
 		//  boolean inwards = Vector3D.scalarProduct(ray.getD(), n) < 0;
 		
 		Vector3D d0, dPrime0;
 		switch(orientation)
 		{
 		case INWARDS:
-			d0 = getDo0(i.p, orientation);
-			dPrime0 = getDi0(i.p, orientation);
+			d0 = getDo0(pixelCentre, orientation);
+			dPrime0 = getDi0(pixelCentre, orientation);
 			break;
 		case OUTWARDS:
 		default:
-			d0 = getDi0(i.p, orientation);
-			dPrime0 = getDo0(i.p, orientation);
+			d0 = getDi0(pixelCentre, orientation);
+			dPrime0 = getDo0(pixelCentre, orientation);
 		}
 		
 		// calculate the 2D vector that corresponds to the incident light-ray direction
-		Matrix v2 = vector3D2JamaVector2D(ray.getD(), u, v).minus(vector3D2JamaVector2D(d0, u, v));
+		Matrix v2 = vector3D2JamaVector2D(ray.getD(), uHat, vHat).minus(vector3D2JamaVector2D(d0, uHat, vHat));
 		
 		//  get the Jacobian for the point  on the surface
-		Matrix j = getJacobian(i.p, orientation);
+		Matrix j = getJacobian(pixelCentre, orientation);
 		
 		// calculate the 2D vector that corresponds to the outgoing light-ray direction...
-		Matrix vPrime2 = j.times(v2).plus(vector3D2JamaVector2D(dPrime0, u, v));
+		Matrix vPrime2 = j.times(v2).plus(vector3D2JamaVector2D(dPrime0, uHat, vHat));
 		
 		// ... and  turn that into  a 3D vector
-		Vector3D newRayDirection = jamaVector2D2Vector3D(vPrime2, orientation, u, v, n);
+		Vector3D newRayDirection = jamaVector2D2Vector3D(vPrime2, orientation, uHat, vHat, nHat);
 
 		
 		// launch a new ray from here
