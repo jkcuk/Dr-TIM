@@ -111,6 +111,8 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	@Override
 	public Vector3D getDi0Outwards(Vector3D pointOnSurface) 
 	{
+		//  pointOnSurface = new Vector3D(0, 0,  10);
+
 		// di0,  but not  necessarily outwards
 		Vector3D di0 =  Vector3D.difference(pointOnSurface, eyePosition);
 		
@@ -122,6 +124,7 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	@Override
 	public Vector3D getDo0Outwards(Vector3D pointOnSurface)
 	{
+		// pointOnSurface = new Vector3D(0, 0,  10);
 		try {
 			Vector3D apparentPosition = Geometry.linePlaneIntersection(
 					pointOnSurface,	//  point  on  line

@@ -47,6 +47,8 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		traceRaysWithTrajectory = false;
 		
 		theta = MyMath.deg2rad(90);
+		
+		windowWidth *= 2;
 
 		// camera parameters are set in createStudio()
 	}
