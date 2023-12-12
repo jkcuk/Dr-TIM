@@ -34,6 +34,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 {
 	private double rotationAngleRad;
 	private boolean pixellated;
+	private boolean unitJacobian;
 	private double pixelPeriodU;
 	private double pixelPeriodV;
 	
@@ -53,6 +54,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		
 		rotationAngleRad = MyMath.deg2rad(90);
 		pixellated = true;
+		unitJacobian = true;
 		pixelPeriodU=1;
 		pixelPeriodV=1;
 		
@@ -128,6 +130,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 				new Vector3D(0, 0, 40),	// pointOnPlane,
 				new Vector3D(0, 0, 1),	// normalisedPlaneNormal, 
 				rotationAngleRad,	// rotationAngleRad
+				unitJacobian,
 				pixellated,
 				pixelPeriodU,
 				pixelPeriodV,
@@ -149,7 +152,8 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 	private LabelledDoublePanel rotationAngleDegPanel;
 //	private LabelledDoubleColourPanel headColourPanel, noseColourPanel, innerEarColourPanel, rightEyeColourPanel, leftEyeColourPanel, whiskerColourPanel;
 //	
-	private JCheckBox pixellatedCheckBox;
+	private JCheckBox pixellatedCheckBox, unitJacobianCheckBox;
+	
 	private LabelledVector2DPanel pixelPeriodPanel;
 	
 	// camera
@@ -204,6 +208,9 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		pixelPeriodPanel.setVector2D(pixelPeriodU, pixelPeriodV);
 		catPanel.add(pixelPeriodPanel, "span");
 
+		unitJacobianCheckBox = new JCheckBox("Unit Jacobian");
+		unitJacobianCheckBox.setSelected(unitJacobian);
+		catPanel.add(unitJacobianCheckBox, "span");
 //		
 //		headColourPanel = new LabelledDoubleColourPanel("Head colour");
 //		headColourPanel.setDoubleColour(headColour);
@@ -288,6 +295,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		pixellated = pixellatedCheckBox.isSelected();
 		pixelPeriodU = pixelPeriodPanel.getVector2D().x;
 		pixelPeriodV = pixelPeriodPanel.getVector2D().y;
+		unitJacobian = unitJacobianCheckBox.isSelected();
 		
 		// cameras
 		cameraViewCentre = cameraViewCentrePanel.getVector3D();

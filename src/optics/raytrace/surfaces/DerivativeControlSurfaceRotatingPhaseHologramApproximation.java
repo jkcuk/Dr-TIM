@@ -166,6 +166,7 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 
 	@Override
 	public Matrix getJacobianOutwards(Vector3D pointOnSurface) {
+		if(unitJacobian) return Matrix.identity(2, 2);
 		double[][] components = {
 				{Math.cos(-rotationAngleRad), Math.sin(-rotationAngleRad)},	//  {0, 1},
 				{-Math.sin(-rotationAngleRad), Math.cos(-rotationAngleRad)}	// {-1, 0}
