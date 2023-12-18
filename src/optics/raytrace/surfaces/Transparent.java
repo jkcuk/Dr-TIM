@@ -1,6 +1,6 @@
 package optics.raytrace.surfaces;
 
-import optics.DoubleColour;
+import math.Vector3D;
 import optics.raytrace.core.*;
 import optics.raytrace.exceptions.RayTraceException;
 
@@ -10,7 +10,7 @@ import optics.raytrace.exceptions.RayTraceException;
  * 
  * @author Johannes Courtial
  */
-public class Transparent extends SurfacePropertyPrimitive
+public class Transparent extends DirectionChanging
 {
 	private static final long serialVersionUID = 3111776468671161260L;
 	
@@ -44,29 +44,38 @@ public class Transparent extends SurfacePropertyPrimitive
 		return new Transparent(getTransmissionCoefficient(), isShadowThrowing());
 	}
 
-	/* (non-Javadoc)
-	 * @see optics.raytrace.SurfaceProperty#getColour(optics.raytrace.Ray, optics.raytrace.RaySceneObjectIntersection, optics.raytrace.SceneObject, optics.raytrace.LightSource, int)
-	 */
+	
 	@Override
-	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
-	throws RayTraceException
-	{
-		if(traceLevel <= 0) return DoubleColour.BLACK;
-
-		// launch a new ray from here
-			
-		return scene.getColourAvoidingOrigin(
-			ray.getBranchRay(
-					i.p,
-					ray.getD(),
-					i.t,
-					ray.isReportToConsole()
-			),
-			i.o,
-			l,
-			scene,
-			traceLevel-1,
-			raytraceExceptionHandler
-		).multiply(getTransmissionCoefficient());
+	public Vector3D getOutgoingLightRayDirection(Ray ray, RaySceneObjectIntersection intersection, SceneObject scene,
+			LightSource lights, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+			throws RayTraceException {
+		// simply return the direction of the incident ray
+		return ray.getD();
 	}
+
+//	/* (non-Javadoc)
+//	 * @see optics.raytrace.SurfaceProperty#getColour(optics.raytrace.Ray, optics.raytrace.RaySceneObjectIntersection, optics.raytrace.SceneObject, optics.raytrace.LightSource, int)
+//	 */
+//	@Override
+//	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+//	throws RayTraceException
+//	{
+//		if(traceLevel <= 0) return DoubleColour.BLACK;
+//
+//		// launch a new ray from here
+//			
+//		return scene.getColourAvoidingOrigin(
+//			ray.getBranchRay(
+//					i.p,
+//					ray.getD(),
+//					i.t,
+//					ray.isReportToConsole()
+//			),
+//			i.o,
+//			l,
+//			scene,
+//			traceLevel-1,
+//			raytraceExceptionHandler
+//		).multiply(getTransmissionCoefficient());
+//	}
 }

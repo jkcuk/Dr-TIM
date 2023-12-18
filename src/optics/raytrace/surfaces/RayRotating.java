@@ -2,7 +2,6 @@ package optics.raytrace.surfaces;
 
 
 import math.Complex;
-import optics.raytrace.surfaces.Metarefractive;
 import optics.raytrace.surfaces.metarefraction.ComplexMetarefractionMultiplication;
 
 

@@ -11,7 +11,8 @@ import math.Vector3D;
 import optics.raytrace.surfaces.SurfaceColour;
 
 /**
- * In order for a class to be considered a valid light source, it must have some notion of the effect it has on a given light ray.  A running total of the colour is kept of the light ray as well as the depth of the recursion that it has undertaken.  
+ * In order for a class to be considered a valid light source, it must have some notion of the effect it has on a given light ray.  
+ * A running total of the colour is kept of the light ray as well as the depth of the recursion that it has undertaken.  
  * 
  * @author collective
  */
