@@ -17,6 +17,7 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 import math.Complex;
+import math.MyMath;
 import math.Vector2D;
 import math.Vector3D;
 import optics.DoubleColour;
@@ -275,7 +276,7 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		refractiveIndexRatioPanel,
 		rayRotationAnglePanel,
 		flipAxisAnglePanel,
-		fuzzinessExponentPanel;
+		angularFuzzinessDegPanel;
 		// criticalAngleOfIncidencePanel;
 	private LabelledComplexPanel complexRefractiveIndexRatioPanel;
 	// private TilingParametersLine tilingParametersPanel;
@@ -839,9 +840,9 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		phaseFrontColourPanel = new LabelledDoubleColourPanel("Colour");
 		phaseFrontColourPanel.setDoubleColour(DoubleColour.RED);
 		phaseFrontPanel.add(phaseFrontColourPanel, "wrap");
-		fuzzinessExponentPanel = new LabelledDoublePanel("Fuzziness exponent (large = sharp, small =  fuzzy)");
-		fuzzinessExponentPanel.setNumber(200);
-		phaseFrontPanel.add(fuzzinessExponentPanel);
+		angularFuzzinessDegPanel = new LabelledDoublePanel("Angular fuzziness (deg)");
+		angularFuzzinessDegPanel.setNumber(1);
+		phaseFrontPanel.add(angularFuzzinessDegPanel);
 
 		point2pointImagingPanel = new JPanel();
 		point2pointImagingPanel.setLayout(new MigLayout("insets 0"));
@@ -1181,7 +1182,7 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		{
 			surfacePropertyComboBox.setSurfacePropertyType(SurfacePropertyType.PHASE_FRONT);
 			phaseFrontColourPanel.setDoubleColour(((LightRayFieldRepresentingPhaseFront)surfaceProperty).getColour());
-			fuzzinessExponentPanel.setNumber(((LightRayFieldRepresentingPhaseFront)surfaceProperty).getFuzzinessExponent());
+			angularFuzzinessDegPanel.setNumber(MyMath.rad2deg(((LightRayFieldRepresentingPhaseFront)surfaceProperty).getAngularFuzzinessRad()));
 			setOptionalParameterPanelComponent(phaseFrontPanel);
 		}
 		else if(surfaceProperty instanceof PhaseHologramOfRadialLenticularArray)
@@ -1518,7 +1519,7 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		case PHASE_FRONT:
 			surfaceProperty = new LightRayFieldRepresentingPhaseFront(
 					phaseFrontColourPanel.getDoubleColour(),
-					fuzzinessExponentPanel.getNumber()
+					MyMath.deg2rad(angularFuzzinessDegPanel.getNumber())
 				);
 			break;
 		case POINT2POINT_IMAGING:

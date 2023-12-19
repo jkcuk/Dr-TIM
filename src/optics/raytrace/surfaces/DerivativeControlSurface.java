@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import Jama.Matrix;
 import math.*;
-import optics.DoubleColour;
 import optics.raytrace.core.*;
 import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
@@ -32,7 +31,7 @@ import optics.raytrace.sceneObjects.ParametrisedPlane;
  * @author Ewan, Maik, Johannes
  *
  */
-public class DerivativeControlSurface extends SurfacePropertyPrimitive
+public class DerivativeControlSurface extends DirectionChanging
 {
 	private static final long serialVersionUID = -8805761209985615963L;	
 	
@@ -324,20 +323,16 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 	}
 	
 	
-	
-	//  SurfacePropertyPrimitive class methods
+	// DirectionChanging method
 	
 	@Override
-	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection i,
-			SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
-	throws RayTraceException
-	{
-		if(traceLevel <= 0) return DoubleColour.BLACK;
-		
+	public Vector3D getOutgoingLightRayDirection(Ray ray, RaySceneObjectIntersection intersection, SceneObject scene,
+			LightSource lights, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+			throws RayTraceException {
 		Vector3D pixelCentre;
 		if(pixellated)
 		{
-			Vector2D uv = parametrisedObject.getSurfaceCoordinates(i.p);
+			Vector2D uv = parametrisedObject.getSurfaceCoordinates(intersection.p);
 			
 			// calculate u and v parameters of pixel centre
 			double uC = Math.floor(uv.x/pixelPeriodU + 0.5)*pixelPeriodU;
@@ -346,7 +341,7 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 			pixelCentre = parametrisedObject.getPointForSurfaceCoordinates(uC, vC);
 		}
 		else
-			pixelCentre = i.p;
+			pixelCentre = intersection.p;
 		
 		// get the basis vectors
 		// TODO do we want those at the pixelCentre or at i.p?
@@ -382,19 +377,80 @@ public class DerivativeControlSurface extends SurfacePropertyPrimitive
 		Matrix vPrime2 = j.times(v2).plus(vector3D2JamaVector2D(dPrime0, uHat, vHat));
 		
 		// ... and  turn that into  a 3D vector
-		Vector3D newRayDirection = jamaVector2D2Vector3D(vPrime2, orientation, uHat, vHat, nHat);
-
-		
-		// launch a new ray from here
-		
-		return scene.getColourAvoidingOrigin(
-			ray.getBranchRay(i.p, newRayDirection, i.t, ray.isReportToConsole()),
-			i.o,
-			l,
-			scene,
-			traceLevel-1,
-			raytraceExceptionHandler
-		).multiply(getTransmissionCoefficient());
+		return jamaVector2D2Vector3D(vPrime2, orientation, uHat, vHat, nHat);
 	}
 	
+
+//	//  SurfacePropertyPrimitive class methods
+//	
+//	@Override
+//	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection i,
+//			SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+//	throws RayTraceException
+//	{
+//		if(traceLevel <= 0) return DoubleColour.BLACK;
+//		
+//		Vector3D pixelCentre;
+//		if(pixellated)
+//		{
+//			Vector2D uv = parametrisedObject.getSurfaceCoordinates(i.p);
+//			
+//			// calculate u and v parameters of pixel centre
+//			double uC = Math.floor(uv.x/pixelPeriodU + 0.5)*pixelPeriodU;
+//			double vC = Math.floor(uv.y/pixelPeriodV + 0.5)*pixelPeriodV;
+//			
+//			pixelCentre = parametrisedObject.getPointForSurfaceCoordinates(uC, vC);
+//		}
+//		else
+//			pixelCentre = i.p;
+//		
+//		// get the basis vectors
+//		// TODO do we want those at the pixelCentre or at i.p?
+//		ArrayList<Vector3D> normalisedAxes = getNormalisedSurfaceCoordinateAxes(pixelCentre);
+//		Vector3D uHat = normalisedAxes.get(0);
+//		Vector3D vHat = normalisedAxes.get(1);
+//		Vector3D nHat = parametrisedObject.getNormalisedOutwardsSurfaceNormal(pixelCentre);
+//		
+//		// is the ray approaching inwards or outwards?
+//		Orientation orientation = Orientation.getOrientation(ray, nHat);
+//		//  boolean inwards = Vector3D.scalarProduct(ray.getD(), n) < 0;
+//		
+//		Vector3D d0, dPrime0;
+//		switch(orientation)
+//		{
+//		case INWARDS:
+//			d0 = getDo0(pixelCentre, orientation);
+//			dPrime0 = getDi0(pixelCentre, orientation);
+//			break;
+//		case OUTWARDS:
+//		default:
+//			d0 = getDi0(pixelCentre, orientation);
+//			dPrime0 = getDo0(pixelCentre, orientation);
+//		}
+//		
+//		// calculate the 2D vector that corresponds to the incident light-ray direction
+//		Matrix v2 = vector3D2JamaVector2D(ray.getD(), uHat, vHat).minus(vector3D2JamaVector2D(d0, uHat, vHat));
+//		
+//		//  get the Jacobian for the point  on the surface
+//		Matrix j = getJacobian(pixelCentre, orientation);
+//		
+//		// calculate the 2D vector that corresponds to the outgoing light-ray direction...
+//		Matrix vPrime2 = j.times(v2).plus(vector3D2JamaVector2D(dPrime0, uHat, vHat));
+//		
+//		// ... and  turn that into  a 3D vector
+//		Vector3D newRayDirection = jamaVector2D2Vector3D(vPrime2, orientation, uHat, vHat, nHat);
+//
+//		
+//		// launch a new ray from here
+//		
+//		return scene.getColourAvoidingOrigin(
+//			ray.getBranchRay(i.p, newRayDirection, i.t, ray.isReportToConsole()),
+//			i.o,
+//			l,
+//			scene,
+//			traceLevel-1,
+//			raytraceExceptionHandler
+//		).multiply(getTransmissionCoefficient());
+//	}
+
 }

@@ -13,6 +13,7 @@ import javax.swing.JTextArea;
 
 import math.*;
 import net.miginfocom.swing.MigLayout;
+import optics.DoubleColour;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
 import optics.raytrace.GUI.cameras.RenderQualityEnum;
@@ -23,17 +24,18 @@ import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableArrow;
 import optics.raytrace.GUI.sceneObjects.EditableFramedRectangle;
-import optics.raytrace.core.LightSource;
+import optics.raytrace.GUI.sceneObjects.EditableParametrisedPlane;
 import optics.raytrace.core.Ray;
 import optics.raytrace.core.RaySceneObjectIntersection;
-import optics.raytrace.core.SceneObjectClass;
 import optics.raytrace.core.Studio;
+import optics.raytrace.core.StudioInitialisationType;
 import optics.raytrace.core.SurfacePropertyPrimitive;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.sceneObjects.Sphere;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.DirectionChanging;
+import optics.raytrace.surfaces.LightRayFieldRepresentingPointLightSource;
 import optics.raytrace.surfaces.RayRotating;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.Transparent;
@@ -46,29 +48,54 @@ public class CurlVisualiser extends NonInteractiveTIMEngine
 implements ActionListener
 {
 	
-	private Vector3D lightRayFieldPointSourcePosition;
-	
-	private double sphereAtLightRayFieldPointSourcePositionRadius;
-	
 	public enum WindowType
 	{
 		RR_SHEET("Ray-rotation sheet"),
 		TRANSPARENT("Transparent");
+		// TODO add ray flipping
+		// TODO add hologram
 		
 		private String description;
 		private WindowType(String description) {this.description = description;}	
 		@Override
 		public String toString() {return description;}
 	}
-
 	private WindowType windowType;
+	private double windowZ;
 	
+	public enum LightFieldType
+	{
+		POINT_OBJECT("Point(ish) object"),
+		FIELD_FROM_POINT("(Fuzzy) light-ray field from point");
+		
+		private String description;
+		private LightFieldType(String description) {this.description = description;}	
+		@Override
+		public String toString() {return description;}
+	}
+	private LightFieldType lightFieldType;
+	
+	//  point object
+	private Vector3D pointObjectPosition;	
+	private double pointObjectSphereRadius;
+	
+	// field from point
+	private Vector3D fieldFromPointPosition;	
+	private double fieldFromPointFuzzinessRad;
+	
+
 	private double windowTransmissionCoefficient;
 
 	private double rrAngleDeg;
 	
 	private Vector3D referencePosition;
 	private double delta;
+	
+	/**
+	 * Determines how to initialise the backdrop
+	 */
+	private StudioInitialisationType studioInitialisation;
+
 	
 	
 	/**
@@ -79,16 +106,23 @@ implements ActionListener
 	{
 		super();
 		
-		lightRayFieldPointSourcePosition =  new Vector3D(0, 0, 10);
+		lightFieldType =  LightFieldType.POINT_OBJECT;
 		
-		sphereAtLightRayFieldPointSourcePositionRadius = 0.1;
+		pointObjectPosition =  new Vector3D(0, 0, 10);
+		pointObjectSphereRadius = 0.1;
+		
+		fieldFromPointPosition = new Vector3D(0, 0, 10);	
+		fieldFromPointFuzzinessRad = MyMath.deg2rad(1);
 
 		windowType = WindowType.RR_SHEET;
 		windowTransmissionCoefficient = SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT;
+		windowZ = 0;
 		rrAngleDeg = 90;
 		
-		referencePosition = new Vector3D(0, 0, 5);
+		referencePosition = new Vector3D(0, 0, windowZ);
 		delta = 0.1;
+		
+		studioInitialisation = StudioInitialisationType.MINIMALIST;	// the backdrop
 		
 		// camera
 		
@@ -97,7 +131,7 @@ implements ActionListener
 		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
 		
 		cameraViewDirection = new Vector3D(0, 0, 1);
-		cameraViewCentre = new Vector3D(0, 0, 5);
+		cameraViewCentre = new Vector3D(0, 0, windowZ);
 		cameraDistance = 5;	// camera is located at (0, 0, 0)
 		cameraFocussingDistance = 5;
 		cameraHorizontalFOVDeg = 32;
@@ -141,12 +175,18 @@ implements ActionListener
 		// write all parameters defined in NonInteractiveTIMEngine
 		super.writeParameters(printStream);
 		
-		printStream.println("lightRayFieldPointSourcePosition = "+lightRayFieldPointSourcePosition);
-		printStream.println("sphereAtLightRayFieldPointSourcePositionRadius = "+sphereAtLightRayFieldPointSourcePositionRadius);
+		printStream.println("lightFieldType = "+lightFieldType);
+		printStream.println("pointObjectPosition = "+pointObjectPosition);
+		printStream.println("pointObjectSphereRadius = "+pointObjectSphereRadius);
+		printStream.println("fieldFromPointPosition = "+fieldFromPointPosition);
+		printStream.println("fieldFromPointFuzzinessRad = "+fieldFromPointFuzzinessRad);
 		printStream.println("windowType = "+windowType);
 		printStream.println("windowTransmissionCoefficient = "+windowTransmissionCoefficient);
+		printStream.println("windowZ = "+windowZ);
 		printStream.println("rrAngleDeg = "+rrAngleDeg);
 		printStream.println("delta = "+delta);
+		printStream.println("studioInitialisation = "+studioInitialisation);
+
 	}
 	
 	private EditableFramedRectangle window;
@@ -174,7 +214,7 @@ implements ActionListener
 		
 		window = new EditableFramedRectangle(
 				"window with "+windowSurfaceDescription+" surface property",	// description
-				new Vector3D(-1, -1, 5),	// corner
+				new Vector3D(-1, -1, windowZ),	// corner
 				new Vector3D(2, 0, 0),	// widthVector
 				new Vector3D(0, 2, 0),	// heightVector
 				0.01,	// frameRadius
@@ -200,20 +240,50 @@ implements ActionListener
 		// the scene
 		SceneObjectContainer scene = new SceneObjectContainer("the scene", null, studio);
 
-		// the standard scene objects
-		scene.addSceneObject(SceneObjectClass.getLighterChequerboardFloor(scene, studio));	// the checkerboard floor
-		scene.addSceneObject(SceneObjectClass.getSkySphere(scene, studio));	// the sky
+		StudioInitialisationType.initialiseSceneAndLights(
+				studioInitialisation,
+				scene,
+				studio
+				);
+
+//		// the standard scene objects
+//		scene.addSceneObject(SceneObjectClass.getLighterChequerboardFloor(scene, studio));	// the checkerboard floor
+//		scene.addSceneObject(SceneObjectClass.getSkySphere(scene, studio));	// the sky
 
 		// add any other scene objects
 		
-		//  red sphere
-		scene.addSceneObject(new Sphere(
-				"Sphere at position of point light source", 
-				lightRayFieldPointSourcePosition, 
-				sphereAtLightRayFieldPointSourcePositionRadius,
-				SurfaceColour.RED_SHINY,
-				scene, studio
-			));
+		//  the light field
+		switch(lightFieldType)
+		{
+		case FIELD_FROM_POINT:
+			scene.addSceneObject(
+					new EditableParametrisedPlane(
+							"Plane in which light-ray field is represented",	// description
+							new Vector3D(0, 0, 5+MyMath.TINY),	// pointOnPlane
+							Vector3D.X,	// v1
+							Vector3D.Y,	// v2
+							new LightRayFieldRepresentingPointLightSource(
+									DoubleColour.RED,	// colour, 
+									fieldFromPointPosition,	// position, 
+									false,	// raysTowardsPosition, 
+									fieldFromPointFuzzinessRad	// fuzzinessExponent
+								),	// sp
+							scene,	// parent
+							studio
+						)
+				);
+			break;
+		case POINT_OBJECT:
+		default:
+			//  red sphere
+			scene.addSceneObject(new Sphere(
+					"Sphere at position of point light source", 
+					pointObjectPosition, 
+					pointObjectSphereRadius,
+					SurfaceColour.RED_SHINY,
+					scene, studio
+				));
+		}
 		
 		// the window
 		setWindow();
@@ -230,35 +300,42 @@ implements ActionListener
 //			studio
 //			));
 		
+		double  arrowLength = 0.2;
+		
 		scene.addSceneObject(new EditableArrow(
 				"Arrow pointing at reference position",	// description
-				new Vector3D(0, -0.2, 5),	// startPoint
-				new Vector3D(0, 0, 5),	// endPoint
+				Vector3D.sum(
+						referencePosition,
+						new Vector3D(-arrowLength, -arrowLength, 0)
+					),	// startPoint
+				referencePosition,	// endPoint
 				SurfaceColour.GREEN_SHINY,	// surfaceProperty,
 				scene,	// parent
 				studio
 			));
 
+		Vector3D rightMeasurementPosition = Vector3D.sum(referencePosition, new Vector3D(delta, 0, 0));
 		scene.addSceneObject(new EditableArrow(
 				"Arrow pointing at position shifted from ref.  position by delta to the right",	// description
-				new Vector3D(delta, -0.2, 5),	// startPoint
-				new Vector3D(delta, 0, 5),	// endPoint
+				Vector3D.sum(rightMeasurementPosition, new Vector3D(arrowLength, 0, 0)),	// startPoint
+				rightMeasurementPosition,	// endPoint
 				SurfaceColour.GREEN_SHINY,	// surfaceProperty,
 				scene,	// parent
 				studio
 			));
 
+		Vector3D topMeasurementPosition = Vector3D.sum(referencePosition, new Vector3D(0, delta, 0));
 		scene.addSceneObject(new EditableArrow(
 				"Arrow pointing at position shifted from ref. position by delta upwards",	// description
-				new Vector3D(-0.2, delta, 5),	// startPoint
-				new Vector3D(0, delta, 5),	// endPoint
+				Vector3D.sum(topMeasurementPosition, new Vector3D(0, arrowLength, 0)),	// startPoint
+				topMeasurementPosition,	// endPoint
 				SurfaceColour.GREEN_SHINY,	// surfaceProperty,
 				scene,	// parent
 				studio
 			));
 
 		studio.setScene(scene);
-		studio.setLights(LightSource.getStandardLightsFromBehind());
+		// studio.setLights(LightSource.getStandardLightsFromBehind());
 		studio.setCamera(getStandardCamera());
 				
 	}
@@ -266,18 +343,27 @@ implements ActionListener
 	
 	//  interactive stuff
 
-	private LabelledVector3DPanel lightRayFieldPointSourcePositionPanel; 
-	private LabelledDoublePanel sphereAtLightRayFieldPointSourcePositionRadiusPanel;
-
+	JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 	
-	JTabbedPane windowTabbedPane;
-
+	JTabbedPane windowTabbedPane;	
 	private LabelledDoublePanel windowTransmissionCoefficientPanel;
 	
 	// RR sheet
 	private DoublePanel rrAngleDegPanel;
+
 	
-	// delta
+	JTabbedPane lightFieldTabbedPane;
+	
+	//  point object ray field
+	private LabelledVector3DPanel pointObjectPositionPanel; 
+	private LabelledDoublePanel pointObjectSphereRadiusPanel;
+	
+	// field from point
+	private LabelledVector3DPanel fieldFromPointPositionPanel;
+	private DoublePanel fieldFromPointFuzzinessDegPanel;
+
+	
+	// curl measurement
 	private LabelledDoublePanel deltaPanel;
 	private JTextArea measurementResults;
 	private JButton calculateButton;
@@ -305,29 +391,72 @@ implements ActionListener
 		super.createInteractiveControlPanel();
 
 		// the main tabbed pane, with "Scene" and "Camera" tabs
-		JTabbedPane sceneCameraTabbedPane = new JTabbedPane();
-		interactiveControlPanel.add(sceneCameraTabbedPane, "span");
+		JTabbedPane mainTabbedPane = new JTabbedPane();
+		interactiveControlPanel.add(mainTabbedPane, "span");
+		
 		
 		//
-		// the component panel
+		// the light-field panel
 		//
 
-		JPanel scenePanel = new JPanel();
-		scenePanel.setLayout(new MigLayout("insets 0"));
+		JPanel lightFieldPanel = new JPanel();
+		lightFieldPanel.setLayout(new MigLayout("insets 0"));
 		// scenePanel.setLayout(new BorderLayout());
-		sceneCameraTabbedPane.addTab("Scene", scenePanel);
+		mainTabbedPane.addTab("Light field (& scene)", lightFieldPanel);
 		
-		lightRayFieldPointSourcePositionPanel = new LabelledVector3DPanel("Point light source position"); 
-		lightRayFieldPointSourcePositionPanel.setVector3D(lightRayFieldPointSourcePosition);
-		scenePanel.add(lightRayFieldPointSourcePositionPanel, "wrap");
+		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
+		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
+		lightFieldPanel.add(GUIBitsAndBobs.makeRow("Backdrop", studioInitialisationComboBox), "wrap");
+
+		// the light-field tabbed pane
 		
-		sphereAtLightRayFieldPointSourcePositionRadiusPanel = new LabelledDoublePanel("Radius of red sphere at point-light-source position");
-		sphereAtLightRayFieldPointSourcePositionRadiusPanel.setNumber(sphereAtLightRayFieldPointSourcePositionRadius);
-		scenePanel.add(sphereAtLightRayFieldPointSourcePositionRadiusPanel, "wrap");
+		lightFieldTabbedPane = new JTabbedPane();
+		lightFieldPanel.add(lightFieldTabbedPane, "wrap");
+
+		// point object
 		
-		// the tabbed pane that enables selection of the view-rotating component
+		JPanel pointObjectPanel = new JPanel();
+		pointObjectPanel.setLayout(new MigLayout("insets 0"));
+		
+		pointObjectPositionPanel = new LabelledVector3DPanel("Point light source position"); 
+		pointObjectPositionPanel.setVector3D(pointObjectPosition);
+		pointObjectPanel.add(pointObjectPositionPanel, "wrap");
+		
+		pointObjectSphereRadiusPanel = new LabelledDoublePanel("Radius of red sphere at point-light-source position");
+		pointObjectSphereRadiusPanel.setNumber(pointObjectSphereRadius);
+		pointObjectPanel.add(pointObjectSphereRadiusPanel, "wrap");
+
+		lightFieldTabbedPane.addTab(LightFieldType.POINT_OBJECT.toString(), pointObjectPanel);
+		
+		// field from point light source
+		
+		JPanel fieldFromPointPanel = new JPanel();
+		fieldFromPointPanel.setLayout(new MigLayout("insets 0"));
+		
+		fieldFromPointPositionPanel = new LabelledVector3DPanel("Point light source position"); 
+		fieldFromPointPositionPanel.setVector3D(fieldFromPointPosition);
+		fieldFromPointPanel.add(fieldFromPointPositionPanel, "wrap");
+		
+		fieldFromPointFuzzinessDegPanel = new DoublePanel();
+		fieldFromPointFuzzinessDegPanel.setNumber(MyMath.rad2deg(fieldFromPointFuzzinessRad));
+		fieldFromPointPanel.add(GUIBitsAndBobs.makeRow("Fuzziness", fieldFromPointFuzzinessDegPanel, "°"), "span");
+
+		lightFieldTabbedPane.addTab(LightFieldType.FIELD_FROM_POINT.toString(), fieldFromPointPanel);
+
+		setTab(lightFieldType);
+		
+		//
+		// the window panel
+		//
+
+		JPanel windowPanel = new JPanel();
+		windowPanel.setLayout(new MigLayout("insets 0"));
+		mainTabbedPane.addTab("Window", windowPanel);
+
+		// the window tabbed pane
+		
 		windowTabbedPane = new JTabbedPane();
-		scenePanel.add(windowTabbedPane, "wrap");
+		windowPanel.add(windowTabbedPane, "wrap");
 
 		// ray-rotation sheet
 		
@@ -348,11 +477,11 @@ implements ActionListener
 		
 		windowTabbedPane.addTab(WindowType.TRANSPARENT.toString(), new JLabel("No additional parameters"));
 
-		setTab(windowTabbedPane, windowType);
+		setTab(windowType);
 
 		windowTransmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient");
 		windowTransmissionCoefficientPanel.setNumber(windowTransmissionCoefficient);
-		scenePanel.add(windowTransmissionCoefficientPanel, "wrap");
+		windowPanel.add(windowTransmissionCoefficientPanel, "wrap");
 		
 		//
 		// the curl-measurement panel
@@ -360,7 +489,7 @@ implements ActionListener
 		
 		JPanel curlPanel = new JPanel();
 		curlPanel.setLayout(new MigLayout("insets 0"));
-		sceneCameraTabbedPane.addTab("Curl", curlPanel);
+		mainTabbedPane.addTab("Curl", curlPanel);
 
 		deltaPanel = new LabelledDoublePanel("Distance of measurement points from reference point");
 		deltaPanel.setNumber(delta);
@@ -381,7 +510,7 @@ implements ActionListener
 		
 		JPanel cameraPanel = new JPanel();
 		cameraPanel.setLayout(new MigLayout("insets 0"));
-		sceneCameraTabbedPane.addTab("Camera", cameraPanel);
+		mainTabbedPane.addTab("Camera", cameraPanel);
 
 		// camera stuff
 		
@@ -428,7 +557,7 @@ implements ActionListener
 		cameraPanel.add(cameraFocussingDistancePanel);
 	}
 	
-	private void setTab(JTabbedPane windowTabbedPane, WindowType windowType)
+	private void setTab(WindowType windowType)
 	{
 		for(int i=0; i<windowTabbedPane.getTabCount(); i++)
 		{
@@ -436,12 +565,31 @@ implements ActionListener
 		}
 	}
 	
-	private WindowType getWindowType(JTabbedPane windowTabbedPane)
+	private WindowType getWindowType()
 	{
 		String selectedText = windowTabbedPane.getTitleAt(windowTabbedPane.getSelectedIndex());
 		for(WindowType wt : WindowType.values())
 		{
 			if(wt.toString().equals(selectedText)) return wt;
+		}
+		return null;
+	}
+	
+
+	private void setTab(LightFieldType lightFieldType)
+	{
+		for(int i=0; i<lightFieldTabbedPane.getTabCount(); i++)
+		{
+			if(lightFieldTabbedPane.getTitleAt(i).equals(lightFieldType.toString())) lightFieldTabbedPane.setSelectedIndex(i);;
+		}
+	}
+	
+	private LightFieldType getLightFieldType()
+	{
+		String selectedText = lightFieldTabbedPane.getTitleAt(lightFieldTabbedPane.getSelectedIndex());
+		for(LightFieldType lt : LightFieldType.values())
+		{
+			if(lt.toString().equals(selectedText)) return lt;
 		}
 		return null;
 	}
@@ -455,10 +603,22 @@ implements ActionListener
 	{
 		super.acceptValuesInInteractiveControlPanel();
 		
-		lightRayFieldPointSourcePosition = lightRayFieldPointSourcePositionPanel.getVector3D();
-		sphereAtLightRayFieldPointSourcePositionRadius = sphereAtLightRayFieldPointSourcePositionRadiusPanel.getNumber();
+		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
+
+		lightFieldType = getLightFieldType();
+		switch(lightFieldType)
+		{
+		case FIELD_FROM_POINT:
+			fieldFromPointPosition = fieldFromPointPositionPanel.getVector3D();
+			fieldFromPointFuzzinessRad = MyMath.deg2rad(fieldFromPointFuzzinessDegPanel.getNumber());
+			break;
+		case POINT_OBJECT:
+		default:
+			pointObjectPosition = pointObjectPositionPanel.getVector3D();
+			pointObjectSphereRadius = pointObjectSphereRadiusPanel.getNumber();
+		}
 		
-		windowType  = getWindowType(windowTabbedPane);
+		windowType  = getWindowType();
 		// switch(windowTabbedPane.getSelectedIndex())
 		switch(windowType)
 		{
@@ -486,7 +646,43 @@ implements ActionListener
 		cameraFocussingDistance = cameraFocussingDistancePanel.getNumber();
 	}
 
-
+	/**
+	 * @param position
+	 * @return ray direction in the light-ray field at the given position, *after* transmission through the window
+	 */
+	public Vector3D calculateRayDirectionInFieldAt(Vector3D position)
+	{
+		Vector3D rayDirectionBeforeTransmissionThroughWindow;
+		switch(lightFieldType)
+		{
+		case FIELD_FROM_POINT:
+			rayDirectionBeforeTransmissionThroughWindow = new LightRayFieldRepresentingPointLightSource(
+					DoubleColour.RED,	// colour, 
+					fieldFromPointPosition,	// position, 
+					false,	// raysTowardsPosition, 
+					fieldFromPointFuzzinessRad	// fuzzinessExponent
+				).getNormalisedLightRayDirection(new RaySceneObjectIntersection(position, null, 0));
+			//  System.out.println("rayDirectionBeforeTransmissionThroughWindow = "+rayDirectionBeforeTransmissionThroughWindow);
+			break;
+		case POINT_OBJECT:
+		default:
+			rayDirectionBeforeTransmissionThroughWindow = Vector3D.difference(position, pointObjectPosition);
+			break;
+		}
+		
+		Vector3D direction = null;
+		try {
+			direction = windowSurfaceProperty.getOutgoingLightRayDirection(
+					new Ray(position, rayDirectionBeforeTransmissionThroughWindow, 0, false), 
+					new RaySceneObjectIntersection(position, window.getPane(), 0), 
+					null, null, 100, null
+				).getNormalised();
+		} catch (RayTraceException e) {
+			e.printStackTrace();
+		}
+		
+		return direction;
+	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -497,91 +693,66 @@ implements ActionListener
 			acceptValuesInInteractiveControlPanel();
 
 			String s = "Light-ray direction at...";
-			
+
 			// light-ray direction that hits reference position
-			try {
-				Vector3D d0 = windowSurfaceProperty.getOutgoingLightRayDirection(
-						new Ray(lightRayFieldPointSourcePosition, Vector3D.difference(referencePosition, lightRayFieldPointSourcePosition), 0, false), 
-						new RaySceneObjectIntersection(referencePosition, window.getPane(), 0), 
-						null, null, 100, null
-					).getNormalised();
-				s += "\n  Reference position: " + d0;
+			Vector3D d0 = calculateRayDirectionInFieldAt(referencePosition);
+			//						windowSurfaceProperty.getOutgoingLightRayDirection(
+			//						new Ray(lightRayFieldPointSourcePosition, Vector3D.difference(referencePosition, lightRayFieldPointSourcePosition), 0, false), 
+			//						new RaySceneObjectIntersection(referencePosition, window.getPane(), 0), 
+			//						null, null, 100, null
+			//					).getNormalised();
+			s += "\n  Reference position: " + d0;
 
-				Vector3D rightPosition = Vector3D.sum(referencePosition, new Vector3D(delta,  0, 0));
-				Vector3D dR = windowSurfaceProperty.getOutgoingLightRayDirection(
-						new Ray(lightRayFieldPointSourcePosition, Vector3D.difference(rightPosition, lightRayFieldPointSourcePosition), 0, false), 
-						new RaySceneObjectIntersection(rightPosition, window.getPane(), 0), 
-						null, null, 100, null
-					).getNormalised();
-				s += "\n  Right measurement position: " + dR;
+			Vector3D rightPosition = Vector3D.sum(referencePosition, new Vector3D(delta,  0, 0));
+			Vector3D dR = calculateRayDirectionInFieldAt(rightPosition);
+			//						windowSurfaceProperty.getOutgoingLightRayDirection(
+			//						new Ray(lightRayFieldPointSourcePosition, Vector3D.difference(rightPosition, lightRayFieldPointSourcePosition), 0, false), 
+			//						new RaySceneObjectIntersection(rightPosition, window.getPane(), 0), 
+			//						null, null, 100, null
+			//					).getNormalised();
+			s += "\n  Right measurement position: " + dR;
 
-				Vector3D topPosition = Vector3D.sum(referencePosition, new Vector3D(0, delta, 0));
-				Vector3D dT = windowSurfaceProperty.getOutgoingLightRayDirection(
-						new Ray(lightRayFieldPointSourcePosition, Vector3D.difference(topPosition, lightRayFieldPointSourcePosition), 0, false), 
-						new RaySceneObjectIntersection(topPosition, window.getPane(), 0), 
-						null, null, 100, null
-					).getNormalised();
-				s += "\n  Top measurement position: " + dT;
-				
-				// calculate derivatives
-				s += "\nd d'_x / d y = " + (dT.x - d0.x) / delta;
-				s += "\nd d'_y / d x = " + (dR.y - d0.y) / delta;
-				s += "\ncurl_z = " + ((dR.y - d0.y) / delta - (dT.x - d0.x) / delta);
-			} catch (RayTraceException e1) {
-				e1.printStackTrace();
-			}
-			
+			Vector3D topPosition = Vector3D.sum(referencePosition, new Vector3D(0, delta, 0));
+			Vector3D dT = calculateRayDirectionInFieldAt(topPosition);
+			//					windowSurfaceProperty.getOutgoingLightRayDirection(
+			//						new Ray(lightRayFieldPointSourcePosition, Vector3D.difference(topPosition, lightRayFieldPointSourcePosition), 0, false), 
+			//						new RaySceneObjectIntersection(topPosition, window.getPane(), 0), 
+			//						null, null, 100, null
+			//					).getNormalised();
+			s += "\n  Top measurement position: " + dT;
+
+			// calculate derivatives
+			s += "\nd d'_x / d y = " + (dT.x - d0.x) / delta;
+			s += "\nd d'_y / d x = " + (dR.y - d0.y) / delta;
+			s += "\ncurl_z = " + ((dR.y - d0.y) / delta - (dT.x - d0.x) / delta);
+
 			measurementResults.setText(s);
 		}
 		else if(e.getSource().equals(alignImageWithReferencePositionButton))
 		{
 			acceptValuesInInteractiveControlPanel();
 
-			try {
-				Vector3D dR = windowSurfaceProperty.getOutgoingLightRayDirection(
-						new Ray(lightRayFieldPointSourcePosition, Vector3D.difference(referencePosition, lightRayFieldPointSourcePosition), 0, false), 
-						new RaySceneObjectIntersection(referencePosition, window.getPane(), 0), 
-						null, null, 100, null
-					).getNormalised();
-				cameraViewDirectionPanel.setVector3D(dR.getReverse());
-				cameraViewCentrePanel.setVector3D(referencePosition);
-			} catch (RayTraceException e1) {
-				e1.printStackTrace();
-			}
+			Vector3D dR = calculateRayDirectionInFieldAt(referencePosition);
+			cameraViewDirectionPanel.setVector3D(dR.getReverse());
+			cameraViewCentrePanel.setVector3D(referencePosition);
 		}
 		else if(e.getSource().equals(alignImageWithRightMeasurementPositionButton))
 		{
 			acceptValuesInInteractiveControlPanel();
 
-			try {
-				Vector3D rightPosition = Vector3D.sum(referencePosition, new Vector3D(delta,  0, 0));
-				Vector3D dR = windowSurfaceProperty.getOutgoingLightRayDirection(
-						new Ray(lightRayFieldPointSourcePosition, Vector3D.difference(rightPosition, lightRayFieldPointSourcePosition), 0, false), 
-						new RaySceneObjectIntersection(rightPosition, window.getPane(), 0), 
-						null, null, 100, null
-					).getNormalised();
-				cameraViewDirectionPanel.setVector3D(dR.getReverse());
-				cameraViewCentrePanel.setVector3D(rightPosition);
-			} catch (RayTraceException e1) {
-				e1.printStackTrace();
-			}
+			Vector3D rightPosition = Vector3D.sum(referencePosition, new Vector3D(delta,  0, 0));
+			Vector3D dR = calculateRayDirectionInFieldAt(rightPosition);
+			cameraViewDirectionPanel.setVector3D(dR.getReverse());
+			cameraViewCentrePanel.setVector3D(rightPosition);
 		}
 		else if(e.getSource().equals(alignImageWithTopMeasurementPositionButton))
 		{
 			acceptValuesInInteractiveControlPanel();
 
-			try {
-				Vector3D topPosition = Vector3D.sum(referencePosition, new Vector3D(0, delta, 0));
-				Vector3D dT = windowSurfaceProperty.getOutgoingLightRayDirection(
-						new Ray(lightRayFieldPointSourcePosition, Vector3D.difference(topPosition, lightRayFieldPointSourcePosition), 0, false), 
-						new RaySceneObjectIntersection(topPosition, window.getPane(), 0), 
-						null, null, 100, null
-					).getNormalised();
-				cameraViewDirectionPanel.setVector3D(dT.getReverse());
-				cameraViewCentrePanel.setVector3D(topPosition);
-			} catch (RayTraceException e1) {
-				e1.printStackTrace();
-			}
+			Vector3D topPosition = Vector3D.sum(referencePosition, new Vector3D(0, delta, 0));
+			Vector3D dT = calculateRayDirectionInFieldAt(topPosition);
+			cameraViewDirectionPanel.setVector3D(dT.getReverse());
+			cameraViewCentrePanel.setVector3D(topPosition);
 		}
 	}
 

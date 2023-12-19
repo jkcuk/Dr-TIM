@@ -1,5 +1,6 @@
 package optics.raytrace.surfaces;
 
+import math.MyMath;
 import math.Vector3D;
 import optics.DoubleColour;
 import optics.raytrace.core.LightSource;
@@ -22,38 +23,37 @@ public abstract class LightRayField extends SurfaceProperty
 	private static final long serialVersionUID = -7847676117253136484L;
 	
 	/**
-	 * if the exponent is large, the directions of the light-rays in  the field are very  sharp;
-	 * if the exponent is small, the directions are very  fuzzy.
+	 * angular width of fuzziness
 	 */
-	private double fuzzinessExponent;
+	private double angularFuzzinessRad;
 	
 	/**
 	 */
-	public LightRayField(double fuzzinessExponent)
+	public LightRayField(double angularFuzzinessRad)
 	{
-		this.fuzzinessExponent = fuzzinessExponent;
+		this.angularFuzzinessRad = angularFuzzinessRad;
 	}
 	
 	public LightRayField()
 	{
-		this.fuzzinessExponent = 1000;
+		this(MyMath.deg2rad(1));
 	}
 
 	
 	// setters & getters
 	
 	/**
-	 * @return the exponent
+	 * @return the angularFuzzinessRad
 	 */
-	public double getFuzzinessExponent() {
-		return fuzzinessExponent;
+	public double getAngularFuzzinessRad() {
+		return angularFuzzinessRad;
 	}
 
 	/**
-	 * @param exponent the exponent to set
+	 * @param angularFuzzinessRad the angularFuzzinessRad to set
 	 */
-	public void setFuzzinessExponent(double fuzzinessExponent) {
-		this.fuzzinessExponent = fuzzinessExponent;
+	public void setAngularFuzzinessRad(double angularFuzzinessRad) {
+		this.angularFuzzinessRad = angularFuzzinessRad;
 	}
 
 	
@@ -100,6 +100,21 @@ public abstract class LightRayField extends SurfaceProperty
 		// normalised direction of (forwards-traced) ray
 		Vector3D rd = r.getD().getReverse();
 		
+		// double scalarProduct = Vector3D.scalarProduct(fd, rd);
+		
+		// the angle between the ray direction and the ray in the light field
+		double angleRatio = Math.acos(Vector3D.scalarProduct(fd, rd)) / angularFuzzinessRad;
+		double directionFactor;
+		if(Math.abs(angleRatio) > 0.5) directionFactor = 0;
+		else {
+			double c = Math.cos(Math.PI*angleRatio);
+			directionFactor = c*c;
+		}
+//		double directionFactor;
+//		
+//		if(scalarProduct < 0) directionFactor =  0;
+//		else if()?Math.pow(Vector3D.scalarProduct(fd, rd), fuzzinessExponent):0;
+		
 		// continue tracing through the scene, but add to the colour the colour from the light-ray field
 		return scene.getColourAvoidingOrigin(
 				r.getBranchRay(i.p, r.getD(), i.t, r.isReportToConsole()),
@@ -108,7 +123,7 @@ public abstract class LightRayField extends SurfaceProperty
 				scene,
 				traceLevel-1,
 				raytraceExceptionHandler
-			).add(getRayColour(i).multiply(Math.pow(Vector3D.scalarProduct(fd, rd), fuzzinessExponent)));
+			).add(getRayColour(i).multiply(directionFactor));
 
 	}
 }
