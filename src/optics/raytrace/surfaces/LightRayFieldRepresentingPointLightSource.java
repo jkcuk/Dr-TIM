@@ -19,31 +19,32 @@ public class LightRayFieldRepresentingPointLightSource extends LightRayField
 	 */
 	private DoubleColour colour;
 	
-	private Vector3D position;
+	private Vector3D pointLightSourcePosition;
 	
 	/**
-	 * if true, the rays are directed towards the  position, otherwise away from it.
+	 * if true, the rays are directed towards the  source, otherwise away from it.
 	 */
-	private boolean raysTowardsPosition;
+	private boolean raysTowardsSource;
 	
 	//  constructors etc.
 	
 	public LightRayFieldRepresentingPointLightSource(
 			DoubleColour colour, 
-			Vector3D position, 
-			boolean raysTowardsPosition, 
-			double angularFuzzinessRad
+			Vector3D pointLightSourcePosition, 
+			boolean raysTowardsSource, 
+			double angularFuzzinessRad,
+			boolean bidirectional
 		)
 	{
-		super(angularFuzzinessRad);
+		super(angularFuzzinessRad, bidirectional);
 		this.colour = colour;
-		this.position = position;
-		this.raysTowardsPosition =  raysTowardsPosition;
+		this.pointLightSourcePosition = pointLightSourcePosition;
+		this.raysTowardsSource =  raysTowardsSource;
 	}
 	
 	public LightRayFieldRepresentingPointLightSource(DoubleColour colour, Vector3D position)
 	{
-		this(colour, position, false, 1000);
+		this(colour, position, false, 1000, true);
 	}
 	
 	
@@ -51,9 +52,10 @@ public class LightRayFieldRepresentingPointLightSource extends LightRayField
 	public SurfaceProperty clone() {
 		return new LightRayFieldRepresentingPointLightSource(
 				getColour(),
-				getPosition(),
+				getPointLightSourcePosition(),
 				isRaysTowardsPosition(),
-				getAngularFuzzinessRad()
+				getAngularFuzzinessRad(),
+				isBidirectional()
 			);
 	}
 
@@ -79,29 +81,29 @@ public class LightRayFieldRepresentingPointLightSource extends LightRayField
 	/**
 	 * @return the position
 	 */
-	public Vector3D getPosition() {
-		return position;
+	public Vector3D getPointLightSourcePosition() {
+		return pointLightSourcePosition;
 	}
 
 	/**
 	 * @param position the position to set
 	 */
-	public void setPosition(Vector3D position) {
-		this.position = position;
+	public void setPointLightSourcePosition(Vector3D pointLightSourcePosition) {
+		this.pointLightSourcePosition = pointLightSourcePosition;
 	}
 
 	/**
-	 * @return the raysTowardsPosition
+	 * @return the raysTowardsSource
 	 */
 	public boolean isRaysTowardsPosition() {
-		return raysTowardsPosition;
+		return raysTowardsSource;
 	}
 
 	/**
-	 * @param raysTowardsPosition the raysTowardsPosition to set
+	 * @param raysTowardsSource the raysTowardsSource to set
 	 */
-	public void setRaysTowardsPosition(boolean raysTowardsPosition) {
-		this.raysTowardsPosition = raysTowardsPosition;
+	public void setRaysTowardsPosition(boolean raysTowardsSource) {
+		this.raysTowardsSource = raysTowardsSource;
 	}
 
 	
@@ -116,7 +118,7 @@ public class LightRayFieldRepresentingPointLightSource extends LightRayField
 	public Vector3D getNormalisedLightRayDirection(RaySceneObjectIntersection i)
 	{
 		//  placeholder; effectively interprets the surface of the SceneObject this is associated with  as a phase front
-		return Vector3D.difference(i.p, position).getNormalised().getProductWith(raysTowardsPosition?-1:1);
+		return Vector3D.difference(i.p, pointLightSourcePosition).getNormalised().getProductWith(raysTowardsSource?-1:1);
 	}
 	
 	/**

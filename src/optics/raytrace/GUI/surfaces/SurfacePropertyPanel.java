@@ -278,6 +278,7 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		flipAxisAnglePanel,
 		angularFuzzinessDegPanel;
 		// criticalAngleOfIncidencePanel;
+	private JCheckBox bidirectionalRaysCheckBox;
 	private LabelledComplexPanel complexRefractiveIndexRatioPanel;
 	// private TilingParametersLine tilingParametersPanel;
 	private JButton tilingParametersButton, twoSidedParametersButton, choosePictureFileButton;
@@ -843,6 +844,9 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		angularFuzzinessDegPanel = new LabelledDoublePanel("Angular fuzziness (deg)");
 		angularFuzzinessDegPanel.setNumber(1);
 		phaseFrontPanel.add(angularFuzzinessDegPanel);
+		bidirectionalRaysCheckBox =  new JCheckBox("Bidirectional rays");
+		bidirectionalRaysCheckBox.setSelected(false);
+		phaseFrontPanel.add(bidirectionalRaysCheckBox);
 
 		point2pointImagingPanel = new JPanel();
 		point2pointImagingPanel.setLayout(new MigLayout("insets 0"));
@@ -1180,9 +1184,11 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		}
 		else if(surfaceProperty instanceof LightRayFieldRepresentingPhaseFront)
 		{
+			LightRayFieldRepresentingPhaseFront s = (LightRayFieldRepresentingPhaseFront)surfaceProperty;
 			surfacePropertyComboBox.setSurfacePropertyType(SurfacePropertyType.PHASE_FRONT);
-			phaseFrontColourPanel.setDoubleColour(((LightRayFieldRepresentingPhaseFront)surfaceProperty).getColour());
-			angularFuzzinessDegPanel.setNumber(MyMath.rad2deg(((LightRayFieldRepresentingPhaseFront)surfaceProperty).getAngularFuzzinessRad()));
+			phaseFrontColourPanel.setDoubleColour(s.getColour());
+			angularFuzzinessDegPanel.setNumber(MyMath.rad2deg(s.getAngularFuzzinessRad()));
+			bidirectionalRaysCheckBox.setSelected(s.isBidirectional());
 			setOptionalParameterPanelComponent(phaseFrontPanel);
 		}
 		else if(surfaceProperty instanceof PhaseHologramOfRadialLenticularArray)
@@ -1519,7 +1525,8 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		case PHASE_FRONT:
 			surfaceProperty = new LightRayFieldRepresentingPhaseFront(
 					phaseFrontColourPanel.getDoubleColour(),
-					MyMath.deg2rad(angularFuzzinessDegPanel.getNumber())
+					MyMath.deg2rad(angularFuzzinessDegPanel.getNumber()),
+					bidirectionalRaysCheckBox.isSelected()
 				);
 			break;
 		case POINT2POINT_IMAGING:

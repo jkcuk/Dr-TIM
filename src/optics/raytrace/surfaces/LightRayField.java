@@ -28,15 +28,22 @@ public abstract class LightRayField extends SurfaceProperty
 	private double angularFuzzinessRad;
 	
 	/**
+	 * if true, shows light travelling along the rays in both  directions, otherwise only in the direction returned by 
+	 * getNormalisedLightRayDirection
 	 */
-	public LightRayField(double angularFuzzinessRad)
+	private boolean bidirectional;
+	
+	/**
+	 */
+	public LightRayField(double angularFuzzinessRad, boolean bidirectional)
 	{
 		this.angularFuzzinessRad = angularFuzzinessRad;
+		this.bidirectional = bidirectional;
 	}
 	
 	public LightRayField()
 	{
-		this(MyMath.deg2rad(1));
+		this(MyMath.deg2rad(1), false);
 	}
 
 	
@@ -55,10 +62,25 @@ public abstract class LightRayField extends SurfaceProperty
 	public void setAngularFuzzinessRad(double angularFuzzinessRad) {
 		this.angularFuzzinessRad = angularFuzzinessRad;
 	}
+	
+	/**
+	 * @return the bidirectional
+	 */
+	public boolean isBidirectional() {
+		return bidirectional;
+	}
+
+	/**
+	 * @param bidirectional the bidirectional to set
+	 */
+	public void setBidirectional(boolean bidirectional) {
+		this.bidirectional = bidirectional;
+	}
+
 
 	
 	// LightRayField methods
-	
+
 	/**
 	 * Override to customise.
 	 * @param point
@@ -103,7 +125,9 @@ public abstract class LightRayField extends SurfaceProperty
 		// double scalarProduct = Vector3D.scalarProduct(fd, rd);
 		
 		// the angle between the ray direction and the ray in the light field
-		double angleRatio = Math.acos(Vector3D.scalarProduct(fd, rd)) / angularFuzzinessRad;
+		double scalarProduct = Vector3D.scalarProduct(fd, rd);
+		if(bidirectional) scalarProduct = Math.abs(scalarProduct);
+		double angleRatio = Math.acos(scalarProduct) / angularFuzzinessRad;
 		double directionFactor;
 		if(Math.abs(angleRatio) > 0.5) directionFactor = 0;
 		else {

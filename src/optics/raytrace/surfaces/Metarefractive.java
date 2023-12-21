@@ -6,6 +6,7 @@ import optics.raytrace.surfaces.metarefraction.Metarefraction;
 import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.core.LightSource;
+import optics.raytrace.core.Orientation;
 import optics.raytrace.core.ParametrisedObject;
 import optics.raytrace.core.Ray;
 import optics.raytrace.core.RaySceneObjectIntersection;

@@ -3,6 +3,7 @@ package optics.raytrace.research.visualisingCurl;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintStream;
+import java.text.NumberFormat;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -20,6 +21,7 @@ import optics.raytrace.GUI.cameras.RenderQualityEnum;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
+import optics.raytrace.GUI.lowLevel.LabelledDoubleColourPanel;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableArrow;
@@ -35,6 +37,9 @@ import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.sceneObjects.Sphere;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.DirectionChanging;
+import optics.raytrace.surfaces.LightRayField;
+import optics.raytrace.surfaces.LightRayFieldCollimated;
+import optics.raytrace.surfaces.LightRayFieldRepresentingParaxialOpticalVortex;
 import optics.raytrace.surfaces.LightRayFieldRepresentingPointLightSource;
 import optics.raytrace.surfaces.RayRotating;
 import optics.raytrace.surfaces.SurfaceColour;
@@ -65,23 +70,39 @@ implements ActionListener
 	
 	public enum LightFieldType
 	{
-		POINT_OBJECT("Point(ish) object"),
-		FIELD_FROM_POINT("(Fuzzy) light-ray field from point");
+		POINT_OBJECT("Point(ish) object", null),
+		FIELD_FROM_POINT("Fuzzy light-ray field", "Point source"),
+		COLLIMATED_RAYS("Fuzzy light-ray field", "Collimated rays"),
+		VORTEX_RAYS("Fuzzy light-ray field", "Optical vortex");
 		
-		private String description;
-		private LightFieldType(String description) {this.description = description;}	
-		@Override
-		public String toString() {return description;}
+		private String description1, description2;
+		private LightFieldType(String description1, String description2) {
+			this.description1 = description1;
+			this.description2 = description2;
+		}	
+		public String getDescription1() {return description1;}
+		public String getDescription2() {return description2;}
 	}
 	private LightFieldType lightFieldType;
 	
 	//  point object
 	private Vector3D pointObjectPosition;	
 	private double pointObjectSphereRadius;
-	
+
+	// light-ray field
+	private double lightRayFieldFuzzinessRad;
+	private DoubleColour lightRayFieldColour;
+
 	// field from point
 	private Vector3D fieldFromPointPosition;	
-	private double fieldFromPointFuzzinessRad;
+	
+	// collimated  light rays
+	private Vector3D collimatedLightRaysDirection;
+	
+	// optical vortex
+	private Vector3D pointOnVortexLine;
+	private Vector3D normalisedVortexLineDirection;
+	private double mOverK;
 	
 
 	private double windowTransmissionCoefficient;
@@ -111,9 +132,18 @@ implements ActionListener
 		pointObjectPosition =  new Vector3D(0, 0, 10);
 		pointObjectSphereRadius = 0.1;
 		
-		fieldFromPointPosition = new Vector3D(0, 0, 10);	
-		fieldFromPointFuzzinessRad = MyMath.deg2rad(1);
+		lightRayFieldFuzzinessRad = MyMath.deg2rad(1);
+		lightRayFieldColour = DoubleColour.RED;
 
+		fieldFromPointPosition = new Vector3D(0, 0, 10);	
+
+		collimatedLightRaysDirection = new Vector3D(0, 0, -1);
+		
+		pointOnVortexLine = new Vector3D(0, 0, 0);
+		normalisedVortexLineDirection = new Vector3D(0, 0, -1);
+		mOverK = 1;
+
+		
 		windowType = WindowType.RR_SHEET;
 		windowTransmissionCoefficient = SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT;
 		windowZ = 0;
@@ -178,8 +208,15 @@ implements ActionListener
 		printStream.println("lightFieldType = "+lightFieldType);
 		printStream.println("pointObjectPosition = "+pointObjectPosition);
 		printStream.println("pointObjectSphereRadius = "+pointObjectSphereRadius);
+		printStream.println("lightRayFieldFuzzinessRad = "+lightRayFieldFuzzinessRad);
+		printStream.println("lightRayFieldColour = "+lightRayFieldColour);
 		printStream.println("fieldFromPointPosition = "+fieldFromPointPosition);
-		printStream.println("fieldFromPointFuzzinessRad = "+fieldFromPointFuzzinessRad);
+		printStream.println("collimatedLightRaysDirection = "+collimatedLightRaysDirection);
+		
+		printStream.println("pointOnVortexLine = "+pointOnVortexLine);
+		printStream.println("normalisedVortexLineDirection = "+normalisedVortexLineDirection);
+		printStream.println("mOverK = "+mOverK);
+
 		printStream.println("windowType = "+windowType);
 		printStream.println("windowTransmissionCoefficient = "+windowTransmissionCoefficient);
 		printStream.println("windowZ = "+windowZ);
@@ -256,18 +293,46 @@ implements ActionListener
 		switch(lightFieldType)
 		{
 		case FIELD_FROM_POINT:
+		case COLLIMATED_RAYS:
+		case VORTEX_RAYS:
+			LightRayField lrf;
+			switch(lightFieldType)
+			{
+			case FIELD_FROM_POINT:
+				lrf  =  new LightRayFieldRepresentingPointLightSource(
+						lightRayFieldColour,	// colour, 
+						fieldFromPointPosition,	// position, 
+						false,	// raysTowardsPosition, 
+						lightRayFieldFuzzinessRad,	// angular fuzziness
+						true	// bidirectional
+					);
+				break;
+			case VORTEX_RAYS:
+				lrf = new LightRayFieldRepresentingParaxialOpticalVortex(
+						lightRayFieldColour,	// colour 
+						pointOnVortexLine, 
+						normalisedVortexLineDirection,
+						mOverK, 
+						lightRayFieldFuzzinessRad,
+						false	// bidirectional
+					);
+				break;
+			case COLLIMATED_RAYS:
+			default:
+				lrf = new LightRayFieldCollimated(
+						lightRayFieldColour,	// colour
+						collimatedLightRaysDirection,	// normalisedLightRayDirection, 
+						lightRayFieldFuzzinessRad,	// angularFuzzinessRad
+						true	// bidirectional
+					);
+			}
 			scene.addSceneObject(
 					new EditableParametrisedPlane(
 							"Plane in which light-ray field is represented",	// description
-							new Vector3D(0, 0, 5+MyMath.TINY),	// pointOnPlane
+							Vector3D.sum(referencePosition, new Vector3D(0, 0, MyMath.TINY)),	// pointOnPlane
 							Vector3D.X,	// v1
 							Vector3D.Y,	// v2
-							new LightRayFieldRepresentingPointLightSource(
-									DoubleColour.RED,	// colour, 
-									fieldFromPointPosition,	// position, 
-									false,	// raysTowardsPosition, 
-									fieldFromPointFuzzinessRad	// fuzzinessExponent
-								),	// sp
+							lrf,	// sp
 							scene,	// parent
 							studio
 						)
@@ -280,7 +345,7 @@ implements ActionListener
 					"Sphere at position of point light source", 
 					pointObjectPosition, 
 					pointObjectSphereRadius,
-					SurfaceColour.RED_SHINY,
+					new SurfaceColour(lightRayFieldColour, DoubleColour.WHITE, true),
 					scene, studio
 				));
 		}
@@ -352,15 +417,27 @@ implements ActionListener
 	private DoublePanel rrAngleDegPanel;
 
 	
-	JTabbedPane lightFieldTabbedPane;
+	JTabbedPane lightFieldTabbedPane1, lightFieldTabbedPane2;
 	
 	//  point object ray field
 	private LabelledVector3DPanel pointObjectPositionPanel; 
 	private LabelledDoublePanel pointObjectSphereRadiusPanel;
 	
+	// light ray  fields
+
+	private DoublePanel fieldFromPointFuzzinessDegPanel;
+	private LabelledDoubleColourPanel lightRayFieldColourPanel;
+	
 	// field from point
 	private LabelledVector3DPanel fieldFromPointPositionPanel;
-	private DoublePanel fieldFromPointFuzzinessDegPanel;
+
+	// collimated light rays
+	private LabelledVector3DPanel collimatedLightRaysDirectionPanel;
+	
+	// vortex light rays
+	private LabelledVector3DPanel pointOnVortexLinePanel; 
+	private LabelledVector3DPanel normalisedVortexLineDirectionPanel;
+	private LabelledDoublePanel mOverKPanel; 
 
 	
 	// curl measurement
@@ -399,19 +476,19 @@ implements ActionListener
 		// the light-field panel
 		//
 
-		JPanel lightFieldPanel = new JPanel();
-		lightFieldPanel.setLayout(new MigLayout("insets 0"));
+		JPanel lightFieldAndScenePanel = new JPanel();
+		lightFieldAndScenePanel.setLayout(new MigLayout("insets 0"));
 		// scenePanel.setLayout(new BorderLayout());
-		mainTabbedPane.addTab("Light field (& scene)", lightFieldPanel);
+		mainTabbedPane.addTab("Light field (& scene)", lightFieldAndScenePanel);
 		
 		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
-		lightFieldPanel.add(GUIBitsAndBobs.makeRow("Backdrop", studioInitialisationComboBox), "wrap");
+		lightFieldAndScenePanel.add(GUIBitsAndBobs.makeRow("Backdrop", studioInitialisationComboBox), "wrap");
 
 		// the light-field tabbed pane
 		
-		lightFieldTabbedPane = new JTabbedPane();
-		lightFieldPanel.add(lightFieldTabbedPane, "wrap");
+		lightFieldTabbedPane1 = new JTabbedPane();
+		lightFieldAndScenePanel.add(lightFieldTabbedPane1, "wrap");
 
 		// point object
 		
@@ -426,24 +503,57 @@ implements ActionListener
 		pointObjectSphereRadiusPanel.setNumber(pointObjectSphereRadius);
 		pointObjectPanel.add(pointObjectSphereRadiusPanel, "wrap");
 
-		lightFieldTabbedPane.addTab(LightFieldType.POINT_OBJECT.toString(), pointObjectPanel);
+		lightFieldTabbedPane1.addTab(LightFieldType.POINT_OBJECT.getDescription1(), pointObjectPanel);
+		
+		// light-ray field
+		
+		JPanel lightRayFieldPanel = new JPanel();
+		lightRayFieldPanel.setLayout(new MigLayout("insets 0"));
+		
+		lightFieldTabbedPane2 = new JTabbedPane();
+		lightRayFieldPanel.add(lightFieldTabbedPane2, "wrap");
+
 		
 		// field from point light source
-		
-		JPanel fieldFromPointPanel = new JPanel();
-		fieldFromPointPanel.setLayout(new MigLayout("insets 0"));
-		
 		fieldFromPointPositionPanel = new LabelledVector3DPanel("Point light source position"); 
 		fieldFromPointPositionPanel.setVector3D(fieldFromPointPosition);
-		fieldFromPointPanel.add(fieldFromPointPositionPanel, "wrap");
+		lightFieldTabbedPane2.addTab(LightFieldType.FIELD_FROM_POINT.getDescription2(), fieldFromPointPositionPanel);
+		
+		//  collimated rays
+		collimatedLightRaysDirectionPanel = new LabelledVector3DPanel("Direction");
+		collimatedLightRaysDirectionPanel.setVector3D(collimatedLightRaysDirection);
+		lightFieldTabbedPane2.addTab(LightFieldType.COLLIMATED_RAYS.getDescription2(), collimatedLightRaysDirectionPanel);
+		
+		// vortex rays
+		JPanel vortexRaysPanel = new JPanel();
+		vortexRaysPanel.setLayout(new MigLayout("insets 0"));
+		lightFieldTabbedPane2.addTab(LightFieldType.VORTEX_RAYS.getDescription2(), vortexRaysPanel);
+
+		pointOnVortexLinePanel = new LabelledVector3DPanel("Point on vortex line"); 
+		pointOnVortexLinePanel.setVector3D(pointOnVortexLine);
+		vortexRaysPanel.add(pointOnVortexLinePanel, "span");
+		
+		normalisedVortexLineDirectionPanel = new LabelledVector3DPanel("Vortex-line direction");
+		normalisedVortexLineDirectionPanel.setVector3D(normalisedVortexLineDirection);
+		vortexRaysPanel.add(normalisedVortexLineDirectionPanel, "span");
+		
+		mOverKPanel = new LabelledDoublePanel("m/k"); 
+		mOverKPanel.setNumber(mOverK);
+		vortexRaysPanel.add(mOverKPanel, "span");
 		
 		fieldFromPointFuzzinessDegPanel = new DoublePanel();
-		fieldFromPointFuzzinessDegPanel.setNumber(MyMath.rad2deg(fieldFromPointFuzzinessRad));
-		fieldFromPointPanel.add(GUIBitsAndBobs.makeRow("Fuzziness", fieldFromPointFuzzinessDegPanel, "°"), "span");
+		fieldFromPointFuzzinessDegPanel.setNumber(MyMath.rad2deg(lightRayFieldFuzzinessRad));
+		lightRayFieldPanel.add(GUIBitsAndBobs.makeRow("Ray fuzziness", fieldFromPointFuzzinessDegPanel, "°"), "span");
 
-		lightFieldTabbedPane.addTab(LightFieldType.FIELD_FROM_POINT.toString(), fieldFromPointPanel);
+		lightFieldTabbedPane1.addTab(LightFieldType.FIELD_FROM_POINT.getDescription1(), lightRayFieldPanel);
 
 		setTab(lightFieldType);
+		
+		lightRayFieldColourPanel = new LabelledDoubleColourPanel("Colour");
+		lightRayFieldColourPanel.setDoubleColour(lightRayFieldColour);
+		lightFieldAndScenePanel.add(lightRayFieldColourPanel, "wrap");
+		
+
 		
 		//
 		// the window panel
@@ -495,7 +605,7 @@ implements ActionListener
 		deltaPanel.setNumber(delta);
 		curlPanel.add(deltaPanel, "wrap");
 
-		measurementResults = new JTextArea(7,40);
+		measurementResults = new JTextArea(8, 40);
 		measurementResults.setText("Press \"Measure\" button to measure");
 		curlPanel.add(measurementResults);
 
@@ -578,19 +688,37 @@ implements ActionListener
 
 	private void setTab(LightFieldType lightFieldType)
 	{
-		for(int i=0; i<lightFieldTabbedPane.getTabCount(); i++)
+		int i;
+		for(i=0; i<lightFieldTabbedPane1.getTabCount(); i++)
 		{
-			if(lightFieldTabbedPane.getTitleAt(i).equals(lightFieldType.toString())) lightFieldTabbedPane.setSelectedIndex(i);;
+			if(lightFieldTabbedPane1.getTitleAt(i).equals(lightFieldType.getDescription1())) lightFieldTabbedPane1.setSelectedIndex(i);
 		}
+		
+		// deal with second tabbed pane, if required
+		if(lightFieldType.getDescription2() == null) return;
+		
+		for(i=0; i<lightFieldTabbedPane2.getTabCount(); i++)
+		{
+			if(lightFieldTabbedPane2.getTitleAt(i).equals(lightFieldType.getDescription2())) lightFieldTabbedPane2.setSelectedIndex(i);
+		}		
 	}
 	
 	private LightFieldType getLightFieldType()
 	{
-		String selectedText = lightFieldTabbedPane.getTitleAt(lightFieldTabbedPane.getSelectedIndex());
+		String selectedText1 = lightFieldTabbedPane1.getTitleAt(lightFieldTabbedPane1.getSelectedIndex());
+		String selectedText2 = lightFieldTabbedPane2.getTitleAt(lightFieldTabbedPane2.getSelectedIndex());
 		for(LightFieldType lt : LightFieldType.values())
 		{
-			if(lt.toString().equals(selectedText)) return lt;
+			if(lt.getDescription1().equals(selectedText1))
+			{
+				if(
+						(lt.getDescription2() == null) ||
+						(lt.getDescription2().equals(selectedText2))
+				)
+				return lt;
+			}
 		}
+		// TODO deal with second tabbed pane
 		return null;
 	}
 	
@@ -609,14 +737,30 @@ implements ActionListener
 		switch(lightFieldType)
 		{
 		case FIELD_FROM_POINT:
-			fieldFromPointPosition = fieldFromPointPositionPanel.getVector3D();
-			fieldFromPointFuzzinessRad = MyMath.deg2rad(fieldFromPointFuzzinessDegPanel.getNumber());
+		case COLLIMATED_RAYS:
+		case VORTEX_RAYS:
+			lightRayFieldFuzzinessRad = MyMath.deg2rad(fieldFromPointFuzzinessDegPanel.getNumber());
+			switch(lightFieldType)
+			{
+			case FIELD_FROM_POINT:
+				fieldFromPointPosition = fieldFromPointPositionPanel.getVector3D();
+				break;
+			case VORTEX_RAYS:
+				pointOnVortexLine = pointOnVortexLinePanel.getVector3D(); 
+				normalisedVortexLineDirection = normalisedVortexLineDirectionPanel.getVector3D();
+				mOverK = mOverKPanel.getNumber(); 
+				break;
+			case COLLIMATED_RAYS:
+			default:
+				collimatedLightRaysDirection = collimatedLightRaysDirectionPanel.getVector3D();
+			}
 			break;
 		case POINT_OBJECT:
 		default:
 			pointObjectPosition = pointObjectPositionPanel.getVector3D();
 			pointObjectSphereRadius = pointObjectSphereRadiusPanel.getNumber();
 		}
+		lightRayFieldColour = lightRayFieldColourPanel.getDoubleColour();
 		
 		windowType  = getWindowType();
 		// switch(windowTabbedPane.getSelectedIndex())
@@ -656,14 +800,40 @@ implements ActionListener
 		switch(lightFieldType)
 		{
 		case FIELD_FROM_POINT:
-			rayDirectionBeforeTransmissionThroughWindow = new LightRayFieldRepresentingPointLightSource(
-					DoubleColour.RED,	// colour, 
-					fieldFromPointPosition,	// position, 
-					false,	// raysTowardsPosition, 
-					fieldFromPointFuzzinessRad	// fuzzinessExponent
-				).getNormalisedLightRayDirection(new RaySceneObjectIntersection(position, null, 0));
-			//  System.out.println("rayDirectionBeforeTransmissionThroughWindow = "+rayDirectionBeforeTransmissionThroughWindow);
-			break;
+		case COLLIMATED_RAYS:
+		case VORTEX_RAYS:
+			lightRayFieldFuzzinessRad = MyMath.deg2rad(fieldFromPointFuzzinessDegPanel.getNumber());
+			switch(lightFieldType)
+			{
+			case FIELD_FROM_POINT:
+				rayDirectionBeforeTransmissionThroughWindow = new LightRayFieldRepresentingPointLightSource(
+						DoubleColour.RED,	// colour, 
+						fieldFromPointPosition,	// position, 
+						false,	// raysTowardsPosition, 
+						lightRayFieldFuzzinessRad,	// angular fuzziness
+						true	// bidirectional
+					).getNormalisedLightRayDirection(new RaySceneObjectIntersection(position, null, 0));
+				break;
+			case VORTEX_RAYS:
+				rayDirectionBeforeTransmissionThroughWindow = new LightRayFieldRepresentingParaxialOpticalVortex(
+						lightRayFieldColour,	// colour 
+						pointOnVortexLine, 
+						normalisedVortexLineDirection,
+						mOverK, 
+						lightRayFieldFuzzinessRad,
+						false	// bidirectional
+					).getNormalisedLightRayDirection(new RaySceneObjectIntersection(position, null, 0));
+				break;
+			case COLLIMATED_RAYS:
+			default:
+				rayDirectionBeforeTransmissionThroughWindow = new LightRayFieldCollimated(
+						lightRayFieldColour,	// colour
+						collimatedLightRaysDirection,	// normalisedLightRayDirection, 
+						lightRayFieldFuzzinessRad,	// angularFuzzinessRad
+						true	// bidirectional
+					).getNormalisedLightRayDirection(new RaySceneObjectIntersection(position, null, 0));
+			}
+			break;		
 		case POINT_OBJECT:
 		default:
 			rayDirectionBeforeTransmissionThroughWindow = Vector3D.difference(position, pointObjectPosition);
@@ -681,13 +851,24 @@ implements ActionListener
 			e.printStackTrace();
 		}
 		
+		//  make sure the z component of the returned direction is negative
+		if(direction.z > 0) return direction.getReverse();
 		return direction;
+	}
+	
+	Vector3D makeZNegative(Vector3D v)
+	{
+		if(v.z > 0) return v.getReverse();
+		return v;
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		super.actionPerformed(e);
 
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMaximumFractionDigits(8);
+		
 		if(e.getSource().equals(calculateButton))
 		{
 			acceptValuesInInteractiveControlPanel();
@@ -722,9 +903,9 @@ implements ActionListener
 			s += "\n  Top measurement position: " + dT;
 
 			// calculate derivatives
-			s += "\nd d'_x / d y = " + (dT.x - d0.x) / delta;
-			s += "\nd d'_y / d x = " + (dR.y - d0.y) / delta;
-			s += "\ncurl_z = " + ((dR.y - d0.y) / delta - (dT.x - d0.x) / delta);
+			s += "\nd d'_x / d y = " + nf.format((dT.x - d0.x) / delta);
+			s += "\nd d'_y / d x = " + nf.format((dR.y - d0.y) / delta);
+			s += "\ncurl_z = " + nf.format(((dR.y - d0.y) / delta - (dT.x - d0.x) / delta));
 
 			measurementResults.setText(s);
 		}
@@ -732,8 +913,8 @@ implements ActionListener
 		{
 			acceptValuesInInteractiveControlPanel();
 
-			Vector3D dR = calculateRayDirectionInFieldAt(referencePosition);
-			cameraViewDirectionPanel.setVector3D(dR.getReverse());
+			Vector3D d = calculateRayDirectionInFieldAt(referencePosition);
+			cameraViewDirectionPanel.setVector3D(d.getReverse());
 			cameraViewCentrePanel.setVector3D(referencePosition);
 		}
 		else if(e.getSource().equals(alignImageWithRightMeasurementPositionButton))
@@ -741,8 +922,8 @@ implements ActionListener
 			acceptValuesInInteractiveControlPanel();
 
 			Vector3D rightPosition = Vector3D.sum(referencePosition, new Vector3D(delta,  0, 0));
-			Vector3D dR = calculateRayDirectionInFieldAt(rightPosition);
-			cameraViewDirectionPanel.setVector3D(dR.getReverse());
+			Vector3D d = calculateRayDirectionInFieldAt(rightPosition);
+			cameraViewDirectionPanel.setVector3D(d.getReverse());
 			cameraViewCentrePanel.setVector3D(rightPosition);
 		}
 		else if(e.getSource().equals(alignImageWithTopMeasurementPositionButton))
@@ -750,8 +931,8 @@ implements ActionListener
 			acceptValuesInInteractiveControlPanel();
 
 			Vector3D topPosition = Vector3D.sum(referencePosition, new Vector3D(0, delta, 0));
-			Vector3D dT = calculateRayDirectionInFieldAt(topPosition);
-			cameraViewDirectionPanel.setVector3D(dT.getReverse());
+			Vector3D d = calculateRayDirectionInFieldAt(topPosition);
+			cameraViewDirectionPanel.setVector3D(d.getReverse());
 			cameraViewCentrePanel.setVector3D(topPosition);
 		}
 	}

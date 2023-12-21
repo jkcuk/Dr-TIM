@@ -22,21 +22,21 @@ public class LightRayFieldRepresentingPhaseFront extends LightRayField
 	
 	//  constructors etc.
 	
-	public LightRayFieldRepresentingPhaseFront(DoubleColour colour, double angularFuzzinessRad)
+	public LightRayFieldRepresentingPhaseFront(DoubleColour colour, double angularFuzzinessRad, boolean bidirectional)
 	{
-		super(angularFuzzinessRad);
+		super(angularFuzzinessRad, bidirectional);
 		this.colour = colour;
 	}
 	
 	public LightRayFieldRepresentingPhaseFront(DoubleColour colour)
 	{
-		this(colour, 1000);
+		this(colour, 1000, false);
 	}
 	
 	
 	@Override
 	public SurfaceProperty clone() {
-		return new LightRayFieldRepresentingPhaseFront(getColour(), getAngularFuzzinessRad());
+		return new LightRayFieldRepresentingPhaseFront(getColour(), getAngularFuzzinessRad(), isBidirectional());
 	}
 
 	
