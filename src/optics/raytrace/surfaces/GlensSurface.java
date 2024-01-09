@@ -2,7 +2,6 @@ package optics.raytrace.surfaces;
 
 
 import math.*;
-import optics.DoubleColour;
 import optics.raytrace.core.*;
 import optics.raytrace.exceptions.RayTraceException;
 
@@ -54,7 +53,7 @@ import optics.raytrace.exceptions.RayTraceException;
  * 
  * @author Johannes Courtial
  */
-public class GlensSurface extends SurfacePropertyPrimitive
+public class GlensSurface extends DirectionChanging
 {
 	private static final long serialVersionUID = 134597862435L;
 	
@@ -997,50 +996,63 @@ public class GlensSurface extends SurfacePropertyPrimitive
 	
 	
 	//
-	// implement SurfaceProperty method
+	// implement DirectionChanging method
 	//
-	
-	/* (non-Javadoc)
-	 * @see optics.raytrace.SurfaceProperty#getColour(optics.raytrace.Ray, optics.raytrace.RaySceneObjectIntersection, optics.raytrace.SceneObject, optics.raytrace.LightSource, int)
-	 */
-	@Override
-	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
-	throws RayTraceException
-	{
-//		if(i.o.getDescription().endsWith("diagonal glens"))
-//		{
-//		System.out.println("GlensHologram:getColour: traceLevel="+traceLevel+
-//				", intersected scene object = "+i.o.getDescription()+
-//				", ray = "+ray+
-//				", GlensHologram = "+toString());
-//		System.out.println("refracted light-ray direction = "+getRefractedLightRayDirection(ray.getD(), i.p));
-//		}
-		
-		if (traceLevel <= 0) return DoubleColour.BLACK;
-						
-		// launch a new ray from here
-		return scene.getColourAvoidingOrigin(
-			ray.getBranchRay(i.p, getRefractedLightRayDirection(ray.getD(), i.p), i.t, ray.isReportToConsole()),
-			i.o,
-			l,
-			scene,
-			traceLevel-1,
-			raytraceExceptionHandler
-		).multiply(
-			// ((getTransmissionCoefficient() < 0.8) && (i.getRayOrientation(ray) == Orientation.INWARDS))?0.96:
-			getTransmissionCoefficient()
-			// * Math.abs(newRayDirection.getScalarProductWith(n))/dz // cos(angle of new ray with normal) / cos(angle of old ray with normal)
-			//
-			// not sure the intensity scales --- see http://www.astronomy.net/articles/29/
-			// Also, one of the article's reviewers wrote this:
-			// This is also related to the brightening in Fig. 7. In fact, I think that such a brightening should not occur.
-			// It is known that brightness of an object does not change if the object is observed by some non-absorbing optical
-			// instrument. For example, a sun reflected in a curved metallic surface is equally bright as if it is viewed directly.
-			// I expect the same for teleported image. Maybe if the effect of the additional factor in eq. (5) is taken into
-			// account together with the other method of calculation of the ray direction, no brightening will occur.
-		);
 
+	
+	@Override
+	public Vector3D getOutgoingLightRayDirection(Ray ray, RaySceneObjectIntersection intersection, SceneObject scene,
+			LightSource lights, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+			throws RayTraceException {
+		return getRefractedLightRayDirection(ray.getD(), intersection.p);
 	}
+
+
+//	//
+//	// implement SurfaceProperty method
+//	//
+//	
+//	/* (non-Javadoc)
+//	 * @see optics.raytrace.SurfaceProperty#getColour(optics.raytrace.Ray, optics.raytrace.RaySceneObjectIntersection, optics.raytrace.SceneObject, optics.raytrace.LightSource, int)
+//	 */
+//	@Override
+//	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection i, SceneObject scene, LightSource l, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+//	throws RayTraceException
+//	{
+////		if(i.o.getDescription().endsWith("diagonal glens"))
+////		{
+////		System.out.println("GlensHologram:getColour: traceLevel="+traceLevel+
+////				", intersected scene object = "+i.o.getDescription()+
+////				", ray = "+ray+
+////				", GlensHologram = "+toString());
+////		System.out.println("refracted light-ray direction = "+getRefractedLightRayDirection(ray.getD(), i.p));
+////		}
+//		
+//		if (traceLevel <= 0) return DoubleColour.BLACK;
+//						
+//		// launch a new ray from here
+//		return scene.getColourAvoidingOrigin(
+//			ray.getBranchRay(i.p, getRefractedLightRayDirection(ray.getD(), i.p), i.t, ray.isReportToConsole()),
+//			i.o,
+//			l,
+//			scene,
+//			traceLevel-1,
+//			raytraceExceptionHandler
+//		).multiply(
+//			// ((getTransmissionCoefficient() < 0.8) && (i.getRayOrientation(ray) == Orientation.INWARDS))?0.96:
+//			getTransmissionCoefficient()
+//			// * Math.abs(newRayDirection.getScalarProductWith(n))/dz // cos(angle of new ray with normal) / cos(angle of old ray with normal)
+//			//
+//			// not sure the intensity scales --- see http://www.astronomy.net/articles/29/
+//			// Also, one of the article's reviewers wrote this:
+//			// This is also related to the brightening in Fig. 7. In fact, I think that such a brightening should not occur.
+//			// It is known that brightness of an object does not change if the object is observed by some non-absorbing optical
+//			// instrument. For example, a sun reflected in a curved metallic surface is equally bright as if it is viewed directly.
+//			// I expect the same for teleported image. Maybe if the effect of the additional factor in eq. (5) is taken into
+//			// account together with the other method of calculation of the ray direction, no brightening will occur.
+//		);
+//
+//	}
 	
 	
 	

@@ -4,8 +4,8 @@ import Jama.Matrix;
 import math.Geometry;
 import math.MathException;
 import math.Vector3D;
+import optics.raytrace.core.One2OneParametrisedObject;
 import optics.raytrace.core.Orientation;
-import optics.raytrace.core.ParametrisedObject;
 
 /**
  * A derivative control surface that represents a  refractive/holographic rotator.
@@ -18,6 +18,7 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	
 	private Vector3D eyePosition;
 	private Vector3D pointOnPlane;
+	private boolean unitJacobian;
 	
 	/**
 	 * plane normal, which is also the rotation axis
@@ -32,15 +33,16 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	
 	//  constructors
 	
-	public DerivativeControlSurfaceRotatingPhaseHologramApproximation(ParametrisedObject parametrisedObject,
-			double transmissionCoefficient, boolean shadowThrowing, Vector3D eyePosition, Vector3D pointOnPlane,
-			Vector3D normalisedPlaneNormal, double rotationAngleRad) 
+	public DerivativeControlSurfaceRotatingPhaseHologramApproximation(One2OneParametrisedObject parametrisedObject, Vector3D eyePosition, Vector3D pointOnPlane,
+			Vector3D normalisedPlaneNormal, double rotationAngleRad, boolean unitJacobian, boolean pixellated, double pixelPeriodU, double pixelPeriodV,
+			double transmissionCoefficient, boolean shadowThrowing) 
 	{
-		super(parametrisedObject, transmissionCoefficient, shadowThrowing);
+		super(parametrisedObject, pixellated, pixelPeriodU, pixelPeriodV, transmissionCoefficient, shadowThrowing);
 		this.eyePosition = eyePosition;
 		this.pointOnPlane = pointOnPlane;
 		this.normalisedPlaneNormal = normalisedPlaneNormal;
 		this.rotationAngleRad = rotationAngleRad;
+		this.unitJacobian = unitJacobian;
 	}
 
 	
@@ -104,24 +106,39 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	}
 
 
-	
+	/**
+	 * @return the unitJacobian
+	 */
+	public boolean isUnitJacobian() {
+		return unitJacobian;
+	}
+
+	/**
+	 * @param unitJacobian the unitJacobian to set
+	 */
+	public void setUnitJacobian(boolean unitJacobian) {
+		this.unitJacobian = unitJacobian;
+	}
+
+
 	// override  the relevant methods
-	
 
 	@Override
 	public Vector3D getDi0Outwards(Vector3D pointOnSurface) 
 	{
+		//  pointOnSurface = new Vector3D(0, 0,  10);
+
 		// di0,  but not  necessarily outwards
 		Vector3D di0 =  Vector3D.difference(pointOnSurface, eyePosition);
 		
 		//  just in  case the new direction is inwards, make sure it's actually outwards
 		return  di0.getProductWith(Orientation.getOrientation(di0, parametrisedObject.getNormalisedOutwardsSurfaceNormal(pointOnSurface)).getScalarProductSign());
-
 	}
 
 	@Override
 	public Vector3D getDo0Outwards(Vector3D pointOnSurface)
 	{
+		// pointOnSurface = new Vector3D(0, 0,  10);
 		try {
 			Vector3D apparentPosition = Geometry.linePlaneIntersection(
 					pointOnSurface,	//  point  on  line
@@ -149,6 +166,7 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 
 	@Override
 	public Matrix getJacobianOutwards(Vector3D pointOnSurface) {
+		if(unitJacobian) return Matrix.identity(2, 2);
 		double[][] components = {
 				{Math.cos(-rotationAngleRad), Math.sin(-rotationAngleRad)},	//  {0, 1},
 				{-Math.sin(-rotationAngleRad), Math.cos(-rotationAngleRad)}	// {-1, 0}

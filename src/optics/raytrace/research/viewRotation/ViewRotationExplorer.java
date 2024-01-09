@@ -709,6 +709,7 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 	//
 		
 	JTabbedPane viewRotatingComponentTabbedPane;
+	// JTabbedPane windowTabbedPane;
 
 	// azimuthal Fresnel wedge
 	private DoublePanel aFwBPanel;
@@ -782,124 +783,7 @@ public class ViewRotationExplorer extends NonInteractiveTIMEngine
 		scenePanel.add(viewRotatingComponentTabbedPane, BorderLayout.CENTER);
 
 		
-		// azimuthal Fresnel wedge
-		
-		JPanel azimuthalFresnelWedgePanel = new JPanel();
-		// azimuthalFresnelWedgePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Azimuthal Fresnel wedge"));
-		azimuthalFresnelWedgePanel.setLayout(new MigLayout("insets 0"));
 
-		aFwBPanel = new DoublePanel();
-		aFwBPanel.setNumber(aFwB);
-		azimuthalFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("<html>Phase gradient d<i>&Phi;</i>/d<i>&phi;</i> = <i>k</i>*</html>", aFwBPanel, "<html>*<i>r</i><sup>2</sup>,</html>"), "span");
-		azimuthalFresnelWedgePanel.add(new JLabel("<html>where &phi; is the azimuthal angle and <i>r</i> is the distance from the centre.</html>"), "wrap");
-		
-		// aFwSimulateHonestlyCheckBox = new JCheckBox("Simulate honestly");
-		// aFwSimulateHonestlyCheckBox.setSelected(aFwSimulateHonestly);
-		// azimuthalFresnelWedgePanel.add(aFwSimulateHonestlyCheckBox, "wrap");
-		aFwNPanel = new IntPanel();
-		aFwNPanel.setNumber(aFwN);
-		azimuthalFresnelWedgePanel.add(
-				GUIBitsAndBobs.makeRow(
-						"The clear aperture is divided into",
-						aFwNPanel,
-						"circular sectors"
-					)
-			);
-
-		viewRotatingComponentTabbedPane.addTab("Azimuthal Fresnel wedge", azimuthalFresnelWedgePanel);
-		
-		
-		
-		
-		JPanel PixelatedAzimuthalFresnelWedgePanel = new JPanel();
-		// azimuthalFresnelWedgePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Azimuthal Fresnel wedge"));
-		PixelatedAzimuthalFresnelWedgePanel.setLayout(new MigLayout("insets 0"));
-
-		aFwBPixelPanel = new DoublePanel();
-		aFwBPixelPanel.setNumber(aFwBPixel);
-		PixelatedAzimuthalFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("<html>Phase gradient d<i>&Phi;</i>/d<i>&phi;</i> = <i>k</i>*</html>", aFwBPixelPanel, "<html>*<i>r</i><sup>2</sup>,</html>"), "span");
-		PixelatedAzimuthalFresnelWedgePanel.add(new JLabel("<html>where &phi; is the azimuthal angle and <i>r</i> is the distance from the centre.</html>"), "wrap");
-		
-		latticeSpanVector1Panel = new LabelledVector3DPanel("first pixel span vector");
-		latticeSpanVector1Panel.setVector3D(latticeSpanVector1);
-		PixelatedAzimuthalFresnelWedgePanel.add(latticeSpanVector1Panel, "span");
-		
-		latticeSpanVector2Panel = new LabelledVector3DPanel("second pixel span vector");
-		latticeSpanVector2Panel.setVector3D(latticeSpanVector2);
-		PixelatedAzimuthalFresnelWedgePanel.add(latticeSpanVector2Panel, "span");
-		
-		diffractiveBlurPixelatedFresnelWedgeCheckBox = new JCheckBox("Show diffraction blur");
-		diffractiveBlurPixelatedFresnelWedgeCheckBox.setSelected(diffractiveBlurPixelatedFresnelWedge);
-		PixelatedAzimuthalFresnelWedgePanel.add(diffractiveBlurPixelatedFresnelWedgeCheckBox, "span");
-
-		viewRotatingComponentTabbedPane.addTab("Pixelated azimuthal Fresnel wedge", PixelatedAzimuthalFresnelWedgePanel);
-		
-		
-		
-		
-		
-		// moiré rotator
-		
-		JPanel moireRotatorPanel = new JPanel();
-		moireRotatorPanel.setLayout(new MigLayout("insets 0"));
-
-		mmFPanel = new DoublePanel();
-		mmFPanel.setNumber(mmF);
-		mmPitchPanel = new DoublePanel();
-		mmPitchPanel.setNumber(mmPitch);
-		mmDeltaPhiDegPanel = new DoublePanel();
-		mmDeltaPhiDegPanel.setNumber(mmDeltaPhiDeg);
-		moireRotatorPanel.add(new JLabel("Two confocal, complementary, square lenslet arrays,"), "wrap");
-		moireRotatorPanel.add(
-				GUIBitsAndBobs.makeRow("<html>focal lengths &plusmn;</html>", mmFPanel, ","), "wrap");
-		moireRotatorPanel.add(
-				GUIBitsAndBobs.makeRow("each with pitch", mmPitchPanel, ","), "wrap");
-		moireRotatorPanel.add(
-				GUIBitsAndBobs.makeRow("and rotated w.r.t. each other by an angle", mmDeltaPhiDegPanel, "<html>&deg;</html>"), "wrap");
-
-		mmShowLA1CheckBox = new JCheckBox("Show LA 1");
-		mmShowLA1CheckBox.setSelected(mmShowLA1);
-		moireRotatorPanel.add(mmShowLA1CheckBox, "wrap");
-
-		mmShowLA2CheckBox = new JCheckBox("Show LA 1");
-		mmShowLA2CheckBox.setSelected(mmShowLA2);
-		moireRotatorPanel.add(mmShowLA2CheckBox, "wrap");
-
-		viewRotatingComponentTabbedPane.addTab("Moiré rotator", moireRotatorPanel);
-
-
-
-		// complementary radial lenticular arrays
-	
-		JPanel complementaryRadialLenticularArraysPanel = new JPanel();
-		// complementaryRadialLenticularArraysPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Complementary radial lenticular arrays"));
-		complementaryRadialLenticularArraysPanel.setLayout(new MigLayout("insets 0"));
-		
-		rLAsFPanel = new DoublePanel();
-		rLAsFPanel.setNumber(rLAsF);
-		rLAsNPanel = new IntPanel();
-		rLAsNPanel.setNumber(rLAsN);
-		rLAsNPanel.setToolTipText("Number of radial cylindrical lenses in each array");
-		rLAsDeltaPhiDegPanel = new DoublePanel();
-		rLAsDeltaPhiDegPanel.setNumber(rLAsDeltaPhiDeg);
-		rLAsDeltaPhiDegPanel.setToolTipText("Relative rotation angle between the two radial cylindrical lenses");
-		complementaryRadialLenticularArraysPanel.add(new JLabel("Two confocal, complementary, radial lenticular arrays,"), "wrap");
-		complementaryRadialLenticularArraysPanel.add(
-				GUIBitsAndBobs.makeRow("<html>focal lengths &plusmn;</html>", rLAsFPanel, ","), "wrap");
-		complementaryRadialLenticularArraysPanel.add(
-				GUIBitsAndBobs.makeRow("each with", rLAsNPanel, "cylindrical lenses in it,"), "wrap");
-		complementaryRadialLenticularArraysPanel.add(
-				GUIBitsAndBobs.makeRow("and rotated w.r.t. each other by an angle", rLAsDeltaPhiDegPanel, "<html>&deg;</html>"), "wrap");
-		
-		rLAsShowLA1CheckBox = new JCheckBox("Show LA 1");
-		rLAsShowLA1CheckBox.setSelected(rLAsShowLA1);
-		complementaryRadialLenticularArraysPanel.add(rLAsShowLA1CheckBox, "wrap");
-
-		rLAsShowLA2CheckBox = new JCheckBox("Show LA 2");
-		rLAsShowLA2CheckBox.setSelected(rLAsShowLA2);
-		complementaryRadialLenticularArraysPanel.add(rLAsShowLA2CheckBox, "wrap");
-
-		viewRotatingComponentTabbedPane.addTab("Radial LAs", complementaryRadialLenticularArraysPanel);
 
 
 		// ray-rotation sheet

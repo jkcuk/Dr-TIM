@@ -17,6 +17,7 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 import math.Complex;
+import math.MyMath;
 import math.Vector2D;
 import math.Vector3D;
 import optics.DoubleColour;
@@ -32,6 +33,7 @@ import optics.raytrace.surfaces.GCLAsWithApertures.GCLAsTransmissionCoefficientC
 import optics.raytrace.surfaces.GlensSurface;
 import optics.raytrace.surfaces.IdealThinLensSurface;
 import optics.raytrace.surfaces.IdealisedDovePrismArray;
+import optics.raytrace.surfaces.LightRayFieldRepresentingPhaseFront;
 import optics.raytrace.surfaces.EatonLensSurfaceAngleFormulation;
 import optics.raytrace.surfaces.LorentzTransformInterface;
 import optics.raytrace.surfaces.LuneburgLensSurfaceAngleFormulation;
@@ -109,6 +111,7 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		LUNEBURG_LENS("Luneburg-lens surface"),
 		METRIC_INTERFACE("Metric interface"),
 		PHASE_CONJUGATING("Phase-conjugating"),
+		PHASE_FRONT("Phase front"),
 		PICTURE("Picture"),
 		PIXELLATION("Pixellation"),
 		POINT2POINT_IMAGING("Point-to-point imaging hologram"),
@@ -265,15 +268,17 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 	private LabelledDoublePanel surfaceColourTimeDependentPanel;
 
 	// other panels
-	private LabelledDoubleColourPanel colourPanel;
+	private LabelledDoubleColourPanel colourPanel, phaseFrontColourPanel;
 	private LabelledDoublePanel
 		transmissionCoefficientPanel,
 		transmissionCoefficientGalileoPanel,
 		phaseConjugatingSurfaceTransmissionCoefficientPanel,
 		refractiveIndexRatioPanel,
 		rayRotationAnglePanel,
-		flipAxisAnglePanel;
+		flipAxisAnglePanel,
+		angularFuzzinessDegPanel;
 		// criticalAngleOfIncidencePanel;
+	private JCheckBox bidirectionalRaysCheckBox;
 	private LabelledComplexPanel complexRefractiveIndexRatioPanel;
 	// private TilingParametersLine tilingParametersPanel;
 	private JButton tilingParametersButton, twoSidedParametersButton, choosePictureFileButton;
@@ -291,6 +296,7 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		galileoTransformInterfacePanel,
 		lorentzTransformInterfacePanel,
 		phaseConjugatingPanel,
+		phaseFrontPanel,
 		point2pointImagingPanel,
 		picturePanel,
 		teleportingParametersPanel;
@@ -830,6 +836,18 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 		phaseConjugatingPanel.add(phaseConjugatingSurfaceTransmissionCoefficientPanel);
 		phaseConjugatingPanel.validate();
 		
+		phaseFrontPanel = new JPanel();
+		phaseFrontPanel.setLayout(new MigLayout("insets 0"));
+		phaseFrontColourPanel = new LabelledDoubleColourPanel("Colour");
+		phaseFrontColourPanel.setDoubleColour(DoubleColour.RED);
+		phaseFrontPanel.add(phaseFrontColourPanel, "wrap");
+		angularFuzzinessDegPanel = new LabelledDoublePanel("Angular fuzziness (deg)");
+		angularFuzzinessDegPanel.setNumber(1);
+		phaseFrontPanel.add(angularFuzzinessDegPanel);
+		bidirectionalRaysCheckBox =  new JCheckBox("Bidirectional rays");
+		bidirectionalRaysCheckBox.setSelected(false);
+		phaseFrontPanel.add(bidirectionalRaysCheckBox);
+
 		point2pointImagingPanel = new JPanel();
 		point2pointImagingPanel.setLayout(new MigLayout("insets 0"));
 		point2pointImagingPoint1Label = new JLabel("Inside-space position");
@@ -1164,6 +1182,15 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 			phaseConjugatingSurfaceTransmissionCoefficientPanel.setNumber(((PhaseConjugating)surfaceProperty).getTransmissionCoefficient());
 			setOptionalParameterPanelComponent(phaseConjugatingPanel);
 		}
+		else if(surfaceProperty instanceof LightRayFieldRepresentingPhaseFront)
+		{
+			LightRayFieldRepresentingPhaseFront s = (LightRayFieldRepresentingPhaseFront)surfaceProperty;
+			surfacePropertyComboBox.setSurfacePropertyType(SurfacePropertyType.PHASE_FRONT);
+			phaseFrontColourPanel.setDoubleColour(s.getColour());
+			angularFuzzinessDegPanel.setNumber(MyMath.rad2deg(s.getAngularFuzzinessRad()));
+			bidirectionalRaysCheckBox.setSelected(s.isBidirectional());
+			setOptionalParameterPanelComponent(phaseFrontPanel);
+		}
 		else if(surfaceProperty instanceof PhaseHologramOfRadialLenticularArray)
 		{
 			surfacePropertyComboBox.setSurfacePropertyType(SurfacePropertyType.RADIAL_LENTICULAR_ARRAY);
@@ -1495,6 +1522,13 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 					shadowThrowingCheckBox.isSelected()
 				);
 			break;
+		case PHASE_FRONT:
+			surfaceProperty = new LightRayFieldRepresentingPhaseFront(
+					phaseFrontColourPanel.getDoubleColour(),
+					MyMath.deg2rad(angularFuzzinessDegPanel.getNumber()),
+					bidirectionalRaysCheckBox.isSelected()
+				);
+			break;
 		case POINT2POINT_IMAGING:
 			surfaceProperty = new Point2PointImagingPhaseHologram(
 					point2pointImagingPoint1Panel.getVector3D(),
@@ -1720,6 +1754,9 @@ public class SurfacePropertyPanel extends JPanel implements ActionListener
 				break;
 			case PHASE_CONJUGATING:
 				setOptionalParameterPanelComponent(phaseConjugatingPanel);
+				break;
+			case PHASE_FRONT:
+				setOptionalParameterPanelComponent(phaseFrontPanel);
 				break;
 			case POINT2POINT_IMAGING:
 				setOptionalParameterPanelComponent(point2pointImagingPanel);

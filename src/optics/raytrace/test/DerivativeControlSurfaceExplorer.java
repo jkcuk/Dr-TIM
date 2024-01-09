@@ -2,6 +2,7 @@ package optics.raytrace.test;
 
 import java.io.PrintStream;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -15,6 +16,7 @@ import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
+import optics.raytrace.GUI.lowLevel.LabelledVector2DPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.core.SceneObjectPrimitive;
 import optics.raytrace.core.Studio;
@@ -30,7 +32,11 @@ import optics.raytrace.surfaces.SurfaceColour;
 
 public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 {
-	private double theta;
+	private double rotationAngleRad;
+	private boolean pixellated;
+	private boolean unitJacobian;
+	private double pixelPeriodU;
+	private double pixelPeriodV;
 	
 	public DerivativeControlSurfaceExplorer()
 	{
@@ -46,7 +52,13 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		cameraDistance = 0;
 		traceRaysWithTrajectory = false;
 		
-		theta = MyMath.deg2rad(90);
+		rotationAngleRad = MyMath.deg2rad(90);
+		pixellated = true;
+		unitJacobian = true;
+		pixelPeriodU=1;
+		pixelPeriodV=1;
+		
+		windowWidth *= 2;
 
 		// camera parameters are set in createStudio()
 	}
@@ -114,12 +126,16 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 						null,	// parent
 						null	// studio
 					),
-				SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,
-				false,	//  shadow-throwing
 				new Vector3D(0, 0, 0),	// eyePosition
 				new Vector3D(0, 0, 40),	// pointOnPlane,
 				new Vector3D(0, 0, 1),	// normalisedPlaneNormal, 
-				theta	// rotationAngleRad
+				rotationAngleRad,	// rotationAngleRad
+				unitJacobian,
+				pixellated,
+				pixelPeriodU,
+				pixelPeriodV,
+				SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,
+				false	//  shadow-throwing
 			); 
 		
 		SceneObjectPrimitive s = (SceneObjectPrimitive)(dcs.getParametrisedObject());
@@ -133,9 +149,13 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 	//
 	
 //	private LabelledVector3DPanel centrePanel, frontDirectionPanel, topDirectionPanel;
-	private LabelledDoublePanel thetaPanel;
+	private LabelledDoublePanel rotationAngleDegPanel;
 //	private LabelledDoubleColourPanel headColourPanel, noseColourPanel, innerEarColourPanel, rightEyeColourPanel, leftEyeColourPanel, whiskerColourPanel;
 //	
+	private JCheckBox pixellatedCheckBox, unitJacobianCheckBox;
+	
+	private LabelledVector2DPanel pixelPeriodPanel;
+	
 	// camera
 	private LabelledVector3DPanel cameraViewCentrePanel;
 	// private JButton setCameraViewCentreToCloakCentroidButton;
@@ -176,9 +196,21 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 //		topDirectionPanel.setVector3D(topDirection);
 //		catPanel.add(topDirectionPanel, "span");
 //		
-		thetaPanel = new LabelledDoublePanel("rotation angle (degrees)");
-		thetaPanel.setNumber(MyMath.rad2deg(theta));
-		catPanel.add(thetaPanel, "span");
+		rotationAngleDegPanel = new LabelledDoublePanel("rotation angle (degrees)");
+		rotationAngleDegPanel.setNumber(MyMath.rad2deg(rotationAngleRad));
+		catPanel.add(rotationAngleDegPanel, "span");
+		
+		pixellatedCheckBox = new JCheckBox("Pixellated");
+		pixellatedCheckBox.setSelected(pixellated);
+		catPanel.add(pixellatedCheckBox, "span");
+		
+		pixelPeriodPanel = new LabelledVector2DPanel("Pixel period in (u, v)");
+		pixelPeriodPanel.setVector2D(pixelPeriodU, pixelPeriodV);
+		catPanel.add(pixelPeriodPanel, "span");
+
+		unitJacobianCheckBox = new JCheckBox("Unit Jacobian");
+		unitJacobianCheckBox.setSelected(unitJacobian);
+		catPanel.add(unitJacobianCheckBox, "span");
 //		
 //		headColourPanel = new LabelledDoubleColourPanel("Head colour");
 //		headColourPanel.setDoubleColour(headColour);
@@ -253,14 +285,17 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 //		centre = centrePanel.getVector3D();
 //		frontDirection = frontDirectionPanel.getVector3D();
 //		topDirection = topDirectionPanel.getVector3D();
-		theta = MyMath.deg2rad(thetaPanel.getNumber());
+		rotationAngleRad = MyMath.deg2rad(rotationAngleDegPanel.getNumber());
 //		headColour =headColourPanel.getDoubleColour();
 //		noseColour = noseColourPanel.getDoubleColour();
 //		innerEarColour = innerEarColourPanel.getDoubleColour();
 //		rightEyeColour = rightEyeColourPanel.getDoubleColour();
 //		leftEyeColour = leftEyeColourPanel.getDoubleColour();
 //		whiskerColour = whiskerColourPanel.getDoubleColour();
-//		
+		pixellated = pixellatedCheckBox.isSelected();
+		pixelPeriodU = pixelPeriodPanel.getVector2D().x;
+		pixelPeriodV = pixelPeriodPanel.getVector2D().y;
+		unitJacobian = unitJacobianCheckBox.isSelected();
 		
 		// cameras
 		cameraViewCentre = cameraViewCentrePanel.getVector3D();

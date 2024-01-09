@@ -3,7 +3,6 @@ package optics.raytrace;
 import java.io.PrintStream;
 
 import math.*;
-import optics.raytrace.NonInteractiveTIMEngine;
 import optics.raytrace.GUI.cameras.RenderQualityEnum;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.exceptions.SceneException;

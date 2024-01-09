@@ -11,7 +11,7 @@ import optics.raytrace.exceptions.RayTraceException;
  * 
  * @author Johannes Courtial
  */
-public class Reflective extends SurfacePropertyPrimitive
+public class Reflective extends DirectionChanging
 {
 	private static final long serialVersionUID = -1372581435577575248L;
 
@@ -81,9 +81,9 @@ public class Reflective extends SurfacePropertyPrimitive
 		// calculate direction of reflected ray
 		Vector3D n = intersection.getNormalisedOutwardsSurfaceNormal();	// surface normal to the object at the intersection point
 		
-		Vector3D newRayDirection = Vector3D.difference(
+		Vector3D newRayDirection = Vector3D.sum(
 			ray.getD(),
-			ray.getD().getProjectionOnto(n).getProductWith(2)
+			ray.getD().getProjectionOnto(n).getProductWith(-2)
 		);
 		
 		// launch a new ray from here
@@ -98,16 +98,21 @@ public class Reflective extends SurfacePropertyPrimitive
 		);
 	}
 
-
-	/* (non-Javadoc)
-	 * @see optics.raytrace.SurfaceProperty#getColour(optics.raytrace.Ray, optics.raytrace.RaySceneObjectIntersection, optics.raytrace.SceneObject, optics.raytrace.LightSource, int)
-	 */
-	@Override
-	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection intersection, SceneObject scene, LightSource lights, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
-	throws RayTraceException
+	
+	public Vector3D getOutgoingLightRayDirection(Ray ray, RaySceneObjectIntersection intersection, SceneObject scene, LightSource lights, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	{
-		return getReflectedColour(ray, intersection, scene, lights, traceLevel, raytraceExceptionHandler).multiply(getTransmissionCoefficient());	// multiply the intensity by the reflection coefficient
+		return getReflectedLightRayDirection(ray.getD(), intersection.getNormalisedOutwardsSurfaceNormal());
 	}
+
+//	/* (non-Javadoc)
+//	 * @see optics.raytrace.SurfaceProperty#getColour(optics.raytrace.Ray, optics.raytrace.RaySceneObjectIntersection, optics.raytrace.SceneObject, optics.raytrace.LightSource, int)
+//	 */
+//	@Override
+//	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection intersection, SceneObject scene, LightSource lights, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+//	throws RayTraceException
+//	{
+//		return getReflectedColour(ray, intersection, scene, lights, traceLevel, raytraceExceptionHandler).multiply(getTransmissionCoefficient());	// multiply the intensity by the reflection coefficient
+//	}
 
 	/**
 	 * Calculate reflection.
@@ -118,9 +123,9 @@ public class Reflective extends SurfacePropertyPrimitive
 	 */
 	public static Vector3D getReflectedLightRayDirection(Vector3D incidentLightRayDirection, Vector3D surfaceNormal)
 	{
-		Vector3D newRayDirection = Vector3D.difference(
+		Vector3D newRayDirection = Vector3D.sum(
 				incidentLightRayDirection,
-				incidentLightRayDirection.getProjectionOnto(surfaceNormal).getProductWith(2)
+				incidentLightRayDirection.getProjectionOnto(surfaceNormal).getProductWith(-2)
 			);
 
 		// return the reflected light-ray direction

@@ -2,7 +2,7 @@ package optics.raytrace.surfaces;
 
 import Jama.Matrix;
 import math.Vector3D;
-import optics.raytrace.core.ParametrisedObject;
+import optics.raytrace.core.One2OneParametrisedObject;
 
 public class DerivativeControlSurfaceRotating extends DerivativeControlSurface {
 	private static final long serialVersionUID = -3598838329885511533L;
@@ -12,9 +12,9 @@ public class DerivativeControlSurfaceRotating extends DerivativeControlSurface {
 	 */
 	private double theta;
 	
-	public DerivativeControlSurfaceRotating(double theta, ParametrisedObject parametrisedObject, double transmissionCoefficient,
+	public DerivativeControlSurfaceRotating(double theta, One2OneParametrisedObject parametrisedObject, double transmissionCoefficient,
 			boolean shadowThrowing) {
-		super(parametrisedObject, transmissionCoefficient, shadowThrowing);
+		super(parametrisedObject, false, 1, 1, transmissionCoefficient, shadowThrowing);
 
 		setTheta(theta);
 	}

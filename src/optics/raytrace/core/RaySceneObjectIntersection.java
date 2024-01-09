@@ -79,6 +79,15 @@ public class RaySceneObjectIntersection implements Serializable
 			return o.getNormalisedOutwardsSurfaceNormal(p);
 		}
 	}
+	
+	public Vector3D getNormalisedSurfaceNormalWithSameOrientationAsRay()
+	{
+		Vector3D v = getNormalisedOutwardsSurfaceNormal();
+		
+		if(getOrientation() == Orientation.INWARDS) return v.getReverse();
+		
+		return v;
+	}
 
 	@Override
 	public String toString()
