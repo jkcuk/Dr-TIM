@@ -5,6 +5,7 @@ import Jama.Matrix;
 import math.Geometry;
 import math.MathException;
 import math.Vector3D;
+import optics.raytrace.core.One2OneParametrisedObject;
 import optics.raytrace.core.Orientation;
 import optics.raytrace.core.ParametrisedObject;
 
@@ -45,11 +46,13 @@ public class EwanDerivativeControlSurfaceExpansion extends DerivativeControlSurf
 	
 	//  constructors
 	
-	public EwanDerivativeControlSurfaceExpansion(ParametrisedObject parametrisedObject,
+	public EwanDerivativeControlSurfaceExpansion(One2OneParametrisedObject parametrisedObject,
 			double transmissionCoefficient, boolean shadowThrowing, Vector3D eyePosition, Vector3D pointOnPlane,
-			Vector3D normalisedPlaneNormal, double rotationAngleRad, double jacAngleRad) 
+			Vector3D normalisedPlaneNormal, double rotationAngleRad, double jacAngleRad, boolean pixellated, 
+			double pixelPeriodU, 
+			double pixelPeriodV) 
 	{
-		super(parametrisedObject, transmissionCoefficient, shadowThrowing);
+		super(parametrisedObject,pixellated, pixelPeriodU, pixelPeriodV, transmissionCoefficient, shadowThrowing);
 		this.eyePosition = eyePosition;
 		this.pointOnPlane = pointOnPlane;
 		this.normalisedPlaneNormal = normalisedPlaneNormal;
