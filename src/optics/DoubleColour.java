@@ -50,6 +50,8 @@ public class DoubleColour implements Serializable
 	DARK_BLUE	= new DoubleColour("dark blue",0, 0, 0.5),
 	LIGHT_RED 	= new DoubleColour("light red",1, 0.5, 0.5),
 	DARK_RED	= new DoubleColour("dark red",0.5, 0, 0),
+	LIGHT_GREEN = new DoubleColour("light green", 0.5, 1, 0.5),
+	DARK_GREEN	= new DoubleColour("dark green",0, 0.5, 0),
 	SKIN = new DoubleColour("skin",239./256., 208./256., 207./256.),
 	CYAN = new DoubleColour("cyan",0, 198./255., 200./255.);
 	

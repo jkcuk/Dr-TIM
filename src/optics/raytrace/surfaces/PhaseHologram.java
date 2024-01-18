@@ -1,13 +1,11 @@
 package optics.raytrace.surfaces;
 
-import optics.DoubleColour;
 import optics.raytrace.core.LightSource;
 import optics.raytrace.core.Orientation;
 import optics.raytrace.core.Ray;
 import optics.raytrace.core.RaySceneObjectIntersection;
 import optics.raytrace.core.RaytraceExceptionHandler;
 import optics.raytrace.core.SceneObject;
-import optics.raytrace.core.SurfacePropertyPrimitive;
 import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.InconsistencyException;
 import optics.raytrace.exceptions.RayTraceException;
@@ -23,7 +21,7 @@ import math.Vector3D;
  * @see optics.raytrace.surfaces.PhaseHologram_old
  * @author Johannes Courtial
  */
-public abstract class PhaseHologram extends SurfacePropertyPrimitive
+public abstract class PhaseHologram extends DirectionChanging
 {
 	private static final long serialVersionUID = 4098640070851926470L;
 
@@ -206,17 +204,10 @@ public abstract class PhaseHologram extends SurfacePropertyPrimitive
 			).getPartPerpendicularTo(outwardsSurfaceNormal);
 	}
 	
-
-	/* (non-Javadoc)
-	 * @see optics.raytrace.surfaces.SurfaceProperty#getColour(optics.raytrace.core.Ray, optics.raytrace.core.RaySceneObjectIntersection, optics.raytrace.sceneObjects.SceneObject, optics.raytrace.lights.LightSource, int)
-	 */
 	@Override
-	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection intersection, SceneObject scene, LightSource lights, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+	public Vector3D getOutgoingLightRayDirection(Ray ray, RaySceneObjectIntersection intersection, SceneObject scene, LightSource lights, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	throws RayTraceException
 	{
-		// Check traceLevel is greater than 0.
-		if(traceLevel <= 0) return DoubleColour.BLACK;
-	
 		// Get details of the surface
 
 		// get the object that this surface property is associated with
@@ -227,67 +218,112 @@ public abstract class PhaseHologram extends SurfacePropertyPrimitive
 
 		// get the surface normal at the intersection point; note that the surface normal always points outwards
 		Vector3D n = intersection.getNormalisedOutwardsSurfaceNormal();
-		
+
 		//
 		// first find the in-plane component of the change in the normalised light-ray direction
 		//
-		
-		Vector3D dPrime;
-		
-		try
+
+		Vector3D tangentialDirectionComponentChange;
+		Vector3D d = ray.getD().getNormalised();	// incident light-ray direction
+
+		if(reflective)
 		{
-			Vector3D tangentialDirectionComponentChange;
-			Vector3D d = ray.getD().getNormalised();	// incident light-ray direction
-			
-			if(reflective)
-			{
-				tangentialDirectionComponentChange = getTangentialDirectionComponentChangeReflective(Orientation.getOrientation(d, n), p, n);
-			}
-			else
-			{
-				tangentialDirectionComponentChange = getTangentialDirectionComponentChangeTransmissive(p, n);
-			}
-			
-			dPrime = getOutgoingNormalisedRayDirection(
-					d,	// incidentNormalisedRayDirection,
-					tangentialDirectionComponentChange,
-					n,	// normalisedOutwardsSurfaceNormal
-					reflective
+			tangentialDirectionComponentChange = getTangentialDirectionComponentChangeReflective(Orientation.getOrientation(d, n), p, n);
+		}
+		else
+		{
+			tangentialDirectionComponentChange = getTangentialDirectionComponentChangeTransmissive(p, n);
+		}
+
+		return getOutgoingNormalisedRayDirection(
+				d,	// incidentNormalisedRayDirection,
+				tangentialDirectionComponentChange,
+				n,	// normalisedOutwardsSurfaceNormal
+				reflective
 				);
-
-			// calculate cos(angle of new ray with normal) / cos(angle of old ray with normal);
-			// brightness changes by this factor
-			// provided the ray directions are normalised, this is simply the modulus of the
-			// ratio of the ray-direction components normal to the surface
-			// double cosRatio = Math.abs(rayDirectionSurfaceBasisOut.z / rayDirectionSurfaceBasisIn.z);
-			//
-			// not sure the intensity scales --- see http://www.astronomy.net/articles/29/
-			// Also, one of the article's reviewers wrote this:
-			// This is also related to the brightening in Fig. 7. In fact, I think that such a brightening should not occur.
-			// It is known that brightness of an object does not change if the object is observed by some non-absorbing optical
-			// instrument. For example, a sun reflected in a curved metallic surface is equally bright as if it is viewed directly.
-			// I expect the same for teleported image. Maybe if the effect of the additional factor in eq. (5) is taken into
-			// account together with the other method of calculation of the ray direction, no brightening will occur.
-
-			
-			// launch a new ray from here
-			
-			return scene.getColourAvoidingOrigin(
-				ray.getBranchRay(p, dPrime, intersection.t, ray.isReportToConsole()),
-				intersection.o,
-				lights,
-				scene,
-				traceLevel-1,
-				raytraceExceptionHandler
-			).multiply(getTransmissionCoefficient());	// *cosRatio --- see above
-		}
-		catch(EvanescentException e)
-		{
-			// this is normal -- return the reflected ray
-			// (Don't multiply by the transmission coefficient, as this is TIR!)
-			return Reflective.getReflectedColour(ray, intersection, scene, lights, traceLevel, raytraceExceptionHandler);
-		}
 	}
+
+//	/* (non-Javadoc)
+//	 * @see optics.raytrace.surfaces.SurfaceProperty#getColour(optics.raytrace.core.Ray, optics.raytrace.core.RaySceneObjectIntersection, optics.raytrace.sceneObjects.SceneObject, optics.raytrace.lights.LightSource, int)
+//	 */
+//	@Override
+//	public DoubleColour getColour(Ray ray, RaySceneObjectIntersection intersection, SceneObject scene, LightSource lights, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
+//	throws RayTraceException
+//	{
+//		// Check traceLevel is greater than 0.
+//		if(traceLevel <= 0) return DoubleColour.BLACK;
+//	
+//		// Get details of the surface
+//
+//		// get the object that this surface property is associated with
+//		// SceneObjectPrimitive surface = intersection.o;
+//		
+//		// get the point on the surface where they incident light ray intersects the surface
+//		Vector3D p = intersection.p;
+//
+//		// get the surface normal at the intersection point; note that the surface normal always points outwards
+//		Vector3D n = intersection.getNormalisedOutwardsSurfaceNormal();
+//		
+//		//
+//		// first find the in-plane component of the change in the normalised light-ray direction
+//		//
+//		
+//		Vector3D dPrime;
+//		
+//		try
+//		{
+//			Vector3D tangentialDirectionComponentChange;
+//			Vector3D d = ray.getD().getNormalised();	// incident light-ray direction
+//			
+//			if(reflective)
+//			{
+//				tangentialDirectionComponentChange = getTangentialDirectionComponentChangeReflective(Orientation.getOrientation(d, n), p, n);
+//			}
+//			else
+//			{
+//				tangentialDirectionComponentChange = getTangentialDirectionComponentChangeTransmissive(p, n);
+//			}
+//			
+//			dPrime = getOutgoingNormalisedRayDirection(
+//					d,	// incidentNormalisedRayDirection,
+//					tangentialDirectionComponentChange,
+//					n,	// normalisedOutwardsSurfaceNormal
+//					reflective
+//				);
+//
+//			// calculate cos(angle of new ray with normal) / cos(angle of old ray with normal);
+//			// brightness changes by this factor
+//			// provided the ray directions are normalised, this is simply the modulus of the
+//			// ratio of the ray-direction components normal to the surface
+//			// double cosRatio = Math.abs(rayDirectionSurfaceBasisOut.z / rayDirectionSurfaceBasisIn.z);
+//			//
+//			// not sure the intensity scales --- see http://www.astronomy.net/articles/29/
+//			// Also, one of the article's reviewers wrote this:
+//			// This is also related to the brightening in Fig. 7. In fact, I think that such a brightening should not occur.
+//			// It is known that brightness of an object does not change if the object is observed by some non-absorbing optical
+//			// instrument. For example, a sun reflected in a curved metallic surface is equally bright as if it is viewed directly.
+//			// I expect the same for teleported image. Maybe if the effect of the additional factor in eq. (5) is taken into
+//			// account together with the other method of calculation of the ray direction, no brightening will occur.
+//
+//			
+//			// launch a new ray from here
+//			
+//			return scene.getColourAvoidingOrigin(
+//				ray.getBranchRay(p, dPrime, intersection.t, ray.isReportToConsole()),
+//				intersection.o,
+//				lights,
+//				scene,
+//				traceLevel-1,
+//				raytraceExceptionHandler
+//			).multiply(getTransmissionCoefficient());	// *cosRatio --- see above
+//		}
+//		catch(EvanescentException e)
+//		{
+//			// this is normal -- return the reflected ray
+//			// (Don't multiply by the transmission coefficient, as this is TIR!)
+//			return Reflective.getReflectedColour(ray, intersection, scene, lights, traceLevel, raytraceExceptionHandler);
+//		}
+//	}
 	
 	
 	//

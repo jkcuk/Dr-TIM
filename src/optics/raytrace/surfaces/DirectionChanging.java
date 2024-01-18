@@ -1,6 +1,7 @@
 package optics.raytrace.surfaces;
 
 import optics.DoubleColour;
+import optics.raytrace.exceptions.EvanescentException;
 import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.core.LightSource;
 import optics.raytrace.core.Ray;
@@ -34,6 +35,18 @@ public abstract class DirectionChanging extends SurfacePropertyPrimitive
 		return Reflective.getReflectedLightRayDirection(ray.getD(), intersection.getNormalisedOutwardsSurfaceNormal());
 	}
 	
+	/**
+	 * Override to make this work.
+	 * Throw an EvanescentException if TIR occurs, and it will be dealt with correctly.
+	 * @param ray
+	 * @param intersection
+	 * @param scene
+	 * @param lights
+	 * @param traceLevel
+	 * @param raytraceExceptionHandler
+	 * @return
+	 * @throws RayTraceException
+	 */
 	public abstract Vector3D getOutgoingLightRayDirection(Ray ray, RaySceneObjectIntersection intersection, SceneObject scene, LightSource lights, int traceLevel, RaytraceExceptionHandler raytraceExceptionHandler)
 	throws RayTraceException;
 
@@ -47,18 +60,22 @@ public abstract class DirectionChanging extends SurfacePropertyPrimitive
 		// Check traceLevel is greater than 0.
 		if(traceLevel <= 0) return DoubleColour.BLACK;
 	
-		Vector3D newRayDirection = getOutgoingLightRayDirection(ray, intersection, scene, lights, traceLevel, raytraceExceptionHandler);
-		
-		// launch a new ray from here
-		
-		return scene.getColourAvoidingOrigin(
-			ray.getBranchRay(intersection.p, newRayDirection, intersection.t, ray.isReportToConsole()),
-			intersection.o,
-			lights,
-			scene,
-			traceLevel-1,
-			raytraceExceptionHandler
-		).multiply(getTransmissionCoefficient());	// *cosRatio --- see above
+		try {
+			Vector3D newRayDirection = getOutgoingLightRayDirection(ray, intersection, scene, lights, traceLevel, raytraceExceptionHandler);
+			
+			// launch a new ray from here
+			
+			return scene.getColourAvoidingOrigin(
+				ray.getBranchRay(intersection.p, newRayDirection, intersection.t, ray.isReportToConsole()),
+				intersection.o,
+				lights,
+				scene,
+				traceLevel-1,
+				raytraceExceptionHandler
+			).multiply(getTransmissionCoefficient());
+		} catch (EvanescentException e) {
+			return Reflective.getReflectedColour(ray, intersection, scene, lights, traceLevel, raytraceExceptionHandler);
+		}
 	}
 }
 

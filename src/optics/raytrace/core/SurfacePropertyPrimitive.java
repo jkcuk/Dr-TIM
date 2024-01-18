@@ -1,6 +1,9 @@
 package optics.raytrace.core;
 
 
+/**
+ * SurfaceProperty with a transmission/reflection coefficient
+ */
 public abstract class SurfacePropertyPrimitive extends SurfaceProperty implements SurfacePropertyWithControllableShadow
 {
 	private static final long serialVersionUID = -7202500338852725151L;

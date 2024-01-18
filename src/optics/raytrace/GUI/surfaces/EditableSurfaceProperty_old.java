@@ -2,13 +2,10 @@ package optics.raytrace.GUI.surfaces;
 
 import javax.swing.JPanel;
 
-import optics.raytrace.core.Studio;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-
-public abstract class EditableSurfaceProperty
+public abstract class EditableSurfaceProperty_old
 {
 
-	private JPanel additionalParametersPanel;
+	protected JPanel additionalParametersPanel;
 	
 	public abstract String getDescription();
 		
@@ -31,9 +28,9 @@ public abstract class EditableSurfaceProperty
 		return additionalParametersPanel;
 	}
 	
-	public abstract void initialiseSceneAndLights(SceneObjectContainer scene, Studio studio);
+	// public abstract void initialiseSceneAndLights(SceneObjectContainer scene, Studio studio);
 
-	public EditableSurfaceProperty() {
+	public EditableSurfaceProperty_old() {
 		// TODO Auto-generated constructor stub
 	}
 

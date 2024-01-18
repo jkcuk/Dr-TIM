@@ -96,7 +96,7 @@ public class PhaseHologramOfCylindricalLens extends PhaseHologram
 	public Vector3D getTangentialDirectionComponentChangeTransmissive(Vector3D surfacePosition,
 			Vector3D surfaceNormal)
 	{	
-		// A distance r from the lens axis, the lens phase is given by Phi(r) = -(pi r^2)(lambda f).
+		// A distance r from the lens axis, the lens phase is given by Phi(r) = -(pi r^2)/(lambda f).
 		// This means that the phase gradient there is in the direction perpendicular to the axis and of magnitude dPhi/dr = -2 r pi/(lambda f).
 		// This method needs to return the phase gradient divided by 2 pi/lambda, i.e. r / f.
 		
