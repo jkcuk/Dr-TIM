@@ -176,6 +176,11 @@ implements Editable
 	// phaseHologram methods
 	//
 	
+	private double polypow(double a, int e)
+	{
+		return (e==0)?1:Math.pow(a, e);
+	}
+	
 	@Override
 	public Vector3D getTangentialDirectionComponentChangeTransmissive(Vector3D surfacePosition,
 			Vector3D surfaceNormal)
@@ -202,8 +207,10 @@ implements Editable
 		for(int n=0; n<=p; n++)
 			for(int m=0; m <= n; m++)
 			{
-				tx = tx +    m *a[n][m]*Math.pow(x, m-1)*Math.pow(y, n-m);
-				ty = ty + (n-m)*a[n][m]*Math.pow(x, m)  *Math.pow(y, n-m-1);
+				if(m > 0)	tx = tx +    m *a[n][m]*polypow(x, m-1)*polypow(y, n-m);
+				if(n-m > 0)	ty = ty + (n-m)*a[n][m]*polypow(x, m)  *polypow(y, n-m-1);
+				if(Double.isNaN(tx+ty))
+					System.out.println("tx="+tx+", ty="+ty);
 			}
 		
 		// ...  and return them, assembled into the tangential-direction-change vector

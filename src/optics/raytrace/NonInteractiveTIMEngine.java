@@ -849,7 +849,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 		}
 	}
 
-	private RaytraceWorker raytraceWorker;
+	protected RaytraceWorker raytraceWorker;
 
 	/* (non-Javadoc)
 	 * @see optics.raytrace.GUI.lowLevel.RenderPanel#render()
@@ -1128,6 +1128,11 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	public boolean isTemporaryStatus()
 	{
 		return temporaryStatus != null;
+	}
+	
+	public void forceStatusRepaint()
+	{
+		statusField.update(statusField.getGraphics());
 	}
 	
 

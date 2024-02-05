@@ -129,6 +129,19 @@ public class GUIBitsAndBobs
 		return panel;
 	}
 
+	public static JPanel makeRow(Component component1, String text12, Component component2, Component component3)
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("insets 0"));
+
+		panel.add(component1);
+		panel.add(new JLabel(text12));
+		panel.add(component2);
+		panel.add(component3);
+
+		return panel;
+	}
+
 	public static JPanel makeRow(Component component1, String text1, Component component2, String text2)
 	{
 		JPanel panel = new JPanel();

@@ -1,37 +1,43 @@
 package optics.raytrace.research.refractiveTaylorSeries;
 
-import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
+import math.MyMath;
 import math.Vector3D;
 import net.miginfocom.swing.MigLayout;
 import optics.DoubleColour;
+import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
+import optics.raytrace.GUI.core.RaytraceWorker;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.IntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
+import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
-import optics.raytrace.core.Ray;
 import optics.raytrace.core.SceneObjectPrimitive;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
-import optics.raytrace.exceptions.RayTraceException;
 import optics.raytrace.exceptions.SceneException;
+import optics.raytrace.research.refractiveTaylorSeries.LawOfRefraction1Parameter.LawOfRefractionType;
+import optics.raytrace.research.refractiveTaylorSeries.SurfaceParametersOptimisation.AlgorithmType;
 import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.Checked;
-import optics.raytrace.surfaces.PhaseHologramWithPolynomialPhase;
 
 
 /**
@@ -42,18 +48,49 @@ import optics.raytrace.surfaces.PhaseHologramWithPolynomialPhase;
 public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 {
 	// DirectionChangingSurfaceSequence dcss;
-	int polynomialOrder;
-	int noOfSurfaces;
-	double z[];
-	double a[][][];
+	SurfaceParameters surfaceParameters;
 	double transmissionCoefficient;
+	
+	// optimisation
+	RayPairsParameters rayPairsParameters;
+	SurfaceParametersOptimisation surfaceParametersOptimisation;
 	
 	//  background
 	private StudioInitialisationType studioInitialisation;
 	private boolean addZPlane;
 	private double zPlaneZ;
 	private double zPlaneCheckerboardPeriod;
+	
+	/**
+	 * allows selection of one of several views (or cameras)
+	 */
+	public enum CameraType
+	{
+		EYE("Eye"),
+		SIDE("Side");
+		
+		private String description;
+		private CameraType(String description) {this.description = description;}	
+		@Override
+		public String toString() {return description;}
+	}
+	
+	private CameraType cameraType;
 
+	// side camera
+	private Vector3D sideCameraViewCentre;
+	private Vector3D sideCameraViewDirection;
+	private Vector3D sideCameraUpDirection;
+	private double sideCameraWidth;
+	private int maxRaysShown;
+	
+//	OrthographicCamera(
+//			String name,
+//			Vector3D viewDirection,
+//			Vector3D CCDCentre,
+//			Vector3D horizontalSpanVector3D, Vector3D verticalSpanVector3D,
+//			int detectorPixelsHorizontal, int detectorPixelsVertical,
+//			int maxTraceLevel)
 
 	/**
 	 * Constructor.
@@ -63,26 +100,49 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 	{
 		super();
 		
-		// dcss = new DirectionChangingSurfaceSequence();
-		
-		polynomialOrder = 3;
-		noOfSurfaces = 1;
-		initialiseCoefficientArrays();
+		surfaceParameters = new SurfaceParameters(1, 3);
 		transmissionCoefficient = 0.96;
-		addSurfaces();
 		
-		studioInitialisation = StudioInitialisationType.TIM_HEAD;
+		// optimisation
+		rayPairsParameters = new RayPairsParameters(
+				100,	// noOfDirectionPairs,
+				MyMath.deg2rad(10),	// directionsInConeAngleRad,
+				new LawOfRefraction1Parameter(LawOfRefractionType.RAY_ROTATION, 10),	// lawOfRefraction,
+				100,	// noOfRaysPerBundle,
+				0.1	// rayStartPointsDiscRadius,
+			);
+		surfaceParametersOptimisation = new SurfaceParametersOptimisation(
+				100,	// surfaceParametersOptimisation.noOfIterations, 
+				rayPairsParameters,	// rayPairsParameters
+				AlgorithmType.SIMULATED_ANNEALING,	// algorithmType, 
+				0.1	// surfaceParametersOptimisation.saInitialTemperature
+			) ;
+		
+		// background
+		studioInitialisation = StudioInitialisationType.HEAVEN;
 		addZPlane = true;
-		zPlaneZ = 1000;
-		zPlaneCheckerboardPeriod = 100;
+		zPlaneZ = 10000;
+		zPlaneCheckerboardPeriod = 1000;
 
-		// camera
+		// cameras
+		
+		cameraType = CameraType.EYE;
+		
+		// main camera
 		cameraViewCentre = new Vector3D(0, 0, 0);
 		cameraDistance = 10;
 		cameraViewDirection = new Vector3D(0, 0, 1);
 		cameraHorizontalFOVDeg = 40;
-		cameraApertureSize = ApertureSizeType.PINHOLE;
-		cameraFocussingDistance = 20;
+		cameraApertureSize = ApertureSizeType.MEDIUM;
+		cameraFocussingDistance = 10000;
+		
+		// side camera
+		sideCameraViewCentre = new Vector3D(0, 0, 1);
+		sideCameraViewDirection = new Vector3D(-1, 0, 0);	// from the right
+		sideCameraUpDirection = new Vector3D(0, 1, 0);
+		sideCameraWidth = 4;
+		maxRaysShown = 100;
+
 
 		windowTitle = "Dr TIM's polynomial-phase hologram explorer";
 		windowWidth = 1400;
@@ -94,7 +154,7 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 	 * @see optics.raytrace.NonInteractiveTIMEngine#getFirstPartOfFilename()
 	 */
 	@Override
-	public String getClassName()
+	public String getFilename()
 	{
 		return
 				"PolynomialPhaseHologramExplorer"
@@ -107,30 +167,37 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		// write any parameters not defined in NonInteractiveTIMEngine, each parameter is saved like this:
 		// printStream.println("parameterName = "+parameterName);
 
+		surfaceParameters.writeParameters(printStream);
+		printStream.println("transmissionCoefficient="+transmissionCoefficient);
 		
+		//  optimisation
+		rayPairsParameters.writeParameters(printStream);
+		surfaceParametersOptimisation.writeParameters(printStream);
+
+		// background
 		printStream.println("studioInitialisation="+studioInitialisation);
 		printStream.println("addZPlane="+addZPlane);
 		printStream.println("zPlaneZ="+zPlaneZ);
 		printStream.println("zPlaneCheckerboardPeriod="+zPlaneCheckerboardPeriod);
 
-		printStream.println("numberOfSurfaces="+noOfSurfaces);
-		printStream.println("polynomialOrder="+polynomialOrder);
-		printStream.println("transmissionCoefficient="+transmissionCoefficient);
-
-		for(int i =0;i<noOfSurfaces;i++) {
-			printStream.println("Surface #"+i);
-			printStream.println("  z["+i+"]="+z[i]);
-			for(int n=0; n<=polynomialOrder; n++)
-				for(int m=0; m<=n; m++)
-					printStream.println("  a["+i+"]["+n+"]["+m+"]="+a[i][n][m]);
-		}
+		// cameras
 		
+		printStream.println("cameraType="+cameraType);
+		
+		// eye/main camera
 		printStream.println("cameraViewCentre="+cameraViewCentre);
 		printStream.println("cameraDistance="+cameraDistance);
 		printStream.println("cameraViewDirection="+cameraViewDirection);
 		printStream.println("cameraHorizontalFOVDeg="+cameraHorizontalFOVDeg);
 		printStream.println("cameraApertureSize="+cameraApertureSize);
 		printStream.println("cameraFocussingDistance="+cameraFocussingDistance);
+		
+		// side camera
+		printStream.println("sideCameraViewCentre="+sideCameraViewCentre);
+		printStream.println("sideCameraViewDirection="+sideCameraViewDirection);
+		printStream.println("sideCameraUpDirection="+sideCameraUpDirection);
+		printStream.println("sideCameraWidth="+sideCameraWidth);
+		printStream.println("maxRaysShown="+maxRaysShown);
 
 		// write all parameters defined in NonInteractiveTIMEngine
 		super.writeParameters(printStream);
@@ -157,7 +224,16 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 				scene,
 				studio
 				);
-		studio.setCamera(getStandardCamera());
+		
+		switch(cameraType)
+		{
+		case SIDE:
+			// TODO
+			break;
+		case EYE:
+		default:
+			studio.setCamera(getStandardCamera());
+		}
 
 		if(addZPlane)
 			scene.addSceneObject(Plane.zPlane(
@@ -173,146 +249,18 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 					studio
 				));
 		
-		addSurfaces();
+		DirectionChangingSurfaceSequence dcss = surfaceParameters.createCorrespondingDirectionChangingSurfaceSequence(transmissionCoefficient);
+//		addSurfaces();
 
 		// add the surfaces from the DirectionChangingSurfaceSequence dcss to  the scene
 		for(SceneObjectPrimitive s:dcss.getSceneObjectPrimitivesWithDirectionChangingSurfaces())
 		{
 			scene.addSceneObject(s);
 		}
+		
+		// TODO add rays
 	}
 
-	
-	/**
-	 * @param i
-	 * @param n
-	 * @param m
-	 * @return	a[i][n][m] if it exists, otherwise 0
-	 */
-	public double getAOr0(int i, int n, int m)
-	{
-		if(i >= a.length) return 0;
-		
-		if(n >= a[i].length) return 0;
-		
-		if(m >= a[i][n].length) return 0;
-		
-		return a[i][n][m];
-	}
-	
-	/**
-	 * @param i
-	 * @return	z[i] if it exists, otherwise 0
-	 */
-	public double getZOr0(int i)
-	{
-		if(i >= z.length) return 0;
-		
-		return z[i];
-	}
-	
-	public void initialiseCoefficientArrays()
-	{
-		z = new double[noOfSurfaces];
-		a = new double[noOfSurfaces][][];
-		
-		for(int i=0; i<noOfSurfaces; i++)
-		{
-			z[i] = i;
-			
-			a[i] = new double[polynomialOrder+1][];
-			for(int n=0; n<=polynomialOrder; n++)
-			{
-				a[i][n] = new double[n+1];
-				for(int m=0; m<=n; m++) 
-					a[i][n][m] = 0;
-			}
-		}
-	}	
-
-	/**
-	 * run this if the number of surfaces or the polynomial order might have changed
-	 */
-	public void updateCoefficientArrays()
-	{
-		double[] newZ = new double[noOfSurfaces];
-		double[][][] newA = new double[noOfSurfaces][][];
-		
-		for(int i=0; i<noOfSurfaces; i++)
-		{
-			newZ[i] = getZOr0(i);
-			
-			newA[i] = new double[polynomialOrder+1][];
-			for(int n=0; n<=polynomialOrder; n++)
-			{
-				newA[i][n] = new double[n+1];
-				for(int m=0; m<=n; m++) 
-					newA[i][n][m] = getAOr0(i, n, m);
-			}
-		}
-
-		z = newZ;
-		a = newA;
-	}
-	
-	public void randomiseCoefficientArrays()
-	{
-		z = new double[noOfSurfaces];
-		a = new double[noOfSurfaces][][];
-		
-		double currentZ = 0;
-		for(int i=0; i<noOfSurfaces; i++)
-		{
-			z[i] = currentZ;
-			currentZ += Math.random();
-			
-			a[i] = new double[polynomialOrder+1][];
-			for(int n=0; n<=polynomialOrder; n++)
-			{
-				a[i][n] = new double[n+1];
-				for(int m=0; m<=n; m++) 
-					a[i][n][m] = .2*(Math.random()-0.5);
-			}
-		}
-	}
-	
-	// internal variables
-	private DirectionChangingSurfaceSequence dcss;
-	
-	public void addSurfaces()
-	{
-		dcss = new DirectionChangingSurfaceSequence();
-
-		// remove any old surfaces
-		// dcss.getSceneObjectPrimitivesWithDirectionChangingSurfaces().clear();
-		
-		// add a few surfaces
-		for(int i=0; i<noOfSurfaces; i++)
-		{
-			Vector3D origin  = new Vector3D(0, 0, z[i]);
-						
-			PhaseHologramWithPolynomialPhase ppp = new PhaseHologramWithPolynomialPhase(
-					a[i],	// a,
-					origin,
-					Vector3D.X,	// xHat,
-					Vector3D.Y,	// yHat,
-					transmissionCoefficient,	// throughputCoefficient,
-					false,	// reflective,
-					false	// shadowThrowing
-				);
-			Plane p = new Plane(
-					"Plane #"+i,	// description,
-					origin,	// pointOnPlane,
-					new Vector3D(0, 0, 1),	// normal, 
-					ppp,	// surfaceProperty,
-					null,	// parent,
-					null	// studio
-				);
-
-			dcss.addSceneObjectPrimitiveWithDirectionChangingSurface(p);
-		}
-
-	}
 
 
 	//
@@ -320,11 +268,11 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 	//
 
 	
-	private JButton optimizeButton, updateSurfacesButton;
+	private JButton updateSurfaceParameterFieldsButton, randomiseSurfaceParametersButton, saveSurfaceParametersButton, loadSurfaceParametersButton;
 	private IntPanel polynomialOrderPanel, noOfSurfacesPanel;
-	private LabelledDoublePanel zPanel[], transmissionCoefficientPanel;
-	private DoublePanel aPanel[][][];
-	private JTabbedPane surfacesTabbedPane;
+	private LabelledDoublePanel transmissionCoefficientPanel;	// zPanel[];
+	// private DoublePanel aPanel[][][];
+	JTabbedPane surfaceParametersTabbedPane;
 	private JPanel surfacesPanel;
 	
 	// background
@@ -332,14 +280,44 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 	private JCheckBox addZPlaneCheckBox;
 	private LabelledDoublePanel zPlaneZPanel;
 	private LabelledDoublePanel zPlaneCheckerboardPeriodPanel;
-
+	
+	// optimisation
+	JButton 
+		optimizeButton;
+	private JButton updateDirectionPairsFieldsButton;
+	private JButton initialiseDirectionsInButton;
+	private JButton randomiseDirectionPairsButton;
+	private JButton updateMeanAlignmentButton;
+	private JButton randomiseRayStartPointsButton;
+	private IntPanel noOfDirectionPairsPanel, noOfIterationsPanel, noOfRaysPerBundlePanel;
+	private JTabbedPane directionsTabbedPane;
+	private JComboBox<LawOfRefractionType> lawOfRefractionComboBox;
+	private JLabel lawOfRefractionAdditionalParameterLabel;
+	private DoublePanel lawOfRefractionAdditionalParameterPanel;
+	private LabelledVector3DPanel directionInPanel[], directionOutPanel[];
+	LabelledDoublePanel meanAlignmentPanel;
+	private DoublePanel directionsInConeAngleDegPanel, rayStartPointsDiscRadiusPanel, saInitialTemperaturePanel;
+	final String OPTIMIZE_BUTTON_OPTIMIZE = "Optimise";
+	private final String OPTIMIZE_BUTTON_STOP = "Stop";
 
 	// camera stuff
+	private JComboBox<CameraType> cameraTypeComboBox;
+	private JPanel cameraParametersPanel, mainCameraPanel, sideCameraPanel;
+	
+	// main camera
 	private LabelledDoublePanel cameraDistancePanel;
 	private LabelledVector3DPanel cameraViewDirectionPanel, cameraViewCentrePanel;
 	private DoublePanel cameraHorizontalFOVDegPanel;
 	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
 	private LabelledDoublePanel cameraFocussingDistancePanel;
+	
+	// side camera
+	private LabelledVector3DPanel sideCameraViewCentrePanel;
+	private LabelledVector3DPanel sideCameraViewDirectionPanel;
+	private LabelledVector3DPanel sideCameraUpDirectionPanel;
+	private LabelledDoublePanel sideCameraWidthPanel;
+	private LabelledIntPanel maxRaysShownPanel;
+
 
 	
 	/**
@@ -361,24 +339,35 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		tabbedPane.addTab("Surfaces", surfacesPanel);
 
 		noOfSurfacesPanel = new IntPanel();
-		noOfSurfacesPanel.setNumber(noOfSurfaces);
+		noOfSurfacesPanel.setNumber(surfaceParameters.getNoOfSurfaces());
 		
 		polynomialOrderPanel = new IntPanel();
-		polynomialOrderPanel.setNumber(polynomialOrder);
+		polynomialOrderPanel.setNumber(surfaceParameters.getPolynomialOrder());
 		
-		updateSurfacesButton = new JButton("Update fields");
-		updateSurfacesButton.setToolTipText("Update fields for parameters describing surfaces");
-		updateSurfacesButton.addActionListener(this);
+		updateSurfaceParameterFieldsButton = new JButton("Update fields");
+		updateSurfaceParameterFieldsButton.setToolTipText("Update fields for parameters describing surfaces");
+		updateSurfaceParameterFieldsButton.addActionListener(this);
 
 		// GUIBitsAndBobs.makeRow(noOfSurfacesPanel, changeSurfacesButton)
 		surfacesPanel.add(
-				GUIBitsAndBobs.makeRow("", noOfSurfacesPanel, "planar polynomial-phase holograms of order", polynomialOrderPanel, "", updateSurfacesButton),
+				GUIBitsAndBobs.makeRow("", noOfSurfacesPanel, "planar polynomial-phase holograms of order", polynomialOrderPanel, "", updateSurfaceParameterFieldsButton),
 				"span");
 		
-		surfacesTabbedPane = new JTabbedPane();
-		surfacesPanel.add(surfacesTabbedPane, "span");
+		surfaceParametersTabbedPane = new JTabbedPane();
+		surfacesPanel.add(surfaceParametersTabbedPane, "span");
 		
-		updateSurfacesTabbedPane();
+		surfaceParameters.repopulateSurfaceParametersTabbedPane(surfaceParametersTabbedPane);
+		
+		randomiseSurfaceParametersButton = new JButton("Randomise");
+		randomiseSurfaceParametersButton.addActionListener(this);
+		
+		saveSurfaceParametersButton = new JButton("Save");
+		saveSurfaceParametersButton.addActionListener(this);
+		
+		loadSurfaceParametersButton = new JButton("Load");
+		loadSurfaceParametersButton.addActionListener(this);
+		
+		surfacesPanel.add(GUIBitsAndBobs.makeRow(randomiseSurfaceParametersButton, loadSurfaceParametersButton, saveSurfaceParametersButton), "span");
 		
 		transmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient");
 		transmissionCoefficientPanel.setNumber(transmissionCoefficient);
@@ -405,17 +394,124 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 
 		backgroundPanel.add(GUIBitsAndBobs.makeRow(addZPlaneCheckBox, zPlaneZPanel, zPlaneCheckerboardPeriodPanel), "span");
 		
-//		// the optimisation panel
-//
-//		JPanel optimisationPanel = new JPanel();
-//		optimisationPanel.setLayout(new MigLayout("insets 0"));
-//		tabbedPane.addTab("Optimisation (under construction)", optimisationPanel);
-//
-//		optimizeButton = new JButton("Optimize");
-//		optimizeButton.setToolTipText("Run the optimisation!");
-//		optimizeButton.addActionListener(this);
-//		optimisationPanel.add(optimizeButton, "span");
-//		
+		// the optimisation panel
+
+		JPanel optimisationPanel = new JPanel();
+		optimisationPanel.setLayout(new MigLayout("insets 0"));
+		tabbedPane.addTab("Optimisation", optimisationPanel);
+		
+		JPanel rayDirectionPairsPanel = new JPanel();
+		rayDirectionPairsPanel.setLayout(new MigLayout("insets 0"));
+		rayDirectionPairsPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Ray-direction pairs"));
+		optimisationPanel.add(rayDirectionPairsPanel, "wrap");
+
+		noOfDirectionPairsPanel = new IntPanel();
+		noOfDirectionPairsPanel.setNumber(rayPairsParameters.noOfDirectionPairs);
+		
+		updateDirectionPairsFieldsButton = new JButton("Update fields");
+		updateDirectionPairsFieldsButton.setToolTipText("Update fields for parameters describing direction pairs");
+		updateDirectionPairsFieldsButton.addActionListener(this);
+
+		// GUIBitsAndBobs.makeRow(noOfSurfacesPanel, changeSurfacesButton)
+		rayDirectionPairsPanel.add(
+				GUIBitsAndBobs.makeRow("", noOfDirectionPairsPanel, "pairs of light-ray directions", updateDirectionPairsFieldsButton),
+				"span");
+		
+		directionsTabbedPane = new JTabbedPane();
+		rayDirectionPairsPanel.add(directionsTabbedPane, "span");
+
+		updateDirectionPairsTabbedPane();
+
+		JPanel rayDirectionPairsInitPanel = new JPanel();
+		rayDirectionPairsInitPanel.setLayout(new MigLayout("insets 0"));
+		rayDirectionPairsInitPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Initialisation"));
+		rayDirectionPairsPanel.add(rayDirectionPairsInitPanel, "wrap");
+
+		directionsInConeAngleDegPanel = new DoublePanel();
+		directionsInConeAngleDegPanel.setNumber(MyMath.rad2deg(rayPairsParameters.directionsInConeAngleRad));
+		
+		rayDirectionPairsInitPanel.add(
+				GUIBitsAndBobs.makeRow(
+						"Randomise incident directions on a cone of angle", directionsInConeAngleDegPanel, "° around z;"
+					), 
+				"wrap"
+			);
+		
+		lawOfRefractionComboBox = new JComboBox<LawOfRefractionType>(LawOfRefractionType.values());
+		lawOfRefractionComboBox.setSelectedItem(rayPairsParameters.lawOfRefraction);
+		lawOfRefractionComboBox.addActionListener(this);
+		
+		
+		rayDirectionPairsInitPanel.add(
+				GUIBitsAndBobs.makeRow(
+						"calculate outgoing directions according to", lawOfRefractionComboBox, ","
+					), 
+				"wrap"
+			);
+		
+		lawOfRefractionAdditionalParameterLabel = new JLabel(rayPairsParameters.lawOfRefraction.lawOfRefractionType.getParameterDescription());
+		lawOfRefractionAdditionalParameterPanel = new DoublePanel();
+		lawOfRefractionAdditionalParameterPanel.setNumber(rayPairsParameters.lawOfRefraction.parameter);
+		rayDirectionPairsInitPanel.add(
+				GUIBitsAndBobs.makeRow(
+						lawOfRefractionAdditionalParameterLabel, lawOfRefractionAdditionalParameterPanel
+					), 
+				"wrap"
+			);
+
+		initialiseDirectionsInButton = new JButton("Initialise");
+		initialiseDirectionsInButton.setToolTipText("Initialise directions");
+		initialiseDirectionsInButton.addActionListener(this);
+		rayDirectionPairsInitPanel.add(initialiseDirectionsInButton, "push, al right, wrap");
+		
+//		randomiseDirectionPairsButton = new JButton("Randomise directions");
+//		randomiseDirectionPairsButton.addActionListener(this);
+//		rayDirectionPairsPanel.add(randomiseDirectionPairsButton, "wrap");
+		
+		JPanel rayBundlePanel = new JPanel();
+		rayBundlePanel.setLayout(new MigLayout("insets 0"));
+		rayBundlePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Ray bundles"));
+		optimisationPanel.add(rayBundlePanel, "wrap");
+
+		noOfRaysPerBundlePanel = new IntPanel();
+		noOfRaysPerBundlePanel.setNumber(rayPairsParameters.noOfRaysPerBundle);
+		
+		rayStartPointsDiscRadiusPanel = new DoublePanel();
+		rayStartPointsDiscRadiusPanel.setNumber(rayPairsParameters.rayStartPointsDiscRadius);
+		
+		randomiseRayStartPointsButton = new JButton("Randomise");
+		randomiseRayStartPointsButton.addActionListener(this);
+		
+		rayBundlePanel.add(
+				GUIBitsAndBobs.makeRow(
+						noOfRaysPerBundlePanel, "rays, starting on a disc of radius", rayStartPointsDiscRadiusPanel,
+						randomiseRayStartPointsButton
+					),
+				"span"
+			);
+		
+		noOfIterationsPanel = new IntPanel();
+		noOfIterationsPanel.setNumber(surfaceParametersOptimisation.noOfIterations);
+		
+		saInitialTemperaturePanel = new DoublePanel();
+		saInitialTemperaturePanel.setNumber(surfaceParametersOptimisation.saInitialTemperature);
+		
+		optimizeButton = new JButton(OPTIMIZE_BUTTON_OPTIMIZE);
+		optimizeButton.setToolTipText("Run the optimisation!");
+		optimizeButton.addActionListener(this);
+		
+		optimisationPanel.add(GUIBitsAndBobs.makeRow(noOfIterationsPanel, "iterations, initial temperature", saInitialTemperaturePanel, optimizeButton), "span");
+		
+		meanAlignmentPanel = new LabelledDoublePanel("Mean alignment");
+		meanAlignmentPanel.getDoublePanel().setText("not calculated");
+		meanAlignmentPanel.getDoublePanel().setEditable(false);
+		
+		updateMeanAlignmentButton = new JButton("Calculate");
+		updateMeanAlignmentButton.setToolTipText("Click to (re)calculate mean alignment");
+		updateMeanAlignmentButton.addActionListener(this);
+
+		optimisationPanel.add(GUIBitsAndBobs.makeRow(meanAlignmentPanel, updateMeanAlignmentButton),  "wrap");
+		
 //		// the console panel
 //
 //		tabbedPane.addTab("Console", MessageConsole.createConsole(30, 70));
@@ -428,89 +524,72 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		cameraPanel.setLayout(new MigLayout("insets 0"));
 		tabbedPane.addTab("Camera", cameraPanel);
 
-		// camera stuff
+		cameraTypeComboBox = new JComboBox<CameraType>(CameraType.values());
+		cameraTypeComboBox.setSelectedItem(cameraType);
+		cameraTypeComboBox.addActionListener(this);
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera type", cameraTypeComboBox), "span");
+		
+		cameraParametersPanel = new JPanel();	// holds the parameters of the selected camera
+		cameraPanel.add(cameraParametersPanel, "span");
+		
+		// eye / main camera stuff
+		
+		mainCameraPanel = new JPanel();
+		mainCameraPanel.setLayout(new MigLayout("insets 0"));
 		
 		cameraDistancePanel = new LabelledDoublePanel("Camera distance");
 		cameraDistancePanel.setNumber(cameraDistance);
-		cameraPanel.add(cameraDistancePanel, "span");
+		mainCameraPanel.add(cameraDistancePanel, "span");
 		
 		cameraViewCentrePanel = new LabelledVector3DPanel("View centre");
 		cameraViewCentrePanel.setVector3D(cameraViewCentre);
-		cameraPanel.add(cameraViewCentrePanel, "span");
+		mainCameraPanel.add(cameraViewCentrePanel, "span");
 		
 		cameraViewDirectionPanel = new LabelledVector3DPanel("View direction");
 		cameraViewDirectionPanel.setVector3D(cameraViewDirection);
-		cameraPanel.add(cameraViewDirectionPanel, "span");
+		mainCameraPanel.add(cameraViewDirectionPanel, "span");
 		
 		cameraHorizontalFOVDegPanel = new DoublePanel();
 		cameraHorizontalFOVDegPanel.setNumber(cameraHorizontalFOVDeg);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Horizontal FOV", cameraHorizontalFOVDegPanel, "°"), "span");
+		mainCameraPanel.add(GUIBitsAndBobs.makeRow("Horizontal FOV", cameraHorizontalFOVDegPanel, "°"), "span");
 		
 		cameraApertureSizeComboBox = new JComboBox<ApertureSizeType>(ApertureSizeType.values());
 		cameraApertureSizeComboBox.setSelectedItem(cameraApertureSize);
-		cameraPanel.add(GUIBitsAndBobs.makeRow("Camera aperture", cameraApertureSizeComboBox), "span");		
+		mainCameraPanel.add(GUIBitsAndBobs.makeRow("Camera aperture", cameraApertureSizeComboBox), "span");		
 		
 		cameraFocussingDistancePanel = new LabelledDoublePanel("Focussing distance");
 		cameraFocussingDistancePanel.setNumber(cameraFocussingDistance);
-		cameraPanel.add(cameraFocussingDistancePanel);
+		mainCameraPanel.add(cameraFocussingDistancePanel);
+		
+		// side camera stuff
+		
+		sideCameraPanel = new JPanel();
+		sideCameraPanel.setLayout(new MigLayout("insets 0"));
+
+		sideCameraViewCentrePanel = new LabelledVector3DPanel("View centre");
+		sideCameraViewCentrePanel.setVector3D(sideCameraViewCentre);
+		sideCameraPanel.add(sideCameraViewCentrePanel, "wrap");
+		
+		sideCameraViewDirectionPanel = new LabelledVector3DPanel("View direction");
+		sideCameraViewDirectionPanel.setVector3D(sideCameraViewDirection);
+		sideCameraPanel.add(sideCameraViewDirectionPanel, "wrap");
+		
+		sideCameraUpDirectionPanel = new LabelledVector3DPanel("Up direction");
+		sideCameraUpDirectionPanel.setVector3D(sideCameraUpDirection);
+		sideCameraPanel.add(sideCameraUpDirectionPanel, "wrap");
+		
+		sideCameraWidthPanel = new LabelledDoublePanel("Width");
+		sideCameraWidthPanel.setNumber(sideCameraWidth);
+		sideCameraPanel.add(sideCameraWidthPanel, "wrap");
+		
+		maxRaysShownPanel = new LabelledIntPanel("Max. no of rays shown");
+		maxRaysShownPanel.setNumber(maxRaysShown);
+		sideCameraPanel.add(maxRaysShownPanel, "wrap");
+		
+		
+		updateCameraParametersPanel();
 	}
 
-	private void updateSurfacesTabbedPane()
-	{
-//		if(z == null) z = new double[0];
-//		if(zPanel == null) zPanel = new LabelledDoublePanel[0];
-		
-		zPanel = new LabelledDoublePanel[polynomialOrder + 1];
-		aPanel = new DoublePanel[polynomialOrder + 1][][];
-		
-		// remove any existing tabs
-		surfacesTabbedPane.removeAll();
-		
-		// add new tabs
-		for(int i=0; i<noOfSurfaces; i++)
-		{
-			JPanel surfaceNPanel = new JPanel();
-			surfaceNPanel.setLayout(new MigLayout("insets 0"));
-			surfacesTabbedPane.addTab("Surface #"+i, new JScrollPane(surfaceNPanel));
-
-			zPanel[i] = new LabelledDoublePanel("z");
-//			if(zPanel.length > i) newZPanel[i].setText(zPanel[i].getText());
-//			else newZPanel[i].setNumber(z[i]);
-			zPanel[i].setNumber(z[i]);
-			surfaceNPanel.add(zPanel[i], "wrap");
-			
-			surfaceNPanel.add(new JLabel("<html>&Phi;(<i>x</i>, <i>y</i>) = </html>"), "wrap");
-			
-			// add the arrays
-			aPanel[i] = new DoublePanel[polynomialOrder+1][];
-			for(int n=0; n<=polynomialOrder; n++)
-			{
-				aPanel[i][n] = new DoublePanel[polynomialOrder+1];
-				for(int m=0; m<=n; m++)
-				{
-					aPanel[i][n][m] = new DoublePanel();
-					if(n == 0) 
-					{
-						aPanel[i][n][m].setBackground(Color.lightGray);
-						aPanel[i][n][m].setToolTipText("This coefficient doesn't actually have any effect");
-					}
-					aPanel[i][n][m].setNumber(a[i][n][m]);
-					surfaceNPanel.add(aPanel[i][n][m]);
-					surfaceNPanel.add(new JLabel(
-							"<html>" +
-							((m != 0)?"<i>x</i>"+((m != 1)?"<sup>"+m+"</sup>":""):"") +
-							((n-m != 0)?"<i>y</i>"+((n-m != 1)?"<sup>"+(n-m)+"</sup>":""):"") +
-							"</html>"
-						));
-					if(m < n) surfaceNPanel.add(new JLabel("+"));
-				}
-				surfaceNPanel.add(new JLabel((n < polynomialOrder)?"+":""), "wrap");
-			}
-		}
-		
-		surfacesTabbedPane.revalidate();
-		// surfacesPanel.revalidate();
-	}
 
 	/**
 	 * called before rendering;
@@ -533,28 +612,106 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		cameraHorizontalFOVDeg = cameraHorizontalFOVDegPanel.getNumber();
 		cameraApertureSize = (ApertureSizeType)(cameraApertureSizeComboBox.getSelectedItem());
 		cameraFocussingDistance = cameraFocussingDistancePanel.getNumber();
-
-		// read the coefficient values *before* re-shaping the a arrays
-		for(int i=0; i<noOfSurfaces; i++)
-			for(int n=0; n<=polynomialOrder; n++)
-				for(int m=0; m<=n; m++)
-					a[i][n][m] = aPanel[i][n][m].getNumber();
 		
-		//  read the z values *before*  re-shaping the z array
-		for(int i=0; i<noOfSurfaces; i++)
-			z[i] = zPanel[i].getNumber();
-		
-		if((noOfSurfaces != noOfSurfacesPanel.getNumber()) || (polynomialOrder != polynomialOrderPanel.getNumber()))
-		{
-			noOfSurfaces = noOfSurfacesPanel.getNumber();
-			polynomialOrder = polynomialOrderPanel.getNumber();
+		sideCameraViewCentre = sideCameraViewCentrePanel.getVector3D();
+		sideCameraViewDirection = sideCameraViewDirectionPanel.getVector3D();
+		sideCameraUpDirection = sideCameraUpDirectionPanel.getVector3D();
+		sideCameraWidth = sideCameraWidthPanel.getNumber();
+		maxRaysShown = maxRaysShownPanel.getNumber();
 
-			updateCoefficientArrays();
-			updateSurfacesTabbedPane();
-		}
+
+		surfaceParameters.acceptGUIEntries(noOfSurfacesPanel, polynomialOrderPanel, surfaceParametersTabbedPane);
 		
 		transmissionCoefficient = transmissionCoefficientPanel.getNumber();
+		
+		// optimisation; read the direction  values *before* re-shaping the arrays
+		for(int i=0; i<rayPairsParameters.noOfDirectionPairs; i++)
+		{
+			rayPairsParameters.directionsIn[i] = directionInPanel[i].getVector3D();
+			rayPairsParameters.directionsOut[i] = directionOutPanel[i].getVector3D();
+		}
+		
+		if(rayPairsParameters.noOfDirectionPairs != noOfDirectionPairsPanel.getNumber())
+		{
+			rayPairsParameters.noOfDirectionPairs = noOfDirectionPairsPanel.getNumber();
+			
+			rayPairsParameters.reshapeDirectionPairsArrays();
+			updateDirectionPairsTabbedPane();
+		}
+		surfaceParametersOptimisation.noOfIterations = noOfIterationsPanel.getNumber();
+		surfaceParametersOptimisation.saInitialTemperature = saInitialTemperaturePanel.getNumber();
+		rayPairsParameters.directionsInConeAngleRad = MyMath.deg2rad(directionsInConeAngleDegPanel.getNumber());
+		rayPairsParameters.lawOfRefraction = new LawOfRefraction1Parameter(
+					(LawOfRefractionType)(lawOfRefractionComboBox.getSelectedItem()),
+					lawOfRefractionAdditionalParameterPanel.getNumber()
+				);
+		rayPairsParameters.noOfRaysPerBundle = noOfRaysPerBundlePanel.getNumber();
+		rayPairsParameters.rayStartPointsDiscRadius = rayStartPointsDiscRadiusPanel.getNumber();
 	}
+	
+
+	private void updateDirectionPairsTabbedPane()
+	{
+		directionInPanel = new LabelledVector3DPanel[rayPairsParameters.noOfDirectionPairs];
+		directionOutPanel = new LabelledVector3DPanel[rayPairsParameters.noOfDirectionPairs];
+		
+		int selectedIndex = directionsTabbedPane.getSelectedIndex();
+		if((selectedIndex < 0) || (selectedIndex >= rayPairsParameters.noOfDirectionPairs)) selectedIndex = 0;
+
+		
+		// remove any existing tabs
+		directionsTabbedPane.removeAll();
+		
+		// add new tabs
+		for(int i=0; i<rayPairsParameters.noOfDirectionPairs; i++)
+		{
+			JPanel directionPairPanel = new JPanel();
+			directionPairPanel.setLayout(new MigLayout("insets 0"));
+			directionsTabbedPane.addTab("Direction pair #"+i, new JScrollPane(directionPairPanel));
+
+			directionInPanel[i] = new LabelledVector3DPanel("In");
+			directionInPanel[i].setVector3D(rayPairsParameters.directionsIn[i]);
+			directionPairPanel.add(directionInPanel[i], "wrap");
+
+			directionOutPanel[i] = new LabelledVector3DPanel("Out");
+			directionOutPanel[i].setVector3D(rayPairsParameters.directionsOut[i]);
+			directionPairPanel.add(directionOutPanel[i], "wrap");
+		}
+		
+		if(selectedIndex < directionsTabbedPane.getTabCount()) directionsTabbedPane.setSelectedIndex(selectedIndex);
+		
+		directionsTabbedPane.revalidate();
+	}
+
+	private void updateLawOfRefractionAdditionalParameterPanel()
+	{
+		String parameterDescription = 
+				rayPairsParameters.lawOfRefraction.lawOfRefractionType.getParameterDescription();
+		//			((LawOfRefractionType)(lawOfRefractionComboBox.getSelectedItem())).getParameterDescription();
+		if(parameterDescription != null) lawOfRefractionAdditionalParameterLabel.setText(parameterDescription);
+		else lawOfRefractionAdditionalParameterLabel.setText("-- no parameters --");
+		lawOfRefractionAdditionalParameterPanel.setEnabled(parameterDescription != null);
+	}
+	
+	private void updateCameraParametersPanel()
+	{
+		cameraParametersPanel.removeAll();
+
+		switch(cameraType)
+		{
+		case SIDE:
+			cameraParametersPanel.add(sideCameraPanel, "wrap");
+			break;
+		case EYE:
+		default:
+			cameraParametersPanel.add(mainCameraPanel);
+		}
+		
+		cameraParametersPanel.revalidate();
+	}
+
+	
+	private transient JFileChooser fileChooser;
 
 	@Override
 	public void actionPerformed(ActionEvent e)
@@ -566,27 +723,127 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 			acceptValuesInInteractiveControlPanel();
 
 			// run optimisation
-			System.out.println("Starting optimization...");
-			
-			try {
-				Ray r =  dcss.calculateTransmittedRay(new Ray(
-						new Vector3D(2*(Math.random()-0.5), 2*(Math.random()-0.5), -1),
-						new Vector3D(.2*(Math.random()-0.5), .2*(Math.random()-0.5), 1),
-						0,
-						false
-					));
-				System.out.println("r="+r);
-			} catch (RayTraceException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			if(optimizeButton.getText() == OPTIMIZE_BUTTON_STOP)
+			{
+				surfaceParametersOptimisation.simulatedAnnealingWorker.cancel(true);
+				optimizeButton.setText(OPTIMIZE_BUTTON_OPTIMIZE);
+			}
+			else
+			{
+				optimizeButton.setText(OPTIMIZE_BUTTON_STOP);
+				surfaceParametersOptimisation.optimise(this);
 			}
 		}
-		else if(e.getSource().equals(updateSurfacesButton))
+		else if(e.getSource().equals(updateSurfaceParameterFieldsButton))
 		{
 			acceptValuesInInteractiveControlPanel();
 		}
+		else if(e.getSource().equals(randomiseSurfaceParametersButton))
+		{
+			acceptValuesInInteractiveControlPanel();
+			surfaceParameters.randomiseSurfaceParameters();
+			surfaceParameters.repopulateSurfaceParametersTabbedPane(surfaceParametersTabbedPane);
+		}
+		else if(e.getSource().equals(updateDirectionPairsFieldsButton))
+		{
+			acceptValuesInInteractiveControlPanel();
+		}
+		else if(e.getSource().equals(randomiseDirectionPairsButton))
+		{
+			acceptValuesInInteractiveControlPanel();
+			rayPairsParameters.randomiseDirectionPairs();
+			updateDirectionPairsTabbedPane();
+		}
+		else if(e.getSource().equals(initialiseDirectionsInButton))
+		{
+			acceptValuesInInteractiveControlPanel();
+			setStatus("Randomising incident directions...");
+			rayPairsParameters.randomiseDirectionsIn();
+			setStatus("Calculating corresponding outgoing directions...");
+			rayPairsParameters.calculateDirectionsOut();
+			setStatus("Done initialising ray-direction pairs.");
+			updateDirectionPairsTabbedPane();
+		}			
+		else if(e.getSource().equals(updateMeanAlignmentButton))
+		{
+			acceptValuesInInteractiveControlPanel();
+			meanAlignmentPanel.setNumber(surfaceParametersOptimisation.calculateMeanAlignment(surfaceParameters));
+		}
+		else if(e.getSource().equals(randomiseRayStartPointsButton))
+		{
+			acceptValuesInInteractiveControlPanel();
+			setStatus("Randomising ray start points...");
+			rayPairsParameters.randomiseRayStartPoints();
+			setStatus("Done randomising ray start points.");
+		}
+		else if(e.getSource().equals(lawOfRefractionComboBox))
+		{
+			rayPairsParameters.lawOfRefraction = new LawOfRefraction1Parameter(
+					(LawOfRefractionType)(lawOfRefractionComboBox.getSelectedItem()),
+					lawOfRefractionAdditionalParameterPanel.getNumber()
+				);
+			updateLawOfRefractionAdditionalParameterPanel();
+		}
+		else if(e.getSource().equals(saveSurfaceParametersButton))
+		{
+			if(fileChooser == null) { fileChooser = new JFileChooser(); }
+			fileChooser.setSelectedFile(new File(getFilename()+".sur"));
+			int returnVal = fileChooser.showSaveDialog(container);
+			
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                try {
+					surfaceParameters.save(file.getAbsolutePath());
+	    			setStatus("Surface parameters saved as \""+file.getAbsolutePath()+"\".");
+				} catch (IOException e1) {
+	    			setStatus("Aborted saving surface parameters as \""+file.getAbsolutePath()+"\" ("+e1.getMessage()+")");
+	    			e1.printStackTrace();
+				}
+            }
+			else
+			{
+				setStatus("Saving cancelled.");
+			}
+		}
+		else if(e.getSource().equals(loadSurfaceParametersButton))
+		{
+			if(fileChooser == null) { fileChooser = new JFileChooser(); }
+			fileChooser.setSelectedFile(new File(getFilename()+".sur"));
+			int returnVal = fileChooser.showOpenDialog(container);
+			
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                try {
+					surfaceParameters = SurfaceParameters.load(file.getAbsolutePath());
+					surfaceParameters.repopulateSurfaceParametersTabbedPane(surfaceParametersTabbedPane);
+					noOfSurfacesPanel.setNumber(surfaceParameters.noOfSurfaces);
+					polynomialOrderPanel.setNumber(surfaceParameters.polynomialOrder);
+	    			setStatus("Surface parameters loaded from \""+file.getAbsolutePath()+"\".");
+				} catch (Exception e1) {
+	    			setStatus("Aborted loading surface parameters from \""+file.getAbsolutePath()+"\" ("+e1.getMessage()+")");
+	    			e1.printStackTrace();
+				}
+            }
+			else
+			{
+				setStatus("Loading surface parameters cancelled.");
+			}
+		}
+		else if(e.getSource().equals(cameraTypeComboBox))
+		{
+			cameraType = (CameraType)(cameraTypeComboBox.getSelectedItem());
+			
+			updateCameraParametersPanel();
+		}
 	}
 
+	@Override
+	public void setStatus(String status)
+	{
+		super.setStatus(status);
+		System.out.println("[ "+status+" ]");
+	}
+	
 	/**
 	 * The main method, required so that this class can run as a Java application
 	 * @param args

@@ -22,7 +22,6 @@ import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.Format3DType;
 import optics.raytrace.GUI.lowLevel.GUIPanel;
 import optics.raytrace.GUI.sceneObjects.*;
-import optics.raytrace.GUI.surfaces.EditableSurfaceTiling;
 import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
 
 /**

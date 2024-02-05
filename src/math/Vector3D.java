@@ -253,6 +253,19 @@ public class Vector3D implements Serializable, Cloneable
 		//  the length of the vector is 0; return (1,0,0)
 		return new Vector3D(1, 0, 0);
 	}
+	
+	/**
+	 * Adds v to this
+	 * @param v
+	 * @return	this,  with v added
+	 */
+	public Vector3D add(Vector3D v)
+	{
+		x += v.x;
+		y += v.y;
+		z += v.z;
+		return this;
+	}
 
 	/**
 	 * The negative of the Vector3D.  Each element is multiplied by minus one.

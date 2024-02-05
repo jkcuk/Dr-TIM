@@ -325,6 +325,7 @@ public abstract class CameraClass implements Camera
 		
 		
 		int nthreads=Runtime.getRuntime().availableProcessors();
+		if(nthreads > 1) nthreads = nthreads - 1;	// leave one processor free to do GUI stuff
 		
 		CameraWorker[] workers= new CameraWorker[nthreads];
 		for(int i=0; i<nthreads; i++) workers[i]=new CameraWorker(ccd,scene,lights); //make an array of worker objects, which tell the threads what to do

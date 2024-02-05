@@ -1,5 +1,7 @@
 package math;
 
+import java.util.ArrayList;
+
 import Jama.Matrix;
 import optics.raytrace.exceptions.RayTraceException;
 
@@ -633,5 +635,77 @@ public class Geometry
 				point,
 				Vector3D.difference(pointOnLine, point).getPartPerpendicularTo(directionOfLine).getProductWith(2)
 			);
+	}
+	
+	/**
+	 * Calculate a measure of the "parallelness" of a set of vectors.
+	 * The method sums up the normalised vectors and divides that sum by the number of vectors.
+	 * @param s	a set of vectors
+	 * @param vectorsAreNormalised	true if the vectors in s are normalised
+	 * @return	a measure of the "parallelness" of the vectors in s, 1 if all are parallel, <1 otherwise
+	 */
+	public static double calculateParallelness(ArrayList<Vector3D> s, boolean vectorsAreNormalised)
+	{
+		// see https://math.stackexchange.com/questions/2514038/measuring-parallelness-of-vectors
+		// note that this method uses the approach proposed in the question, not that in the (fancier) answer
+		
+		//  calculate the sum of the (normalised) vectors
+		Vector3D sum = new Vector3D(0, 0, 0);
+		if(vectorsAreNormalised) for(Vector3D v:s) sum.add(v);
+		else for(Vector3D v:s) sum.add(v.getNormalised());
+		
+		// divide it by the number of vectors and return it
+		return sum.getProductWith(1./s.size()).getLength();
+	}
+	
+	/**
+	 * Calculate the alignment  of the vectors in s with the direction d.
+	 * The method sums up the scalar products and divides that sum by  the number of vectors.
+	 * @param d
+	 * @param s
+	 * @param vectorsAreNormalised
+	 * @return	a measure of the "alignment" of the vectors in s  with the direction d, 1 if all have direction d, <1 otherwise
+	 */
+	public static double calculateAlignment(Vector3D d, ArrayList<Vector3D> s, boolean vectorsAreNormalised)
+	{
+		double sum = 0;
+		Vector3D dHat = d.getNormalised();
+		
+		if(vectorsAreNormalised) for(Vector3D v:s) sum += Vector3D.scalarProduct(dHat, v);
+		else for(Vector3D v:s) sum += Vector3D.scalarProduct(dHat, v.getNormalised());
+
+		// divide it by the number of vectors and return it
+		return sum/s.size();
+	}
+
+	/**
+	 * @return	a vector of the form (u, v) such that u^2 + v^2 <= 1
+	 */
+	public static Vector2D getRandomPointOnUnitDisk()
+	{
+		while(true)
+		{
+			double u = 2*Math.random() - 1;
+			double v = 2*Math.random() - 1;
+			if(u*u+v*v <= 1) return new Vector2D(u, v);
+		}
+	}
+
+	/**
+	 * @param noOfPoints
+	 * @return	an ArrayList containing <noOfPoints> vectors of the form (u, v) such that u^2 + v^2 <= 1
+	 */
+	public static ArrayList<Vector2D> getRandomPointsInUnitDisk(int noOfPoints)
+	{
+		ArrayList<Vector2D> points = new  ArrayList<Vector2D>(noOfPoints);
+		
+		while(points.size() < noOfPoints)
+		{
+			double u = 2*Math.random() - 1;
+			double v = 2*Math.random() - 1;
+			if(u*u+v*v <= 1) points.add(new Vector2D(u, v));
+		}
+		
+		return points;
 	}
 }
