@@ -18,7 +18,6 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	
 	private Vector3D eyePosition;
 	private Vector3D pointOnPlane;
-	private boolean unitJacobian;
 	
 	/**
 	 * plane normal, which is also the rotation axis
@@ -26,15 +25,20 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	private Vector3D normalisedPlaneNormal;
 	
 	/**
-	 * rotation angle, in radians
+	 * overall rotation angle, in radians
 	 */
 	private double rotationAngleRad;
+	
+	/**
+	 * angle by which each pixel rotates transmitted light rays, in radians
+	 */
+	private double pixelRotationAngleRad;
 	
 	
 	//  constructors
 	
 	public DerivativeControlSurfaceRotatingPhaseHologramApproximation(One2OneParametrisedObject parametrisedObject, Vector3D eyePosition, Vector3D pointOnPlane,
-			Vector3D normalisedPlaneNormal, double rotationAngleRad, boolean unitJacobian, boolean pixellated, double pixelPeriodU, double pixelPeriodV,
+			Vector3D normalisedPlaneNormal, double rotationAngleRad, double pixelRotationAngleRad, boolean pixellated, double pixelPeriodU, double pixelPeriodV,
 			double transmissionCoefficient, boolean shadowThrowing) 
 	{
 		super(parametrisedObject, pixellated, pixelPeriodU, pixelPeriodV, transmissionCoefficient, shadowThrowing);
@@ -42,7 +46,7 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 		this.pointOnPlane = pointOnPlane;
 		this.normalisedPlaneNormal = normalisedPlaneNormal;
 		this.rotationAngleRad = rotationAngleRad;
-		this.unitJacobian = unitJacobian;
+		this.pixelRotationAngleRad = pixelRotationAngleRad;
 	}
 
 	
@@ -105,23 +109,25 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 		this.rotationAngleRad = rotationAngleRad;
 	}
 
-
 	/**
-	 * @return the unitJacobian
+	 * @return the pixelRotationAngleRad
 	 */
-	public boolean isUnitJacobian() {
-		return unitJacobian;
+	public double getPixelRotationAngleRad() {
+		return pixelRotationAngleRad;
 	}
 
 	/**
-	 * @param unitJacobian the unitJacobian to set
+	 * @param pixelRotationAngleRad the pixelRotationAngleRad to set
 	 */
-	public void setUnitJacobian(boolean unitJacobian) {
-		this.unitJacobian = unitJacobian;
+	public void setPixelRotationAngleRad(double pixelRotationAngleRad) {
+		this.pixelRotationAngleRad = pixelRotationAngleRad;
 	}
+
 
 
 	// override  the relevant methods
+
+
 
 	@Override
 	public Vector3D getDi0Outwards(Vector3D pointOnSurface) 
@@ -166,10 +172,9 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 
 	@Override
 	public Matrix getJacobianOutwards(Vector3D pointOnSurface) {
-		if(unitJacobian) return Matrix.identity(2, 2);
 		double[][] components = {
-				{Math.cos(-rotationAngleRad), Math.sin(-rotationAngleRad)},	//  {0, 1},
-				{-Math.sin(-rotationAngleRad), Math.cos(-rotationAngleRad)}	// {-1, 0}
+				{Math.cos(-pixelRotationAngleRad), Math.sin(-pixelRotationAngleRad)},	//  {0, 1},
+				{-Math.sin(-pixelRotationAngleRad), Math.cos(-pixelRotationAngleRad)}	// {-1, 0}
 			};
 		return new Matrix(components);
 

@@ -155,6 +155,20 @@ public class GUIBitsAndBobs
 		return panel;
 	}
 
+	public static JPanel makeRow(Component component1, String text1, Component component2, String text2, Component component3)
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("insets 0"));
+
+		panel.add(component1);
+		panel.add(new JLabel(text1)); 
+		panel.add(component2);
+		panel.add(new JLabel(text2));
+		panel.add(component3);
+
+		return panel;
+	}
+
 	/**
 	 * Creates a combined text label and two components.
 	 */

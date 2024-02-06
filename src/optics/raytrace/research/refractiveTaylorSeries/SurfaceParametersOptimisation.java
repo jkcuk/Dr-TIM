@@ -151,7 +151,7 @@ public class SurfaceParametersOptimisation {
 		protected void done() {
 			try {
 				SurfaceParametersAndMeanAligment s = get();
-				pphe.meanAlignmentPanel.setNumber(s.meanAlignment);
+				pphe.setMeanAlignment(s.meanAlignment);
 				s.surfaceParameters.repopulateSurfaceParametersTabbedPane(pphe.surfaceParametersTabbedPane);
 				int seconds = (int)Math.floor(1e-3*(System.currentTimeMillis() - startTimeMillis));
 				int HH = seconds / 3600;
@@ -180,7 +180,7 @@ public class SurfaceParametersOptimisation {
 		protected void process(List<SimulatedAnnealingState> sass) {
 			try {
 				SimulatedAnnealingState sas = sass.get(sass.size() - 1);
-				pphe.meanAlignmentPanel.setNumber(sas.s.meanAlignment);
+				pphe.setMeanAlignment(sas.s.meanAlignment);
 				sas.s.surfaceParameters.repopulateSurfaceParametersTabbedPane(pphe.surfaceParametersTabbedPane);
 				
 				if(simulatedAnnealingWorker.isCancelled()) pphe.setStatus("Optimisation cancelled");

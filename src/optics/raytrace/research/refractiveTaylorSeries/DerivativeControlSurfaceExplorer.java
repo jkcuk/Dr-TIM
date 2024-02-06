@@ -1,7 +1,8 @@
-package optics.raytrace.test;
+package optics.raytrace.research.refractiveTaylorSeries;
 
 import java.io.PrintStream;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -15,6 +16,7 @@ import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
+import optics.raytrace.GUI.lowLevel.LabelledVector2DPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 import optics.raytrace.core.SceneObjectPrimitive;
 import optics.raytrace.core.Studio;
@@ -24,21 +26,19 @@ import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.sceneObjects.ParametrisedPlane;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.DerivativeControlSurfaceRotatingPhaseHologramApproximation;
-import optics.raytrace.surfaces.EwanDerivativeControlSurfaceExpansion;
 import optics.raytrace.surfaces.SurfaceColour;
 
 
 
-public class DerivativeControlSurfaceExplorerCOPY extends NonInteractiveTIMEngine
+public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 {
-	private double theta;
-	private double phi;
+	private double zRotatedPlane, zRotatingSurface;
+	private double rotationAngleRad, pixelRotationAngleRad;
 	private boolean pixellated;
 	private double pixelPeriodU;
 	private double pixelPeriodV;
-
 	
-	public DerivativeControlSurfaceExplorerCOPY()
+	public DerivativeControlSurfaceExplorer()
 	{
 		super();
 		
@@ -52,11 +52,16 @@ public class DerivativeControlSurfaceExplorerCOPY extends NonInteractiveTIMEngin
 		cameraDistance = 0;
 		traceRaysWithTrajectory = false;
 		
-		theta = MyMath.deg2rad(90);
-		phi = MyMath.deg2rad(90);
-		pixellated = false;
-		pixelPeriodU =0.1;
-		pixelPeriodV = 0.1;
+		zRotatedPlane = 30;
+		zRotatingSurface = 9;
+		rotationAngleRad = MyMath.deg2rad(20);
+		pixelRotationAngleRad = MyMath.deg2rad(0);
+		pixellated = true;
+		pixelPeriodU=.1;
+		pixelPeriodV=.1;
+		
+		windowWidth *= 2;
+
 		// camera parameters are set in createStudio()
 	}
 
@@ -68,7 +73,7 @@ public class DerivativeControlSurfaceExplorerCOPY extends NonInteractiveTIMEngin
 	public String getClassName()
 	{
 		return
-				"DerivativeControlSurfaceExplorerCOPY"
+				"DerivativeControlSurfaceExplorer"
 				;
 	}
 	
@@ -82,9 +87,16 @@ public class DerivativeControlSurfaceExplorerCOPY extends NonInteractiveTIMEngin
 		// write any parameters not defined in NonInteractiveTIMEngine, each parameter is saved like this:
 		// printStream.println("parameterName = "+parameterName);
 
+		printStream.println("zRotatedPlane="+zRotatedPlane);
+		printStream.println("zRotatingSurface="+zRotatingSurface);
+		printStream.println("rotationAngleRad = "+rotationAngleRad);
+		printStream.println("pixelRotationAngleRad = "+pixelRotationAngleRad);
+		printStream.println("pixellated = "+pixellated);
+		printStream.println("pixelPeriodU = "+pixelPeriodU);
+		printStream.println("pixelPeriodV = "+pixelPeriodV);
+		
 		// write all parameters defined in NonInteractiveTIMEngine
 		super.writeParameters(printStream);
-		
 	}
 	
 	/* (non-Javadoc)
@@ -113,10 +125,10 @@ public class DerivativeControlSurfaceExplorerCOPY extends NonInteractiveTIMEngin
 		
 //		DerivativeControlSurfaceRotating dcs = new DerivativeControlSurfaceRotating(theta);
 		
-		EwanDerivativeControlSurfaceExpansion dcs =  new EwanDerivativeControlSurfaceExpansion(
+		DerivativeControlSurfaceRotatingPhaseHologramApproximation dcs =  new DerivativeControlSurfaceRotatingPhaseHologramApproximation(
 				new ParametrisedPlane(
 						"Plane", // description
-						new Vector3D(0, 0, 10),	// pointOnPlane
+						new Vector3D(0, 0, zRotatingSurface),	// pointOnPlane
 						new Vector3D(0, 0, 1),	// normal
 						new Vector3D(1, 0, 0),	// v1
 						new Vector3D(0, 1, 0),	// v2
@@ -124,16 +136,16 @@ public class DerivativeControlSurfaceExplorerCOPY extends NonInteractiveTIMEngin
 						null,	// parent
 						null	// studio
 					),
-				SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,
-				false,	//  shadow-throwing
 				new Vector3D(0, 0, 0),	// eyePosition
-				new Vector3D(0, 0, 40),	// pointOnPlane,
+				new Vector3D(0, 0, zRotatedPlane),	// pointOnPlane,
 				new Vector3D(0, 0, 1),	// normalisedPlaneNormal, 
-				theta,	// rotationAngleRad
-			    phi,   // jacAngleRad
-			    pixellated, 
-			    pixelPeriodU, 
-		        pixelPeriodV
+				rotationAngleRad,	// rotationAngleRad
+				pixelRotationAngleRad,	// pixelRotationAngleRad
+				pixellated,
+				pixelPeriodU,
+				pixelPeriodV,
+				SurfacePropertyPrimitive.DEFAULT_TRANSMISSION_COEFFICIENT,
+				false	//  shadow-throwing
 			); 
 		
 		SceneObjectPrimitive s = (SceneObjectPrimitive)(dcs.getParametrisedObject());
@@ -147,10 +159,14 @@ public class DerivativeControlSurfaceExplorerCOPY extends NonInteractiveTIMEngin
 	//
 	
 //	private LabelledVector3DPanel centrePanel, frontDirectionPanel, topDirectionPanel;
-	private LabelledDoublePanel thetaPanel;
-	private LabelledDoublePanel phiPanel; 
+	private LabelledDoublePanel zRotatedPlanePanel, zRotatingSurfacePanel;
+	private LabelledDoublePanel rotationAngleDegPanel, pixelRotationAngleDegPanel;
 //	private LabelledDoubleColourPanel headColourPanel, noseColourPanel, innerEarColourPanel, rightEyeColourPanel, leftEyeColourPanel, whiskerColourPanel;
 //	
+	private JCheckBox pixellatedCheckBox;
+	
+	private LabelledVector2DPanel pixelPeriodPanel;
+	
 	// camera
 	private LabelledVector3DPanel cameraViewCentrePanel;
 	// private JButton setCameraViewCentreToCloakCentroidButton;
@@ -190,15 +206,36 @@ public class DerivativeControlSurfaceExplorerCOPY extends NonInteractiveTIMEngin
 //		topDirectionPanel = new LabelledVector3DPanel("Top direction");
 //		topDirectionPanel.setVector3D(topDirection);
 //		catPanel.add(topDirectionPanel, "span");
-//		
-		thetaPanel = new LabelledDoublePanel("rotation angle (degrees)");
-		thetaPanel.setNumber(MyMath.rad2deg(theta));
-		catPanel.add(thetaPanel, "span");
 		
-		phiPanel = new LabelledDoublePanel("jacobian rotation angle (degrees)");
-		phiPanel.setNumber(MyMath.rad2deg(-phi));
-		catPanel.add(phiPanel, "span");
+		zRotatedPlanePanel = new LabelledDoublePanel("z coordinate of rotated plane");
+		zRotatedPlanePanel.setNumber(zRotatedPlane);
+		catPanel.add(zRotatedPlanePanel, "span");
+		
+		zRotatingSurfacePanel = new LabelledDoublePanel("z coordinate of rotating surface");
+		zRotatingSurfacePanel.setNumber(zRotatingSurface);
+		catPanel.add(zRotatingSurfacePanel, "span");
 //		
+		rotationAngleDegPanel = new LabelledDoublePanel("rotation angle (degrees)");
+		rotationAngleDegPanel.setNumber(MyMath.rad2deg(rotationAngleRad));
+		catPanel.add(rotationAngleDegPanel, "span");
+		
+		JPanel pixellationPanel = new JPanel();
+		pixellationPanel.setLayout(new MigLayout("insets 0"));
+		pixellationPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Pixellation"));
+		catPanel.add(pixellationPanel, "span");
+		
+		pixellatedCheckBox = new JCheckBox("Pixellated");
+		pixellatedCheckBox.setSelected(pixellated);
+		pixellationPanel.add(pixellatedCheckBox, "span");
+		
+		pixelRotationAngleDegPanel = new LabelledDoublePanel("pixel rotation angle (degrees)");
+		pixelRotationAngleDegPanel.setNumber(MyMath.rad2deg(pixelRotationAngleRad));
+		pixellationPanel.add(pixelRotationAngleDegPanel, "span");
+
+		pixelPeriodPanel = new LabelledVector2DPanel("Pixel period in (u, v)");
+		pixelPeriodPanel.setVector2D(pixelPeriodU, pixelPeriodV);
+		pixellationPanel.add(pixelPeriodPanel, "span");
+
 //		headColourPanel = new LabelledDoubleColourPanel("Head colour");
 //		headColourPanel.setDoubleColour(headColour);
 //		catPanel.add(headColourPanel, "wrap");
@@ -268,19 +305,24 @@ public class DerivativeControlSurfaceExplorerCOPY extends NonInteractiveTIMEngin
 	protected void acceptValuesInInteractiveControlPanel()
 	{
 		super.acceptValuesInInteractiveControlPanel();
+		
+		zRotatedPlane = zRotatedPlanePanel.getNumber();
+		zRotatingSurface = zRotatingSurfacePanel.getNumber();
 //		//cat
 //		centre = centrePanel.getVector3D();
 //		frontDirection = frontDirectionPanel.getVector3D();
 //		topDirection = topDirectionPanel.getVector3D();
-		theta = MyMath.deg2rad(thetaPanel.getNumber());
-		phi = MyMath.deg2rad(phiPanel.getNumber());
+		rotationAngleRad = MyMath.deg2rad(rotationAngleDegPanel.getNumber());
 //		headColour =headColourPanel.getDoubleColour();
 //		noseColour = noseColourPanel.getDoubleColour();
 //		innerEarColour = innerEarColourPanel.getDoubleColour();
 //		rightEyeColour = rightEyeColourPanel.getDoubleColour();
 //		leftEyeColour = leftEyeColourPanel.getDoubleColour();
 //		whiskerColour = whiskerColourPanel.getDoubleColour();
-//		
+		pixellated = pixellatedCheckBox.isSelected();
+		pixelRotationAngleRad = MyMath.deg2rad(pixelRotationAngleDegPanel.getNumber());
+		pixelPeriodU = pixelPeriodPanel.getVector2D().x;
+		pixelPeriodV = pixelPeriodPanel.getVector2D().y;
 		
 		// cameras
 		cameraViewCentre = cameraViewCentrePanel.getVector3D();
@@ -300,6 +342,6 @@ public class DerivativeControlSurfaceExplorerCOPY extends NonInteractiveTIMEngin
 //        Runnable r = new NonInteractiveTIM();
 //
 //        EventQueue.invokeLater(r);
-		(new DerivativeControlSurfaceExplorerCOPY()).run();
+		(new DerivativeControlSurfaceExplorer()).run();
 	}
 }

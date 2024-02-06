@@ -1,6 +1,5 @@
 package optics.raytrace.research.refractiveTaylorSeries;
 
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -19,9 +18,7 @@ import math.MyMath;
 import math.Vector3D;
 import net.miginfocom.swing.MigLayout;
 import optics.DoubleColour;
-import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;
-import optics.raytrace.GUI.core.RaytraceWorker;
 import optics.raytrace.GUI.lowLevel.ApertureSizeType;
 import optics.raytrace.GUI.lowLevel.DoublePanel;
 import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
@@ -29,15 +26,22 @@ import optics.raytrace.GUI.lowLevel.IntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledIntPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
+import optics.raytrace.cameras.OrthographicCamera;
+import optics.raytrace.core.RayWithTrajectory;
 import optics.raytrace.core.SceneObjectPrimitive;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.research.refractiveTaylorSeries.LawOfRefraction1Parameter.LawOfRefractionType;
 import optics.raytrace.research.refractiveTaylorSeries.SurfaceParametersOptimisation.AlgorithmType;
+import optics.raytrace.sceneObjects.CylinderMantle;
 import optics.raytrace.sceneObjects.Plane;
+import optics.raytrace.sceneObjects.RayTrajectory;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
 import optics.raytrace.surfaces.Checked;
+import optics.raytrace.surfaces.ColourFilter;
+import optics.raytrace.surfaces.SurfaceColour;
 
 
 /**
@@ -82,7 +86,12 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 	private Vector3D sideCameraViewDirection;
 	private Vector3D sideCameraUpDirection;
 	private double sideCameraWidth;
-	private int maxRaysShown;
+	
+	private double cylinderRadius;
+	private int noOfDirectionPairsTraced;
+	private int noOfRaysPerBundleTraced;
+	private double rayRadius;
+
 	
 //	OrthographicCamera(
 //			String name,
@@ -141,8 +150,11 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		sideCameraViewDirection = new Vector3D(-1, 0, 0);	// from the right
 		sideCameraUpDirection = new Vector3D(0, 1, 0);
 		sideCameraWidth = 4;
-		maxRaysShown = 100;
-
+		cylinderRadius = 1;
+		noOfDirectionPairsTraced = 5;
+		noOfRaysPerBundleTraced = 10;
+		rayRadius = 0.02;
+		traceRaysWithTrajectory = false;
 
 		windowTitle = "Dr TIM's polynomial-phase hologram explorer";
 		windowWidth = 1400;
@@ -197,7 +209,10 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		printStream.println("sideCameraViewDirection="+sideCameraViewDirection);
 		printStream.println("sideCameraUpDirection="+sideCameraUpDirection);
 		printStream.println("sideCameraWidth="+sideCameraWidth);
-		printStream.println("maxRaysShown="+maxRaysShown);
+		printStream.println("cylinderRadius="+cylinderRadius);
+		printStream.println("noOfDirectionPairsTraced="+noOfDirectionPairsTraced);
+		printStream.println("noOfRaysPerBundleTraced="+noOfRaysPerBundleTraced);
+		printStream.println("rayRadius="+rayRadius);
 
 		// write all parameters defined in NonInteractiveTIMEngine
 		super.writeParameters(printStream);
@@ -228,7 +243,26 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		switch(cameraType)
 		{
 		case SIDE:
-			// TODO
+//			private Vector3D sideCameraViewCentre;
+//			private Vector3D sideCameraViewDirection;
+//			private Vector3D sideCameraUpDirection;
+//			private double sideCameraWidth;
+//			
+//			private double cylinderRadius;
+//			private int noOfDirectionPairsTraced;
+//			private int noOfRaysPerBundleTraced;
+
+			studio.setCamera(new OrthographicCamera(
+					"side camera",	// name,
+					sideCameraViewDirection,	// viewDirection
+					Vector3D.sum(sideCameraViewCentre, sideCameraViewDirection.getWithLength(-100)),	// CCDCentre,
+					Vector3D.crossProduct(sideCameraUpDirection, sideCameraViewDirection).getWithLength(sideCameraWidth),	// horizontalSpanVector3D, 
+					sideCameraUpDirection.getWithLength(sideCameraWidth*cameraPixelsY/cameraPixelsX),	// verticalSpanVector3D
+					(int)(cameraPixelsX*renderQuality.getAntiAliasingQuality().getAntiAliasingFactor()),	// detectorPixelsHorizontal,
+					(int)(cameraPixelsY*renderQuality.getAntiAliasingQuality().getAntiAliasingFactor()),	// detectorPixelsVertical,
+					cameraMaxTraceLevel	// maxTraceLevel
+				));
+
 			break;
 		case EYE:
 		default:
@@ -252,13 +286,80 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		DirectionChangingSurfaceSequence dcss = surfaceParameters.createCorrespondingDirectionChangingSurfaceSequence(transmissionCoefficient);
 //		addSurfaces();
 
-		// add the surfaces from the DirectionChangingSurfaceSequence dcss to  the scene
+		SceneObjectContainer surfaces = new SceneObjectContainer("the surfaces", scene, studio);
+		scene.addSceneObject(surfaces);
+
+		// add the surfaces from the DirectionChangingSurfaceSequence dcss to the scene
 		for(SceneObjectPrimitive s:dcss.getSceneObjectPrimitivesWithDirectionChangingSurfaces())
 		{
-			scene.addSceneObject(s);
+//			if(cameraType == CameraType.SIDE) 
+//			{
+//				// in this case, we want to show only the part of each surface that is within <cylinderRadius> of the z axis
+//				SceneObjectIntersection soi = new SceneObjectIntersection("central part of "+s.getDescription(), scene, studio);
+//				soi.addPositiveSceneObject(s);
+//				soi.addInvisiblePositiveSceneObject(new CylinderMantle(
+//						"cylinder centred on z",	// description,
+//						Vector3D.O,	// startPoint,
+//						Vector3D.Z,	// endPoint,
+//						cylinderRadius,	// radius,
+//						true,	// infinite,
+//						null,	// surfaceProperty,
+//						scene,	// parent,
+//						studio
+//					));
+//				surfaces.addSceneObject(soi);
+//			}
+//			else
+				surfaces.addSceneObject(s);
 		}
 		
-		// TODO add rays
+		// add rays
+		if(cameraType == CameraType.SIDE)
+		{
+			for(int i=0; i<Math.min(rayPairsParameters.noOfRaysPerBundle, noOfRaysPerBundleTraced); i++)
+				for(int j=0; j<Math.min(rayPairsParameters.noOfDirectionPairs, noOfDirectionPairsTraced); j++)
+					scene.addSceneObject(
+							new RayTrajectory(
+									"Trajectory of ray #"+i+", "+j,	// description,
+									Vector3D.sum(rayPairsParameters.rayStartPoints[i], rayPairsParameters.directionsIn[j].getWithLength(0)),	// startPoint,
+									0,	// startTime,
+									rayPairsParameters.directionsIn[j],	// startDirection,
+									rayRadius,	// rayRadius,
+									SurfaceColour.RED_SHINY,	// surfaceProperty,
+									// SurfaceColourLightSourceIndependent.RED,	// surfaceProperty,
+									1000,	// maxTraceLevel,
+									false,	// reportToConsole,
+									scene,	// parent,
+									studio
+								));
+			
+			RayWithTrajectory.traceRaysWithTrajectory(studio.getScene());
+
+			// remove all the surfaces...
+			surfaces.clear();
+			
+			// and add them again, but with a simpler SurfaceProperty
+			for(SceneObjectPrimitive s:dcss.getSceneObjectPrimitivesWithDirectionChangingSurfaces())
+			{
+					// in this case, we want to show only the part of each surface that is within <cylinderRadius> of the z axis
+					s.setSurfaceProperty(ColourFilter.CYAN_GLASS);
+					SceneObjectIntersection soi = new SceneObjectIntersection("central part of "+s.getDescription(), scene, studio);
+					soi.addPositiveSceneObject(s);
+					soi.addInvisiblePositiveSceneObject(new CylinderMantle(
+							"cylinder centred on z",	// description,
+							Vector3D.O,	// startPoint,
+							Vector3D.Z,	// endPoint,
+							cylinderRadius,	// radius,
+							true,	// infinite,
+							null,	// surfaceProperty,
+							scene,	// parent,
+							studio
+						));
+					surfaces.addSceneObject(soi);
+			}
+
+		}
+		
 	}
 
 
@@ -295,8 +396,8 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 	private JLabel lawOfRefractionAdditionalParameterLabel;
 	private DoublePanel lawOfRefractionAdditionalParameterPanel;
 	private LabelledVector3DPanel directionInPanel[], directionOutPanel[];
-	LabelledDoublePanel meanAlignmentPanel;
-	private DoublePanel directionsInConeAngleDegPanel, rayStartPointsDiscRadiusPanel, saInitialTemperaturePanel;
+	private LabelledDoublePanel meanAlignmentPanel;
+	private DoublePanel directionsInConeAngleDegPanel, rayStartPointsDiscRadiusPanel, saInitialTemperaturePanel, logMeanAlignmentPanel;
 	final String OPTIMIZE_BUTTON_OPTIMIZE = "Optimise";
 	private final String OPTIMIZE_BUTTON_STOP = "Stop";
 
@@ -316,7 +417,10 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 	private LabelledVector3DPanel sideCameraViewDirectionPanel;
 	private LabelledVector3DPanel sideCameraUpDirectionPanel;
 	private LabelledDoublePanel sideCameraWidthPanel;
-	private LabelledIntPanel maxRaysShownPanel;
+	private LabelledDoublePanel cylinderRadiusPanel;
+	private LabelledIntPanel noOfDirectionPairsTracedPanel;
+	private LabelledIntPanel noOfRaysPerBundleTracedPanel;
+	private LabelledDoublePanel rayRadiusPanel;
 
 
 	
@@ -506,11 +610,18 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		meanAlignmentPanel.getDoublePanel().setText("not calculated");
 		meanAlignmentPanel.getDoublePanel().setEditable(false);
 		
+		logMeanAlignmentPanel = new DoublePanel();
+		logMeanAlignmentPanel.setText("not calculated");
+		logMeanAlignmentPanel.setToolTipText("Basically the number of 9s after the decimal point");
+		logMeanAlignmentPanel.setEditable(false);
+		
 		updateMeanAlignmentButton = new JButton("Calculate");
 		updateMeanAlignmentButton.setToolTipText("Click to (re)calculate mean alignment");
 		updateMeanAlignmentButton.addActionListener(this);
 
-		optimisationPanel.add(GUIBitsAndBobs.makeRow(meanAlignmentPanel, updateMeanAlignmentButton),  "wrap");
+		optimisationPanel.add(GUIBitsAndBobs.makeRow(meanAlignmentPanel, 
+				"<html>, -log<sub>10</sub>(1-(<i>mean alignment</i>))</html>",	// ", -log(1-(mean alignment))", 
+				logMeanAlignmentPanel, "", updateMeanAlignmentButton),  "wrap");
 		
 //		// the console panel
 //
@@ -582,10 +693,22 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		sideCameraWidthPanel.setNumber(sideCameraWidth);
 		sideCameraPanel.add(sideCameraWidthPanel, "wrap");
 		
-		maxRaysShownPanel = new LabelledIntPanel("Max. no of rays shown");
-		maxRaysShownPanel.setNumber(maxRaysShown);
-		sideCameraPanel.add(maxRaysShownPanel, "wrap");
+		cylinderRadiusPanel = new LabelledDoublePanel("Restrict surfaces to cylinder of radius");
+		cylinderRadiusPanel.setNumber(cylinderRadius);
+		sideCameraPanel.add(cylinderRadiusPanel, "wrap");
 		
+		noOfDirectionPairsTracedPanel = new LabelledIntPanel("No of direction pairs traced");
+		noOfDirectionPairsTracedPanel.setNumber(noOfDirectionPairsTraced);
+		sideCameraPanel.add(noOfDirectionPairsTracedPanel, "wrap");
+		
+		noOfRaysPerBundleTracedPanel = new LabelledIntPanel("No of rays per direction traced");
+		noOfRaysPerBundleTracedPanel.setNumber(noOfRaysPerBundleTraced);
+		sideCameraPanel.add(noOfRaysPerBundleTracedPanel, "wrap");
+		
+		rayRadiusPanel = new LabelledDoublePanel("Radius of rays");
+		rayRadiusPanel.setNumber(rayRadius);
+		sideCameraPanel.add(rayRadiusPanel, "wrap");
+
 		
 		updateCameraParametersPanel();
 	}
@@ -617,7 +740,10 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		sideCameraViewDirection = sideCameraViewDirectionPanel.getVector3D();
 		sideCameraUpDirection = sideCameraUpDirectionPanel.getVector3D();
 		sideCameraWidth = sideCameraWidthPanel.getNumber();
-		maxRaysShown = maxRaysShownPanel.getNumber();
+		cylinderRadius = cylinderRadiusPanel.getNumber();
+		noOfDirectionPairsTraced = noOfDirectionPairsTracedPanel.getNumber();
+		noOfRaysPerBundleTraced = noOfRaysPerBundleTracedPanel.getNumber();
+		rayRadius = rayRadiusPanel.getNumber();
 
 
 		surfaceParameters.acceptGUIEntries(noOfSurfacesPanel, polynomialOrderPanel, surfaceParametersTabbedPane);
@@ -767,7 +893,7 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		else if(e.getSource().equals(updateMeanAlignmentButton))
 		{
 			acceptValuesInInteractiveControlPanel();
-			meanAlignmentPanel.setNumber(surfaceParametersOptimisation.calculateMeanAlignment(surfaceParameters));
+			setMeanAlignment(surfaceParametersOptimisation.calculateMeanAlignment(surfaceParameters));
 		}
 		else if(e.getSource().equals(randomiseRayStartPointsButton))
 		{
@@ -842,6 +968,12 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 	{
 		super.setStatus(status);
 		System.out.println("[ "+status+" ]");
+	}
+	
+	public void setMeanAlignment(double meanAlignment)
+	{
+		meanAlignmentPanel.setNumber(meanAlignment);
+		logMeanAlignmentPanel.setNumber(-Math.log10(1.-meanAlignment));
 	}
 	
 	/**
