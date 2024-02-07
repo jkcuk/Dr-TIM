@@ -29,6 +29,8 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	 */
 	private double rotationAngleRad;
 	
+	private double magnificationFactor;
+	
 	/**
 	 * angle by which each pixel rotates transmitted light rays, in radians
 	 */
@@ -38,7 +40,7 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	//  constructors
 	
 	public DerivativeControlSurfaceRotatingPhaseHologramApproximation(One2OneParametrisedObject parametrisedObject, Vector3D eyePosition, Vector3D pointOnPlane,
-			Vector3D normalisedPlaneNormal, double rotationAngleRad, double pixelRotationAngleRad, boolean pixellated, double pixelPeriodU, double pixelPeriodV,
+			Vector3D normalisedPlaneNormal, double rotationAngleRad, double magnificationFactor, double pixelRotationAngleRad, boolean pixellated, double pixelPeriodU, double pixelPeriodV,
 			double transmissionCoefficient, boolean shadowThrowing) 
 	{
 		super(parametrisedObject, pixellated, pixelPeriodU, pixelPeriodV, transmissionCoefficient, shadowThrowing);
@@ -46,6 +48,7 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 		this.pointOnPlane = pointOnPlane;
 		this.normalisedPlaneNormal = normalisedPlaneNormal;
 		this.rotationAngleRad = rotationAngleRad;
+		this.magnificationFactor = magnificationFactor;
 		this.pixelRotationAngleRad = pixelRotationAngleRad;
 	}
 
@@ -110,6 +113,20 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	}
 
 	/**
+	 * @return the magnificationFactor
+	 */
+	public double getMagnificationFactor() {
+		return magnificationFactor;
+	}
+
+	/**
+	 * @param magnificationFactor the magnificationFactor to set
+	 */
+	public void setMagnificationFactor(double magnificationFactor) {
+		this.magnificationFactor = magnificationFactor;
+	}
+
+	/**
 	 * @return the pixelRotationAngleRad
 	 */
 	public double getPixelRotationAngleRad() {
@@ -158,8 +175,18 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 					normalisedPlaneNormal,	//  normalised  rotation -axis direction
 					rotationAngleRad
 				);
+			Vector3D rotationCentre = Geometry.linePlaneIntersection(
+					eyePosition,	// pointOnLine, 
+					normalisedPlaneNormal,	// directionOfLine, rotation axis
+					pointOnPlane, 
+					normalisedPlaneNormal	// normalToPlane
+				);
+			Vector3D magnifiedRotatedPosition = Vector3D.sum(
+					rotationCentre, 
+					Vector3D.difference(rotatedPosition, rotationCentre).getProductWith(1/magnificationFactor)
+				);
 			// do0,  but not  necessarily outwards
-			Vector3D do0 =  Vector3D.difference(rotatedPosition, pointOnSurface);
+			Vector3D do0 =  Vector3D.difference(magnifiedRotatedPosition, pointOnSurface);
 			
 			//  just in  case the new direction is inwards, make sure it's actually outwards
 			return  do0.getProductWith(Orientation.getOrientation(do0, parametrisedObject.getNormalisedOutwardsSurfaceNormal(pointOnSurface)).getScalarProductSign());

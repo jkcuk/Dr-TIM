@@ -33,7 +33,7 @@ import optics.raytrace.surfaces.SurfaceColour;
 public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 {
 	private double zRotatedPlane, zRotatingSurface;
-	private double rotationAngleRad, pixelRotationAngleRad;
+	private double rotationAngleRad, pixelRotationAngleRad, magnificationFactor;
 	private boolean pixellated;
 	private double pixelPeriodU;
 	private double pixelPeriodV;
@@ -55,6 +55,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		zRotatedPlane = 30;
 		zRotatingSurface = 9;
 		rotationAngleRad = MyMath.deg2rad(20);
+		magnificationFactor = 1;
 		pixelRotationAngleRad = MyMath.deg2rad(0);
 		pixellated = true;
 		pixelPeriodU=.1;
@@ -90,6 +91,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		printStream.println("zRotatedPlane="+zRotatedPlane);
 		printStream.println("zRotatingSurface="+zRotatingSurface);
 		printStream.println("rotationAngleRad = "+rotationAngleRad);
+		printStream.println("magnificationFactor="+magnificationFactor);
 		printStream.println("pixelRotationAngleRad = "+pixelRotationAngleRad);
 		printStream.println("pixellated = "+pixellated);
 		printStream.println("pixelPeriodU = "+pixelPeriodU);
@@ -140,6 +142,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 				new Vector3D(0, 0, zRotatedPlane),	// pointOnPlane,
 				new Vector3D(0, 0, 1),	// normalisedPlaneNormal, 
 				rotationAngleRad,	// rotationAngleRad
+				magnificationFactor,	// magnificationFactor
 				pixelRotationAngleRad,	// pixelRotationAngleRad
 				pixellated,
 				pixelPeriodU,
@@ -160,7 +163,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 	
 //	private LabelledVector3DPanel centrePanel, frontDirectionPanel, topDirectionPanel;
 	private LabelledDoublePanel zRotatedPlanePanel, zRotatingSurfacePanel;
-	private LabelledDoublePanel rotationAngleDegPanel, pixelRotationAngleDegPanel;
+	private LabelledDoublePanel rotationAngleDegPanel, pixelRotationAngleDegPanel, magnificationFactorPanel;
 //	private LabelledDoubleColourPanel headColourPanel, noseColourPanel, innerEarColourPanel, rightEyeColourPanel, leftEyeColourPanel, whiskerColourPanel;
 //	
 	private JCheckBox pixellatedCheckBox;
@@ -218,6 +221,10 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		rotationAngleDegPanel = new LabelledDoublePanel("rotation angle (degrees)");
 		rotationAngleDegPanel.setNumber(MyMath.rad2deg(rotationAngleRad));
 		catPanel.add(rotationAngleDegPanel, "span");
+		
+		magnificationFactorPanel = new LabelledDoublePanel("Magnification factor");
+		magnificationFactorPanel.setNumber(magnificationFactor);
+		catPanel.add(magnificationFactorPanel, "span");
 		
 		JPanel pixellationPanel = new JPanel();
 		pixellationPanel.setLayout(new MigLayout("insets 0"));
@@ -313,6 +320,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 //		frontDirection = frontDirectionPanel.getVector3D();
 //		topDirection = topDirectionPanel.getVector3D();
 		rotationAngleRad = MyMath.deg2rad(rotationAngleDegPanel.getNumber());
+		magnificationFactor = magnificationFactorPanel.getNumber();
 //		headColour =headColourPanel.getDoubleColour();
 //		noseColour = noseColourPanel.getDoubleColour();
 //		innerEarColour = innerEarColourPanel.getDoubleColour();
