@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.text.DecimalFormat;
 
 import javax.swing.JButton;
@@ -65,8 +66,10 @@ import optics.raytrace.GUI.nonInteractive.PhotoFrame;
  * @author Johannes Courtial
  */
 public abstract class NonInteractiveTIMEngine
-implements RenderPanel, StatusIndicator, ActionListener, Runnable
+implements RenderPanel, StatusIndicator, ActionListener, Runnable, Serializable
 {
+	private static final long serialVersionUID = -2555250561725346722L;
+
 	// parameters
 		
 	/**
@@ -200,12 +203,12 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	/**
 	 * the studio
 	 */
-	protected Studio studio;
+	protected transient Studio studio;
 	
 	/**
 	 * the frame currently being calculated
 	 */
-	protected int frame;
+	protected transient int frame;
 	
 	
 	
@@ -677,13 +680,13 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	/**
 	 * the window's content pane, where the frames are being displayed
 	 */
-	protected Container container;
+	protected transient Container container;
 	
 	/**
 	 * the area in which the image is being displayed
 	 */
 //	protected PhotoCanvas photoCanvas;
-	protected RaytracingImageCanvas raytracingImageCanvas;
+	protected transient RaytracingImageCanvas raytracingImageCanvas;
 	
     /**
 	 * when the user clicks on the image, a ray is traced backwards from the camera in the direction of the click position;
@@ -700,25 +703,25 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	/**
 	 * the control panel (interactive only)
 	 */
-	protected JPanel interactiveControlPanel;
+	protected transient JPanel interactiveControlPanel;
 	
 	/**
 	 * a text field at the bottom that displays status information
 	 * (additional status information will be displayed on the console)
 	 */
-	protected JLabel statusField;
+	protected transient JLabel statusField;
 	
-	private String status, temporaryStatus;
+	private transient String status, temporaryStatus;
 	
 	/**
 	 * a combo box to select the renderQuality (interactive only)
 	 */
-	protected JComboBox<RenderQualityEnum> renderQualityComboBox;
+	protected transient JComboBox<RenderQualityEnum> renderQualityComboBox;
 
 	/**
 	 * a button for rendering (or to stop rendering, while rendering) (interactive only)
 	 */
-	protected JButton renderButton;
+	protected transient JButton renderButton;
 	
 	// possible texts displayed by the renderButton
 	protected final String RENDER_BUTTON_RENDER_TEXT = "Render";
@@ -727,7 +730,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	/**
 	 * a button for saving (interactive only)
 	 */
-	protected JButton saveButton;
+	protected transient JButton saveButton;
 
 	
 	
@@ -849,7 +852,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 		}
 	}
 
-	protected RaytraceWorker raytraceWorker;
+	protected transient RaytraceWorker raytraceWorker;
 
 	/* (non-Javadoc)
 	 * @see optics.raytrace.GUI.lowLevel.RenderPanel#render()
@@ -1137,7 +1140,7 @@ implements RenderPanel, StatusIndicator, ActionListener, Runnable
 	
 
 	//Create a file chooser
-	private JFileChooser fileChooser;
+	private transient JFileChooser fileChooser;
 	
 	@Override
 	public void actionPerformed(ActionEvent e)

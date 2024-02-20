@@ -51,6 +51,8 @@ import optics.raytrace.surfaces.SurfaceColour;
  */
 public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 {
+	private static final long serialVersionUID = -7462178738380137642L;
+	
 	// DirectionChangingSurfaceSequence dcss;
 	SurfaceParameters surfaceParameters;
 	double transmissionCoefficient;
@@ -139,7 +141,7 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		
 		// main camera
 		cameraViewCentre = new Vector3D(0, 0, 0);
-		cameraDistance = 10;
+		cameraDistance = 1;
 		cameraViewDirection = new Vector3D(0, 0, 1);
 		cameraHorizontalFOVDeg = 40;
 		cameraApertureSize = ApertureSizeType.MEDIUM;
@@ -369,8 +371,9 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 	//
 
 	
-	private JButton updateSurfaceParameterFieldsButton, randomiseSurfaceParametersButton, saveSurfaceParametersButton, loadSurfaceParametersButton;
+	private JButton updateSurfaceParameterFieldsButton, randomiseSurfaceParametersButton, saveSurfaceParametersButton, loadSurfaceParametersButton, initSurfacesToDoubleTelescopeButton;
 	private IntPanel polynomialOrderPanel, noOfSurfacesPanel;
+	private DoublePanel telescopicInitialisationRotationAngleDegPanel;
 	private LabelledDoublePanel transmissionCoefficientPanel;	// zPanel[];
 	// private DoublePanel aPanel[][][];
 	JTabbedPane surfaceParametersTabbedPane;
@@ -473,10 +476,18 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 		
 		surfacesPanel.add(GUIBitsAndBobs.makeRow(randomiseSurfaceParametersButton, loadSurfaceParametersButton, saveSurfaceParametersButton), "span");
 		
+		telescopicInitialisationRotationAngleDegPanel = new DoublePanel();
+		telescopicInitialisationRotationAngleDegPanel.setNumber(0);
+		
+		initSurfacesToDoubleTelescopeButton = new JButton("Initialise");
+		initSurfacesToDoubleTelescopeButton.addActionListener(this);
+		
+		surfacesPanel.add(GUIBitsAndBobs.makeRow(initSurfacesToDoubleTelescopeButton, "to double telescope that rotates by", telescopicInitialisationRotationAngleDegPanel, "°"), "wrap");
+		
 		transmissionCoefficientPanel = new LabelledDoublePanel("Transmission coefficient");
 		transmissionCoefficientPanel.setNumber(transmissionCoefficient);
 		surfacesPanel.add(transmissionCoefficientPanel, "span");
-
+		
 		// the background panel
 		
 		JPanel backgroundPanel = new JPanel();
@@ -960,6 +971,42 @@ public class PolynomialPhaseHologramExplorer extends NonInteractiveTIMEngine
 			cameraType = (CameraType)(cameraTypeComboBox.getSelectedItem());
 			
 			updateCameraParametersPanel();
+		}
+		else if(e.getSource().equals(initSurfacesToDoubleTelescopeButton))
+		{
+			// initialise the surfaces to 3 2nd-order surfaces
+			surfaceParameters.noOfSurfaces = 3;
+			noOfSurfacesPanel.setNumber(surfaceParameters.noOfSurfaces);
+			surfaceParameters.polynomialOrder = 2;
+			polynomialOrderPanel.setNumber(surfaceParameters.polynomialOrder);
+			surfaceParameters.initialiseSurfaceParametersArrays();	// initialise all coefficients to zero
+			
+			// first surface: a cylindrical lens aligned with the x direction
+			surfaceParameters.a[0][2][0] = -1;
+			
+			// third surface: a cylindrical lens whose axis is rotated by alpha/2 w.r.t. the x axis
+
+			// the rotation angle
+			double alpha2 = 0.5*MyMath.deg2rad(telescopicInitialisationRotationAngleDegPanel.getNumber());
+			double c = Math.cos(alpha2);
+			double s = Math.sin(alpha2);
+			
+			// the vector (x, y), rotated through an angle alpha, becomes (x cos alpha - y sin alpha, y cos alpha + x sin alpha);
+			// (x cos alpha - y sin alpha)^2 = x^2 cos^2 alpha  - 2 x y cos alpha sin alpha + y^2 sin^2 alpha
+			double x2coeff = -c*c;
+			double xycoeff = 2*c*s;
+			double y2coeff = -s*s;
+			
+			surfaceParameters.a[2][2][0] = x2coeff;
+			surfaceParameters.a[2][2][1] = xycoeff;
+			surfaceParameters.a[2][2][2] = y2coeff;
+			
+			// second surface: sum of the first and second surfaces
+			surfaceParameters.a[1][2][0] = x2coeff-1;
+			surfaceParameters.a[1][2][1] = xycoeff;
+			surfaceParameters.a[1][2][2] = y2coeff;
+
+			surfaceParameters.repopulateSurfaceParametersTabbedPane(surfaceParametersTabbedPane);
 		}
 	}
 

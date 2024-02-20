@@ -32,8 +32,10 @@ import optics.raytrace.surfaces.SurfaceColour;
 
 public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 {
-	private double zRotatedPlane, zRotatingSurface;
-	private double rotationAngleRad, pixelRotationAngleRad, magnificationFactor;
+	private static final long serialVersionUID = -1975392644392617141L;
+	
+	private double zEye, zRotatedPlane, zRotatingSurface;
+	private double rotationAngleRad, pixelRotationAngleRad, magnificationFactor, pixelMagnificationFactor;
 	private boolean pixellated;
 	private double pixelPeriodU;
 	private double pixelPeriodV;
@@ -42,28 +44,31 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 	{
 		super();
 		
-		//camera params
-		renderQuality = RenderQualityEnum.DRAFT;
-		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
-//		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.MOVIE;
-		cameraViewDirection = new Vector3D(0,0,1);
-		cameraHorizontalFOVDeg = 10;
-		cameraTopDirection = new Vector3D(0,1,0); 
-		cameraDistance = 0;
-		traceRaysWithTrajectory = false;
-		
+		zEye = -10;
 		zRotatedPlane = 30;
-		zRotatingSurface = 9;
+		zRotatingSurface = 0;
 		rotationAngleRad = MyMath.deg2rad(20);
 		magnificationFactor = 1;
 		pixelRotationAngleRad = MyMath.deg2rad(0);
+		pixelMagnificationFactor = 1;
 		pixellated = true;
 		pixelPeriodU=.1;
 		pixelPeriodV=.1;
 		
-		windowWidth *= 2;
-
-		// camera parameters are set in createStudio()
+		//camera params
+		renderQuality = RenderQualityEnum.DRAFT;
+		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
+//		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.MOVIE;
+		cameraViewCentre = new Vector3D(0, 0, zRotatingSurface);
+		cameraViewDirection = new Vector3D(0,0,1);
+		cameraHorizontalFOVDeg = 10;
+		cameraTopDirection = new Vector3D(0,1,0); 
+		cameraDistance = zRotatingSurface - zEye;
+		traceRaysWithTrajectory = false;
+		
+		windowTitle = "Dr TIM's derivative-control-surface explorer";
+		windowWidth = 1700;
+		windowHeight = 650;
 	}
 
 	
@@ -88,11 +93,13 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		// write any parameters not defined in NonInteractiveTIMEngine, each parameter is saved like this:
 		// printStream.println("parameterName = "+parameterName);
 
+		printStream.println("zEye="+zEye);
 		printStream.println("zRotatedPlane="+zRotatedPlane);
 		printStream.println("zRotatingSurface="+zRotatingSurface);
 		printStream.println("rotationAngleRad = "+rotationAngleRad);
 		printStream.println("magnificationFactor="+magnificationFactor);
 		printStream.println("pixelRotationAngleRad = "+pixelRotationAngleRad);
+		printStream.println("pixelMagnificationFactor="+pixelMagnificationFactor);
 		printStream.println("pixellated = "+pixellated);
 		printStream.println("pixelPeriodU = "+pixelPeriodU);
 		printStream.println("pixelPeriodV = "+pixelPeriodV);
@@ -138,12 +145,13 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 						null,	// parent
 						null	// studio
 					),
-				new Vector3D(0, 0, 0),	// eyePosition
+				new Vector3D(0, 0, zEye),	// eyePosition
 				new Vector3D(0, 0, zRotatedPlane),	// pointOnPlane,
 				new Vector3D(0, 0, 1),	// normalisedPlaneNormal, 
 				rotationAngleRad,	// rotationAngleRad
 				magnificationFactor,	// magnificationFactor
 				pixelRotationAngleRad,	// pixelRotationAngleRad
+				pixelMagnificationFactor, // /pixelMagnificationFactor
 				pixellated,
 				pixelPeriodU,
 				pixelPeriodV,
@@ -161,23 +169,23 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 	// for interactive version
 	//
 	
-//	private LabelledVector3DPanel centrePanel, frontDirectionPanel, topDirectionPanel;
-	private LabelledDoublePanel zRotatedPlanePanel, zRotatingSurfacePanel;
-	private LabelledDoublePanel rotationAngleDegPanel, pixelRotationAngleDegPanel, magnificationFactorPanel;
-//	private LabelledDoubleColourPanel headColourPanel, noseColourPanel, innerEarColourPanel, rightEyeColourPanel, leftEyeColourPanel, whiskerColourPanel;
+//	private transient LabelledVector3DPanel centrePanel, frontDirectionPanel, topDirectionPanel;
+	private transient LabelledDoublePanel zEyePanel, zRotatedPlanePanel, zRotatingSurfacePanel;
+	private transient LabelledDoublePanel rotationAngleDegPanel, pixelRotationAngleDegPanel, magnificationFactorPanel, pixelMagnificationFactorPanel;
+//	private transient LabelledDoubleColourPanel headColourPanel, noseColourPanel, innerEarColourPanel, rightEyeColourPanel, leftEyeColourPanel, whiskerColourPanel;
 //	
-	private JCheckBox pixellatedCheckBox;
+	private transient JCheckBox pixellatedCheckBox;
 	
-	private LabelledVector2DPanel pixelPeriodPanel;
+	private transient LabelledVector2DPanel pixelPeriodPanel;
 	
 	// camera
-	private LabelledVector3DPanel cameraViewCentrePanel;
+	private transient LabelledVector3DPanel cameraViewCentrePanel;
 	// private JButton setCameraViewCentreToCloakCentroidButton;
-	private LabelledVector3DPanel cameraViewDirectionPanel;
-	private LabelledDoublePanel cameraDistancePanel;
-	private DoublePanel cameraHorizontalFOVDegPanel;
-	private JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
-	private LabelledDoublePanel cameraFocussingDistancePanel;
+	private transient LabelledVector3DPanel cameraViewDirectionPanel;
+	private transient LabelledDoublePanel cameraDistancePanel;
+	private transient DoublePanel cameraHorizontalFOVDegPanel;
+	private transient JComboBox<ApertureSizeType> cameraApertureSizeComboBox;
+	private transient LabelledDoublePanel cameraFocussingDistancePanel;
 //
 //	JTabbedPane lensTabbedPane;
 //
@@ -210,6 +218,10 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 //		topDirectionPanel.setVector3D(topDirection);
 //		catPanel.add(topDirectionPanel, "span");
 		
+		zEyePanel = new LabelledDoublePanel("z coordinate of eye (design position)");
+		zEyePanel.setNumber(zEye);
+		catPanel.add(zEyePanel, "span");
+		
 		zRotatedPlanePanel = new LabelledDoublePanel("z coordinate of rotated plane");
 		zRotatedPlanePanel.setNumber(zRotatedPlane);
 		catPanel.add(zRotatedPlanePanel, "span");
@@ -239,6 +251,10 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		pixelRotationAngleDegPanel.setNumber(MyMath.rad2deg(pixelRotationAngleRad));
 		pixellationPanel.add(pixelRotationAngleDegPanel, "span");
 
+		pixelMagnificationFactorPanel = new LabelledDoublePanel("Pixel magnification factor");
+		pixelMagnificationFactorPanel.setNumber(pixelMagnificationFactor);
+		pixellationPanel.add(pixelMagnificationFactorPanel, "span");
+		
 		pixelPeriodPanel = new LabelledVector2DPanel("Pixel period in (u, v)");
 		pixelPeriodPanel.setVector2D(pixelPeriodU, pixelPeriodV);
 		pixellationPanel.add(pixelPeriodPanel, "span");
@@ -313,6 +329,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 	{
 		super.acceptValuesInInteractiveControlPanel();
 		
+		zEye = zEyePanel.getNumber();
 		zRotatedPlane = zRotatedPlanePanel.getNumber();
 		zRotatingSurface = zRotatingSurfacePanel.getNumber();
 //		//cat
@@ -329,6 +346,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 //		whiskerColour = whiskerColourPanel.getDoubleColour();
 		pixellated = pixellatedCheckBox.isSelected();
 		pixelRotationAngleRad = MyMath.deg2rad(pixelRotationAngleDegPanel.getNumber());
+		pixelMagnificationFactor = pixelMagnificationFactorPanel.getNumber();
 		pixelPeriodU = pixelPeriodPanel.getVector2D().x;
 		pixelPeriodV = pixelPeriodPanel.getVector2D().y;
 		

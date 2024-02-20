@@ -36,11 +36,14 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	 */
 	private double pixelRotationAngleRad;
 	
+	private double pixelMagnificationFactor;
+
+	
 	
 	//  constructors
 	
 	public DerivativeControlSurfaceRotatingPhaseHologramApproximation(One2OneParametrisedObject parametrisedObject, Vector3D eyePosition, Vector3D pointOnPlane,
-			Vector3D normalisedPlaneNormal, double rotationAngleRad, double magnificationFactor, double pixelRotationAngleRad, boolean pixellated, double pixelPeriodU, double pixelPeriodV,
+			Vector3D normalisedPlaneNormal, double rotationAngleRad, double magnificationFactor, double pixelRotationAngleRad, double pixelMagnificationFactor, boolean pixellated, double pixelPeriodU, double pixelPeriodV,
 			double transmissionCoefficient, boolean shadowThrowing) 
 	{
 		super(parametrisedObject, pixellated, pixelPeriodU, pixelPeriodV, transmissionCoefficient, shadowThrowing);
@@ -50,6 +53,7 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 		this.rotationAngleRad = rotationAngleRad;
 		this.magnificationFactor = magnificationFactor;
 		this.pixelRotationAngleRad = pixelRotationAngleRad;
+		this.pixelMagnificationFactor = pixelMagnificationFactor;
 	}
 
 	
@@ -140,6 +144,22 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 		this.pixelRotationAngleRad = pixelRotationAngleRad;
 	}
 
+	/**
+	 * @return the pixelMagnificationFactor
+	 */
+	public double getPixelMagnificationFactor() {
+		return pixelMagnificationFactor;
+	}
+
+	/**
+	 * @param pixelMagnificationFactor the pixelMagnificationFactor to set
+	 */
+	public void setPixelMagnificationFactor(double pixelMagnificationFactor) {
+		this.pixelMagnificationFactor = pixelMagnificationFactor;
+	}
+
+
+
 
 
 	// override  the relevant methods
@@ -169,6 +189,11 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 					pointOnPlane,
 					normalisedPlaneNormal
 				);
+//			if(apparentPosition == null)
+//			{
+//				System.out.println("null, pointOnSurface="+pointOnSurface+", eyePosition="+eyePosition+", pointOnPlane="+pointOnPlane+", normalisedPlaneNormal="+normalisedPlaneNormal);
+//				// System.exit(-1);
+//			}
 			Vector3D rotatedPosition  = Geometry.rotatePositionVector(
 					apparentPosition,	//  position
 					eyePosition,	// point on  rotation axis
@@ -200,8 +225,8 @@ public class DerivativeControlSurfaceRotatingPhaseHologramApproximation extends 
 	@Override
 	public Matrix getJacobianOutwards(Vector3D pointOnSurface) {
 		double[][] components = {
-				{Math.cos(-pixelRotationAngleRad), Math.sin(-pixelRotationAngleRad)},	//  {0, 1},
-				{-Math.sin(-pixelRotationAngleRad), Math.cos(-pixelRotationAngleRad)}	// {-1, 0}
+				{Math.cos(-pixelRotationAngleRad)/pixelMagnificationFactor, Math.sin(-pixelRotationAngleRad)/pixelMagnificationFactor},	//  {0, 1},
+				{-Math.sin(-pixelRotationAngleRad)/pixelMagnificationFactor, Math.cos(-pixelRotationAngleRad)/pixelMagnificationFactor}	// {-1, 0}
 			};
 		return new Matrix(components);
 

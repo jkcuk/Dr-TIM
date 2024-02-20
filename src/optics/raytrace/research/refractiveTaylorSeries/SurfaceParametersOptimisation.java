@@ -189,7 +189,7 @@ public class SurfaceParametersOptimisation {
 							"Optimising ("+
 									String.format("%.0f", Math.floor(100*(double)(sas.iteration)/(double)sas.maxIterations))+
 									"%, iteration "+sas.iteration+" out of "+sas.maxIterations+", T="+
-									String.format("%.2e", sas.T)+
+									String.format("%.2e", sas.T)+", mean alignment="+sas.s.meanAlignment+
 									")"
 							);
 			} catch (Exception ignore) {
