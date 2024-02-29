@@ -34,8 +34,9 @@ import optics.raytrace.surfaces.PhaseHologramWithPolynomialPhase;
  */
 public class SurfaceParameters implements Serializable
 {
-	private static final long serialVersionUID = -721015905799056149L;
 	
+	private static final long serialVersionUID = 4091100358326999728L;
+
 	/**
 	 * number of surfaces
 	 */
@@ -69,14 +70,40 @@ public class SurfaceParameters implements Serializable
 	 * if aOptimizable[i][j][k] is true, a[i][j][k] is optimizable by the algorithm
 	 */
 	protected boolean aOptimizable[][][];
+	
+	/**
+	 *  each phase hologram will be in the plane spanned by xHat, yHat. Subsequent holograms will be spaced along zhat by dz, starting at the oVector. 
+	 */
+	
+	protected Vector3D xHat, yHat, zHat, oVector; 
 
 	// constructors
+	
+	public SurfaceParameters(int noOfSurfaces, int polynomialOrder, double[] dz, double[][][] a, 
+			Vector3D xHat, Vector3D yHat,Vector3D zHat, Vector3D oVector,
+			boolean[] dzEditable, boolean[][][] aEditable) {
+		super();
+		this.noOfSurfaces = noOfSurfaces;
+		this.polynomialOrder = polynomialOrder;
+		this.xHat = xHat;
+		this.yHat = yHat;
+		this.zHat = zHat;
+		this.oVector = oVector;
+		this.dz = dz;
+		this.a = a;
+		this.dzOptimizable = dzEditable;
+		this.aOptimizable = aEditable;
+	}
 	
 	public SurfaceParameters(int noOfSurfaces, int polynomialOrder, double[] dz, double[][][] a, boolean[] dzEditable,
 			boolean[][][] aEditable) {
 		super();
 		this.noOfSurfaces = noOfSurfaces;
 		this.polynomialOrder = polynomialOrder;
+		this.xHat = Vector3D.X;
+		this.yHat = Vector3D.Y;
+		this.zHat = Vector3D.Z;
+		this.oVector = Vector3D.O;
 		this.dz = dz;
 		this.a = a;
 		this.dzOptimizable = dzEditable;
@@ -92,6 +119,10 @@ public class SurfaceParameters implements Serializable
 		super();
 		this.noOfSurfaces = noOfSurfaces;
 		this.polynomialOrder = polynomialOrder;
+		this.xHat = Vector3D.X;
+		this.yHat = Vector3D.Y;
+		this.zHat = Vector3D.Z;
+		this.oVector = Vector3D.O;
 		
 		initialiseSurfaceParametersArrays();
 	}
@@ -225,6 +256,10 @@ public class SurfaceParameters implements Serializable
 		
 		printStream.println("numberOfSurfaces="+noOfSurfaces);
 		printStream.println("polynomialOrder="+polynomialOrder);
+		printStream.println("xHat="+xHat);
+		printStream.println("yHat="+yHat);
+		printStream.println("zHat="+zHat);
+		printStream.println("oVector="+oVector);
 
 		double z = 0;
 		for(int i=0; i<noOfSurfaces; i++) {
@@ -483,13 +518,13 @@ public class SurfaceParameters implements Serializable
 		{
 			if(i==0) z=0;
 			else z += dz[i];
-			Vector3D origin  = new Vector3D(0, 0, z);
+			Vector3D origin  = Vector3D.sum(zHat.getWithLength(z), oVector);
 						
 			PhaseHologramWithPolynomialPhase ppp = new PhaseHologramWithPolynomialPhase(
 					a[i],	// a,
 					origin,
-					Vector3D.X,	// xHat,
-					Vector3D.Y,	// yHat,
+					xHat,	// xHat,
+					yHat,	// yHat,
 					transmissionCoefficient,	// throughputCoefficient,
 					false,	// reflective,
 					false	// shadowThrowing
@@ -497,12 +532,13 @@ public class SurfaceParameters implements Serializable
 			Plane p = new Plane(
 					"Plane #"+i,	// description,
 					origin,	// pointOnPlane,
-					new Vector3D(0, 0, 1),	// normal, 
+					Vector3D.crossProduct(xHat, yHat).getNormalised(),	// normal, 
 					ppp,	// surfaceProperty,
+//					SurfaceColour.RED_MATT,
 					null,	// parent,
 					null	// studio
 				);
-
+			
 			dcss.addSceneObjectPrimitiveWithDirectionChangingSurface(p);
 		}
 

@@ -214,7 +214,8 @@ implements Editable
 			}
 		
 		// ...  and return them, assembled into the tangential-direction-change vector
-		return new Vector3D(tx, ty, 0);
+		//Used to simply be new Vector3D(tx,ty,0) which did not allow for any other basis system.
+		return Vector3D.sum(xHat.getWithLength(tx), yHat.getWithLength(ty));
 	}
 
 	@Override

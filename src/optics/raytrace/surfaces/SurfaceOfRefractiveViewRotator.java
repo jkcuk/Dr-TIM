@@ -454,7 +454,7 @@ public class SurfaceOfRefractiveViewRotator extends SurfaceOfPixelArray
 	{
 		SetOfSurfaces voxellations[] = new SetOfSurfaces[2];
 		
-		Vector3D pointOnPlane0 = Vector3D.sum(ocularPlaneCentre, periodVector1.getProductWith(0.5), periodVector1.getProductWith(0.5));
+		Vector3D pointOnPlane0 = Vector3D.sum(ocularPlaneCentre, periodVector1.getProductWith(0.5), periodVector2.getProductWith(0.5));
 		Vector3D pointOnplane1 = Vector3D.sum(pointOnPlane0, periodVector1, periodVector2);
 		//point where all planes meet to give the optimum voxel shape. 
 		Vector3D dCentreToEye = Vector3D.difference(eyePosition, ocularPlaneCentre);

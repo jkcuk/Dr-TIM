@@ -100,7 +100,7 @@ public class PhaseHologramOfSimplePrism extends PhaseHologram
 			Vector3D surfacePosition, Vector3D surfaceNormal)
 	{
 		// same change in the tangential component as in transmission
-		System.err.println("why u refelctt");
+		//System.err.println("why u reflect??");
 		return getTangentialDirectionComponentChangeTransmissive(surfacePosition, surfaceNormal);
 	}
 

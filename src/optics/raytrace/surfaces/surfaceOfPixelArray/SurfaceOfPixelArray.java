@@ -278,7 +278,7 @@ public abstract class SurfaceOfPixelArray extends SurfaceProperty
 							voxellations[v].getBoundaryBetweenVoxels(
 									voxelIndices[v], 
 									o.getSign(),
-									// SurfaceColour.RED_SHINY
+//									SurfaceColour.RED_SHINY),
 									getSurfaceSeparatingVoxels(
 											voxelIndices,	// voxellationIndicesOnInside[],
 											v,	// voxellationNumber,

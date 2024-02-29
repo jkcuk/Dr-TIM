@@ -51,6 +51,7 @@ import optics.raytrace.core.SurfacePropertyPrimitive;
  */
 public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 {
+	private static final long serialVersionUID = -4854046178671066946L;
 	// units
 	public static double NM = 1e-9;
 	public static double UM = 1e-6;
