@@ -25,6 +25,8 @@ import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.sceneObjects.Plane;
+import optics.raytrace.sceneObjects.SnellenChart;
+import optics.raytrace.sceneObjects.SnellenChart.ChartType;
 import optics.raytrace.sceneObjects.TimHead;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 
@@ -84,7 +86,8 @@ public class DerivativeControlledViewRotationExplorer extends NonInteractiveTIME
 	{
 		NOTHING("Nothing"),
 		TIM("Tim"),
-		LATTICE("Lattice");
+		LATTICE("Lattice"),
+		SNELLEN_CHART("Snellen chart");
 
 		private String description;
 		private Backdrop(String description) {this.description = description;}	
@@ -99,6 +102,10 @@ public class DerivativeControlledViewRotationExplorer extends NonInteractiveTIME
 	private double xMin, xMax, yMin, yMax, zMin, zMax, latticeRadius; 
 	private int nX, nY, nZ;
 	private	Vector3D latticeCentre;
+	//Snellen chart parameters
+	private double snellenHeight;
+	private Vector3D snellenCentre;
+	
 	
 
 	/**
@@ -148,6 +155,10 @@ public class DerivativeControlledViewRotationExplorer extends NonInteractiveTIME
 		nZ = 5;
 		latticeCentre = new Vector3D(0,0,10);
 		
+		//Snellen chart
+		snellenCentre = new Vector3D(0,0,10);
+		snellenHeight = 1;
+		
 		// camera
 		cameraViewCentre = new Vector3D(0, 0, 0);
 		cameraDistance = 1;
@@ -169,7 +180,7 @@ public class DerivativeControlledViewRotationExplorer extends NonInteractiveTIME
 	public String getFilename()
 	{
 		return
-				"DerivativeControlledViewRotationExplorer"
+				"DerivativeControlledViewRotationExplorer" //TODO why no .bmp
 				;
 	}
 
@@ -219,6 +230,10 @@ public class DerivativeControlledViewRotationExplorer extends NonInteractiveTIME
 			printStream.println("nX = "+nX);
 			printStream.println("nY = "+nY);
 			printStream.println("nZ = "+nZ);	
+			break;
+		case SNELLEN_CHART:
+			printStream.println("snellenCentre = "+snellenCentre);
+			printStream.println("snellenHeight = "+snellenHeight);
 			break;
 		case NOTHING:
 		default:
@@ -283,6 +298,19 @@ public class DerivativeControlledViewRotationExplorer extends NonInteractiveTIME
 					true,
 					scene,	// parent 
 					studio));	
+			break;
+		case SNELLEN_CHART:
+			scene.addSceneObject(new SnellenChart(
+					"A snellen chart",// description,
+					snellenCentre,// centre,
+					Vector3D.Y,//new Vector3D(0,1,0),// upDirection,
+					Vector3D.X,//new Vector3D(1,0,0),// rightDirection,
+					snellenHeight,// height,
+					eyePosition,// cameraPosition, TODO this is the eye position, not necessarily equal to the camera position!
+					ChartType.SET,
+					scene,// parent,
+					studio //studio
+					));
 			break;
 		case NOTHING:
 		default:
@@ -365,9 +393,9 @@ public class DerivativeControlledViewRotationExplorer extends NonInteractiveTIME
 	private JPanel backdropPanel;
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 	private JComboBox<Backdrop> backdropComboBox;
-	private LabelledDoublePanel xMinPanel, xMaxPanel, yMinPanel, yMaxPanel, zMinPanel, zMaxPanel, latticeRadiusPanel ,timRadiusPanel;
+	private LabelledDoublePanel xMinPanel, xMaxPanel, yMinPanel, yMaxPanel, zMinPanel, zMaxPanel, latticeRadiusPanel ,timRadiusPanel, snellenHeightPanel;
 	private LabelledIntPanel nXPanel, nYPanel, nZPanel;
-	private LabelledVector3DPanel latticeCentrePanel, timCentrePanel;
+	private LabelledVector3DPanel latticeCentrePanel, timCentrePanel, snellenCentrePanel;
 	
 	
 	// main camera
@@ -570,6 +598,9 @@ public class DerivativeControlledViewRotationExplorer extends NonInteractiveTIME
 			zMax = zMaxPanel.getNumber();
 			latticeRadius = latticeRadiusPanel.getNumber();	
 			break;
+		case SNELLEN_CHART:
+			snellenCentre = snellenCentrePanel.getVector3D();
+			snellenHeight = snellenHeightPanel.getNumber();
 		case NOTHING:
 		default:
 			break;
@@ -661,6 +692,16 @@ public class DerivativeControlledViewRotationExplorer extends NonInteractiveTIME
 			nZPanel = new LabelledIntPanel(", no of cylinders");
 			nZPanel.setNumber(nZ);
 			backdropPanel.add(nZPanel, "wrap");		
+			break;
+		case SNELLEN_CHART:
+			
+			snellenCentrePanel= new LabelledVector3DPanel("snellen centre");
+			snellenCentrePanel.setVector3D(snellenCentre);
+			backdropPanel.add(snellenCentrePanel, "span");
+			
+			snellenHeightPanel = new LabelledDoublePanel("snellen chart height");
+			snellenHeightPanel.setNumber(snellenHeight);
+			backdropPanel.add(snellenHeightPanel, "span");
 			break;
 		case NOTHING:
 		default:			

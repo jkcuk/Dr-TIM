@@ -298,7 +298,7 @@ public class DerivativeControlledViewRotator extends Parallelepiped2
 		double centralThickness = (addWedgeHologram) ? sumOfdz+MyMath.TINY : sumOfdz;
 		
 		Vector3D centre = Vector3D.sum(ocularPlaneCentre, componentNormal.getWithLength(centralThickness/2));	// centre
-		Vector3D depth = componentNormal.getWithLength(centralThickness+Math.sqrt(periodVector1.getModSquared()+periodVector2.getModSquared()+1));	// adding the diagonal pixel period
+		Vector3D depth = componentNormal.getWithLength(centralThickness+Math.sqrt(periodVector1.getModSquared()+periodVector2.getModSquared()+MyMath.TINY));	// adding the diagonal pixel period
 		//
 		
 		
