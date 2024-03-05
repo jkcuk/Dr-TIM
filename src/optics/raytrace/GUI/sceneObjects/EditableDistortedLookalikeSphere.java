@@ -33,7 +33,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 	private LabelledStringPanel descriptionPanel;
 	private LabelledVector3DPanel cameraPositionPanel;
 	private LabelledVector3DPanel betaPanel;
-	private LabelledDoublePanel ellipsoidPrincipalRadiusInBetaDirectionPanel;
+	private LabelledDoublePanel lookalikeSphereRadiusPanel;
 	private LabelledDoublePanel transmissionCoefficientPanel;
 	private JComboBox<SpaceTimeTransformationType> spaceTimeTransformationComboBox;
 
@@ -43,7 +43,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 	 * @param cameraPosition
 	 * @param beta
 	 * @param spaceTimeTransformation
-	 * @param ellipsoidPrincipalRadiusInBetaDirection
+	 * @param lookalikeSphereRadius
 	 * @param transmissionCoefficient
 	 * @param parent
 	 * @param studio
@@ -53,13 +53,13 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 			Vector3D cameraPosition, 
 			Vector3D beta, 
 			SpaceTimeTransformationType spaceTimeTransformation, 
-			double ellipsoidPrincipalRadiusInBetaDirection,
+			double lookalikeSphereRadius,
 			double transmissionCoefficient,
 			SceneObject parent,
 			Studio studio
 		)
 	{
-		super(description, cameraPosition, beta, spaceTimeTransformation, ellipsoidPrincipalRadiusInBetaDirection, transmissionCoefficient, parent, studio);
+		super(description, cameraPosition, beta, spaceTimeTransformation, lookalikeSphereRadius, transmissionCoefficient, parent, studio);
 	}
 	
 	/**
@@ -77,7 +77,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 				Vector3D.O,	// cameraPosition, 
 				Vector3D.O,	// beta, 
 				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,	// transformType, 
-				1,	// ellipsoidPrincipalRadiusInBetaDirection,
+				1,	// lookalikeSphereRadius,
 				1,	// transmissionCoefficient
 				parent, studio
 			);
@@ -94,7 +94,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 				original.getCameraPosition(),
 				original.getBeta(),
 				original.getTransformType(),
-				original.getEllipsoidPrincipalRadiusInBetaDirection(),
+				original.getLookalikeSphereRadius(),
 				original.getTransmissionCoefficient(),
 				original.getParent(),
 				original.getStudio()
@@ -127,7 +127,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 //		Vector3D cameraPosition, 
 //		Vector3D beta, 
 //		SpaceTimeTransformationType transformType, 
-//		double ellipsoidPrincipalRadiusInBetaDirection,
+//		double lookalikeSphereRadius,
 
 		// add a bit of (non-stretchable) space
 		// editPanel.add(Box.createRigidArea(new Dimension(10,5)));
@@ -144,8 +144,8 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 		// add a bit of (non-stretchable) space
 		// editPanel.add(Box.createRigidArea(new Dimension(10,5)));
 
-		ellipsoidPrincipalRadiusInBetaDirectionPanel = new LabelledDoublePanel("Radius in beta direction");
-		editPanel.add(ellipsoidPrincipalRadiusInBetaDirectionPanel, "wrap");
+		lookalikeSphereRadiusPanel = new LabelledDoublePanel("Radius in beta direction");
+		editPanel.add(lookalikeSphereRadiusPanel, "wrap");
 
 		transmissionCoefficientPanel = new LabelledDoublePanel("Brightness factor");
 		editPanel.add(transmissionCoefficientPanel, "wrap");
@@ -179,7 +179,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 		cameraPositionPanel.setVector3D(getCameraPosition());
 		betaPanel.setVector3D(getBeta()); 
 		spaceTimeTransformationComboBox.setSelectedItem(getTransformType());
-		ellipsoidPrincipalRadiusInBetaDirectionPanel.setNumber(getEllipsoidPrincipalRadiusInBetaDirection());
+		lookalikeSphereRadiusPanel.setNumber(getLookalikeSphereRadius());
 		transmissionCoefficientPanel.setNumber(getTransmissionCoefficient());
 	}
 
@@ -193,7 +193,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 		setCameraPosition(cameraPositionPanel.getVector3D());
 		setBeta(betaPanel.getVector3D());
 		setTransformType((SpaceTimeTransformationType)spaceTimeTransformationComboBox.getSelectedItem());
-		setEllipsoidPrincipalRadiusInBetaDirection(ellipsoidPrincipalRadiusInBetaDirectionPanel.getNumber());
+		setLookalikeSphereRadius(lookalikeSphereRadiusPanel.getNumber());
 
 		calculateEllipsoidParameters();
 
@@ -211,7 +211,7 @@ public class EditableDistortedLookalikeSphere extends DistortedLookalikeSphere i
 				t.transformPosition(getCameraPosition()),	// cameraPosition, 
 				t.transformDirection(getBeta()),	// beta, 
 				getTransformType(),	// spaceTimeTransformation, 
-				getEllipsoidPrincipalRadiusInBetaDirection(),
+				getLookalikeSphereRadius(),
 				getTransmissionCoefficient(),
 				getParent(), 
 				getStudio()
