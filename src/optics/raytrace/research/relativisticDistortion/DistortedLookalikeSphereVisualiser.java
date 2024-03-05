@@ -44,10 +44,10 @@ public class DistortedLookalikeSphereVisualiser extends NonInteractiveTIMEngine
 	
 	public enum MovieType
 	{
-		STILL_IMAGE("Still image"),
-		MOVIE_Y_ROTATION("Rotation of camera view direction around vertical"),
-		MOVIE_CAMERA_DISTANCE("Vary camera distance from +(given value) to -(given value)"),
-		MOVIE_VARY_BETA("Vary beta from (0,0,0) to the given vector");
+		STILL_IMAGE("Single image"),
+		MOVIE_Y_ROTATION("Movie frames -- Rotate camera view direction around vertical"),
+		MOVIE_CAMERA_DISTANCE("Movie frames -- Vary camera distance from +(given value) to -(given value)"),
+		MOVIE_VARY_BETA("Movie frames -- Vary beta from (0,0,0) to the given vector");
 		
 		private String description;
 		private MovieType(String description)
@@ -405,7 +405,7 @@ public class DistortedLookalikeSphereVisualiser extends NonInteractiveTIMEngine
 		
 		cameraSpaceTimeTransformationTypeComboBox = new JComboBox<SpaceTimeTransformationType>(SpaceTimeTransformationType.values());
 		cameraSpaceTimeTransformationTypeComboBox.setSelectedItem(cameraSpaceTimeTransformationType);
-		interactiveControlPanel.add(cameraSpaceTimeTransformationTypeComboBox, "span");
+		interactiveControlPanel.add(GUIBitsAndBobs.makeRow("Space-time transformation", cameraSpaceTimeTransformationTypeComboBox), "span");
 
 		betaPanel = new LabelledVector3DPanel("Beta");
 		betaPanel.setVector3D(beta0);
@@ -432,11 +432,11 @@ public class DistortedLookalikeSphereVisualiser extends NonInteractiveTIMEngine
 		xyzCoordinateSystemOriginPanel.setVector3D(xyzCoordinateSystemOrigin);
 		xyzCoordinateSystemPanel.add(xyzCoordinateSystemOriginPanel, "span");
 
-		xyzCoordinateSystemSizePanel = new LabelledDoublePanel("Size");
+		xyzCoordinateSystemSizePanel = new LabelledDoublePanel("Size (arrow length)");
 		xyzCoordinateSystemSizePanel.setNumber(xyzCoordinateSystemSize);
 		xyzCoordinateSystemPanel.add(xyzCoordinateSystemSizePanel, "span");
 
-		simulateAsEllipsoidConstructionCheckBox = new JCheckBox("Simulate using distorted-lookalike-sphere construction?");
+		simulateAsEllipsoidConstructionCheckBox = new JCheckBox("Simulate using distorted-lookalike-sphere construction");
 		simulateAsEllipsoidConstructionCheckBox.setSelected(simulateAsEllipsoidConstruction);
 		interactiveControlPanel.add(simulateAsEllipsoidConstructionCheckBox, "span");
 		
@@ -456,7 +456,7 @@ public class DistortedLookalikeSphereVisualiser extends NonInteractiveTIMEngine
 		initialCameraViewDirectionPanel.setVector3D(cameraViewDirection0);
 		cameraPanel.add(initialCameraViewDirectionPanel, "span");
 		
-		initialCameraDistancePanel = new LabelledDoublePanel("Distance from camera position for which ellipsoid is designed");
+		initialCameraDistancePanel = new LabelledDoublePanel("Distance from centre of undistorted lookalike sphere");
 		initialCameraDistancePanel.setNumber(cameraDistance0);
 		cameraPanel.add(initialCameraDistancePanel, "span");
 		
@@ -465,15 +465,15 @@ public class DistortedLookalikeSphereVisualiser extends NonInteractiveTIMEngine
 		cameraPanel.add(cameraHorizontalFOVDegPanel, "span");
 		
 		JPanel moviePanel = new JPanel();
-		moviePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Movie"));
+		moviePanel.setBorder(GUIBitsAndBobs.getTitledBorder("Simulation output"));
 		moviePanel.setLayout(new MigLayout("insets 0"));
 		interactiveControlPanel.add(moviePanel, "span");
 
 		movieTypeComboBox = new JComboBox<MovieType>(MovieType.values());
 		movieTypeComboBox.setSelectedItem(movieType);
-		moviePanel.add(GUIBitsAndBobs.makeRow("Movie type", movieTypeComboBox), "span");
+		moviePanel.add(GUIBitsAndBobs.makeRow("Output", movieTypeComboBox), "span");
 		
-		numberOfFramesPanel = new LabelledIntPanel("No of frames");
+		numberOfFramesPanel = new LabelledIntPanel("No of frames (if movie)");
 		numberOfFramesPanel.setNumber(numberOfFrames);
 		moviePanel.add(numberOfFramesPanel,  "span");
 		
