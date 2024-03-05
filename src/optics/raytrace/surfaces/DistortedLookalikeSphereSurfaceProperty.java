@@ -118,7 +118,7 @@ public class DistortedLookalikeSphereSurfaceProperty extends SurfacePropertyPrim
 		// ray.getD() is the (backwards) light-ray direction in the camera frame; construct the corresponding light-ray direction in the scene frame
 		Vector3D dPrimeMinusBetaOverGamma = 
 				// Vector3D.difference(i.p, ellipsoid.getCameraPosition());
-				Vector3D.difference(Vector3D.difference(i.p, ellipsoid.getCameraPosition()), ellipsoid.getBetaHat().getProductWith(ellipsoid.getEllipsoidPrincipalRadiusInBetaDirection()*ellipsoid.getBetaAbs()));
+				Vector3D.difference(Vector3D.difference(i.p, ellipsoid.getCameraPosition()), ellipsoid.getBetaHat().getProductWith(ellipsoid.getLookalikeSphereRadius()*ellipsoid.getBetaAbs()));
 		Vector3D d = Vector3D.sum(
 				dPrimeMinusBetaOverGamma.getPartParallelTo(ellipsoid.getBetaHat()),
 				dPrimeMinusBetaOverGamma.getPartPerpendicularTo(ellipsoid.getBetaHat()).getProductWith(1./ellipsoid.getTransverseStretchFactor())

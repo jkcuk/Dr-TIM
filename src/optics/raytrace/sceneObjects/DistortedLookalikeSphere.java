@@ -40,7 +40,7 @@ public class DistortedLookalikeSphere extends Ellipsoid
 	 */
 	private double betaAbs;
 	
-	private double ellipsoidPrincipalRadiusInBetaDirection;
+	private double lookalikeSphereRadius;	// ellipsoidPrincipalRadiusInBetaDirection;
 	
 	private SpaceTimeTransformationType transformType;
 	
@@ -60,7 +60,7 @@ public class DistortedLookalikeSphere extends Ellipsoid
 			Vector3D cameraPosition, 
 			Vector3D beta, 
 			SpaceTimeTransformationType transformType, 
-			double ellipsoidPrincipalRadiusInBetaDirection,
+			double lookalikeSphereRadius,
 			double transmissionCoefficient,
 			SceneObject parent,
 			Studio studio
@@ -80,7 +80,7 @@ public class DistortedLookalikeSphere extends Ellipsoid
 		setBetaHat(beta);
 		setBetaAbs(beta.getLength());
 		setTransformType(transformType);
-		setEllipsoidPrincipalRadiusInBetaDirection(ellipsoidPrincipalRadiusInBetaDirection);
+		setLookalikeSphereRadius(lookalikeSphereRadius);
 		setTransmissionCoefficient(transmissionCoefficient);
 		
 		calculateEllipsoidParameters();
@@ -98,7 +98,7 @@ public class DistortedLookalikeSphere extends Ellipsoid
 				cameraPosition,
 				getBeta(),
 				transformType,
-				ellipsoidPrincipalRadiusInBetaDirection,
+				lookalikeSphereRadius,
 				transmissionCoefficient,
 				getParent(),
 				getStudio()
@@ -157,12 +157,12 @@ public class DistortedLookalikeSphere extends Ellipsoid
 		this.transformType = transformType;
 	}
 
-	public double getEllipsoidPrincipalRadiusInBetaDirection() {
-		return ellipsoidPrincipalRadiusInBetaDirection;
+	public double getLookalikeSphereRadius() {
+		return lookalikeSphereRadius;
 	}
 
-	public void setEllipsoidPrincipalRadiusInBetaDirection(double ellipsoidPrincipalRadiusInBetaDirection) {
-		this.ellipsoidPrincipalRadiusInBetaDirection = ellipsoidPrincipalRadiusInBetaDirection;
+	public void setLookalikeSphereRadius(double lookalikeSphereRadius) {
+		this.lookalikeSphereRadius = lookalikeSphereRadius;
 	}
 
 	public double getTransverseStretchFactor() {
@@ -225,11 +225,11 @@ public class DistortedLookalikeSphere extends Ellipsoid
 		alpha2Hat = Vector3D.crossProduct(betaHat, alpha1Hat);
 		
 		// set the internal ellipsoid variables
-		setCentre(Vector3D.sum(cameraPosition, betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection*betaAbs)));
+		setCentre(Vector3D.sum(cameraPosition, betaHat.getProductWith(lookalikeSphereRadius*betaAbs)));
 		setABC(
-				betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection),	// a
-				alpha1Hat.getProductWith(transverseStretchFactor*ellipsoidPrincipalRadiusInBetaDirection),	// b
-				alpha2Hat.getProductWith(transverseStretchFactor*ellipsoidPrincipalRadiusInBetaDirection)	// c
+				betaHat.getProductWith(lookalikeSphereRadius),	// a
+				alpha1Hat.getProductWith(transverseStretchFactor*lookalikeSphereRadius),	// b
+				alpha2Hat.getProductWith(transverseStretchFactor*lookalikeSphereRadius)	// c
 			);
 	}
 }

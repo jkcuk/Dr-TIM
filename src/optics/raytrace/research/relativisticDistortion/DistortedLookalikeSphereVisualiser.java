@@ -32,15 +32,14 @@ import optics.raytrace.surfaces.SurfaceColour;
 
 
 /**
- * A very basic example of NonInteractiveTIM.
- * 
- * @author Johannes Courtial
+ *  @author Johannes Courtial
  */
-public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
+public class DistortedLookalikeSphereVisualiser extends NonInteractiveTIMEngine
 {
-	
+	private static final long serialVersionUID = -735545092440849361L;
+
 	private Vector3D beta0, cameraViewDirection0, xyzCoordinateSystemOrigin;
-	private double cameraDistance0, ellipsoidPrincipalRadiusInBetaDirection, xyzCoordinateSystemSize;
+	private double cameraDistance0, lookalikeSphereRadius, xyzCoordinateSystemSize;
 	private boolean simulateAsEllipsoidConstruction, showBetaHatArrow, showXYZCoordinateSystem, showXYZCoordinateSystemLabels;
 	
 	public enum MovieType
@@ -72,7 +71,7 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 	 * Constructor.
 	 * Sets all parameters.
 	 */
-	public EllipsoidConstructionVisualiser()
+	public DistortedLookalikeSphereVisualiser()
 	{
 		super();
 		
@@ -101,11 +100,11 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		studioInitialisation = StudioInitialisationType.SURROUND_LATTICE;	// the backdrop
 
 		simulateAsEllipsoidConstruction = true;
-		ellipsoidPrincipalRadiusInBetaDirection = 0.4;
+		lookalikeSphereRadius = 0.4;
 		
 		// camera parameters are set in createStudio()
 		
-		windowTitle = "Dr TIM's ellipsoid-construction visualiser";
+		windowTitle = "Dr TIM's distorted-lookalike-sphere visualiser";
 		windowWidth = 1500;
 		windowHeight = 650;
 
@@ -119,7 +118,7 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 	public String getClassName()
 	{
 		return
-				"EllipsoidConstructionVisualiser"
+				"DistortedLookalikeSphereVisualiser"
 				;
 	}
 	
@@ -142,7 +141,7 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		printStream.println("xyzCoordinateSystemSize = "+xyzCoordinateSystemSize);
 
 		printStream.println("simulateAsEllipsoidConstruction = "+simulateAsEllipsoidConstruction);
-		printStream.println("ellipsoidPrincipalRadiusInBetaDirection = "+ellipsoidPrincipalRadiusInBetaDirection);
+		printStream.println("lookalikeSphereRadius = "+lookalikeSphereRadius);
 
 		printStream.println("cameraViewDirection0 = "+cameraViewDirection0);
 		printStream.println("cameraDistance0 = "+cameraDistance0);
@@ -247,16 +246,16 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 			);
 		
 		// add any other scene objects
-		// Vector3D betaHatArrowStartPoint = Vector3D.difference(new Vector3D(0, 1.2*ellipsoidPrincipalRadiusInBetaDirection, 0), betaHat.getProductWith(ellipsoidPrincipalRadiusInBetaDirection));	// set the start point such that the arrow is centred above the camera position
+		// Vector3D betaHatArrowStartPoint = Vector3D.difference(new Vector3D(0, 1.2*lookalikeSphereRadius, 0), betaHat.getProductWith(lookalikeSphereRadius));	// set the start point such that the arrow is centred above the camera position
 		Vector3D betaHatArrowStartPoint = 
-				beta.getWithLength((1+beta.getLength())*ellipsoidPrincipalRadiusInBetaDirection);	// set the start point such that the foot of the arrow is in front of the ellipsoid
+				beta.getWithLength((1+beta.getLength())*lookalikeSphereRadius);	// set the start point such that the foot of the arrow is in front of the ellipsoid
 		scene.addSceneObject(
 				new EditableArrow(
 						"betaHat",	// description
 						betaHatArrowStartPoint,	// startPoint
-						Vector3D.sum(betaHatArrowStartPoint, beta.getProductWith(ellipsoidPrincipalRadiusInBetaDirection)),	// endPoint
-						beta.getLength()*ellipsoidPrincipalRadiusInBetaDirection*0.05,	// shaftRadius
-						beta.getLength()*ellipsoidPrincipalRadiusInBetaDirection*0.25,	// tipLength
+						Vector3D.sum(betaHatArrowStartPoint, beta.getProductWith(lookalikeSphereRadius)),	// endPoint
+						beta.getLength()*lookalikeSphereRadius*0.05,	// shaftRadius
+						beta.getLength()*lookalikeSphereRadius*0.25,	// tipLength
 						MyMath.deg2rad(20),	// tipAngle
 						SurfaceColour.WHITE_SHINY,	// surfaceProperty
 						scene,	// parent 
@@ -342,7 +341,7 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 							new Vector3D(0, 0, 0),
 							beta,
 							cameraSpaceTimeTransformationType,
-							ellipsoidPrincipalRadiusInBetaDirection,
+							lookalikeSphereRadius,
 							1,
 							scene,
 							studio
@@ -353,7 +352,7 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 //							new Vector3D(0, 0, 0),
 //							beta,
 //							cameraSpaceTimeTransformationType,
-//							ellipsoidPrincipalRadiusInBetaDirection
+//							lookalikeSphereRadius
 //						);
 //			
 //			scene.addSceneObject(s.createAndSetEllipsoid("Ellipsoid", scene, studio));
@@ -386,7 +385,7 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 	private JComboBox<SpaceTimeTransformationType> cameraSpaceTimeTransformationTypeComboBox;
 	private JComboBox<MovieType> movieTypeComboBox;
 	private LabelledVector3DPanel betaPanel, initialCameraViewDirectionPanel, xyzCoordinateSystemOriginPanel;
-	private LabelledDoublePanel initialCameraDistancePanel, cameraHorizontalFOVDegPanel, ellipsoidPrincipalRadiusInBetaDirectionPanel, xyzCoordinateSystemSizePanel;
+	private LabelledDoublePanel initialCameraDistancePanel, cameraHorizontalFOVDegPanel, lookalikeSphereRadiusPanel, xyzCoordinateSystemSizePanel;
 	private LabelledIntPanel numberOfFramesPanel;
 	private JCheckBox simulateAsEllipsoidConstructionCheckBox, showBetaHatArrowCheckBox, showXYZCoordinateSystemCheckBox, showXYZCoordinateSystemLabelsCheckBox;
 
@@ -437,13 +436,16 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		xyzCoordinateSystemSizePanel.setNumber(xyzCoordinateSystemSize);
 		xyzCoordinateSystemPanel.add(xyzCoordinateSystemSizePanel, "span");
 
-		simulateAsEllipsoidConstructionCheckBox = new JCheckBox("Simulate as ellipsoid construction?");
+		simulateAsEllipsoidConstructionCheckBox = new JCheckBox("Simulate using distorted-lookalike-sphere construction?");
 		simulateAsEllipsoidConstructionCheckBox.setSelected(simulateAsEllipsoidConstruction);
 		interactiveControlPanel.add(simulateAsEllipsoidConstructionCheckBox, "span");
 		
-		ellipsoidPrincipalRadiusInBetaDirectionPanel = new LabelledDoublePanel("Principal radius of ellipsoid in beta direction");
-		ellipsoidPrincipalRadiusInBetaDirectionPanel.setNumber(ellipsoidPrincipalRadiusInBetaDirection);
-		interactiveControlPanel.add(ellipsoidPrincipalRadiusInBetaDirectionPanel, "span");
+		lookalikeSphereRadiusPanel = new LabelledDoublePanel(
+				"Radius of lookalike sphere"
+				// "Principal radius of ellipsoid in beta direction"
+			);
+		lookalikeSphereRadiusPanel.setNumber(lookalikeSphereRadius);
+		interactiveControlPanel.add(lookalikeSphereRadiusPanel, "span");
 		
 		JPanel cameraPanel = new JPanel();
 		cameraPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Camera"));
@@ -493,7 +495,7 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 		
 		cameraSpaceTimeTransformationType = (SpaceTimeTransformationType)(cameraSpaceTimeTransformationTypeComboBox.getSelectedItem());
 		simulateAsEllipsoidConstruction = simulateAsEllipsoidConstructionCheckBox.isSelected();
-		ellipsoidPrincipalRadiusInBetaDirection = ellipsoidPrincipalRadiusInBetaDirectionPanel.getNumber();
+		lookalikeSphereRadius = lookalikeSphereRadiusPanel.getNumber();
 		
 		beta0 = betaPanel.getVector3D();
 		showBetaHatArrow = showBetaHatArrowCheckBox.isSelected();
@@ -524,6 +526,6 @@ public class EllipsoidConstructionVisualiser extends NonInteractiveTIMEngine
 //        Runnable r = new NonInteractiveTIM();
 //
 //        EventQueue.invokeLater(r);
-		(new EllipsoidConstructionVisualiser()).run();
+		(new DistortedLookalikeSphereVisualiser()).run();
 	}
 }
