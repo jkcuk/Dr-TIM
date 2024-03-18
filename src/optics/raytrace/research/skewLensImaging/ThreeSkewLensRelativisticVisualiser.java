@@ -171,7 +171,7 @@ public class ThreeSkewLensRelativisticVisualiser extends NonInteractiveTIMEngine
 		phi1 = -2.5;
 		phi2 = 2.5;
 		deltaTheta1 = 15;
-		deltaTheta2 = 15;
+		deltaTheta2 = -15;
 		extraShift = new double[6];
 		
 		mappingType = MappingType.ROTATION;
@@ -577,8 +577,8 @@ public class ThreeSkewLensRelativisticVisualiser extends NonInteractiveTIMEngine
 		Double r23 = -(d2/Math.sin(deltaTheta2/4))*(Math.cos(3*deltaTheta2/4)/Math.cos(deltaTheta2));
 		
 		//Pre calculating xp and yp
-		double yP = h*(1-Math.signum(deltaTheta1))/2;
-		double xP = l*(1+Math.signum(deltaTheta2))/2;
+		double yP = 0;//h*(1-Math.signum(deltaTheta1))/2; the original setting did not work so we are setting them to zero (for now) and manually setting the x and y offset 
+		double xP = 0;//l*(1+Math.signum(deltaTheta2))/2;
 		
 //		System.out.println("xp="+xP+"  yp="+yP);
 //		System.out.println("r11="+r11+" r12="+r12+" r13="+r13);
