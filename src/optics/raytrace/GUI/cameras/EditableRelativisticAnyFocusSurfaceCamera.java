@@ -278,7 +278,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 //		return rightDirection1.getPartPerpendicularTo(viewDirection1).getWithLength(2*Math.tan(MyMath.deg2rad(horizontalViewAngle1)/2.));
 //	}
 
-	private static Vector3D calculateVerticalSpanVector(
+	public static Vector3D calculateVerticalSpanVector(
 			Vector3D viewDirection1,
 			Vector3D topDirection1,
 			double horizontalViewAngle1,
@@ -301,7 +301,7 @@ implements CameraWithRayForImagePixel, Camera, IPanelComponent, ActionListener, 
 //		return Vector3D.crossProduct(rightDirection1, viewDirection1).getWithLength(2*Math.tan(MyMath.deg2rad(horizontalViewAngle1)/2.) * (double)imagePixelsVertical1 / (double)imagePixelsHorizontal1);
 //	}
 
-	private static Vector3D calculateHorizontalSpanVector(
+	public static Vector3D calculateHorizontalSpanVector(
 			Vector3D viewDirection1,
 			Vector3D topDirection1,
 			double horizontalViewAngle1
