@@ -169,6 +169,21 @@ public class GUIBitsAndBobs
 		return panel;
 	}
 
+	public static JPanel makeRow(Component component1, String text1, Component component2, String text2, Component component3, String text3)
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("insets 0"));
+
+		panel.add(component1);
+		panel.add(new JLabel(text1)); 
+		panel.add(component2);
+		panel.add(new JLabel(text2));
+		panel.add(component3);
+		panel.add(new JLabel(text3));
+
+		return panel;
+	}
+
 	/**
 	 * Creates a combined text label and two components.
 	 */
@@ -200,6 +215,64 @@ public class GUIBitsAndBobs
 		panel.add(field1);
 		panel.add(field2);
 		panel.add(field3);
+
+		return panel;
+	}
+
+	/**
+	 * Creates a combined three components, then a text label, then another component.
+	 */
+	public static JPanel makeRow(Component field1, Component field2, String text1, Component field3, String text2)
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("insets 0"));
+
+		// panel.setLayout(new FlowLayout());
+
+		panel.add(field1);
+		panel.add(field2);
+		panel.add(new JLabel(text1)); 
+		panel.add(field3);
+		panel.add(new JLabel(text2)); 
+
+		return panel;
+	}
+
+	/**
+	 * Creates a combined three components, then a text label, then another component.
+	 */
+	public static JPanel makeRow(Component field1, Component field2, Component field3, String text, Component field4)
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("insets 0"));
+
+		// panel.setLayout(new FlowLayout());
+
+		panel.add(field1);
+		panel.add(field2);
+		panel.add(field3);
+		panel.add(new JLabel(text)); 
+		panel.add(field4);
+
+		return panel;
+	}
+
+	/**
+	 * Creates a combined text label, followed by three components, then another text label, then another component.
+	 */
+	public static JPanel makeRow(String text1, Component field1, Component field2, Component field3, String text2, Component field4)
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("insets 0"));
+
+		// panel.setLayout(new FlowLayout());
+
+		panel.add(new JLabel(text1)); 
+		panel.add(field1);
+		panel.add(field2);
+		panel.add(field3);
+		panel.add(new JLabel(text2)); 
+		panel.add(field4);
 
 		return panel;
 	}
