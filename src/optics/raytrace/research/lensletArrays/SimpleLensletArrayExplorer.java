@@ -11,6 +11,7 @@ import javax.swing.JTabbedPane;
 import math.*;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.LensType;
+import optics.raytrace.sceneObjects.TimHead;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
@@ -38,6 +39,10 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 	 */
 	private static final long serialVersionUID = 4968810668282196902L;
 
+	/**
+	 * lenslet side lengths
+	 */
+	private double sideLength;
 	/**
 	 * focal length of lenslet array 1 (closer to camer)
 	 */
@@ -101,6 +106,21 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 	//
 	
 	/**
+	 * Add tim head
+	 */
+	private boolean addTimHead;
+	
+	/**
+	 * Tim head centre
+	 */
+	private Vector3D timHeadCentre;
+	
+	/**
+	 * Tim radius 
+	 */
+	private double timRadius;
+	
+	/**
 	 * Determines how to initialise the backdrop
 	 */
 	private StudioInitialisationType studioInitialisation;
@@ -122,6 +142,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		renderQuality = RenderQualityEnum.DRAFT;
 		
 		// lenslet-array parameters
+		sideLength = 1;
 		f1 = 0.1;
 		f2 = -0.05;
 		period1 = 0.04;
@@ -136,6 +157,9 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		lambdaNM = 632.8;
 		
 		studioInitialisation = StudioInitialisationType.TIM_HEAD;	// the backdrop
+		addTimHead = false;;
+		timHeadCentre = new Vector3D(0,0,10);
+		timRadius = 1;
 
 		// camera
 		cameraViewCentre = new Vector3D(0, 0, 0);
@@ -165,7 +189,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 	public void writeParameters(PrintStream printStream)
 	{
 		// write any parameters not defined in NonInteractiveTIMEngine
-		
+		printStream.println("sideLength="+sideLength);
 		printStream.println("f1="+f1);
 		printStream.println("f2="+f2);
 		printStream.println("period1="+period1);
@@ -179,6 +203,9 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		printStream.println("simulateDiffractiveBlur="+simulateDiffractiveBlur);
 		printStream.println("lambdaNM="+lambdaNM);
 		printStream.println("studioInitialisation="+studioInitialisation);
+		printStream.println("addTimHead="+addTimHead);
+		if(addTimHead) printStream.println("timHeadCentre="+timHeadCentre);
+		if(addTimHead) printStream.println("timRadius="+timRadius);
 
 		printStream.println();
 
@@ -205,6 +232,18 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 				studio
 			);
 		
+		scene.addSceneObject(new TimHead(
+				"tim head",
+				timHeadCentre,
+				timRadius,
+				new Vector3D(0, 0, -1),	// frontDirection
+				new Vector3D(0, 1, 0), 	// topDirection
+				new Vector3D(1, 0, 0),	// rightDirection
+				scene,
+				studio
+				),
+				addTimHead);
+		
 		double zSeparation = f1+f2+offset;
 		
 		Vector3D up = new Vector3D(0, 1, 0);
@@ -217,8 +256,8 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		scene.addSceneObject(new EditableRectangularLensletArray(
 				"LA1",	// description
 				new Vector3D(0, 0, -zSeparation/2),	// centre
-				Vector3D.sum(right1.getProductWith(c1), up.getProductWith(s1)),	// spanVector1
-				Vector3D.sum(right1.getProductWith(-s1), up.getProductWith(c1)),	// spanVector2
+				Vector3D.sum(right1.getProductWith(c1), up.getProductWith(s1)).getWithLength(sideLength),	// spanVector1
+				Vector3D.sum(right1.getProductWith(-s1), up.getProductWith(c1)).getWithLength(sideLength),	// spanVector2
 				f1,	// focalLength
 				period1,	// xPeriod
 				period1,	// yPeriod
@@ -245,8 +284,8 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		scene.addSceneObject(new EditableRectangularLensletArray(
 				"LA2",	// description
 				new Vector3D(0, 0, zSeparation/2),	// centre
-				Vector3D.sum(right2.getProductWith(c2), up.getProductWith(s2)),	// spanVector1
-				Vector3D.sum(right2.getProductWith(-s2), up.getProductWith(c2)),	// spanVector2
+				Vector3D.sum(right2.getProductWith(c2), up.getProductWith(s2)).getWithLength(sideLength),	// spanVector1
+				Vector3D.sum(right2.getProductWith(-s2), up.getProductWith(c2)).getWithLength(sideLength),	// spanVector2
 				f2,	// focalLength
 				period1 + deltaPeriod,	// xPeriod
 				period1+ deltaPeriod,	// yPeriod
@@ -271,11 +310,12 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 	}
 
 	
-	
+
 	//Lenslet stuff
-	private LabelledDoublePanel f1Panel, f2Panel, period1Panel, deltaPeriodPanel;
-	private DoublePanel phi1DegPanel, phi2DegPanel, offsetPanel, lambdaNMPanel; // , 
-	private JCheckBox showLensletArray1CheckBox, showLensletArray2CheckBox, shadowThrowingCheckBox, simulateDiffractiveBlurCheckBox;
+	private LabelledDoublePanel f1Panel, f2Panel, period1Panel, deltaPeriodPanel, sideLengthPanel;
+	private DoublePanel phi1DegPanel, phi2DegPanel, offsetPanel, lambdaNMPanel, timRadiusPanel; // , 
+	private LabelledVector3DPanel timHeadCentrePanel;
+	private JCheckBox showLensletArray1CheckBox, showLensletArray2CheckBox, simulateDiffractiveBlurCheckBox, addTimHeadCheckBox;
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 
 	// camera stuff
@@ -385,6 +425,10 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		commonLAParametersPanel.setLayout(new MigLayout("insets 0"));
 		scenePanel.add(commonLAParametersPanel, "span");
 		
+		sideLengthPanel = new LabelledDoublePanel("Lenslet array side length");
+		sideLengthPanel.setNumber(sideLength);
+		commonLAParametersPanel.add(sideLengthPanel, "span");
+		
 		// the offset between the two lenslet arrays
 		offsetPanel = new DoublePanel();
 		offsetPanel.setNumber(offset);
@@ -409,6 +453,18 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
 		restOfScenePanel.add(GUIBitsAndBobs.makeRow("Background", studioInitialisationComboBox), "span");
+		
+		addTimHeadCheckBox = new JCheckBox("Add editable tim head");
+		addTimHeadCheckBox.setSelected(addTimHead);
+		restOfScenePanel.add(addTimHeadCheckBox, "span");
+		
+		timHeadCentrePanel = new LabelledVector3DPanel("Tim head centre");
+		timHeadCentrePanel.setVector3D(timHeadCentre);
+		restOfScenePanel.add(timHeadCentrePanel,"span");
+		
+		timRadiusPanel = new DoublePanel();
+		timRadiusPanel.setNumber(timRadius);
+		restOfScenePanel.add(GUIBitsAndBobs.makeRow("Tim head radius", timRadiusPanel), "span");
 		
 		
 		//
@@ -454,6 +510,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 	{
 		super.acceptValuesInInteractiveControlPanel();
 		
+		sideLength = sideLengthPanel.getNumber();
 		f1 = f1Panel.getNumber();
 		f2 = f2Panel.getNumber();
 		period1 = period1Panel.getNumber();
@@ -467,6 +524,9 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		simulateDiffractiveBlur = simulateDiffractiveBlurCheckBox.isSelected();
 		lambdaNM = lambdaNMPanel.getNumber();
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
+		addTimHead = addTimHeadCheckBox.isSelected();
+		timHeadCentre = timHeadCentrePanel.getVector3D();
+		timRadius = timRadiusPanel.getNumber();
 		
 		// cameraViewDirection = cameraViewDirectionPanel.getVector3D();
 		cameraDistance = cameraDistancePanel.getNumber();
