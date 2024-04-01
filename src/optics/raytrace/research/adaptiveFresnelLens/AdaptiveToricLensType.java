@@ -1,4 +1,4 @@
-package optics.raytrace.research.adaptiveIntegralLens;
+package optics.raytrace.research.adaptiveFresnelLens;
 
 /**
  * A type that allows the type of adaptive astigmatic lenses to be determined.

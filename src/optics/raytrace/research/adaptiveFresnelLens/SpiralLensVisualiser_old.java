@@ -1,4 +1,4 @@
-package optics.raytrace.research.adaptiveIntegralLens;
+package optics.raytrace.research.adaptiveFresnelLens;
 
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
@@ -17,10 +17,8 @@ import optics.raytrace.sceneObjects.ParametrisedDisc.DiscParametrisationType;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.PhaseHologramOfLens;
 import optics.raytrace.surfaces.SurfaceColour;
-import optics.raytrace.surfaces.PhaseHologram;
 import optics.raytrace.surfaces.PhaseHologramOfCylindricalLensSpiral;
 import optics.raytrace.surfaces.PhaseHologramOfCylindricalLensSpiral.CylindricalLensSpiralType;
-import optics.raytrace.surfaces.PhaseHologramOfCylindricalLensSpiralPair;
 import optics.raytrace.exceptions.SceneException;
 import optics.DoubleColour;
 import optics.raytrace.NonInteractiveTIMActionEnum;
@@ -42,8 +40,10 @@ import optics.raytrace.core.StudioInitialisationType;
  * 
  * @author Johannes Courtial
  */
-public class SpiralLensVisualiser extends NonInteractiveTIMEngine
+public class SpiralLensVisualiser_old extends NonInteractiveTIMEngine
 {
+	private static final long serialVersionUID = 340619141332494007L;
+
 	/**
 	 * either LOGARITHMIC or ARCHIMEDEAN
 	 */
@@ -67,9 +67,6 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	/**
 	 * focal length of the cylindrical lenses (everywhere in the case of the logarithmic spiral lens, at r=1 in the case of the Archimedean spiral lens)
 	 */
-	//dwu10for powDdefinationinSpiralLensVisualiser begin--
-//	private double powD;
-	//dwu10for powDdefinationinSpiralLensVisualiser end--
 	private double f;
 
 	/**
@@ -94,7 +91,6 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	 */
 	private double comparisonLensF;
 
-	private boolean showLensesCombined = true;
 	private boolean showLens1;
 	private boolean showLens2;
 	private boolean showComparisonLens;
@@ -133,8 +129,6 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	}
 	
 	protected WindingFocussingType windingFocussingType;
-	
-	protected boolean simulateDiffraction;
 
 	//
 	// the rest of the scene
@@ -170,7 +164,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	 * Constructor.
 	 * Sets all parameters.
 	 */
-	public SpiralLensVisualiser()
+	public SpiralLensVisualiser_old()
 	{
 		super();
 
@@ -194,7 +188,6 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		showComparisonLens = false;
 		comparisonLensF = 28.59792;
 		// alvarezWindingFocusing = false;
-		simulateDiffraction = false;
 		windingFocussingType = WindingFocussingType.NONE;
 
 		studioInitialisation = StudioInitialisationType.TIM_HEAD;	// the backdrop
@@ -257,15 +250,11 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		printStream.println("spiralLens2AdditionalOffset = "+spiralLens2AdditionalOffset);
 		printStream.println("b = "+b);
 		printStream.println("f = "+f);
-		//dwu12for powDprintStream begin--
-//		printStream.println("powD = "+powD);
-		//dwu12for powDprintStream end--
 		printStream.println("fMin = "+fMin);
 		printStream.println("rotationAngleDeg = "+rotationAngleDeg);
 		printStream.println("distanceOfLens2BehindLens1 = "+distanceOfLens2BehindLens1);
 		// printStream.println("alvarezWindingFocusing= "+alvarezWindingFocusing);
 		printStream.println("windingFocussing="+windingFocussingType);
-		printStream.println("simulateDiffraction="+simulateDiffraction);
 		printStream.println("showLens1 = "+showLens1);
 		printStream.println("showLens2 = "+showLens2);
 		printStream.println("showComparisonLens = "+showComparisonLens);
@@ -348,85 +337,62 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 				scene,	// parent
 				studio
 				);
-		PhaseHologram hologram1;
-		if(showLensesCombined)
-		{
-			hologram1 = new PhaseHologramOfCylindricalLensSpiralPair(
-					cylindricalLensSpiralType,
-					getFOfFocussedCylindricalLens(f),	// focalLength
-					0.0,	// deltaPhi1
-					MyMath.deg2rad(rotationAngleDeg),	// deltaPhi2
-					b,
-					spiralLens1,	// sceneObject
-					0.96,	// throughputCoefficient
-					windingFocussingType == WindingFocussingType.ALVAREZ,	// alvarezWindingFocusing
-					simulateDiffraction,	// simulateDiffraction
-					550e-9,	// lambda TODO make this editable
-					false,	// reflective
-					false	// shadowThrowing
-					);
-		}
-		else
-		{
-			hologram1 = new PhaseHologramOfCylindricalLensSpiral(
-					cylindricalLensSpiralType,
-					getFOfFocussedCylindricalLens(f),	// focalLength
-					0,	// deltaPhi
-					b,
-					spiralLens1,	// sceneObject
-					0.96,	// throughputCoefficient
-					windingFocussingType == WindingFocussingType.ALVAREZ,	// alvarezWindingFocusing
-					false,	// reflective
-					false	// shadowThrowing
-					);
-		}
+		PhaseHologramOfCylindricalLensSpiral hologram1 = new PhaseHologramOfCylindricalLensSpiral(
+				cylindricalLensSpiralType,
+				getFOfFocussedCylindricalLens(f),	// focalLength
+				0,	// deltaPhi
+				b,
+				spiralLens1,	// sceneObject
+				0.96,	// throughputCoefficient
+				windingFocussingType == WindingFocussingType.ALVAREZ,	// alvarezWindingFocusing
+				false,	// reflective
+				false	// shadowThrowing
+				);
 		spiralLens1.setSurfaceProperty(hologram1);
-		scene.addSceneObject(spiralLens1, showLens1 || showLensesCombined);
+		scene.addSceneObject(spiralLens1, showLens1);
 
-		if(!showLensesCombined)
-		{
-			Vector3D spiralLens2Centre = Vector3D.sum(
-					centre, 
-					lensNormal.getWithLength((windingFocussingType==WindingFocussingType.SEPARATION)?distanceOfLens2BehindLens1:1e-8), 
-					spiralLens2AdditionalOffset
-					);
-			EditableScaledParametrisedDisc spiralLens2 = new EditableScaledParametrisedDisc(
-					"spiral-lens 2",	// description
-					spiralLens2Centre,
-					lensNormal,	// normal
-					lensRadius,	// radius
-					new Vector3D(1, 0, 0),	// phi0Direction
-					DiscParametrisationType.CARTESIAN,	// parametrisationType
-					-lensRadius, lensRadius,	// suMin, suMax
-					-lensRadius, lensRadius,	// svMin, svMax
-					null,	// surface property
-					scene,	// parent
-					studio
-					);
-			//		double a;
-			//		switch(cylindricalLensSpiralType)
-			//		{
-			//		case ARCHIMEDEAN:
-			//			a = 1+b*MyMath.deg2rad(rotationAngleDeg);
-			//			break;
-			//		case LOGARITHMIC:
-			//		default:
-			//			a = 1*Math.exp(b*MyMath.deg2rad(rotationAngleDeg));
-			//		}
-			PhaseHologramOfCylindricalLensSpiral hologram2 = new PhaseHologramOfCylindricalLensSpiral(
-					cylindricalLensSpiralType,
-					getFOfFocussedCylindricalLens(-f),	// focalLength
-					MyMath.deg2rad(rotationAngleDeg),	// deltaPhi
-					b,
-					spiralLens2,	// sceneObject
-					0.96,	// throughputCoefficient
-					windingFocussingType == WindingFocussingType.ALVAREZ,	// alvarezWindingFocusing
-					false,	// reflective
-					false	// shadowThrowing
-					);
-			spiralLens2.setSurfaceProperty(hologram2);
-			scene.addSceneObject(spiralLens2, showLens2);
-		}
+		Vector3D spiralLens2Centre = Vector3D.sum(
+				centre, 
+				lensNormal.getWithLength((windingFocussingType==WindingFocussingType.SEPARATION)?distanceOfLens2BehindLens1:1e-8), 
+				spiralLens2AdditionalOffset
+			);
+		EditableScaledParametrisedDisc spiralLens2 = new EditableScaledParametrisedDisc(
+				"spiral-lens 2",	// description
+				spiralLens2Centre,
+				lensNormal,	// normal
+				lensRadius,	// radius
+				new Vector3D(1, 0, 0),	// phi0Direction
+				DiscParametrisationType.CARTESIAN,	// parametrisationType
+				-lensRadius, lensRadius,	// suMin, suMax
+				-lensRadius, lensRadius,	// svMin, svMax
+				null,	// surface property
+				scene,	// parent
+				studio
+				);
+//		double a;
+//		switch(cylindricalLensSpiralType)
+//		{
+//		case ARCHIMEDEAN:
+//			a = 1+b*MyMath.deg2rad(rotationAngleDeg);
+//			break;
+//		case LOGARITHMIC:
+//		default:
+//			a = 1*Math.exp(b*MyMath.deg2rad(rotationAngleDeg));
+//		}
+		PhaseHologramOfCylindricalLensSpiral hologram2 = new PhaseHologramOfCylindricalLensSpiral(
+				cylindricalLensSpiralType,
+				getFOfFocussedCylindricalLens(-f),	// focalLength
+				MyMath.deg2rad(rotationAngleDeg),	// deltaPhi
+				b,
+				spiralLens2,	// sceneObject
+				0.96,	// throughputCoefficient
+				windingFocussingType == WindingFocussingType.ALVAREZ,	// alvarezWindingFocusing
+				false,	// reflective
+				false	// shadowThrowing
+				);
+		spiralLens2.setSurfaceProperty(hologram2);
+		scene.addSceneObject(spiralLens2, showLens2);
+
 
 		// the comparison lens
 
@@ -485,7 +451,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	private LabelledDoublePanel bPanel, fPanel, fMinPanel, distanceOfLens2BehindLens1Panel;
 	private DoublePanel comparisonLensFPanel;
 	private DoublePanel rotationAngleDegPanel;
-	private JCheckBox showLensesCombinedCheckBox, showLens1CheckBox, showLens2CheckBox, showComparisonLensCheckBox, simulateDiffractionCheckBox;	// , alvarezWindingFocusingCheckBox;
+	private JCheckBox showLens1CheckBox, showLens2CheckBox, showComparisonLensCheckBox;	// , alvarezWindingFocusingCheckBox;
 	private JButton calculateCombinedFocalLengthButton, calculateDistanceOfLens2BehindLens1Button, focusOnTIMEyesButton;
 
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
@@ -534,7 +500,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		bPanel.setNumber(b);
 		lensPanel.add(bPanel, "span");
 
-		fPanel = new LabelledDoublePanel("f of cylindrical lens (at r=1 for Arch. spiral / phi=1 for hyp. spiral)");
+		fPanel = new LabelledDoublePanel("f of cylindrical lens (at r=1 for Arch. spiral)");
 		fPanel.setNumber(f);
 		lensPanel.add(fPanel, "span");
 
@@ -575,7 +541,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 //		windingFocussingTypeComboBox.addActionListener(this);
 //		windingFocussingPanel.add(GUIBitsAndBobs.makeRow("Type", windingFocussingTypeComboBox), "span");
 
-		windingFocussingTypeSeparationPanel.add(new JLabel("(Works properly only for logarithmic-spiral lens and if parts not shown combined!)"),"span");
+		windingFocussingTypeSeparationPanel.add(new JLabel("(Works only for logarithmic-spiral lens!)"),"span");
 
 		fMinPanel = new LabelledDoublePanel("Smallest focal length for which winding can be focussed");
 		fMinPanel.setNumber(fMin);
@@ -596,37 +562,10 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 
 		lensPanel.add(windingFocussingPanel, "span");
 
-		
-		
-		
-//		// the parts panel
-//		
-//		JPanel partsPanel = new JPanel();
-//		partsPanel.setLayout(new MigLayout("insets 0"));
-//		partsPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Parts"));
-//		
-//		partsPane = new JTabbedPane();
-//		partsPanel.add(individualPartsPane, "span");
-//
-//		JPanel individualPartsPanel = new JPanel();
-//		windingFocussingTypeNonePanel.setLayout(new MigLayout("insets 0"));
-//		windingFocussingPane.addTab(WindingFocussingType.NONE.toString(), windingFocussingTypeNonePanel);
-
-		
-		
-		
 		spiralLens2AdditionalOffsetPanel = new LabelledVector3DPanel("Additional offset of part 2");
 		spiralLens2AdditionalOffsetPanel.setVector3D(spiralLens2AdditionalOffset);
 		lensPanel.add(spiralLens2AdditionalOffsetPanel, "span");
 
-		showLensesCombinedCheckBox = new JCheckBox("Show parts combined");
-		showLensesCombinedCheckBox.setSelected(showLensesCombined);
-		showLensesCombinedCheckBox.addActionListener(this);
-		// lensPanel.add(showLensesCombinedCheckBox, "span");
-		simulateDiffractionCheckBox = new JCheckBox("Simulate diffraction (approximately)");
-		simulateDiffractionCheckBox.setSelected(simulateDiffraction);
-		lensPanel.add(GUIBitsAndBobs.makeRow(showLensesCombinedCheckBox, simulateDiffractionCheckBox), "span");
-		
 		showLens1CheckBox = new JCheckBox("Show part 1");
 		showLens1CheckBox.setSelected(showLens1);
 		lensPanel.add(showLens1CheckBox, "span");
@@ -726,7 +665,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		focusOnTIMEyesButton.addActionListener(this);
 		cameraPanel.add(focusOnTIMEyesButton, "span");
 		
-		showOrHideComponents();
+		// showOrHideComponents();
 	}
 
 	/**
@@ -746,14 +685,12 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		fMin = fMinPanel.getNumber();
 		distanceOfLens2BehindLens1 = distanceOfLens2BehindLens1Panel.getNumber();
 		spiralLens2AdditionalOffset =spiralLens2AdditionalOffsetPanel.getVector3D();
-		showLensesCombined = showLensesCombinedCheckBox.isSelected();
 		showLens1 = showLens1CheckBox.isSelected();
 		showLens2 = showLens2CheckBox.isSelected();
 		showComparisonLens = showComparisonLensCheckBox.isSelected();
 		comparisonLensF = comparisonLensFPanel.getNumber();
 		// alvarezWindingFocusing = alvarezWindingFocusingCheckBox.isSelected();
 		windingFocussingType = WindingFocussingType.getWindingFocussingTypeWithDescription(windingFocussingPane.getTitleAt(windingFocussingPane.getSelectedIndex()));
-		simulateDiffraction = simulateDiffractionCheckBox.isSelected();
 		// windingFocussingType = (WindingFocussingType)(windingFocussingTypeComboBox.getSelectedItem());
 //		switch(windingFocussingType)
 //		{
@@ -795,12 +732,8 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 		throw new RuntimeException("No windingFocussingPane tab with title \""+w.toString()+"\"");
 	}
 	
-	public void showOrHideComponents()
-	{
-		showLens1CheckBox.setEnabled(!showLensesCombinedCheckBox.isSelected());
-		showLens2CheckBox.setEnabled(!showLensesCombinedCheckBox.isSelected());
-		spiralLens2AdditionalOffsetPanel.setEnabled(!showLensesCombinedCheckBox.isSelected());
-
+//	public void showOrHideComponents()
+//	{
 //		switch(windingFocussingType)
 //		{
 //		case SEPARATION:
@@ -815,7 +748,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 //			calculateDistanceOfLens2BehindLens1Button.setEnabled(false);
 //			distanceOfLens2BehindLens1Panel.setNumber(1e-8);	// MyMath.TINY;
 //		}
-	}
+//	}
 
 	/**
 	 * calculate F = -f/(1-Exp(b rotationAngle))
@@ -823,17 +756,9 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	 */
 	public double calculateF()
 	{
-		switch(cylindricalLensSpiralType)
-		{
-		case ARCHIMEDEAN:
-		case LOGARITHMIC:
-			return 
-					f/(b*MyMath.deg2rad(rotationAngleDeg));
-					// -f/(1-Math.exp(b*MyMath.deg2rad(rotationAngleDeg)));
-		case HYPERBOLIC:
-		default:
-			return -f/MyMath.deg2rad(rotationAngleDeg);
-		}
+		return 
+				f/(b*MyMath.deg2rad(rotationAngleDeg));
+				// -f/(1-Math.exp(b*MyMath.deg2rad(rotationAngleDeg)));
 	}
 
 	@Override
@@ -849,7 +774,7 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 			acceptValuesInInteractiveControlPanel();
 			double f1 = getFOfFocussedCylindricalLens(f);
 			double f2 = getFOfFocussedCylindricalLens(-f);
-			// System.out.println("SpiralLensVisualiser::actionPerformed: f1="+f1+", f2="+f2);
+			System.out.println("SpiralLensVisualiser::actionPerformed: f1="+f1+", f2="+f2);
 			distanceOfLens2BehindLens1Panel.setNumber(Math.max(-f1*f2*(1/calculateF() - 1/f1 - 1/f2), 0.00001));
 			// distanceOfLens2BehindLens1Panel.setNumber(Math.max(f*f/calculateF(), 0.00001));
 		}
@@ -875,8 +800,6 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 //			showOrHideComponents();
 //		}
 		else super.actionPerformed(e);
-		
-		showOrHideComponents();
 	}
 
 
@@ -891,6 +814,6 @@ public class SpiralLensVisualiser extends NonInteractiveTIMEngine
 	 */
 	public static void main(final String[] args)
 	{
-		(new SpiralLensVisualiser()).run();
+		(new SpiralLensVisualiser_old()).run();
 	}
 }
