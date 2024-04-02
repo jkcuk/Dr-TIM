@@ -54,6 +54,10 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 	private double f2;
 	
 	/**
+	 * Lens type, either ideal or phase hologram
+	 */
+	private LensType lensType;
+	/**
 	 * period of lenslet array 1
 	 */
 	private double period1;
@@ -155,6 +159,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		showLensletArray2 = true;
 		simulateDiffractiveBlur = false;
 		lambdaNM = 632.8;
+		lensType = LensType.IDEAL_THIN_LENS;
 		
 		studioInitialisation = StudioInitialisationType.TIM_HEAD;	// the backdrop
 		addTimHead = false;;
@@ -192,6 +197,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		printStream.println("sideLength="+sideLength);
 		printStream.println("f1="+f1);
 		printStream.println("f2="+f2);
+		printStream.println("lensType="+lensType);
 		printStream.println("period1="+period1);
 		printStream.println("delta period="+deltaPeriod);
 		printStream.println("offset="+offset);
@@ -263,7 +269,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 				period1,	// yPeriod
 				0,	// xOffset
 				0,	// yOffset
-				LensType.IDEAL_THIN_LENS,	// lensType
+				lensType,	// lensType
 				simulateDiffractiveBlur,
 				lambdaNM*1e-9,
 				0.96,	// throughputCoefficient
@@ -291,7 +297,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 				period1+ deltaPeriod,	// yPeriod
 				0,	// xOffset
 				0,	// yOffset
-				LensType.IDEAL_THIN_LENS,
+				lensType,
 				simulateDiffractiveBlur,
 				lambdaNM*1e-9,
 				0.96,	// throughputCoefficient
@@ -317,6 +323,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 	private LabelledVector3DPanel timHeadCentrePanel;
 	private JCheckBox showLensletArray1CheckBox, showLensletArray2CheckBox, simulateDiffractiveBlurCheckBox, addTimHeadCheckBox;
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
+	private JComboBox<LensType> lensTypeComboBox;
 
 	// camera stuff
 	// private LabelledVector3DPanel cameraViewDirectionPanel;
@@ -435,6 +442,10 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		offsetPanel.setToolTipText("Additional offset between the lenslet arrays such that their separation is f1+f2+offset");
 		commonLAParametersPanel.add(GUIBitsAndBobs.makeRow("offset", offsetPanel), "span");
 		
+		lensTypeComboBox = new JComboBox<LensType>(LensType.values());
+		lensTypeComboBox.setSelectedItem(lensType);
+		commonLAParametersPanel.add(GUIBitsAndBobs.makeRow("Lens type",lensTypeComboBox), "span");
+		
 		simulateDiffractiveBlurCheckBox = new JCheckBox("");
 		simulateDiffractiveBlurCheckBox.setSelected(simulateDiffractiveBlur);
 		lambdaNMPanel = new DoublePanel();
@@ -524,6 +535,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		simulateDiffractiveBlur = simulateDiffractiveBlurCheckBox.isSelected();
 		lambdaNM = lambdaNMPanel.getNumber();
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
+		lensType = (LensType)(lensTypeComboBox.getSelectedItem());
 		addTimHead = addTimHeadCheckBox.isSelected();
 		timHeadCentre = timHeadCentrePanel.getVector3D();
 		timRadius = timRadiusPanel.getNumber();

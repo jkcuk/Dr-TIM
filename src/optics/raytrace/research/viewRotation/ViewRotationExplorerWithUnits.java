@@ -405,11 +405,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		diffractiveBlurPixelatedFresnelWedge = true;
 
 		//refractive pixelated fresnel wedge
-		refractiveLatticeSpanVector1 = new Vector3D(0.5,0,0).getProductWith(MM);
-		refractiveLatticeSpanVector2 = new Vector3D(0,0.5,0).getProductWith(MM);
+		refractiveLatticeSpanVector1 = new Vector3D(0.3,0,0).getProductWith(MM);
+		refractiveLatticeSpanVector2 = new Vector3D(0,0.3,0).getProductWith(MM);
 		rotationAngle = 10;//degrees
 		designDistancePlane = new Vector3D(0,0,1);
-		diffractuveBlurRefractiveFresnelWedge = false;
+		diffractuveBlurRefractiveFresnelWedge = true;
 		boundingBoxCentre = new Vector3D (0,0,1.4999).getProductWith(MM);
 		boundingBoxSpanVector1 = new Vector3D(5,0,0).getProductWith(CM);
 		boundingBoxSpanVector2 = new Vector3D(0,5,0).getProductWith(CM);
@@ -417,8 +417,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		thickness = 1*MM;
 		magnificationFactor = 1;
 		refractiveIndex = 1.5;//glass
-		surfaceTransmissionCoefficient = 1;
-		maxTrace = 200;
+		surfaceTransmissionCoefficient = 0.9;
+		maxTrace = 100;
 
 
 		// moiré rotator
@@ -450,10 +450,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		studioInitialisation = StudioInitialisationType.LATTICE;	// the backdrop
 		viewObjectType = ViewObjectType.LATTICE;
 		testImage = TestImage.EPSRC_LOGO;
-		chartType = ChartType.RANDOM;
+		chartType = ChartType.SET;
 		customBackground = true;
 		objectRotationAngle = 0;
 		objectDistance = 1*M;
+		objectHeight = 2*M;
 
 		// camera
 		anaglyphCamera = false;
@@ -464,14 +465,14 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		cameraDistance = 1.5*CM;
 		cameraViewDirection = new Vector3D(0, 0, 1);
 		cameraTopDirection = new Vector3D(0,1,0);
-		cameraHorizontalFOVDeg = 130;
+		cameraHorizontalFOVDeg = 125;
 		cameraApertureSize = ApertureSizeType.EYE;
 		setcameraAperture = false;
 		cameraAperture = 1*MM;
 		cameraFocussingDistance = 1*M;
 		useEyeballCamera = true;
 		autoFocus = false;
-		cameraApertureDiffraction = false;
+		cameraApertureDiffraction = true;
 		rotateViewSystem = false;
 		
 		//Move mode to change pixel span vector frame by frame
@@ -486,7 +487,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		eyePosition = new Vector3D(0,0,-1.5).getProductWith(CM);
 		componentCentre = Vector3D.O;
 		objectCentre = Vector3D.O;
-		objectHeight = 2*M;
+
 
 
 		if(nonInteractiveTIMAction == NonInteractiveTIMActionEnum.INTERACTIVE)
@@ -561,7 +562,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					printStream.println("wedge thickness =" +thickness/MM+"mm");
 					printStream.println("transmission coefficient =" +surfaceTransmissionCoefficient);
 					printStream.println("eye positon ="+eyePosition);
-					printStream.println("camera distance ="+cameraDistance);
 					printStream.println("refractive index="+refractiveIndex);
 					printStream.println("magnificationFactor="+magnificationFactor);
 					printStream.println("Design distance plane="+designDistancePlane);
@@ -599,8 +599,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 				printStream.println(" cVD horizontal angle="+sideAngle);
 				printStream.println(" cFOV="+cameraHorizontalFOVDeg);
 				printStream.println(" cAS="+cameraApertureSize);
-				printStream.println(" custom aperture size"+setcameraAperture);
-				if(setcameraAperture)printStream.println(" aperture radius"+ cameraAperture/MM+"mm");
+				printStream.println(" custom aperture size="+setcameraAperture);
+				if(setcameraAperture)printStream.println(" aperture radius="+ cameraAperture/MM+"mm");
 				printStream.println(" cFD="+cameraFocussingDistance);
 				printStream.println(" diffractive aperture= "+cameraApertureDiffraction);
 				printStream.println("autoFocus="+autoFocus);
@@ -1085,6 +1085,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 //			By default:
 //			cameraPixelsX = 640
 //			cameraPixelsY = 480
+			//TODO update to allow for off axis viewing...
 			int
 			pixelsX = cameraPixelsX*(int)renderQuality.getAntiAliasingQuality().getAntiAliasingFactor(),
 			pixelsY = cameraPixelsY*(int)renderQuality.getAntiAliasingQuality().getAntiAliasingFactor(),
@@ -1639,7 +1640,7 @@ protected void createInteractiveControlPanel()
 		
 		testImageComboBox = new JComboBox<TestImage>(TestImage.values());
 		testImageComboBox.setSelectedItem(testImage);
-		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("Test image Type", testImageComboBox), "span");
+		customBackgroundPanel.add(GUIBitsAndBobs.makeRow("Test image type", testImageComboBox), "span");
 		
 		chartTypeComboBox = new JComboBox<ChartType>(ChartType.values());
 		chartTypeComboBox.setSelectedItem(chartType);
