@@ -1,4 +1,4 @@
-package optics.raytrace.research.adaptiveIntegralLens;
+package optics.raytrace.research.adaptiveFresnelLens;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,6 +40,8 @@ import optics.raytrace.core.SurfacePropertyPrimitive;
  */
 public class AdaptiveToricLensVisualiser extends NonInteractiveTIMEngine implements ActionListener
 {
+	private static final long serialVersionUID = 4540367010179796962L;
+
 	/**
 	 * centre position
 	 */

@@ -1,4 +1,4 @@
-package optics.raytrace.research.adaptiveIntegralLens;
+package optics.raytrace.research.adaptiveFresnelLens;
 
 import java.awt.event.ActionEvent;
 

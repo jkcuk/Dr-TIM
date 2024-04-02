@@ -232,15 +232,13 @@ public class PhaseHologramOfCrossedLinearPowerLenticularArrays extends PhaseHolo
 					);
 		// the second term, proportional to -0.5*dPdu*uuN^2 (or vvN^2) is for one part of a Lohmann cylindrical lens --
 		// see PhaseHologramOfLohmannCylindricalLensPart::getTangentialDirectionComponentChangeTransmissive
-		}else {
+		} else {
 			//... Otherwise we remove the second term to disable pixel focusing
 			return Vector3D.sum(
 					localUHat.getProductWith(-uuN*calculateFocalPower(uN)),
 					localVHat.getProductWith(-vvN*calculateFocalPower(vN))
 					);
 		}
-		
-
 	}
 
 	@Override
