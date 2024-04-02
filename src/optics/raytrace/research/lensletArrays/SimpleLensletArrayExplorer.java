@@ -419,7 +419,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		phi2DegPanel.setToolTipText("Angle by which the array is rotated around the array normal");
 		la2Panel.add(GUIBitsAndBobs.makeRow("phi", phi2DegPanel, "degrees"), "span");
 
-		// add the LA panels
+		// add the LA panel
 		scenePanel.add(GUIBitsAndBobs.makeRow(la1Panel, la2Panel), "span");
 
 

@@ -404,7 +404,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		latticeSpanVector2 = new Vector3D(0,0.1,0).getProductWith(MM);
 		diffractiveBlurPixelatedFresnelWedge = true;
 
-		//refractive pixelated fresnel wedge
+		//refractive pixelated fresnel wedges
 		refractiveLatticeSpanVector1 = new Vector3D(0.3,0,0).getProductWith(MM);
 		refractiveLatticeSpanVector2 = new Vector3D(0,0.3,0).getProductWith(MM);
 		rotationAngle = 10;//degrees
