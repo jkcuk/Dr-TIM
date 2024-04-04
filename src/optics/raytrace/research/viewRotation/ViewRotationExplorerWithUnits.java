@@ -1059,7 +1059,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					studio
 					));
 			
-			System.out.println("eye position at "+eyePosition);
+			//System.out.println("eye position at "+eyePosition);
 
 		case NOTHING:
 			// don't add anything
@@ -1081,6 +1081,26 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			cameraApertureRadius = cameraApertureSize.getApertureRadius();
 		}
 		
+		if(sideAngle != 0 || upAngle != 0) {
+			//in spherical coordinates where the view along the z axis is upAngle = 0 sideAngle = 0 
+			cameraViewDirection = Geometry.rotate(Geometry.rotate(Vector3D.Z, Vector3D.Y, Math.toRadians(-sideAngle)),
+					Vector3D.X,	Math.toRadians(-upAngle)).getNormalised();
+		}
+		
+		if(rotateViewSystem) cameraViewDirection = Geometry.rotate(cameraViewDirection, Vector3D.Z, Math.toRadians(cameraRotation));
+
+		Vector3D topDirection = Vector3D.Y.getPartPerpendicularTo(cameraViewDirection);
+		Vector3D cameraCentre;
+		Vector3D cameraAim;
+		if (useEyeballCamera) {
+			//The cameraCentre is now actually the eye centre position
+			cameraCentre = Vector3D.Z.getWithLength(-allRadius);
+			cameraAim = cameraCentre.getSumWith(cameraViewDirection.getWithLength(allRadius));
+		}else {
+			cameraCentre = Vector3D.Z.getWithLength(-cameraDistance);
+			cameraAim = cameraCentre.getSumWith(cameraViewDirection.getWithLength(cameraDistance));
+		}
+		
 		if(anaglyphCamera) {
 //			By default:
 //			cameraPixelsX = 640
@@ -1094,7 +1114,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 			CyclodeviationAnaglyphCamera cyclodeviationAnaglyphCamera = new CyclodeviationAnaglyphCamera(
 					"Cyclodeviated anaglyph camera",// name,
 					Vector3D.sum(Vector3D.O,Vector3D.Z.getWithLength(-cameraDistance)),// betweenTheEyes,	// middle between two eyes
-					Geometry.rotate(Geometry.rotate(new Vector3D(0,0,objectDistance), Vector3D.Y, Math.toRadians(-sideAngle)),Vector3D.X,Math.toRadians(-upAngle)),// centreOfView,	// the point in the centre of both eyes' field of view
+					Vector3D.sum(Vector3D.O,Vector3D.Z.getWithLength(-cameraDistance),cameraViewDirection.getWithLength(cameraDistance+objectDistance)),// centreOfView,	// the point in the centre of both eyes' field of view
 					Geometry.rotate(Vector3D.X, Vector3D.Y, Math.toRadians(-sideAngle)).getWithLength(objectDistance*2*Math.tan(MyMath.deg2rad(cameraHorizontalFOVDeg)/2.)), // horizontalSpanVector,	// a vector along the width of the field of view, pointing to the right
 					Geometry.rotate(Vector3D.Y,Geometry.rotate(Vector3D.X, Vector3D.Y, Math.toRadians(-sideAngle)),Math.toRadians(-upAngle))
 					.getWithLength(objectDistance*-2*Math.tan(MyMath.deg2rad(cameraHorizontalFOVDeg)/2.) * pixelsY / pixelsX),// verticalSpanVector,	// a vector along the height of the field of view, pointing upwards
@@ -1114,26 +1134,6 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					);
 			studio.setCamera(cyclodeviationAnaglyphCamera);
 		}else {
-
-			if(sideAngle != 0 || upAngle != 0) {
-				//in spherical coordinates where the view along the z axis is upAngle = 0 sideAngle = 0 
-				cameraViewDirection = Geometry.rotate(Geometry.rotate(Vector3D.Z, Vector3D.Y, Math.toRadians(-sideAngle)),
-						Vector3D.X,	Math.toRadians(-upAngle)).getNormalised();
-			}
-			
-			if(rotateViewSystem) cameraViewDirection = Geometry.rotate(cameraViewDirection, Vector3D.Z, Math.toRadians(cameraRotation));
-
-			Vector3D topDirection = Vector3D.Y.getPartPerpendicularTo(cameraViewDirection);
-			Vector3D cameraCentre;
-			Vector3D cameraAim;
-			if (useEyeballCamera) {
-				//The cameraCentre is now actually the eye centre position
-				cameraCentre = Vector3D.Z.getWithLength(-allRadius);
-				cameraAim = cameraCentre.getSumWith(cameraViewDirection.getWithLength(allRadius));
-			}else {
-				cameraCentre = Vector3D.Z.getWithLength(-cameraDistance);
-				cameraAim = cameraCentre.getSumWith(cameraViewDirection.getWithLength(cameraDistance));
-			}
 			Vector3D apertureCentre = Vector3D.sum(cameraAim, cameraViewDirection.getWithLength(-cameraDistance));
 			cameraTopDirection = Geometry.rotate(topDirection.getNormalised(), cameraViewDirection, Math.toRadians(cameraRotation));//.getSumWith(cameraCentre); 
 			cameraViewCentre = Vector3D.sum(apertureCentre, cameraViewDirection);
