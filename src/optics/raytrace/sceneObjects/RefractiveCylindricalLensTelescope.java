@@ -6,15 +6,16 @@ import math.Vector3D;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.SurfaceProperty;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectPrimitiveIntersection;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
+import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
 import optics.raytrace.surfaces.RefractiveSimple;
 //import optics.raytrace.surfaces.SurfaceColour;
 
 /**
- * A simple refractive cylindrical lens telescope.
+ * A simple refractive cylindrical lens telescope. At the moment it only really works and is tested for positive focal lengths...
  * @author Maik
  */
-public class RefractiveCylindricalLensTelescope extends SceneObjectPrimitiveIntersection
+public class RefractiveCylindricalLensTelescope extends SceneObjectIntersection
 {
 	private static final long serialVersionUID = -3495489316492484275L;
 
@@ -44,12 +45,12 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectPrimitiveInte
 	private double width;
 
 	/**
-	 * Focal length of the front surface lens
+	 * Focal length of the front surface lens in the refractive medium
 	 */
 	private double frontFocalLength;
 	
 	/**
-	 * Focal length of the front surface lens
+	 * Focal length of the front surface lens in the refractive medium
 	 */
 	private double backFocalLength;
 
@@ -235,12 +236,11 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectPrimitiveInte
 	public void addElements()
 	{
 		Vector3D normalisedSideDirection = Vector3D.crossProduct(normalisedCylinderAxisDirection,normalisedOpticalAxisDirection).getNormalised();
-		double rfront = calculateRFromLensmakersEquation(frontFocalLength, refractiveIndex); //TODO make this right...
-		double rback = calculateRFromLensmakersEquation(backFocalLength, refractiveIndex); //TODO make this right...
+		double rfront = calculateRFromLensmakersEquation(frontFocalLength, refractiveIndex);
+		double rback = calculateRFromLensmakersEquation(backFocalLength, refractiveIndex);
 		Vector3D frontCylinderCentre = Vector3D.sum(principalPoint, normalisedOpticalAxisDirection.getProductWith(rfront));
-		Vector3D backCylinderPrincipalPoint = Vector3D.sum(principalPoint, normalisedOpticalAxisDirection.getProductWith(frontFocalLength+backFocalLength));
+		Vector3D backCylinderPrincipalPoint = Vector3D.sum(principalPoint, normalisedOpticalAxisDirection.getProductWith((frontFocalLength+backFocalLength)));
 		Vector3D backCylinderCentre = Vector3D.sum(backCylinderPrincipalPoint, normalisedOpticalAxisDirection.getProductWith(-rback));//TODO double check these but should be correct ish..
-		//Vector3D planeCentre = Vector3D.sum(sphere1Centre, normalisedOpticalAxisDirection.getProductWith(Math.abs(centreThickness)-Math.abs(r)));
 
 		
 		double rAbsMin = Math.min(Math.abs(rback), Math.abs(rfront));
@@ -252,15 +252,22 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectPrimitiveInte
 		
 		
 		RefractiveSimple surfaceN = new RefractiveSimple(refractiveIndex, surfaceTransmissionCoefficient, shadowThrowing);
-		RefractiveSimple surface1OverN = new RefractiveSimple(1./refractiveIndex, surfaceTransmissionCoefficient, shadowThrowing);	// 1/n as the inside of the sphere is now outside of the lens
+//		RefractiveSimple surface1OverN = new RefractiveSimple(1./refractiveIndex, surfaceTransmissionCoefficient, shadowThrowing);	// 1/n as the inside of the sphere is now outside of the lens
 		
 		SurfaceProperty frontSurfaceProperty = surfaceN;
-		SurfaceProperty backSurfaceProperty = surface1OverN;//TODO check this is the right way around, for the default case where both the fornt focal lnegth and back focal length are positive...
-		if (rfront<0) frontSurfaceProperty = surface1OverN;
-		if (rback<0) frontSurfaceProperty = surfaceN;
+		SurfaceProperty backSurfaceProperty = surfaceN;
+//		if (rfront<0) frontSurfaceProperty = surface1OverN;
+//		if (rback<0) frontSurfaceProperty = surface1OverN;
 		
 		//Now to build the telescope lenses
-			
+		
+		// create a scene-object intersection, for the front
+		SceneObjectIntersection frontLens = new SceneObjectIntersection(
+				"Front lens",	// description
+				this,	// parent
+				getStudio()
+			);
+		
 			// surface 1, the front cylinder
 			CylinderMantle frontCylinder = new CylinderMantle(
 					"front surface",// description,
@@ -284,6 +291,13 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectPrimitiveInte
 			getStudio() //studio
 					);
 	
+			// create a scene-object intersection, for the back
+			SceneObjectIntersection backLens = new SceneObjectIntersection(
+					"Back lens",	// description
+					this,	// parent
+					getStudio()
+				);
+			
 			// surface 2, the back cylinder
 			CylinderMantle backCylinder = new CylinderMantle(
 					"back surface",// description,
@@ -307,22 +321,28 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectPrimitiveInte
 					);
 
 			//Adding the front...
-			addPositiveSceneObjectPrimitive(frontCylinder);
-			addInvisiblePositiveSceneObjectPrimitive(plane1);
+			frontLens.addPositiveSceneObject(frontCylinder);
+			frontLens.addInvisiblePositiveSceneObject(plane1);
 			
 			//... and back surfaces
-			addPositiveSceneObjectPrimitive(backCylinder);
-			addInvisiblePositiveSceneObjectPrimitive(plane2);
+			backLens.addPositiveSceneObject(backCylinder);
+			backLens.addInvisiblePositiveSceneObject(plane2);
 			
-			
+			//adding them both to a collection of scene object
+			SceneObjectContainer lenses = new SceneObjectContainer(
+					"Lenses",	// description
+					this,	// parent
+					getStudio()
+				);
+			lenses.addSceneObject(frontLens);
+			lenses.addSceneObject(backLens);	
 			
 			//And lastly to cut it into the right dimensions
-			
 			Plane sidePlane1 = new Plane(
 					"Side 1 of telescope", //description,
 					Vector3D.sum(principalPoint, normalisedSideDirection.getProductWith(width/2)), //pointOnPlane,
-					normalisedSideDirection.getProductWith(1), //normal, //TODO check this is the right way around...
-					surfaceN,//SurfaceColour.BLUE_MATT, //surfaceProperty,//TODO check this is the right way around...
+					normalisedSideDirection.getProductWith(1), //normal,
+					surfaceN,//SurfaceColour.BLUE_MATT, //surfaceProperty,
 					this, //parent,
 					getStudio() //studio
 				);
@@ -330,8 +350,8 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectPrimitiveInte
 			Plane sidePlane2 = new Plane(
 					"Side 2 of telescope", //description,
 					Vector3D.sum(principalPoint, normalisedSideDirection.getProductWith(-width/2)), //pointOnPlane,
-					normalisedSideDirection.getProductWith(-1), //normal, //TODO check this is the right way around...
-					surfaceN,//SurfaceColour.BLUE_MATT, //surfaceProperty,//TODO check this is the right way around...
+					normalisedSideDirection.getProductWith(-1), //normal, 
+					surfaceN,//SurfaceColour.BLUE_MATT, //surfaceProperty,
 					this, //parent,
 					getStudio() //studio
 				);
@@ -339,8 +359,8 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectPrimitiveInte
 			Plane topPlane1 = new Plane(
 					"Top 1 of telescope", //description,
 					Vector3D.sum(principalPoint, normalisedCylinderAxisDirection.getProductWith(height/2)), //pointOnPlane,
-					normalisedCylinderAxisDirection.getProductWith(1), //normal, //TODO check this is the right way around...
-					surfaceN,//SurfaceColour.BLUE_MATT, //surfaceProperty,//TODO check this is the right way around...
+					normalisedCylinderAxisDirection.getProductWith(1), //normal, 
+					surfaceN,//SurfaceColour.BLUE_MATT, //surfaceProperty,
 					this, //parent,
 					getStudio() //studio
 				);
@@ -348,16 +368,17 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectPrimitiveInte
 			Plane topPlane2 = new Plane(
 					"Top 2 of telescope", //description,
 					Vector3D.sum(principalPoint, normalisedCylinderAxisDirection.getProductWith(-height/2)), //pointOnPlane,
-					normalisedCylinderAxisDirection.getProductWith(-1), //normal, //TODO check this is the right way around...
-					surfaceN,//SurfaceColour.BLUE_MATT, //surfaceProperty,//TODO check this is the right way around...
+					normalisedCylinderAxisDirection.getProductWith(-1), //normal, 
+					surfaceN,//SurfaceColour.BLUE_MATT, //surfaceProperty,
 					this, //parent,
 					getStudio() //studio
 				);
 
-			addPositiveSceneObjectPrimitive(sidePlane1);
-			addPositiveSceneObjectPrimitive(sidePlane2);
-			addPositiveSceneObjectPrimitive(topPlane1);
-			addPositiveSceneObjectPrimitive(topPlane2);
+			addPositiveSceneObject(lenses);
+			addPositiveSceneObject(sidePlane1);
+			addPositiveSceneObject(sidePlane2);
+			addPositiveSceneObject(topPlane1);
+			addPositiveSceneObject(topPlane2);
 		
 	}
 
@@ -365,14 +386,14 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectPrimitiveInte
 
 	
 	/**
-	 * Calculate the radius of curvature of a plano refractive lens TODO fix this as well....
+	 * Calculate the radius of curvature of a refractive cylindrical lens (when the outgoing rays are in a material of index n) TODO fix this as well....
 	 * @param f	focal length
 	 * @param n	refractive index
 	 * @return	radius of curvature (>0 = convex) 
 	 */
 	public static double calculateRFromLensmakersEquation(double f, double n)
 	{
-		return f*(n-1);	
+		return f*(n-1)/n;	
 	}
 
 

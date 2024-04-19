@@ -21,6 +21,7 @@ import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.sceneObjects.RefractiveCylindricalLensTelescope;
+import optics.raytrace.sceneObjects.TimHead;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 
 
@@ -37,6 +38,8 @@ public class SimpleSceneRefractionTestUE5 extends NonInteractiveTIMEngine
 	private double rotationAngle;
 	
 	private double height, width, frontFocalLength, backFocalLength, refractiveIndex;
+	
+	private double timDistance, timRadius;
 	
 	private boolean addTelescop1, addTelescop2;
 
@@ -56,12 +59,16 @@ public class SimpleSceneRefractionTestUE5 extends NonInteractiveTIMEngine
 		addTelescop1 = true;
 		addTelescop2 = true;
 		
+		//backdrop scene
+		timDistance = 20;
+		timRadius = 2;
+		
 		//directional params
 		rotationAngle = 10;
 		
 		//camera and explorer
 		renderQuality = RenderQualityEnum.DRAFT;
-		studioInitialisation = StudioInitialisationType.TIM_HEAD;
+		studioInitialisation = StudioInitialisationType.MINIMALIST;
 		
 		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
 //		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.MOVIE;
@@ -122,13 +129,24 @@ public class SimpleSceneRefractionTestUE5 extends NonInteractiveTIMEngine
 						studio
 					);
 				
+				scene.addSceneObject(new TimHead(
+						"tim head",
+						new Vector3D(0,0,timDistance),
+						timRadius,
+						new Vector3D(0, 0, -1),	// frontDirection
+						new Vector3D(0, 1, 0), 	// topDirection
+						new Vector3D(1, 0, 0),	// rightDirection
+						scene,
+						studio
+						));
+				
 				//Adding two refractive cylindrical lens telescopes where one has the central axis rotated by 20 degrees.
 				RefractiveCylindricalLensTelescope telescope1 = new RefractiveCylindricalLensTelescope(
 				"front telescope",// description,
 				height,// height,
 				width,// width,
 				Vector3D.O,// principalPoint,
-				Vector3D.Z,// normalisedOpticalAxisDirection,
+				Vector3D.Z.getProductWith(-1),// normalisedOpticalAxisDirection,
 				Vector3D.Y,// normalisedCylinderAxisDirection,
 				frontFocalLength,// frontFocalLength,
 				backFocalLength,// backFocalLength,
@@ -139,12 +157,12 @@ public class SimpleSceneRefractionTestUE5 extends NonInteractiveTIMEngine
 				studio// studio
 				);
 				
-				Vector3D rotatedCylindricalAxisDirection = Geometry.rotate(Vector3D.Y, Vector3D.Z, rotationAngle);
+				Vector3D rotatedCylindricalAxisDirection = Geometry.rotate(Vector3D.Y, Vector3D.Z, MyMath.deg2rad(rotationAngle));
 				RefractiveCylindricalLensTelescope telescope2 = new RefractiveCylindricalLensTelescope(				
 						"back telescope",// description,
 						height,// height,
 						width,// width,
-						Vector3D.O,// principalPoint,
+						Vector3D.Z.getProductWith(1.5*refractiveIndex*frontFocalLength+backFocalLength),// principalPoint,
 						Vector3D.Z,// normalisedOpticalAxisDirection,
 						rotatedCylindricalAxisDirection,// normalisedCylinderAxisDirection,
 						frontFocalLength,// frontFocalLength,
@@ -166,7 +184,7 @@ public class SimpleSceneRefractionTestUE5 extends NonInteractiveTIMEngine
 
 	
 	//scene stuff
-	private LabelledDoublePanel rotationAnglePanel, heightPanel, widthPanel, frontFocalLengthPanel, backFocalLengthPanel, refractiveIndexPanel;
+	private LabelledDoublePanel rotationAnglePanel, heightPanel, widthPanel, frontFocalLengthPanel, backFocalLengthPanel, refractiveIndexPanel, timDistancePanel, timRadiusPanel;
 	private JCheckBox addTelescop1CheckBox, addTelescop2CheckBox;
 	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 
@@ -234,6 +252,14 @@ public class SimpleSceneRefractionTestUE5 extends NonInteractiveTIMEngine
 		addTelescop2CheckBox.setSelected(addTelescop2);
 		scenePanel.add(addTelescop2CheckBox, "span");
 		
+		timDistancePanel = new LabelledDoublePanel("tim distance");
+		timDistancePanel.setNumber(timDistance);
+		scenePanel.add(timDistancePanel, "span");
+		
+		timRadiusPanel = new LabelledDoublePanel("tim radius");
+		timRadiusPanel.setNumber(timRadius);
+		scenePanel.add(timRadiusPanel, "span");
+		
 		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
 		scenePanel.add(GUIBitsAndBobs.makeRow("Background", studioInitialisationComboBox), "span");
@@ -290,7 +316,10 @@ public class SimpleSceneRefractionTestUE5 extends NonInteractiveTIMEngine
 		refractiveIndex = refractiveIndexPanel.getNumber();
 		addTelescop1 = addTelescop1CheckBox.isSelected();
 		addTelescop2 = addTelescop2CheckBox.isSelected();
+		timDistance = timDistancePanel.getNumber();
+		timRadius = timRadiusPanel.getNumber();
 		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
+		
 
 		
 		// cameraViewDirection = cameraViewDirectionPanel.getVector3D();
