@@ -9,13 +9,14 @@ import optics.raytrace.core.SurfaceProperty;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
 import optics.raytrace.surfaces.RefractiveSimple;
+import optics.raytrace.surfaces.SurfaceColour;
 //import optics.raytrace.surfaces.SurfaceColour;
 
 /**
  * A simple refractive cylindrical lens telescope. At the moment it only really works and is tested for positive focal lengths...
  * @author Maik
  */
-public class RefractiveCylindricalLensTelescope extends SceneObjectIntersection
+public class RefractiveCylindricalLensTelescope extends SceneObjectContainer
 {
 	private static final long serialVersionUID = -3495489316492484275L;
 
@@ -326,23 +327,22 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectIntersection
 			
 			//... and back surfaces
 			backLens.addPositiveSceneObject(backCylinder);
-			backLens.addInvisiblePositiveSceneObject(plane2);
+			backLens.addInvisiblePositiveSceneObject(plane2);	
 			
-			//adding them both to a collection of scene object
-			SceneObjectContainer lenses = new SceneObjectContainer(
-					"Lenses",	// description
+			
+			// create a scene-object intersection, for the back
+			SceneObjectIntersection sides = new SceneObjectIntersection(
+					"Side",	// description
 					this,	// parent
 					getStudio()
 				);
-			lenses.addSceneObject(frontLens);
-			lenses.addSceneObject(backLens);	
 			
 			//And lastly to cut it into the right dimensions
 			Plane sidePlane1 = new Plane(
 					"Side 1 of telescope", //description,
 					Vector3D.sum(principalPoint, normalisedSideDirection.getProductWith(width/2)), //pointOnPlane,
 					normalisedSideDirection.getProductWith(1), //normal,
-					surfaceN,//SurfaceColour.BLUE_MATT, //surfaceProperty,
+					SurfaceColour.BLUE_MATT, //surfaceProperty,
 					this, //parent,
 					getStudio() //studio
 				);
@@ -374,11 +374,29 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectIntersection
 					getStudio() //studio
 				);
 
-			addPositiveSceneObject(lenses);
-			addPositiveSceneObject(sidePlane1);
-			addPositiveSceneObject(sidePlane2);
-			addPositiveSceneObject(topPlane1);
-			addPositiveSceneObject(topPlane2);
+			frontLens.addPositiveSceneObject(sidePlane1);
+			frontLens.addPositiveSceneObject(sidePlane2);
+			frontLens.addPositiveSceneObject(topPlane1);
+			frontLens.addPositiveSceneObject(topPlane2);
+			
+			backLens.addPositiveSceneObject(sidePlane1);
+			backLens.addPositiveSceneObject(sidePlane2);
+			backLens.addPositiveSceneObject(topPlane1);
+			backLens.addPositiveSceneObject(topPlane2);
+			
+			
+			//We also need to create the sides so that it is fully working...
+			sides.addPositiveSceneObject(sidePlane1);
+			sides.addPositiveSceneObject(sidePlane2);
+			sides.addPositiveSceneObject(topPlane1);
+			sides.addPositiveSceneObject(topPlane2);
+			sides.addInvisibleNegativeSceneObject(plane1);
+			sides.addInvisibleNegativeSceneObject(plane2);
+			
+			
+			addSceneObject(frontLens);
+			addSceneObject(backLens);
+			addSceneObject(sides);
 		
 	}
 
