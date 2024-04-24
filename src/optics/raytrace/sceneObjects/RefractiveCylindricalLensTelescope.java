@@ -342,7 +342,7 @@ public class RefractiveCylindricalLensTelescope extends SceneObjectContainer
 					"Side 1 of telescope", //description,
 					Vector3D.sum(principalPoint, normalisedSideDirection.getProductWith(width/2)), //pointOnPlane,
 					normalisedSideDirection.getProductWith(1), //normal,
-					SurfaceColour.BLUE_MATT, //surfaceProperty,
+					surfaceN,//SurfaceColour.BLUE_MATT, //surfaceProperty,
 					this, //parent,
 					getStudio() //studio
 				);

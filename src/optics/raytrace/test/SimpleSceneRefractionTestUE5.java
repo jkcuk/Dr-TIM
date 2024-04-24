@@ -157,12 +157,13 @@ public class SimpleSceneRefractionTestUE5 extends NonInteractiveTIMEngine
 				studio// studio
 				);
 				
+				
 				Vector3D rotatedCylindricalAxisDirection = Geometry.rotate(Vector3D.Y, Vector3D.Z, MyMath.deg2rad(rotationAngle));
 				RefractiveCylindricalLensTelescope telescope2 = new RefractiveCylindricalLensTelescope(				
 						"back telescope",// description,
 						height,// height,
 						width,// width,
-						Vector3D.Z.getProductWith(1.5*refractiveIndex*frontFocalLength+backFocalLength),// principalPoint,
+						Vector3D.Z.getProductWith(frontFocalLength+backFocalLength+MyMath.TINY),// principalPoint, spaced such that the second telescope is close to but always behind the first. 
 						Vector3D.Z,// normalisedOpticalAxisDirection,
 						rotatedCylindricalAxisDirection,// normalisedCylinderAxisDirection,
 						frontFocalLength,// frontFocalLength,
