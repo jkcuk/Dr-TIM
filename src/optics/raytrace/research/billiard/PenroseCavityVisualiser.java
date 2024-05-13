@@ -11,8 +11,6 @@ import math.*;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.*;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
-import optics.raytrace.sceneObjects.solidGeometry.SceneObjectIntersection;
-import optics.raytrace.sceneObjects.EllipticCylinderMantle;
 import optics.raytrace.surfaces.Reflective;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
@@ -34,26 +32,26 @@ import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
 
 
 /**
- * Visualise the view within the pendrose cavity[TODO ref].
+ * Visualise the view within the pendrose cavity.
  * 
- * This consists of an ellipse with two "mushroom" shaped extrusiones from either side.
- * The ellipses are tunable with a provided focal length along with a major axis.
+ * This consists of a split ellipse with two "mushroom" shaped extrusiones from either side.
  * 
  * @author Maik
  */
 public class PenroseCavityVisualiser extends NonInteractiveTIMEngine
 {
-
 	
+	private static final long serialVersionUID = 4570690288081015390L;
+
 	/**
 	 * height of the wall around the cavity
 	 */
 	private double wallHeight;
 	
 	/*
-	 * The span vector along the major axis of the outer elliptic cylinder.
+	 * The span vector along the smi major axis of the outer elliptic cylinder.
 	 */
-	private Vector3D spanA;
+	private Vector3D a;
 	
 	/*
 	 * the focal length of the outer ellipse
@@ -61,22 +59,19 @@ public class PenroseCavityVisualiser extends NonInteractiveTIMEngine
 	private double focalLength;
 	
 	/*
-	 * The span vector along the major axis of the first and second inner elliptic cylinder respectively.
+	 * d, the length along the semi minor axis of the out ellipse, should be larger than the smei minor axis length. 
 	 */
-	private Vector3D spanA1, spanA2;
-	
-	/*
-	 * the focal length of the first and second inner ellipse respectively.
-	 */
-	private double focalLength1, focalLength2;
+	private double d;
 	
 	private double mirrorReflectionCoefficient;
 	
 	
 	/*
-	 * The height and width of the extrusion cavities.
+	 * c(s) represent the semi minor axis of the ellipsoidal extrusions on side 1 and 2 respectively
+	 * h(s) represents the straight side length perpendicular to the planar extrusions. (As shown in 
+	 * Kim, J., Kim, J., Seo, J. et al. Observation of a half-illuminated mode in an open Penrose cavity. Sci Rep 12, 9798 (2022). https://doi.org/10.1038/s41598-022-13963-y
 	 */
-	private double cavityDepth1, cavityWidth1, cavityDepth2, cavityWidth2;
+	private double c1, h1, c2, h2;
 	
 	/*
 	 *set the surfaces to be reflective. If not true they will be blue by default (colour be changed in the code) 
@@ -87,6 +82,11 @@ public class PenroseCavityVisualiser extends NonInteractiveTIMEngine
 	 * if true, the cavity will also have shadows.
 	 */
 	private boolean shadowThrowing;
+	
+	/**
+	 * Should the cavity be infinitely tall?
+	 */
+	private boolean infinite;
 	
 	// camera
 	
@@ -179,17 +179,20 @@ public class PenroseCavityVisualiser extends NonInteractiveTIMEngine
 		wallHeight = 1;
 		setReflective = true;
 		shadowThrowing = true;
-		spanA = new Vector3D(0,0,6);
+		a = new Vector3D(6,0,0);
 		
-		focalLength = 4;
+		focalLength = 5;
 
-		spanA1 = spanA2 = new Vector3D(0,0,1);
-		focalLength1 = focalLength2 = 0.6;
+		d = 7;
 		
 		mirrorReflectionCoefficient = 0.999;
-		cavityDepth1 = cavityDepth2 = 1;
-		cavityWidth1 = cavityWidth2 = 0.7;
+		c1 = 1;
+		c2 = 1;
+		h1 = 3;
+		h2 = 3;
 		
+		infinite = false;
+
 		// camera above
 		cameraViewCentre = new Vector3D(0, 0, 0.0001);
 		// cameraViewDirection = new Vector3D(0, -1, 0.0001);
@@ -282,28 +285,18 @@ public class PenroseCavityVisualiser extends NonInteractiveTIMEngine
 		printStream.println("Scene initialisation");
 		printStream.println();
 		
-		
-		spanA1 = spanA2 = new Vector3D(0,0,0.5);
-		focalLength1 = focalLength2 = 0.3;
-		
-		mirrorReflectionCoefficient = 0.999;
-		cavityDepth1 = cavityDepth2 = 0.5;
-		cavityWidth1 = cavityWidth2 = 0.3;
-		
 		printStream.println("wallHeight = "+wallHeight);
-		printStream.println("spanA = "+spanA);
+		printStream.println("a = "+a);
 		printStream.println("focalLength = "+focalLength);
-		printStream.println("spanA1 = "+spanA1);
-		printStream.println("focalLength1 = "+focalLength1);
-		printStream.println("cavityHeight1 = "+cavityDepth1);
-		printStream.println("cavityWidth1 = "+cavityWidth1);
-		printStream.println("spanA2 = "+spanA2);
-		printStream.println("focalLength2 = "+focalLength2);
-		printStream.println("cavityHeight2 = "+cavityDepth2);
-		printStream.println("cavityWidth2 = "+cavityWidth2);
+		printStream.println("d = "+d);
+		printStream.println("c1 = "+c1);
+		printStream.println("h1 = "+h1);
+		printStream.println("c2 = "+c2);
+		printStream.println("h2 = "+h2);
 		printStream.println("setReflective = "+setReflective);
 		printStream.println("mirrorTransmissionCoefficient = "+mirrorReflectionCoefficient);
 		printStream.println("shadowThrowing = "+shadowThrowing);
+		printStream.println("infinite = "+infinite);
 		
 
 		// trajectories
@@ -387,204 +380,27 @@ public class PenroseCavityVisualiser extends NonInteractiveTIMEngine
 					sphereVisibilities[i]
 				);
 
-		Vector3D up = new Vector3D(0, 1, 0);
 		SurfaceProperty surface = new SurfaceColour("blue matt", DoubleColour.BLUE, DoubleColour.BLACK, shadowThrowing);
-		if(setReflective) surface = new Reflective(mirrorReflectionCoefficient, shadowThrowing);
-			
-		// create a scene-object intersection, for the overall cavity
-		SceneObjectIntersection cavity = new SceneObjectIntersection(
-				"outer cavity",	// description
-				scene,	// parent
-				studio
-			);
-		
-		Plane lid = new Plane(
-		"lid (to cut off the (otherwise infinitely high) components)",	// description,
-		new Vector3D(0, wallHeight, 0),	// pointOnPlane,
-		up,	// normal, 
-		surface,	// Transparent.PERFECT,	// surfaceProperty -- doesn't matter since invisible anyway
-		scene,	// parent,
-		studio
-		);
-		
-		//create the outer mantle which will hold everything.
-		EllipticCylinderMantle ecm	= new EllipticCylinderMantle(
-				"penrose elliptic cylinder",// description,
-				Vector3D.O, // startPoint,
-				up,// endPoint,
-				spanA,// spanA,
-				focalLength,// focalLength,
-				true,// infinite,
-				surface,// surfaceProperty,
-				scene,// parent,
-				studio// studio
-			);
-		cavity.addPositiveSceneObject(ecm);
-		cavity.addInvisiblePositiveSceneObject(lid);
-		
-		scene.addSceneObject(cavity);
-		
-		
-		
-	//creating the extrusions. first one then the other...
-		
-		SceneObjectContainer extrusion1 = new SceneObjectContainer(
-				"Extrusion 1",	// description
-				scene,	// parent
-				studio
-			);
-		
-			// create a scene-object intersection, for the lower part 
-			SceneObjectIntersection extrusion1base = new SceneObjectIntersection(
-					"Extrusion 1 base",	// description
-					scene,	// parent
-					studio
-				);
-			
-			// create a scene-object intersection, for the upper part
-			SceneObjectIntersection extrusion1Top = new SceneObjectIntersection(
-					"Extrusion 1 top",	// description
-					scene,	// parent
-					studio
-				);
-
-			
-			//and fill em up.
-			Vector3D startPoint1 = Vector3D.sum(ecm.getSpanC(),ecm.getSpanC().getWithLength(-cavityDepth1));
-			EllipticCylinderMantle ecm1	= new EllipticCylinderMantle(
-					"elliptic cylinder mantle 1",// description,
-					startPoint1 ,// startPoint,
-					Vector3D.sum(startPoint1,up),// endPoint,
-					spanA1,// spanA,
-					focalLength1,// focalLength,
-					true,// infinite,
-					surface,// surfaceProperty,
-					scene,// parent,
-					studio// studio
-				);
-			
-			Plane epTop1 = new Plane(	
-					"Top of the lower-extrusion part",	// description,
-					Vector3D.Z.getProductWith(cavityWidth1/2),	// pointOnPlane,
-					Vector3D.Z,	// normal, //TODO this or plus Z
-					surface,	// Transparent.PERFECT,	// surfaceProperty should be reflective
-					scene,	// parent,
-					studio
-					);
-
-			Plane epBottom1 = new Plane(		
-					"Bottom of the lower-extrusion part",	// description,
-					Vector3D.Z.getProductWith(-cavityWidth1/2),	// pointOnPlane,
-					Vector3D.Z.getProductWith(-1),	// normal, TODO or minus 1? 
-					surface,	// Transparent.PERFECT,	// surfaceProperty should be reflective
-					scene,	// parent,
-					studio
-					);
-			
-			Plane epInner1 = new Plane(
-					"flat side of lower-extrusion part",	// description,
-					startPoint1,
-					Vector3D.difference(startPoint1,Vector3D.O).getNormalised(),	// normal,
-					surface,	// Transparent.PERFECT,	// surfaceProperty should be reflective
-					scene,	// parent,
-					studio
-					);
-			
-			extrusion1base.addPositiveSceneObject(epTop1);
-			extrusion1base.addPositiveSceneObject(epBottom1);
-			extrusion1base.addInvisiblePositiveSceneObject(ecm);
-			extrusion1base.addInvisibleNegativeSceneObject(epInner1);
-			extrusion1base.addInvisiblePositiveSceneObject(lid);
-			
-			extrusion1Top.addPositiveSceneObject(ecm1);
-			extrusion1Top.addPositiveSceneObject(epInner1);
-			extrusion1Top.addInvisiblePositiveSceneObject(lid);
-			
-			extrusion1.addSceneObject(extrusion1base);
-			extrusion1.addSceneObject(extrusion1Top);
-			
-			//and add it to the scene...
-			scene.addSceneObject(extrusion1);
-			
-			
-			// and now the second extrusion
-			SceneObjectContainer extrusion2 = new SceneObjectContainer(
-					"Extrusion 2",	// description
-					scene,	// parent
-					studio
-				);
-			
-				// create a scene-object intersection, for the lower part 
-				SceneObjectIntersection extrusion2base = new SceneObjectIntersection(
-						"Extrusion 2 base",	// description
-						scene,	// parent
-						studio
-					);
+		if(setReflective) surface = new Reflective(mirrorReflectionCoefficient, shadowThrowing);		
 				
-				// create a scene-object intersection, for the upper part
-				SceneObjectIntersection extrusion2Top = new SceneObjectIntersection(
-						"Extrusion 2 top",	// description
-						scene,	// parent
-						studio
-					);
-				
-				//and fill em up.
-				Vector3D startPoint2 = Vector3D.sum(ecm.getSpanC(),ecm.getSpanC().getWithLength(-cavityDepth2)).getProductWith(-1);
-				EllipticCylinderMantle ecm2	= new EllipticCylinderMantle(
-						"elliptic cylinder mantle 2",// description,
-						startPoint2,// startPoint,
-						Vector3D.sum(startPoint2,up),// endPoint,
-						spanA2,// spanA,
-						focalLength2,// focalLength,
-						true,// infinite,
+				EllipticPenroseCavity penroseCavity = new EllipticPenroseCavity(
+						"penrose cavity",// description,
+						Vector3D.O,// startPoint,
+						Vector3D.Y.getProductWith(wallHeight),// endPoint,			
+						infinite,// infinite,
+						a,// a,
+						focalLength,// f,
+						d,// d,
+						h1,// h1,
+						c1,// c1,
+						h2,// h2,
+						c2,// c2,
 						surface,// surfaceProperty,
 						scene,// parent,
 						studio// studio
 					);
-				
-				Plane epTop2 = new Plane(	
-						"Top of the lower-extrusion part",	// description,
-						Vector3D.Z.getProductWith(cavityWidth2/2),	// pointOnPlane,
-						Vector3D.Z,	// normal, //TODO this or plus Z
-						surface,	// Transparent.PERFECT,	// surfaceProperty should be reflective
-						scene,	// parent,
-						studio
-						);
 
-				Plane epBottom2 = new Plane(		
-						"Bottom of the lower-extrusion part",	// description,
-						Vector3D.Z.getProductWith(-cavityWidth2/2),	// pointOnPlane,
-						Vector3D.Z.getProductWith(-1),	// normal, TODO or minus 1? 
-						surface,	// Transparent.PERFECT,	// surfaceProperty should be reflective
-						scene,	// parent,
-						studio
-						);
-				
-				Plane epInner2 = new Plane(
-						"flat side of lower-extrusion part",	// description,
-						startPoint2,
-						Vector3D.difference(startPoint2,Vector3D.O).getNormalised(),	// normal,
-						surface,	// Transparent.PERFECT,	// surfaceProperty should be reflective
-						scene,	// parent,
-						studio
-						);
-				
-				extrusion2base.addPositiveSceneObject(epTop2);
-				extrusion2base.addPositiveSceneObject(epBottom2);
-				extrusion2base.addInvisiblePositiveSceneObject(ecm);
-				extrusion2base.addInvisibleNegativeSceneObject(epInner2);
-				extrusion2base.addInvisiblePositiveSceneObject(lid);
-				
-				extrusion2Top.addPositiveSceneObject(ecm2);
-				extrusion2Top.addPositiveSceneObject(epInner2);
-				extrusion2Top.addInvisiblePositiveSceneObject(lid);
-				
-				extrusion2.addSceneObject(extrusion2base);
-				extrusion2.addSceneObject(extrusion2Top);
-			
-				//and add it to the scene...
-				scene.addSceneObject(extrusion2);
-		
+		scene.addSceneObject(penroseCavity);
 		// trace the ray trajectories
 		
 		for(int i=0; i<noOfTrajectories; i++)
@@ -645,10 +461,10 @@ public class PenroseCavityVisualiser extends NonInteractiveTIMEngine
 //	cavityWidth1 = cavityWidth2 = 0.3;
 	
 	
-	private LabelledDoublePanel cylinderHeightPanel, mirrorReflectionCoefficientPanel, focalLengthPanel, focalLength1Panel, focalLength2Panel,
-	cavityDepth1Panel, cavityDepth2Panel, cavityWidth1Panel, cavityWidth2Panel;
-	private LabelledVector3DPanel spanAPanel, spanA1Panel, spanA2Panel;
-	private JCheckBox shadowThrowingCheckBox, setReflectiveCheckBox;
+	private LabelledDoublePanel dPanel, cylinderHeightPanel, mirrorReflectionCoefficientPanel, focalLengthPanel, 
+	c1Panel, c2Panel, h1Panel, h2Panel;
+	private LabelledVector3DPanel spanAPanel;
+	private JCheckBox shadowThrowingCheckBox, setReflectiveCheckBox, infiniteCheckBox;
 
 
 
@@ -715,44 +531,31 @@ public class PenroseCavityVisualiser extends NonInteractiveTIMEngine
 		penrosePanel.add(focalLengthPanel, "wrap");
 		
 		spanAPanel = new LabelledVector3DPanel("Elliptic cylinder major axis Span vector (f<)");
-		spanAPanel.setVector3D(spanA);
+		spanAPanel.setVector3D(a);
 		penrosePanel.add(spanAPanel, "span");
 		
 		
-		focalLength1Panel = new LabelledDoublePanel("Focal length of the 1st cavity elliptic cylinder");
-		focalLength1Panel.setNumber(focalLength1);
-		penrosePanel.add(focalLength1Panel, "wrap");
-		
-		spanA1Panel = new LabelledVector3DPanel("1st cavity elliptic cylinder major axis span (f<)");
-		spanA1Panel.setVector3D(spanA1);
-		penrosePanel.add(spanA1Panel, "span");
+		dPanel = new LabelledDoublePanel("d (half width of the cavity along the outer semi minor axis)");
+		dPanel.setNumber(d);
+		penrosePanel.add(dPanel, "span");
 		
 		
-		focalLength2Panel = new LabelledDoublePanel("Focal length of the 2nd cavity elliptic cylinder");
-		focalLength2Panel.setNumber(focalLength2);
-		penrosePanel.add(focalLength2Panel, "wrap");
+		c1Panel = new LabelledDoublePanel("c1 (semi minor axis of 1st extrusion)");
+		c1Panel.setNumber(c1);
+		penrosePanel.add(c1Panel, "wrap");
 		
-		spanA2Panel = new LabelledVector3DPanel("2nd cavity elliptic cylinder major axis span (f<)");
-		spanA2Panel.setVector3D(spanA2);
-		penrosePanel.add(spanA2Panel, "span");
-		
-		
-		cavityDepth1Panel = new LabelledDoublePanel("1st cavity depth");
-		cavityDepth1Panel.setNumber(cavityDepth1);
-		penrosePanel.add(cavityDepth1Panel, "wrap");
-		
-		cavityWidth1Panel = new LabelledDoublePanel("1st cavity width");
-		cavityWidth1Panel.setNumber(cavityWidth1);
-		penrosePanel.add(cavityWidth1Panel, "wrap");
+		h1Panel = new LabelledDoublePanel("h1 (side extrusion height)");
+		h1Panel.setNumber(h1);
+		penrosePanel.add(h1Panel, "wrap");
 		
 		
-		cavityDepth2Panel = new LabelledDoublePanel("2nd cavity depth");
-		cavityDepth2Panel.setNumber(cavityDepth2);
-		penrosePanel.add(cavityDepth2Panel, "wrap");
+		c2Panel = new LabelledDoublePanel("c2 (semi minor axis of 2nd extrusion)");
+		c2Panel.setNumber(c2);
+		penrosePanel.add(c2Panel, "wrap");
 		
-		cavityWidth2Panel = new LabelledDoublePanel("2nd cavity width");
-		cavityWidth2Panel.setNumber(cavityWidth2);
-		penrosePanel.add(cavityWidth2Panel, "wrap");
+		h2Panel = new LabelledDoublePanel("h1 (side extrusion height)");
+		h2Panel.setNumber(h2);
+		penrosePanel.add(h2Panel, "wrap");
 		
 		setReflectiveCheckBox = new JCheckBox("Reflective with");
 		setReflectiveCheckBox.setSelected(setReflective);
@@ -765,6 +568,10 @@ public class PenroseCavityVisualiser extends NonInteractiveTIMEngine
 		shadowThrowingCheckBox = new JCheckBox("shadow throwing");
 		shadowThrowingCheckBox.setSelected(shadowThrowing);
 		penrosePanel.add(shadowThrowingCheckBox, "wrap");
+		
+		infiniteCheckBox= new JCheckBox("make it infinitely tall");
+		infiniteCheckBox.setSelected(infinite);
+		penrosePanel.add(infiniteCheckBox, "wrap");
 		
 		//
 		// trajectories panel
@@ -950,17 +757,15 @@ public class PenroseCavityVisualiser extends NonInteractiveTIMEngine
 		wallHeight = cylinderHeightPanel.getNumber();
 		mirrorReflectionCoefficient = mirrorReflectionCoefficientPanel.getNumber();
 		focalLength = focalLengthPanel.getNumber();
-		focalLength1 = focalLength1Panel.getNumber();
-		focalLength2 = focalLength2Panel.getNumber();
-		cavityDepth1 = cavityDepth1Panel.getNumber();
-		cavityDepth2 = cavityDepth2Panel.getNumber();
-		cavityWidth1 = cavityWidth1Panel.getNumber();
-		cavityWidth2 = cavityWidth2Panel.getNumber();
-		spanA = spanAPanel.getVector3D();
-		spanA1 = spanA1Panel.getVector3D();
-		spanA2 = spanA2Panel.getVector3D();
+		c1 = c1Panel.getNumber();
+		c2 = c2Panel.getNumber();
+		h1 = h1Panel.getNumber();
+		h2 = h2Panel.getNumber();
+		a = spanAPanel.getVector3D();
+		d = dPanel.getNumber();
 		setReflective = setReflectiveCheckBox.isSelected();
 		shadowThrowing = shadowThrowingCheckBox.isSelected();
+		infinite = infiniteCheckBox.isSelected();
 
 		// trajectories
 		
