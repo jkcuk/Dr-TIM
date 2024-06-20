@@ -45,9 +45,8 @@ public class BoundingBoxSurfaceForRefractiveComponent extends BoundingBoxSurface
 		// is the ray leaving from the refractive material (typically through the side)?
 		if(surfaceOfPixelArray.getSceneObjectsInPixel(voxelIndices).insideObject(i.p))
 		{
-			// yes, the ray is leaving from inside the refractive material
-			// refract it
-
+			
+			
 			r2 = r.getBranchRay(
 					i.p, 
 					RefractiveSimple.getRefractedLightRayDirection(

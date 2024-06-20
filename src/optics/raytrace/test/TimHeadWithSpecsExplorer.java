@@ -38,6 +38,7 @@ import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.PhaseHologram;
 import optics.raytrace.surfaces.PhaseHologramOfCylindricalLensSpiral;
 import optics.raytrace.surfaces.PhaseHologramOfCylindricalLensSpiral.CylindricalLensSpiralType;
+import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator.DerivativeControlType;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.Transparent;
 

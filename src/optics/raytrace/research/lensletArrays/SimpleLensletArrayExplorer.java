@@ -261,7 +261,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		
 		scene.addSceneObject(new EditableRectangularLensletArray(
 				"LA1",	// description
-				new Vector3D(0, 0, -zSeparation/2),	// centre
+				new Vector3D(0, 0, 0),	// centre
 				Vector3D.sum(right1.getProductWith(c1), up.getProductWith(s1)).getWithLength(sideLength),	// spanVector1
 				Vector3D.sum(right1.getProductWith(-s1), up.getProductWith(c1)).getWithLength(sideLength),	// spanVector2
 				f1,	// focalLength
@@ -289,7 +289,7 @@ public class SimpleLensletArrayExplorer extends NonInteractiveTIMEngine implemen
 		
 		scene.addSceneObject(new EditableRectangularLensletArray(
 				"LA2",	// description
-				new Vector3D(0, 0, zSeparation/2),	// centre
+				new Vector3D(0, 0, zSeparation),	// centre
 				Vector3D.sum(right2.getProductWith(c2), up.getProductWith(s2)).getWithLength(sideLength),	// spanVector1
 				Vector3D.sum(right2.getProductWith(-s2), up.getProductWith(c2)).getWithLength(sideLength),	// spanVector2
 				f2,	// focalLength

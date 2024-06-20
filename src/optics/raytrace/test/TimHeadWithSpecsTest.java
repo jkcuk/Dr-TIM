@@ -15,6 +15,7 @@ import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator;
 import optics.raytrace.surfaces.Transparent;
+import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator.DerivativeControlType;
 import optics.raytrace.core.*;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.research.viewRotation.RefractiveViewRotator;

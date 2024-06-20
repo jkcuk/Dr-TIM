@@ -25,6 +25,7 @@ import optics.raytrace.surfaces.PhaseHologramOfRadialLenticularArray;
 import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArray;
 import optics.raytrace.surfaces.RotationallySymmetricPhaseHologram;
 import optics.raytrace.surfaces.Teleporting;
+import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator.DerivativeControlType;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
 import optics.raytrace.NonInteractiveTIMEngine;

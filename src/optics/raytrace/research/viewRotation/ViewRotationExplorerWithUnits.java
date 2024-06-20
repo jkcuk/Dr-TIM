@@ -22,6 +22,7 @@ import optics.raytrace.surfaces.PhaseHologramOfCylindricalLens;
 import optics.raytrace.surfaces.PhaseHologramOfRadialLenticularArray;
 import optics.raytrace.surfaces.PhaseHologramOfRectangularLensletArray;
 import optics.raytrace.surfaces.RotationallySymmetricPhaseHologram;
+import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator.DerivativeControlType;
 import testImages.TestImage;
 import optics.raytrace.exceptions.SceneException;
 import optics.raytrace.NonInteractiveTIMActionEnum;
@@ -36,8 +37,6 @@ import optics.raytrace.GUI.lowLevel.Vector3DPanel;
 import optics.raytrace.GUI.sceneObjects.EditableCylinderLattice;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedDisc;
 import optics.raytrace.cameras.AnyFocusSurfaceCamera;
-import optics.raytrace.core.LightSource;
-import optics.raytrace.core.SceneObjectClass;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 import optics.raytrace.core.SurfaceProperty;
@@ -53,11 +52,11 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 {
 	private static final long serialVersionUID = -4854046178671066946L;
 	// units
-	public static double NM = 1e-9;
-	public static double UM = 1e-6;
-	public static double MM = 1e-3;
-	public static double CM = 1e-2;
-	public static double M = 1;
+	public static double NM = 1*1e-9;
+	public static double UM = 1*1e-6;
+	public static double MM = 1*1e-3;
+	public static double CM = 1*1e-2;
+	public static double M = 1*1;
 
 
 	public enum ViewRotationComponentType
@@ -359,7 +358,14 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	 * The centre of the component, usually at origin but changes when using the anaglyph camera
 	 */
 	Vector3D componentCentre;
-
+	
+	/**
+	 * The parameters to add derivative control
+	 */
+	private DerivativeControlType derivativeControlType;
+	private double derivativeControlThickness;
+	private double derivativeControlRotation;
+	
 	/**
 	 * Determines how to initialise the backdrop
 	 */
@@ -369,6 +375,8 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 	private double objectRotationAngle;
 	private double objectDistance;
 	private double objectHeight;
+
+	
 
 
 	/**
@@ -405,20 +413,23 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		diffractiveBlurPixelatedFresnelWedge = true;
 
 		//refractive pixelated fresnel wedges
-		refractiveLatticeSpanVector1 = new Vector3D(0.3,0,0).getProductWith(MM);
-		refractiveLatticeSpanVector2 = new Vector3D(0,0.3,0).getProductWith(MM);
+		refractiveLatticeSpanVector1 = new Vector3D(0.5,0,0).getProductWith(MM);
+		refractiveLatticeSpanVector2 = new Vector3D(0,0.5,0).getProductWith(MM);
 		rotationAngle = 10;//degrees
-		designDistancePlane = new Vector3D(0,0,1);
+		derivativeControlRotation = 10;
+		designDistancePlane = new Vector3D(0,0,1*M);
 		diffractuveBlurRefractiveFresnelWedge = true;
-		boundingBoxCentre = new Vector3D (0,0,1.4999).getProductWith(MM);
+		boundingBoxCentre = new Vector3D (0,0,20).getProductWith(MM);
 		boundingBoxSpanVector1 = new Vector3D(5,0,0).getProductWith(CM);
 		boundingBoxSpanVector2 = new Vector3D(0,5,0).getProductWith(CM);
-		boundingBoxSpanVector3 = new Vector3D(0,0,3).getProductWith(MM);
+		boundingBoxSpanVector3 = new Vector3D(0,0,44).getProductWith(MM);
 		thickness = 1*MM;
 		magnificationFactor = 1;
 		refractiveIndex = 1.5;//glass
-		surfaceTransmissionCoefficient = 0.9;
+		surfaceTransmissionCoefficient = 0.95;
 		maxTrace = 100;
+		derivativeControlType = DerivativeControlType.IDEAL_THIN_LENS;
+		derivativeControlThickness = 20*MM;
 
 
 		// moiré rotator
@@ -461,18 +472,18 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		cameraRotation = 10;
 		sideAngle = 0;
 		upAngle = 0;
-		cameraViewCentre = new Vector3D(0, 0, 0);
+		cameraViewCentre = new Vector3D(0, 0, 0.3);
 		cameraDistance = 1.5*CM;
 		cameraViewDirection = new Vector3D(0, 0, 1);
 		cameraTopDirection = new Vector3D(0,1,0);
-		cameraHorizontalFOVDeg = 125;
-		cameraApertureSize = ApertureSizeType.EYE;
+		cameraHorizontalFOVDeg = 40;
+		cameraApertureSize = ApertureSizeType.PINHOLE;
 		setcameraAperture = false;
 		cameraAperture = 1*MM;
 		cameraFocussingDistance = 1*M;
 		useEyeballCamera = true;
 		autoFocus = false;
-		cameraApertureDiffraction = true;
+		cameraApertureDiffraction = false;
 		rotateViewSystem = false;
 		
 		//Move mode to change pixel span vector frame by frame
@@ -562,6 +573,12 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					printStream.println("wedge thickness =" +thickness/MM+"mm");
 					printStream.println("transmission coefficient =" +surfaceTransmissionCoefficient);
 					printStream.println("eye positon ="+eyePosition);
+					printStream.println("derivativeControlType ="+derivativeControlType);
+					if(derivativeControlType!=DerivativeControlType.NONE) {
+						printStream.println("derivativeControlThickness ="+derivativeControlThickness);
+						printStream.println("derivativeControlRotation ="+derivativeControlRotation);
+						
+					}
 					printStream.println("refractive index="+refractiveIndex);
 					printStream.println("magnificationFactor="+magnificationFactor);
 					printStream.println("Design distance plane="+designDistancePlane);
@@ -626,9 +643,13 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 		//setting the lights and backdrop
 		if (customBackground) {
-			studio.setLights(LightSource.getStandardLightsFromBehind());
-			scene.addSceneObject(SceneObjectClass.getSkySphere(scene, studio));
-			scene.addSceneObject(SceneObjectClass.getLighterChequerboardFloor(scene, studio));
+			
+			// initialise the scene and lights
+			StudioInitialisationType.initialiseSceneAndLights(
+					StudioInitialisationType.UNIVERSITY_SQUARE,
+					scene,
+					studio
+					);
 
 			// a cylinder lattice..
 			Vector3D uHat, vHat, zHat;
@@ -641,9 +662,9 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					scene.addSceneObject(new EditableCylinderLattice(
 							"cylinder lattice",
 							-0.5*objectHeight, 0.5*objectHeight, 4, uHat,
-							-0.5*objectHeight+0.02, 0.5*objectHeight+0.02, 4, vHat,
+							-0.5*objectHeight+0.02*M, 0.5*objectHeight+0.02, 4, vHat,
 							objectDistance, 4*objectDistance, 4, zHat, // this puts the "transverse" cylinders into the planes z=10, 20, 30, 40
-							0.02,
+							0.02*M,
 							scene,
 							studio
 							));	
@@ -1049,6 +1070,9 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 							null, 
 							null
 							),
+					derivativeControlType,
+					derivativeControlThickness,
+					derivativeControlRotation,
 					refractiveIndex,
 					thickness,
 					surfaceTransmissionCoefficient, //trasnmission coef
@@ -1128,7 +1152,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 					cameraFocussingDistance,// focussingDistance,
 					cameraApertureRadius,
 		            cameraApertureDiffraction,
-					550e-9,// lambda,
+					550e-9,// lambda, (10x larger for diffraction)
 					raysPerPixel,// raysPerPixel,
 					true// colour
 					);
@@ -1158,7 +1182,7 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 		            // double detectorDistance,	// in the detector-plane shutter model, the detector is this distance behind the entrance pupil
 		            cameraApertureRadius,// apertureRadius,
 		            cameraApertureDiffraction,
-					550e-9,// lambda,
+					550e-9,// lambda,lambda, (10x larger than normal)
 		            renderQuality.getBlurQuality().getRaysPerPixel()// raysPerPixel
 		    	);
 			//defualtCamera.getViewDirection();
@@ -1241,11 +1265,13 @@ public class ViewRotationExplorerWithUnits extends NonInteractiveTIMEngine
 
 
 	//refractive fresnel wedge
-	private DoublePanel rotationAnglePanel, thicknessPanel, refractiveIndexPanel, surfaceTransmissionCoefficientPanel, startSpanVectorPanel, stopSpanVectorPanel, magnificationFactorPanel;
+	private DoublePanel rotationAnglePanel, thicknessPanel, refractiveIndexPanel, surfaceTransmissionCoefficientPanel, startSpanVectorPanel, stopSpanVectorPanel, magnificationFactorPanel,
+	derivativeControlThicknessPanel, derivativeControlRotationPanel;
 	private Vector3DPanel refractiveLatticeSpanVector1Panel, refractiveLatticeSpanVector2Panel, boundingBoxCentrePanel, boundingBoxSpanVector1Panel,
 	boundingBoxSpanVector2Panel, boundingBoxSpanVector3Panel, eyePositionPanel, designDistancePlanePanel;
 	private JCheckBox diffractuveBlurRefractiveFresnelWedgeCheckBox;
 	private IntPanel maxTracePanel;
+	private JComboBox<DerivativeControlType> derivativeControlTypeComboBox;
 
 	// moiré rotator
 	private DoublePanel mmFPanel;
@@ -1519,6 +1545,19 @@ protected void createInteractiveControlPanel()
 		thicknessPanel = new DoublePanel();
 		thicknessPanel.setNumber(thickness/MM);
 		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("wedge thickness", thicknessPanel, "mm"),"wrap");
+		
+		//derivativeControlThicknessPanel derivativeControlTypeComboBox
+		
+		derivativeControlTypeComboBox = new JComboBox<DerivativeControlType>(DerivativeControlType.values());
+		derivativeControlTypeComboBox.setSelectedItem(derivativeControlType);
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("derivatibe control type",derivativeControlTypeComboBox),"wrap");
+		
+		derivativeControlThicknessPanel = new DoublePanel();
+		derivativeControlThicknessPanel.setNumber(derivativeControlThickness/MM);
+		
+		derivativeControlRotationPanel = new DoublePanel();
+		derivativeControlRotationPanel.setNumber(derivativeControlRotation);
+		refractiveFresnelWedgePanel.add(GUIBitsAndBobs.makeRow("derivative control thickness",derivativeControlThicknessPanel,"mm, and rotation", derivativeControlRotationPanel,"<html>&deg;</html>" ),"wrap");
 
 		refractiveIndexPanel = new DoublePanel();
 		refractiveIndexPanel.setNumber(refractiveIndex);
@@ -1811,14 +1850,16 @@ protected void createInteractiveControlPanel()
 		eyePosition = eyePositionPanel.getVector3D().getProductWith(CM);
 		surfaceTransmissionCoefficient = surfaceTransmissionCoefficientPanel.getNumber();
 		maxTrace = maxTracePanel.getNumber();
-		designDistancePlane = designDistancePlanePanel.getVector3D();
+		designDistancePlane = designDistancePlanePanel.getVector3D().getProductWith(M);
 		movie = movieCheckBox.isSelected();
 		numberOfFrames = numberOfFramesPanel.getNumber();
 		firstFrame = firstFramePanel.getNumber();
 		lastFrame = lastFramePanel.getNumber();
 		startSpanVector = startSpanVectorPanel.getNumber()*MM;
 		stopSpanVector = stopSpanVectorPanel.getNumber()*MM;
-
+		derivativeControlType = (DerivativeControlType)(derivativeControlTypeComboBox.getSelectedItem());
+		derivativeControlThickness = derivativeControlThicknessPanel.getNumber()*MM;
+		derivativeControlRotation = derivativeControlRotationPanel.getNumber();
 
 		mmF = mmFPanel.getNumber()*MM;
 		mmPitch = mmPitchPanel.getNumber()*MM;

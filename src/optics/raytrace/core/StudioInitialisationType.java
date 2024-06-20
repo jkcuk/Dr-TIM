@@ -10,6 +10,7 @@ import optics.raytrace.studioInitialisation.DarknessInitialisation;
 import optics.raytrace.studioInitialisation.DistanceLabelledPlanes1Initialisation;
 import optics.raytrace.studioInitialisation.DistanceLabelledPlanes2Initialisation;
 import optics.raytrace.studioInitialisation.DistanceLabelledPlanes3Initialisation;
+import optics.raytrace.studioInitialisation.GlasgowWesternSquareWithFloor;
 import optics.raytrace.studioInitialisation.HalloweenInitialisation;
 import optics.raytrace.studioInitialisation.HeavenInitialisation;
 import optics.raytrace.studioInitialisation.LatticeInitialisation;
@@ -55,7 +56,8 @@ public enum StudioInitialisationType
 	SURROUND_LATTICE(new SurroundLatticeInitialisation()),
 	TEST(new TestInitialisation()),
 	TIM_HEAD(new TimHeadInitialisation()),
-	TIM_IN_SPACE(new TIMInSpaceInitialisation());
+	TIM_IN_SPACE(new TIMInSpaceInitialisation()),
+	UNIVERSITY_SQUARE(new GlasgowWesternSquareWithFloor());
 	
 	private StudioInitialisation studioInitialisation;
 	private StudioInitialisationType(StudioInitialisation studioInitialisation) {this.studioInitialisation = studioInitialisation;}	
@@ -66,7 +68,7 @@ public enum StudioInitialisationType
 	/**
 	 * an alternative to values() that gives a limited list of values, in this case those that are available in fully-interactive TIM
 	 */
-	public static StudioInitialisationType[] limitedValuesForInteractiveTIM = {CHRISTMAS, DARKNESS, HALLOWEEN, HEAVEN, MINIMALIST, SHINY_BALLS, SURREALIST, SURROUND_LATTICE, TIM_HEAD, TIM_IN_SPACE, AUTOSTEREOGRAM_RESONATOR, CLOAKING, CURVED_SPACE}; 
+	public static StudioInitialisationType[] limitedValuesForInteractiveTIM = {CHRISTMAS, DARKNESS, HALLOWEEN, HEAVEN, MINIMALIST, SHINY_BALLS, SURREALIST, SURROUND_LATTICE, TIM_HEAD, TIM_IN_SPACE, UNIVERSITY_SQUARE, AUTOSTEREOGRAM_RESONATOR, CLOAKING, CURVED_SPACE}; 
 
 	/**
 	 * an alternative to values() that gives a limited list of values, in this case those suitable as backgrounds

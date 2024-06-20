@@ -35,7 +35,8 @@ public class EditableSky extends EditableScaledParametrisedSphere implements IPa
 		DAY("Day sky"),
 		NIGHT("Night sky"),
 		HEAVEN("Heaven"),
-		EARTHRISE("Earthrise");
+		EARTHRISE("Earthrise"),
+		UNIVERSITY("University Square");
 		
 		private String description;
 		
@@ -122,6 +123,16 @@ public class EditableSky extends EditableScaledParametrisedSphere implements IPa
 					2.*Math.PI,	// double yMax
 					false	//boolean shadowThrowing					
 				));
+			break;
+		case UNIVERSITY:
+			setSurfaceProperty(new PictureSurface(
+					this.getClass().getResource("360-180_Glasgow_University-Western_Square_rotated.png"),	// java.net.URL imageURL
+					0,	// double xMin
+					Math.PI,	// double xMax
+					0,	// double yMin
+					2.*Math.PI,	// double yMax
+					false	//boolean shadowThrowing	
+					));
 			break;
 		case DAY:
 		default:

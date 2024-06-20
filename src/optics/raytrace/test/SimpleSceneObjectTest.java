@@ -50,7 +50,7 @@ public class SimpleSceneObjectTest extends NonInteractiveTIMEngine
 		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.INTERACTIVE;
 //		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.MOVIE;
 		cameraViewDirection = new Vector3D(0,-1,0);
-		cameraHorizontalFOVDeg = 20;
+		cameraHorizontalFOVDeg = 10;
 		cameraTopDirection = new Vector3D(0,0,1); 
 		cameraDistance = 10;
 		traceRaysWithTrajectory = false;
@@ -104,42 +104,16 @@ public class SimpleSceneObjectTest extends NonInteractiveTIMEngine
 		studio.setCamera(getStandardCamera());
 		// ... and then adding scene objects to scene
 		
-		scene.addSceneObject(new Sphere("point source esk", Vector3D.O, 0.05, SurfaceColour.BLACK_MATT, scene, studio));
+		scene.addSceneObject(new Sphere("point source esk", Vector3D.O, 0.005, SurfaceColourLightSourceIndependent.RED, scene, studio));
 		
 		
 		
-//		AnyFocusSurfaceCamera defualtCamera = new AnyFocusSurfaceCamera(
-//				"Camera",
-//				Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)),	// centre of aperture
-//				cameraViewDirection,	// viewDirection
-//				calculateHorizontalSpanVector(cameraViewDirection, cameraTopDirection, cameraHorizontalFOVDeg),// horizontalSpanVector, 
-//				calculateVerticalSpanVector(cameraViewDirection, cameraTopDirection, cameraHorizontalFOVDeg, cameraPixelsX, cameraPixelsY) ,//verticalSpanVector,
-//				cameraPixelsX, cameraPixelsY,	// logical number of pixels
-//				cameraExposureCompensation,	// ExposureCompensationType.EC0,	// exposure compensation +0
-//				cameraMaxTraceLevel,	// maxTraceLevel
-//				new Plane(
-//						"focus plane",	// description
-//						Vector3D.sum(Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)), cameraViewDirection.getWithLength(cameraFocussingDistance)),	// pointOnPlane
-//						cameraViewDirection,	// normal
-//						null,	// surfaceProperty
-//						null,	// parent
-//						null	// studio
-//					),	// focus scene
-//	            // double detectorDistance,	// in the detector-plane shutter model, the detector is this distance behind the entrance pupil
-//	            0.09/1000,// apertureRadius in mm,
-//	            true,
-//				550e-9,// lambda,
-//	            renderQuality.getBlurQuality().getRaysPerPixel()// raysPerPixel
-//	    	);
-		
-		RelativisticAnyFocusSurfaceCamera defualtCamera = new RelativisticAnyFocusSurfaceCamera(
+		AnyFocusSurfaceCamera defualtCamera = new AnyFocusSurfaceCamera(
 				"Camera",
 				Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)),	// centre of aperture
 				cameraViewDirection,	// viewDirection
 				calculateHorizontalSpanVector(cameraViewDirection, cameraTopDirection, cameraHorizontalFOVDeg),// horizontalSpanVector, 
 				calculateVerticalSpanVector(cameraViewDirection, cameraTopDirection, cameraHorizontalFOVDeg, cameraPixelsX, cameraPixelsY) ,//verticalSpanVector,
-				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
-				Vector3D.O,	// beta,
 				cameraPixelsX, cameraPixelsY,	// logical number of pixels
 				cameraExposureCompensation,	// ExposureCompensationType.EC0,	// exposure compensation +0
 				cameraMaxTraceLevel,	// maxTraceLevel
@@ -151,14 +125,40 @@ public class SimpleSceneObjectTest extends NonInteractiveTIMEngine
 						null,	// parent
 						null	// studio
 					),	// focus scene
-				(SceneObject)null,	// cameraFrameScene,
-				new FocusSurfaceShutterModel(0),	// shutterModel,
 	            // double detectorDistance,	// in the detector-plane shutter model, the detector is this distance behind the entrance pupil
-	            0.09/1000,// apertureRadius in mm,
-				true,
+	            0.9/1000,// apertureRadius in mm,
+	            true,
 				550e-9,// lambda,
 	            renderQuality.getBlurQuality().getRaysPerPixel()// raysPerPixel
 	    	);
+		
+//		RelativisticAnyFocusSurfaceCamera defualtCamera = new RelativisticAnyFocusSurfaceCamera(
+//				"Camera",
+//				Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)),	// centre of aperture
+//				cameraViewDirection,	// viewDirection
+//				calculateHorizontalSpanVector(cameraViewDirection, cameraTopDirection, cameraHorizontalFOVDeg),// horizontalSpanVector, 
+//				calculateVerticalSpanVector(cameraViewDirection, cameraTopDirection, cameraHorizontalFOVDeg, cameraPixelsX, cameraPixelsY) ,//verticalSpanVector,
+//				SpaceTimeTransformationType.LORENTZ_TRANSFORMATION,
+//				Vector3D.O,	// beta,
+//				cameraPixelsX, cameraPixelsY,	// logical number of pixels
+//				cameraExposureCompensation,	// ExposureCompensationType.EC0,	// exposure compensation +0
+//				cameraMaxTraceLevel,	// maxTraceLevel
+//				new Plane(
+//						"focus plane",	// description
+//						Vector3D.sum(Vector3D.sum(cameraViewCentre, cameraViewDirection.getWithLength(-cameraDistance)), cameraViewDirection.getWithLength(cameraFocussingDistance)),	// pointOnPlane
+//						cameraViewDirection,	// normal
+//						null,	// surfaceProperty
+//						null,	// parent
+//						null	// studio
+//					),	// focus scene
+//				(SceneObject)null,	// cameraFrameScene,
+//				new FocusSurfaceShutterModel(0),	// shutterModel,
+//	            // double detectorDistance,	// in the detector-plane shutter model, the detector is this distance behind the entrance pupil
+//	            0.8/1000,// apertureRadius in mm,
+//				true,
+//				550e-9,// lambda,
+//	            renderQuality.getBlurQuality().getRaysPerPixel()// raysPerPixel
+//	    	);
 		
 		studio.setCamera(defualtCamera);
 

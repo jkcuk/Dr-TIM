@@ -340,7 +340,6 @@ public class SurfaceOfDerivativeControlledViewRotator extends SurfaceOfPixelArra
 		//create a scene object collection to which the holographic surfaces can be added
 		SceneObjectContainer pixelScene = new SceneObjectContainer("Pixel "+voxelIndices[0]+","+voxelIndices[1], null, null);
 		
-		
 
 		// calculate the direction of a ray from the eye that has passed through the ocular surface through the centre of the pixel
 		Vector3D ocularPixelSurfaceCentre = Vector3D.sum(ocularPlaneCentre, periodVector1.getProductWith(voxelIndices[0]), periodVector2.getProductWith(voxelIndices[1]));//TODO importante  we need to fix and/or understand this (-0.5+) better...
@@ -348,8 +347,10 @@ public class SurfaceOfDerivativeControlledViewRotator extends SurfaceOfPixelArra
 		
 //		//Using these we can define the coordinate system in our pixel as  
 		Vector3D zHat = dOcular;
-		Vector3D xHat = Vector3D.X.getPartPerpendicularTo(dOcular).getNormalised();
-		Vector3D yHat = Vector3D.Y.getPartPerpendicularTo(dOcular).getNormalised();
+//		Vector3D xHat = Vector3D.X.getPartPerpendicularTo(dOcular).getNormalised();
+//		Vector3D yHat = Vector3D.Y.getPartPerpendicularTo(dOcular).getNormalised();
+		Vector3D xHat = periodVector1.getPartPerpendicularTo(dOcular).getNormalised();
+		Vector3D yHat = Vector3D.crossProduct(xHat, zHat).getNormalised();
 		//This will break down in some extreme cases which we should never reach!
 		
 		// calculate the position where we want the hologram to redirect the light ray to. Including a magnification factor. 
