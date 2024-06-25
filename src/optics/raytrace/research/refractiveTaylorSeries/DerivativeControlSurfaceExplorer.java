@@ -312,7 +312,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		cameraViewCentreJPanel.setLayout(new MigLayout("insets 0"));
 		cameraPanel.add(cameraViewCentreJPanel, "span");
 		
-		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
+		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForInteractiveTIM);
 		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
 		cameraPanel.add(GUIBitsAndBobs.makeRow("Initialise backdrop to", studioInitialisationComboBox), "span");
 
