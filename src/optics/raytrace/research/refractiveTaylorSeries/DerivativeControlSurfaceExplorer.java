@@ -18,6 +18,7 @@ import optics.raytrace.GUI.lowLevel.GUIBitsAndBobs;
 import optics.raytrace.GUI.lowLevel.LabelledDoublePanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector2DPanel;
 import optics.raytrace.GUI.lowLevel.LabelledVector3DPanel;
+import optics.raytrace.GUI.sceneObjects.EditableCylinderLattice;
 import optics.raytrace.core.SceneObjectPrimitive;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
@@ -39,6 +40,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 	private boolean pixellated;
 	private double pixelPeriodU;
 	private double pixelPeriodV;
+	private StudioInitialisationType studioInitialisation;
 	
 	public DerivativeControlSurfaceExplorer()
 	{
@@ -54,6 +56,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		pixellated = true;
 		pixelPeriodU=.1;
 		pixelPeriodV=.1;
+		studioInitialisation = StudioInitialisationType.UNIVERSITY_SQUARE;
 		
 		//camera params
 		renderQuality = RenderQualityEnum.DRAFT;
@@ -93,6 +96,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		// write any parameters not defined in NonInteractiveTIMEngine, each parameter is saved like this:
 		// printStream.println("parameterName = "+parameterName);
 
+		printStream.println("studioInitialisation = "+studioInitialisation);
 		printStream.println("zEye="+zEye);
 		printStream.println("zRotatedPlane="+zRotatedPlane);
 		printStream.println("zRotatingSurface="+zRotatingSurface);
@@ -125,10 +129,24 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		
 		// initialise the scene and lights
 		StudioInitialisationType.initialiseSceneAndLights(
-				StudioInitialisationType.LATTICE,
+				studioInitialisation,
 				scene,
 				studio
 				);
+		
+		double cylinderRadius = 0.04;
+		
+		// a cylinder lattice...
+		scene.addSceneObject(new EditableCylinderLattice(
+				"cylinder lattice",
+				-1.5, 1.5, 5,
+				-1+cylinderRadius, 2+cylinderRadius, 5,
+				3, 33, 4, // this puts the "transverse" cylinders into the planes z=10, 20, 30, 40
+				cylinderRadius,
+				scene,
+				studio
+		));		
+		
 		// ... and then adding scene objects to scene
 		
 		
@@ -175,7 +193,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 //	private transient LabelledDoubleColourPanel headColourPanel, noseColourPanel, innerEarColourPanel, rightEyeColourPanel, leftEyeColourPanel, whiskerColourPanel;
 //	
 	private transient JCheckBox pixellatedCheckBox;
-	
+	private JComboBox<StudioInitialisationType> studioInitialisationComboBox;
 	private transient LabelledVector2DPanel pixelPeriodPanel;
 	
 	// camera
@@ -293,6 +311,10 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 		cameraViewCentreJPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Centre of view"));
 		cameraViewCentreJPanel.setLayout(new MigLayout("insets 0"));
 		cameraPanel.add(cameraViewCentreJPanel, "span");
+		
+		studioInitialisationComboBox = new JComboBox<StudioInitialisationType>(StudioInitialisationType.limitedValuesForBackgrounds);
+		studioInitialisationComboBox.setSelectedItem(studioInitialisation);
+		cameraPanel.add(GUIBitsAndBobs.makeRow("Initialise backdrop to", studioInitialisationComboBox), "span");
 
 		cameraViewCentrePanel = new LabelledVector3DPanel("Position");
 		cameraViewCentrePanel.setVector3D(cameraViewCentre);
@@ -329,6 +351,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 	{
 		super.acceptValuesInInteractiveControlPanel();
 		
+		studioInitialisation = (StudioInitialisationType)(studioInitialisationComboBox.getSelectedItem());
 		zEye = zEyePanel.getNumber();
 		zRotatedPlane = zRotatedPlanePanel.getNumber();
 		zRotatingSurface = zRotatingSurfacePanel.getNumber();
