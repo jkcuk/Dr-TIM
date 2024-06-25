@@ -46,8 +46,8 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 	{
 		super();
 		
-		zEye = -10;
-		zRotatedPlane = 30;
+		zEye = -5;
+		zRotatedPlane = 10;
 		zRotatingSurface = 0;
 		rotationAngleRad = MyMath.deg2rad(20);
 		magnificationFactor = 1;
@@ -64,7 +64,7 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 //		nonInteractiveTIMAction = NonInteractiveTIMActionEnum.MOVIE;
 		cameraViewCentre = new Vector3D(0, 0, zRotatingSurface);
 		cameraViewDirection = new Vector3D(0,0,1);
-		cameraHorizontalFOVDeg = 10;
+		cameraHorizontalFOVDeg = 15;
 		cameraTopDirection = new Vector3D(0,1,0); 
 		cameraDistance = zRotatingSurface - zEye;
 		traceRaysWithTrajectory = false;
@@ -134,14 +134,14 @@ public class DerivativeControlSurfaceExplorer extends NonInteractiveTIMEngine
 				studio
 				);
 		
-		double cylinderRadius = 0.04;
+		double cylinderRadius = 0.03;
 		
 		// a cylinder lattice...
 		scene.addSceneObject(new EditableCylinderLattice(
 				"cylinder lattice",
-				-1.5, 1.5, 5,
-				-1+cylinderRadius, 2+cylinderRadius, 5,
-				3, 33, 4, // this puts the "transverse" cylinders into the planes z=10, 20, 30, 40
+				-1, 1, 5,
+				-1+cylinderRadius, 1+cylinderRadius, 5,
+				10, 40, 4, // this puts the "transverse" cylinders into the planes z=10, 20, 30, 40
 				cylinderRadius,
 				scene,
 				studio
