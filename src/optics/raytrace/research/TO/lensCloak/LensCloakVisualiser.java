@@ -17,6 +17,7 @@ import math.*;
 import math.simplicialComplex.Face;
 import net.miginfocom.swing.MigLayout;
 import optics.raytrace.sceneObjects.Cylinder;
+import optics.raytrace.sceneObjects.Disc;
 import optics.raytrace.sceneObjects.Plane;
 import optics.raytrace.sceneObjects.Sphere;
 import optics.raytrace.sceneObjects.solidGeometry.SceneObjectContainer;
@@ -24,6 +25,7 @@ import optics.raytrace.simplicialComplex.IdealThinLensSimplicialComplex;
 import optics.raytrace.simplicialComplex.LensType;
 import optics.raytrace.surfaces.HueBrightnessGradientSurface;
 import optics.raytrace.surfaces.IdealThinLensSurface;
+import optics.raytrace.surfaces.IdealThinLensSurfaceSimple;
 import optics.raytrace.surfaces.SurfaceColour;
 import optics.raytrace.surfaces.SurfaceColourLightSourceIndependent;
 import optics.raytrace.surfaces.SurfaceTiling;
@@ -48,6 +50,7 @@ import optics.raytrace.GUI.sceneObjects.EditableRayTrajectory;
 import optics.raytrace.GUI.sceneObjects.EditableScaledParametrisedSphere;
 import optics.raytrace.GUI.sceneObjects.EditableSceneObjectCollection;
 import optics.raytrace.cameras.PinholeCamera.ExposureCompensationType;
+import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.core.StudioInitialisationType;
 import optics.raytrace.core.SurfaceProperty;
@@ -61,6 +64,8 @@ import optics.raytrace.core.SurfaceProperty;
 public class LensCloakVisualiser extends NonInteractiveTIMEngine
 implements ChangeListener
 {
+	private static final long serialVersionUID = -1976205610941221349L;
+
 	/**
 	 * position of the top vertex, i.e. the tip of the outer tetrahedron
 	 */
@@ -585,6 +590,23 @@ implements ChangeListener
 		double h2V = lensSimplicialComplex.initialiseToOmnidirectionalLens(h1P, h2P, h1V, topVertex, baseCentre, baseVertex1);
 		
 		scene.addSceneObject(lensSimplicialComplex);
+		
+//		Disc lens = new Disc(
+//				"lens",	// description, 
+//				lensCentre, 
+//				lensNormal, 
+//				lensRadius, 
+//				new IdealThinLensSurfaceSimple(
+//						lensCentre,
+//						lensNormal,	// opticalAxisDirection,
+//						lensFocalLength,
+//						0.96,	// transmissionCoefficient
+//						false	// shadowThrowing
+//					), // surface
+//				scene,	// parent
+//				studio
+//			);
+//		scene.addSceneObject(lens);
 
 		if(showTrajectory)
 		{
