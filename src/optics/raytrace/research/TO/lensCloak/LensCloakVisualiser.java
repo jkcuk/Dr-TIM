@@ -149,6 +149,16 @@ implements ChangeListener
 	private boolean showPrincipalPoints;
 	
 	//
+	// additional lens
+	//
+	
+	private boolean showLens;
+	private Vector3D lensCentre;
+	private Vector3D lensNormal;
+	private double lensRadius;
+	private double lensFocalLength;
+	
+	//
 	// light-ray trajectories
 	//
 	
@@ -376,6 +386,14 @@ implements ChangeListener
 		showStructureV = false;
 		structureVRadius = 0.02;
 		
+		// lens parameters
+		showLens = true;
+		lensCentre = new Vector3D(0, -0.5, 0);
+		lensNormal = new Vector3D(0, 1, 0);
+		lensRadius = 1.0;
+		lensFocalLength = 1.0;
+
+		
 		// light-ray trajectory
 
 		// first, switch of NonInteractiveTIM's automatic tracing of rays with trajectory, as this doesn't work
@@ -490,6 +508,13 @@ implements ChangeListener
 		printStream.println("showStructureV = "+showStructureV);
 		printStream.println("structureVRadius = "+structureVRadius);
 		
+		// the bonus lens
+		printStream.println("showLens = "+showLens);
+		printStream.println("lensCentre = "+lensCentre);
+		printStream.println("lensNormal = "+lensNormal);
+		printStream.println("lensRadius = "+lensRadius);
+		printStream.println("lensFocalLength = "+lensFocalLength);
+
 		// light-ray trajectory
 		printStream.println("showTrajectory = "+showTrajectory);
 		printStream.println("trajectoryStartPoint = "+trajectoryStartPoint);
@@ -591,22 +616,22 @@ implements ChangeListener
 		
 		scene.addSceneObject(lensSimplicialComplex);
 		
-//		Disc lens = new Disc(
-//				"lens",	// description, 
-//				lensCentre, 
-//				lensNormal, 
-//				lensRadius, 
-//				new IdealThinLensSurfaceSimple(
-//						lensCentre,
-//						lensNormal,	// opticalAxisDirection,
-//						lensFocalLength,
-//						0.96,	// transmissionCoefficient
-//						false	// shadowThrowing
-//					), // surface
-//				scene,	// parent
-//				studio
-//			);
-//		scene.addSceneObject(lens);
+		Disc lens = new Disc(
+				"lens",	// description, 
+				lensCentre, 
+				lensNormal, 
+				lensRadius, 
+				new IdealThinLensSurfaceSimple(
+						lensCentre,
+						lensNormal,	// opticalAxisDirection,
+						lensFocalLength,
+						0.96,	// transmissionCoefficient
+						false	// shadowThrowing
+					), // surface
+				scene,	// parent
+				studio
+			);
+		scene.addSceneObject(lens, showLens);
 
 		if(showTrajectory)
 		{
@@ -1135,6 +1160,11 @@ implements ChangeListener
 	private JCheckBox showStructurePCheckBox, showStructureVCheckBox, highlightFacesCheckBox, showPrincipalPointsCheckBox;
 	private DoublePanel structurePRadiusPanel, structureVRadiusPanel;
 	
+	// the lens
+	private JCheckBox showLensCheckBox;
+	private LabelledVector3DPanel lensCentrePanel, lensNormalPanel;
+	private LabelledDoublePanel lensRadiusPanel, lensFocalLengthPanel;
+	
 	// light-ray trajectory
 	private JCheckBox showTrajectoryCheckBox;
 	private LabelledVector3DPanel trajectoryStartPointPanel;
@@ -1472,6 +1502,33 @@ implements ChangeListener
 		patternedSphereRadiusPanel.setNumber(patternedSphereRadius);
 		patternedSpherePanel.add(patternedSphereRadiusPanel, "span");
 
+		// the lens panel
+		JPanel lensPanel = new JPanel();
+		lensPanel.setBorder(GUIBitsAndBobs.getTitledBorder("Lens"));
+		lensPanel.setLayout(new MigLayout("insets 0"));
+		otherObjectsPanel.add(lensPanel, "span");
+
+		showLensCheckBox = new JCheckBox("Show");
+		showLensCheckBox.setSelected(showLens);
+		lensPanel.add(showLensCheckBox, "span");
+		
+		lensCentrePanel = new LabelledVector3DPanel("Principal point");
+		lensCentrePanel.setVector3D(lensCentre);
+		lensPanel.add(lensCentrePanel, "span");
+		
+		lensNormalPanel = new LabelledVector3DPanel("Normal");
+		lensNormalPanel.setVector3D(lensNormal);
+		lensPanel.add(lensNormalPanel, "span");
+		
+		lensRadiusPanel = new LabelledDoublePanel("Radius");
+		lensRadiusPanel.setNumber(lensRadius);
+		lensPanel.add(lensRadiusPanel, "span");
+		
+		lensFocalLengthPanel = new LabelledDoublePanel("Focal length");
+		lensFocalLengthPanel.setNumber(lensFocalLength);
+		lensPanel.add(lensFocalLengthPanel, "span");
+		
+		
 		
 		//
 		// cameras panel
@@ -1676,6 +1733,13 @@ implements ChangeListener
 		showVirtualSpacePositionOfPatternedSphereCentre = showVirtualSpacePositionOfPatternedSphereCentreCheckBox.isSelected();
 		showOtherRealSpacePositionsOfPatternedSphereCentre = showOtherRealSpacePositionsOfPatternedSphereCentreCheckBox.isSelected();
 		patternedSphereRadius = patternedSphereRadiusPanel.getNumber();
+		
+		showLens = showLensCheckBox.isSelected();
+		lensCentre = lensCentrePanel.getVector3D();
+		lensNormal = lensNormalPanel.getVector3D();	// .getNormalised();
+		lensRadius = lensRadiusPanel.getNumber();
+		lensFocalLength = lensFocalLengthPanel.getNumber();
+		
 		
 		// cameras
 		activeCamera = (CameraType)(activeCameraComboBox.getSelectedItem());
