@@ -5,45 +5,43 @@ import math.Vector3D;
 import optics.raytrace.core.SceneObject;
 import optics.raytrace.core.Studio;
 import optics.raytrace.sceneObjects.Parallelepiped2;
-import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotatorOldVoxellation;
+import optics.raytrace.surfaces.SurfaceOfRefractiveViewRotator_NoDerivativeControl;
 
 
 
 /**
  * A view rotator which consists of refractive wedges to piecewise translates an image to mimic a rotation.
  * The rotator is surrounded by a bounding box (Parallelepiped) which is the scene object and handles the raytracing through it's surface property. 
- * The bounding box size is (TODO for now) determined by the user and as such, it needs to be made sure that it fits around the device.
- */
-public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2 
+ **/
+public class RefractiveViewRotator_NoDerivativeControl extends Parallelepiped2 
 {
-	private static final long serialVersionUID = 3339913072437353313L;
+	private static final long serialVersionUID = -2430391215393155131L;
 	
-	
-	private SurfaceOfRefractiveViewRotatorOldVoxellation surface;
+	private SurfaceOfRefractiveViewRotator_NoDerivativeControl surface;
 
-/**
- * 
- * @param description
- * @param boundingBoxCentre
- * @param boundingBoxSpanVector1
- * @param boundingBoxSpanVector2
- * @param boundingBoxSpanVector3
- * @param ocularSurfaceNormal vector to define all front surface normals, should be orientated from the device to the viewing position
- * @param eyePosition
- * @param ocularPlaneCentre
- * @param pointOnRotationAxis
- * @param rotationAngle
- * @param periodVector1
- * @param periodVector2
- * @param refractiveIndex
- * @param wedgeThickness
- * @param maxSteps
- * @param surfaceTransmissionCoefficient
- * @param shadowThrowing
- * @param parent
- * @param studio
- */
-	public RefractiveViewRotatorOldVoxellation(
+	/**
+	 * 
+	 * @param description
+	 * @param boundingBoxCentre
+	 * @param boundingBoxSpanVector1
+	 * @param boundingBoxSpanVector2
+	 * @param boundingBoxSpanVector3
+	 * @param ocularSurfaceNormal vector to define all front surface normals, should be orientated from the device to the viewing position
+	 * @param eyePosition
+	 * @param ocularPlaneCentre
+	 * @param pointOnRotationAxis
+	 * @param rotationAngle
+	 * @param periodVector1
+	 * @param periodVector2
+	 * @param refractiveIndex
+	 * @param wedgeThickness
+	 * @param maxSteps
+	 * @param surfaceTransmissionCoefficient
+	 * @param shadowThrowing
+	 * @param parent
+	 * @param studio
+	 */
+	public RefractiveViewRotator_NoDerivativeControl(
 			String description,
 			Vector3D boundingBoxCentre, 
 			Vector3D boundingBoxSpanVector1,
@@ -60,19 +58,18 @@ public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2
 			SceneObject viewObject,
 			double refractiveIndex,
 			double wedgeThickness,
-			boolean simulateDiffractiveBlur,
-			double lambda,
-			int maxSteps, 
-			double surfaceTransmissionCoefficient, 
-			boolean shadowThrowing,
+			double surfaceTransmissionCoefficient,
+			boolean simulateDiffractionBlur,
+			int MaxStepsInArray,
+			SceneObject scene,
 			SceneObject parent, 
 			Studio studio
-		)
-	
+			)
+
 	{
 		// first create the bounding box...
 		super(
-				"Bounding box",	// description
+				"Bounding box of refractive view rotator",	// description
 				boundingBoxCentre,	// centre
 				boundingBoxSpanVector1,	// u
 				boundingBoxSpanVector2,	// v
@@ -80,9 +77,9 @@ public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2
 				null,	// surfaceProperty -- for now; will be set in a second
 				parent,
 				studio
-			);
+				);
 		// ... then set its surface property to be a suitable refractive lenslet array
-		surface = new SurfaceOfRefractiveViewRotatorOldVoxellation(
+		surface = new SurfaceOfRefractiveViewRotator_NoDerivativeControl(
 				ocularPlaneNormal,
 				eyePosition,
 				ocularPlaneCentre,
@@ -94,21 +91,21 @@ public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2
 				viewObject,
 				refractiveIndex,
 				wedgeThickness,
-				this,	// bounding box
-				simulateDiffractiveBlur,
-				lambda,
 				surfaceTransmissionCoefficient,
-				shadowThrowing,
-				maxSteps
-			);
+				simulateDiffractionBlur,
+				MaxStepsInArray,	// maxStepsInArray
+				this,	// bounding box
+				scene
+				);
 		setSurfaceProperty(surface);
-		
+
 	}
 	
+
 	/**
 	 * @param original
 	 */
-	public RefractiveViewRotatorOldVoxellation(RefractiveViewRotatorOldVoxellation original)
+	public RefractiveViewRotator_NoDerivativeControl(RefractiveViewRotator_NoDerivativeControl original)
 	{
 		this(
 				original.getDescription(),
@@ -127,17 +124,16 @@ public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2
 				original.getViewObject(),
 				original.getRefractiveIndex(),
 				original.getWedgeThickness(),
-				original.isSimulateDiffractiveBlur(),
-				original.getLambda(),
-				original.getMaxSteps(), 
-				original.getSurfaceTransmissionCoefficient(), 
-				original.isShadowThrowing(),
+				original.getSurfaceTransmissionCoefficient(),
+				original.isSimulateDiffractionBlur(),
+				original.getMaxStepsInArray(),
+				original.getScene(),
 				original.getParent(), 
 				original.getStudio()
 
-			);	
+				);	
 	}
-	
+
 	//getters and setters
 
 	public Vector3D getBoundingBoxCentre() {
@@ -171,15 +167,15 @@ public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2
 	public void setBoundingBoxSpanVector3(Vector3D boundingBoxSpanVector3) {
 		super.setW(boundingBoxSpanVector3);
 	}
-	
+
 	public Vector3D getOcularPlaneCentre() {
 		return surface.getOcularPlaneCentre();
 	}
-	
+
 	public void setOcularPlaneCentre(Vector3D ocularPlaneCentre) {
 		surface.setOcularPlaneCentre(ocularPlaneCentre);
 	}
-	
+
 
 	public Vector3D getOcularPlaneNormal() {
 		return surface.getOcularPlaneNormal();
@@ -213,7 +209,7 @@ public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2
 	public void setRotationAxisDirection(Vector3D rotationAxisDirection) {
 		surface.setRotationAxisDirection(rotationAxisDirection);
 	}
-	
+
 	public double getMagnificationFactor() {
 		return surface.getMagnificationFactor();
 	}
@@ -229,7 +225,7 @@ public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2
 	public void setPeriodVector1(Vector3D periodVector1) {
 		surface.setPeriodVector1(periodVector1);
 	}
-	
+
 	public Vector3D getPeriodVector2() {
 		return surface.getPeriodVector2();
 	}
@@ -237,7 +233,7 @@ public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2
 	public void setPeriodVector2(Vector3D periodVector2) {
 		surface.setPeriodVector2(periodVector2);
 	}
-	
+
 	public double getWedgeThickness() {
 		return surface.getWedgeThickness();
 	}
@@ -245,8 +241,17 @@ public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2
 	public void setWedgeThickness(double wedgeThickness) {
 		surface.setWedgeThickness(wedgeThickness);
 	}
-	
-	
+
+
+	public double getSurfaceTransmissionCoefficient() {
+		return surface.getSurfaceTransmissionCoefficient();
+	}
+
+	public void setSurfaceTransmissionCoefficient(double surfaceTransmissionCoefficient) {
+		surface.setSurfaceTransmissionCoefficient(surfaceTransmissionCoefficient);
+	}
+
+
 	public SceneObject getViewObject() {
 		return surface.getViewObject();
 	}
@@ -263,48 +268,31 @@ public class RefractiveViewRotatorOldVoxellation extends Parallelepiped2
 		surface.setRefractiveIndex(refractiveIndex);
 	}
 
-	public int getMaxSteps() {
-		return surface.getMaxSteps();
-	}
-
-	public void setMaxSteps(int maxSteps) {
-		surface.setMaxSteps(maxSteps);
-	}
-
-	public double getSurfaceTransmissionCoefficient() {
-		return surface.getSurfaceTransmissionCoefficient();
-	}
-
-	public void setSurfaceTransmissionCoefficient(double surfaceTransmissionCoefficient) {
-		surface.setSurfaceTransmissionCoefficient(surfaceTransmissionCoefficient);
-	}
-
-	public boolean isSimulateDiffractiveBlur() {
-		return surface.isSimulateDiffractiveBlur();
-	}
-
-	public void setSimulateDiffractiveBlur(boolean simulateDiffractiveBlur) {
-		surface.setSimulateDiffractiveBlur(simulateDiffractiveBlur);
-	}
-	
-	
-	public double getLambda() {
-		return surface.getLambda();
-	}
-
-	public void setLambda(double lambda) {
-		surface.setLambda(lambda);
-	}
-	
 	public boolean isShadowThrowing() {
 		return surface.isShadowThrowing();
 	}
 
-	public void setShadowThrowing(boolean shadowThrowing) {
-		surface.setShadowThrowing(shadowThrowing);
+	public int getMaxStepsInArray() {
+		return surface.getMaxStepsInArray();
 	}
-	
-	
+	public void setMaxStepsInArray(int MaxStepsInArray) {
+		surface.setMaxStepsInArray(MaxStepsInArray);
+	}
+
+	public boolean isSimulateDiffractionBlur() {
+		return surface.isSimulateDiffractionBlur();
+	}
+
+	public void setSimulateDiffractionBlur(boolean simulateDiffractionBlur) {
+		surface.setSimulateDiffractionBlur(simulateDiffractionBlur);
+	}
+
+
+	public SceneObject getScene()
+	{
+		return surface.getScene();
+	}
+
 	@Override
 	public String getType()
 	{
