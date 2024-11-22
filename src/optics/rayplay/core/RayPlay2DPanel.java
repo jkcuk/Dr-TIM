@@ -26,6 +26,7 @@ import optics.rayplay.geometry2D.Circle2D;
 import optics.rayplay.interactiveOpticalComponents.IdeaLensWormhole2D;
 import optics.rayplay.interactiveOpticalComponents.Lens2DIOC;
 import optics.rayplay.interactiveOpticalComponents.LensStar2D;
+import optics.rayplay.interactiveOpticalComponents.LensTelescope2D;
 import optics.rayplay.interactiveOpticalComponents.OmnidirectionalLens2D;
 import optics.rayplay.raySources.PointRaySource2D;
 import optics.rayplay.util.Colour;
@@ -722,7 +723,8 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		lensStarNo = 0,
 		omnidirectionalLensNo = 1,	// 1 because one gets created at the start
 		raySourceNo = 1,	// 1 because one gets created at the start
-		ideaLensWormholeNo = 0;
+		ideaLensWormholeNo = 0,
+		telescopeNo = 0;
 
 	// menu items
 	JMenuItem forwardRaysOnlyMenuItem, rayBundleMenuItem, rayBundleIsotropicMenuItem;
@@ -858,8 +860,50 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 		});
 		spacePopup.add(createWormholeMenuItem);
 
+		JMenuItem createTelescopeMenuItem = new JMenuItem("Create ideal lens telescope");
+		// menuItem.setMnemonic(KeyEvent.VK_P);
+		createTelescopeMenuItem.getAccessibleContext().setAccessibleDescription("Create ideal lens telescope");
+		createTelescopeMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				Vector2D pL1 = new Vector2D(i2x(popupMenuI), j2y(popupMenuJ));
+				double f1 = 0.03;
+				double f2 = 0.03;
+				Vector2D pL2 = Vector2D.sum(pL1, new Vector2D(f1 + f2, 0));
+				telescopeNo++;
+				LensTelescope2D lt = new LensTelescope2D(
+						"Ideal lens telescope "+telescopeNo,// name,
+						pL1,// principalPointL1,
+						f1,// focalLengthL1,
+						Vector2D.sum(pL1, new Vector2D(0, +0.05)),// endPoint1L1,
+						Vector2D.sum(pL1, new Vector2D(0, -0.05)),// endPoint2L1,
+						pL2,// principalPointL2,
+						f2,// focalLengthL2,
+						Vector2D.sum(pL2, new Vector2D(0, +0.05)),// endPoint1L2,
+						Vector2D.sum(pL2, new Vector2D(0, -0.05)),// endPoint2L2,
+
+						RayPlay2DPanel.this
+					);
+				iocs.add(lt);
+				// opticalComponents.addAll(ol.getOpticalComponents());
+				// graphicElements.addAll(ol.getGraphicElements());
+
+				repaint();
+			}
+		});
+		
+		//TODO since this is only 80% working it is commented out here to avoid miss use of the remaining 20%.
+		//Should you want to use the telescope regardless:
+		//-> Do not move the endpoints past one another as it is the main way it breaks
+		//-> The dragging when clicking on the telescope does not work, instead select the first lens' principal point to drag the whole system
+		//-> Understanding all of that uncomment the line below to "enable" the telescope in RayPlay2D
+//		spacePopup.add(createTelescopeMenuItem);
+
 		// Separator
 		// spacePopup.addSeparator();
+
+		
+		
 
 		JMenuItem createLightSourceMenuItem = new JMenuItem("Create light source");
 		// menuItem.setMnemonic(KeyEvent.VK_P);
