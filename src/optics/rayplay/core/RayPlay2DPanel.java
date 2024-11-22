@@ -240,7 +240,7 @@ public class RayPlay2DPanel extends JPanel implements CoordinateConverterXY2IJ, 
 
 			System.out.println("...done");
 
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
 			System.err.println("...actually not: error");
 			System.err.flush();
 			e.printStackTrace();

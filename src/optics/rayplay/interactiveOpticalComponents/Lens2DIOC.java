@@ -252,11 +252,11 @@ implements InteractiveOpticalComponent2D
 		
 	}
 	
-	public void writeSVGCode(RayPlay2DPanel rpp)
-	{
-		for(GraphicElement2D g:getGraphicElements(false, false))
-			g.writeSVGCode(rpp);
-	}
+//	public void writeSVGCode(RayPlay2DPanel rpp)
+//	{
+//		for(GraphicElement2D g:getGraphicElements(false, false))
+//			g.writeSVGCode(rpp);
+//	}
 	
 	@Override
 	public void initialiseRays()

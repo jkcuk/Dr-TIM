@@ -32,6 +32,7 @@ public class SVGWriter
 						// "<rect fill=\"#fff\" stroke=\"#fff\" x=\"0\" y=\"0\" width=\""+size.width+"\" height=\""+size.height+"\"/>\n" +
 						"<g opacity=\"1\">"
 				);
+		printStream.flush();
 	}
 	
 	public static void endSVGFile()
@@ -42,6 +43,7 @@ public class SVGWriter
 				"</svg>"
 				);
 
+		printStream.flush();
 		printStream.close();
 	}
 	
@@ -56,17 +58,18 @@ public class SVGWriter
 	 */
 	public static void writeSVGLine(Vector2D point1, Vector2D point2, CoordinateConverterXY2IJ cc, String color, int width, String style)
 	{
-		printStream.println(
-				"<line "+
-						"x1=\""+cc.x2id(point1.x)+"\" "+
-						"y1=\""+cc.y2jd(point1.y)+"\" "+
-						"x2=\""+cc.x2id(point2.x)+"\" "+
-						"y2=\""+cc.y2jd(point2.y)+"\" "+
-						"stroke=\""+color+"\" "+
-						"stroke-width=\""+width+"\" "+
-						style+
-						"/>"
-				);
+		String s = "<line "+
+				"x1=\""+cc.x2id(point1.x)+"\" "+
+				"y1=\""+cc.y2jd(point1.y)+"\" "+
+				"x2=\""+cc.x2id(point2.x)+"\" "+
+				"y2=\""+cc.y2jd(point2.y)+"\" "+
+				"stroke=\""+color+"\" "+
+				"stroke-width=\""+width+"\" "+
+				style+
+				"/>";
+		printStream.println(s);
+		// printStream.flush();
+		// System.out.println(s);
 	}
 
 	public static void writeSVGPolyLine(ArrayList<Vector2D> points, CoordinateConverterXY2IJ cc, String color, int width, String style)
@@ -80,6 +83,8 @@ public class SVGWriter
 				style+
 				"/>";
 		printStream.println(s);
+		// printStream.flush();
+		// System.out.println(s);
 	}
 
 }
