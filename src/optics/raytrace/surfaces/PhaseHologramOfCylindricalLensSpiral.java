@@ -13,7 +13,7 @@ import optics.raytrace.core.Orientation;
  * If the spiral type is LOGARITHMIC, then the spiral is of the form r = exp(b phi),
  * where r=sqrt(x^2+y^2) and phi=atan2(y,x) and x and y are the surface coordinates.
  * If the spiral type is ARCHIMEDEAN, then the spiral is of the form r = b phi.
- * If the spiral type is HYPERBOLIC, then the spiral is of the form r = b/phi.
+ * If the spiral type is HYPERBOLIC, then the spiral is of the form r = -1/b phi.
  * 
  * The associated SceneObject must be a ParametrisedObject as the getSurfaceCoordinates(Vector3D) method is used to calculate the coordinates on the surface.
  * 
@@ -57,7 +57,7 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	/**
 	 * the centre of the cylindrical lens follows either the logarithmic spiral r = exp(b (phi+deltaPhi)), 
 	 * or the Archimedean spiral r = b (phi+deltaPhi),
-	 * or the hyperbolic spiral r = b/(phi + deltaPhi)
+	 * or the hyperbolic spiral r = -1/b(phi + deltaPhi)
 	 */
 	protected double b;
 
@@ -234,7 +234,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 			return b*(phi+deltaPhi+n*2*Math.PI);
 		//dwu1for calculateSpiralDistanceFromCentre hyperbolic begin--
 		case HYPERBOLIC:
-			return b/(phi+deltaPhi+n*2*Math.PI);
+			//return b/(phi+deltaPhi+n*2*Math.PI);
+			return -1/(b*(phi+deltaPhi+n*2*Math.PI));
 		//dwu1for calculateSpiralDistanceFromCentre hyperbolic end--
 		case LOGARITHMIC:
 		default:
@@ -256,11 +257,9 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		case ARCHIMEDEAN:
 			return Math.ceil(-((b*phiPlus - r)/b2pi) - 0.5);
 		case HYPERBOLIC:
-			return Math.ceil((b-phiPlus*r)/(2*r*Math.PI)-(-phiPlus-2*Math.PI*Math.floor((b-phiPlus*r)/(2*r*Math.PI)))/(2*Math.PI)-
-					(Math.sqrt((phiPlus*phiPlus+2*phiPlus*Math.PI+4*phiPlus*Math.PI*Math.floor((b-phiPlus*r)/(2*r*Math.PI))+4*Math.PI*Math.PI
-							*Math.floor((b-phiPlus*r)/(2*r*Math.PI))+4*Math.PI*Math.PI*Math.floor((b-phiPlus*r)/(2*r*Math.PI))*
-							Math.floor((b-phiPlus*r)/(2*r*Math.PI)))))/(2*Math.PI));
-			// this becomes imaginary if b is <7ish
+			//TODO when we change phiPlus to just phi it becomes an even better lens, but this is not physical I think.. 
+			//..why and is there a way to make it physical?
+			return Math.floor( 0.5 - (1 + Math.sqrt(1+b2pi*b2pi*r*r)+2*b*r*phiPlus)/(2*b2pi*r)); 
 		case LOGARITHMIC:
 		default:
 			return Math.ceil(-((b*phiPlus - Math.log(r))/b2pi) - nHalf);
@@ -277,6 +276,7 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	{	
 		double r_n = calculateSpiralDistanceFromCentre(phi, n);
 		double phiPlus = phi+deltaPhi;
+		double psi = phiPlus + 2*Math.PI*n;
 
 		// calculated in Mathematica
 		switch(cylindricalLensSpiralType)
@@ -294,12 +294,16 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 				return -(((x/r)+b*y/r2)*(r-r_n))/(focalLength1/r_n);
 			}
 		case HYPERBOLIC:
-			return ((y*(r-r_n)*(r-r_n)/(2*r*r))-(phiPlus+2*n*Math.PI)*(r-r_n)*((x/r)-((y*r_n*r_n)/(b*r*r))))/focalLength1;
+			//return ((y*(r-r_n)*(r-r_n)/(2*r*r))-(phiPlus+2*n*Math.PI)*(r-r_n)*((x/r)-((y*r_n*r_n)/(b*r*r))))/focalLength1;
+			//return ( (1+b*r_n*phi)*(y-b*r_n*y*phi+2*b*r_n*x*phi*phi) )/(2*b*focalLength1*r_n*r_n*phi*phi);
+			return ( (1+b*r*psi)*(y-b*r*y*psi+2*b*r*x*psi*psi) )/(2*b*focalLength1*r*r*psi*psi);
 		case LOGARITHMIC:
 		default:
 			//In the logarithmic case the focal length, fLog, is constant and hence simply the focalLength.
 			if(alvarezWindingFocusing){
 				return (-r*r*r*(3*x+b*y)+3*r*r_n*r_n*(x-b*y)+4*b*y*r_n*r_n*r_n)/(6*r_n*focalLength1*r*r);
+//				return Math.exp(-b*(phi+n*2*Math.PI))*(4*b*Math.exp(3*b*(phi+n*2*Math.PI))*y+3*Math.exp(2*b*(phi+n*2*Math.PI)) *r_n *(x-b*y)-r_n*r_n*r_n*(3*x+b*y))/
+//				(6*focalLength1*r_n*r_n);
 			}
 			else
 			{
@@ -319,6 +323,7 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 	{
 		double r_n = calculateSpiralDistanceFromCentre(phi, n);
 		double phiPlus = phi+deltaPhi;
+		double psi = phiPlus + 2*Math.PI*n;
 
 		// calculated in Mathematica
 		switch(cylindricalLensSpiralType)
@@ -334,12 +339,17 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 				return -(((y/r)-b*x/r2)*(r-r_n))/(focalLength1/r_n);
 			}
 		case HYPERBOLIC:
-			return -((x*(r-r_n)*(r-r_n)/(2*r*r))+(phiPlus+2*n*Math.PI)*(r-r_n)*((y/r)+((x*r_n*r_n)/(b*r*r))))/focalLength1;
+			//return -((x*(r-r_n)*(r-r_n)/(2*r*r))+(phiPlus+2*n*Math.PI)*(r-r_n)*((y/r)+((x*r_n*r_n)/(b*r*r))))/focalLength1;
+			//return ( (1+b*r_n*phi)*(2*b*r_n*y*phi*phi + x*(b*r_n*phi-1)) )/(2*b*focalLength1*r_n*r_n*phi*phi);
+			return ( (1+b*r*psi)*(2*b*r*y*psi*psi + x*(b*r*psi-1)) )/(2*b*focalLength1*r*r*psi*psi);
 		case LOGARITHMIC:
 		default:
 			//In the logarithmic case the focal length, fLog, is constant and hence simply the focalLength.
 			if(alvarezWindingFocusing){
 				return (r*r*r*(b*x-3*y)+3*r*r_n*r_n*(b*x+y)-4*b*x*r_n*r_n*r_n)/(6*focalLength1*r*r*r_n);
+//				return Math.exp(-b*(phi+n*2*Math.PI))*(-4*b*Math.exp(3*b*(phi+n*2*Math.PI))*x+3*Math.exp(2*b*(phi+n*2*Math.PI)) *r_n *(b*x + y)+r_n*r_n*r_n*(b*x-3*y))/
+//				(6*focalLength1*r_n*r_n);
+				
 			}else {
 				return -(((-b*Math.exp(b*(phiPlus+n*2*Math.PI))*x)/r2 + y/r) * (-Math.exp(b*(phiPlus+n*2*Math.PI)) + r))/focalLength1;
 			}
@@ -363,7 +373,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		case ARCHIMEDEAN:
 			return b*phiU;
 		case HYPERBOLIC:
-			return b/phiU;
+			//return b/phiU;
+			return -1/(b*phiU);
 		case LOGARITHMIC:
 		default:
 			return Math.exp(b*phiU);
@@ -381,7 +392,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		case ARCHIMEDEAN:
 			return focalLength1/calculateR(phiU);
 		case HYPERBOLIC:
-			return focalLength1/phiU;
+			//return focalLength1/phiU;
+			return focalLength1*calculateR(phiU);
 		case LOGARITHMIC:
 		default:
 			return focalLength1;
@@ -402,7 +414,10 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 			return r/b;
 		case HYPERBOLIC:
 			// r = b / phi, so phi = b / r
-			return b / r;
+			//return b / r;
+			// r = -1 / b phi, so phi = -1 / b r
+			return -1 / (b*r);
+			
 		case LOGARITHMIC:
 		default:
 			// r = e^(b phi), so ln r = b phi, so phi = ln r / b
@@ -456,7 +471,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		// (d rv/d phiU) / r, is (see J's lab book entry 14/9/23, p. 154-5)
 		// 		1/phiU rHat + phiHat (Archimedean spiral; rHat term dominates at centre (phiU -> 0))
 		// 		b rHat + phiHat (logarithmic spiral; direction is same everywhere)
-		// 		-1/phiU rHat + phiHat (hyperbolic spiral; rHat term insignificant at centre (phiU -> \infty))
+		// 		1/phiU rHat + phiHat (hyperbolic spiral; rHat term insignificant at centre (phiU -> \infty))
+		//The hyperbolic spiral of the new form, -1/b phi gives a positive derivative and hence the sign is changed from the lab book entry. Used to be (-1/phiU rHat + phiHat)
 		// (phiU is the *unbound* angle phi)
 		
 		double phiU = 
@@ -469,7 +485,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 			rHatFactor = 1./phiU;
 			break;
 		case HYPERBOLIC:
-			rHatFactor = -1./phiU;
+			//TODO I think this is correct but double check it..
+			rHatFactor = 1./phiU;
 			break;
 		case LOGARITHMIC:
 		default:
@@ -509,7 +526,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 		// the non-normalised outwards normal direction to the spiral is (see J's lab book entry 15/9/23, p. 156)
 		// 		rHat - (1/phiU) phiHat (Archimedean spiral)
 		// 		rHat - b phiHat (logarithmic spiral)
-		// 		rHat + (1/phiU) phiHat (hyperbolic spiral)
+		// 		rHat - (1/phiU) phiHat (hyperbolic spiral)
+		//The hyperbolic spiral of the new form, -1/b phi gives a positive derivative and hence the sign is changed from the lab book entry. Used to be (rHat + (1/phiU) phiHat)
 		// (phiU is the *unbound* angle phi)
 		
 		double phiU = calculateUnboundPhi(r);	// unbound phi
@@ -520,7 +538,8 @@ public class PhaseHologramOfCylindricalLensSpiral extends PhaseHologram
 			phiHatFactor = -1./phiU;
 			break;
 		case HYPERBOLIC:
-			phiHatFactor = 1./phiU;
+			//TODO think this is correct double check it
+			phiHatFactor = -1./phiU;
 			break;
 		case LOGARITHMIC:
 		default:
